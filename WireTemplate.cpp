@@ -1,0 +1,243 @@
+#include "WireTemplate.h"
+
+namespace IPFIX {
+
+void WireTemplate::add(const InfoElement* ie, size_t offset) {  
+  // Can't add to an active template
+  if (active_) {
+    throw std::logic_error("Cannot add IEs to an active template");
+  }
+
+  // Add the IE to the IE vector
+  ies_.push_back(ie);
+  
+  // Add the IE to the index map
+  index_map_[ie] = ies_.size()-1;
+
+  // Calculate offset 
+  // FIXME need to rework the interface such that you can only add offsets
+  // for struct templates. for now, just die
+  if (offset) {
+      throw std::logic_error("can't add with offset to a wire template")
+  }
+  
+  if (offsets_.empty()) {
+    offset = 0;
+  } else if (offsets_.back() == kVarlen ||
+                   ie->len() == kVarlen) {
+    offset = kVarlen;
+  } else {
+    offset = offsets_.back() + ies_.back()->len();
+  }
+  
+  // Check offset monotonity invariant (only in danger for two-argument form)
+  if (!offsets_.empty() && offset < offsets_.back()) {
+    throw IETypeError("Cannot add IE with negative offset");
+  }
+
+  // Add offset to offset table
+  offsets_.push_back(offset);
+  
+  // Add the length of the IE to the minimum length
+  // (This won't track in the two-argument form, but we'll never use it there)
+  if (ie->len() == kVarlen) {
+    minlen_ += 1;
+  } else {
+    minlen_ += ie->len();
+  }
+  
+  // Add the length of the IE's fields to the template record length
+  trlen_ += ie->pen() ? 8 : 4;
+}
+
+void WireTemplate::clear() {
+  ies_.clear();
+  offsets_.clear();
+  index_map_.clear();
+  minlen_ = 0;
+  trlen_ = 0;
+  active_ = false;
+}
+
+void WireTemplate::mimic(const IETemplate& rhs) {
+    clear();
+    for (IETemplateIterator i = rhs.begin(); i != rhs.end(); ++i) {
+        add(i.get());
+    }
+    activate();
+}
+
+
+// std::list<TCEntry> IETemplate::planTranscode(const IETemplate &struct_tmpl) const 
+// {
+//   std::list<TCEntry> plan;
+//   
+//   for (IETemplateIterator iter = ies_.begin();
+//        iter != ies_.end();
+//        iter++) {
+//     if (struct_tmpl.contains(*iter)) {
+//       plan.push_back(TCEntry(struct_tmpl.offset(*iter), struct_tmpl.length(*iter), *iter))
+//     } else {
+//       plan.push_back(TCEntry(0, (*iter)->len(), NULL);
+//     }
+//   }
+//   
+//   return plan;
+// }
+// 
+// bool IETemplate::encode(XCoder& encoder, const std::list<TCEntry>& plan, void *struct_vp) const
+// {
+//   uint8_t* struct_cp = reinterpret_cast<uint8_t *>(struct_vp);
+//   
+//   // Refuse to encode an with inactive template
+//   if (!active_) {
+//     throw std::logic_error("Cannot encode using an inactive template");
+//   }
+//   
+//   // Refuse to encode unless we have at _least_ minimum length avail.
+//   if (encoder.avail() < minlen_) {
+//     std::cerr << "encoder overrun (at least " << encoder.avail() << " avail, " << minlen_ << " required.)" << std::endl;
+//     return false;
+//   }
+//   
+//   // Note: Void casts here are safe, since we checked minlen. 
+//   //       When we move to varlen encoding, we'll need to checkpoint and rollback.
+//   // FIXME this should be sped up by specifically building a transcode plan.
+//   encoder.checkpoint();
+//   for (TCEntryIterator iter = plan.begin();
+//        iter != plan.end();
+//        iter++) {
+//     if (iter->ie) {
+//       encoder.encode(struct_cp + iter->offset, iter->length, iter->ie) || goto err;
+//     } else {
+//       encoder.encodeZero(iter->length) || goto err;
+//     }
+//   }
+//   
+//   return true;
+// 
+// err:
+//   encoder.rollback();
+//   return false;
+// }
+
+bool WireTemplate::encode(XCoder& xc, const StructTemplate &struct_tmpl, void *struct_vp) const
+{
+  uint8_t* struct_cp = reinterpret_cast<uint8_t *>(struct_vp);
+  
+  // Refuse to encode an with inactive template
+  if (!active_) {
+    throw std::logic_error("Cannot encode using an inactive template");
+  }
+  
+  // Refuse to encode unless we have at _least_ minimum length avail.
+  if (xc.avail() < minlen_) {
+    std::cerr << "encoder overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
+    return false;
+  }
+  
+  // Note: Void casts here are safe, since we checked minlen. 
+  //       When we move to varlen encoding, we'll need to checkpoint and rollback.
+  // FIXME this should be sped up by specifically building a transcode plan.
+  xc.checkpoint();
+  for (IETemplateIterator iter = ies_.begin();
+       iter != ies_.end();
+       iter++) {
+    if (struct_tmpl.contains(*iter)) {
+      size_t off = struct_tmpl.offset(*iter);
+      size_t len = struct_tmpl.length(*iter);
+      if (len == kVarlen) {
+        VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
+        if (!xc.encode(vf, *iter)) goto err;
+      } else {
+        if (!xc.encode(struct_cp + off, len, *iter)) goto err;
+      }
+    } else {
+      if (!xc.encodeZero(*iter)) goto err;
+    }
+  }
+  
+  return true;
+
+err:
+  xc.rollback();
+  return false;
+}
+
+
+bool WireTemplate::encodeTemplateRecord(XCoder &xc) const {
+
+  // Refuse to encode an inactive template
+  if (!active_) {
+    throw std::logic_error("Cannot encode an inactive template");
+  }
+
+  // Make sure the encoder has space for the encoded version of the template
+  // Void casts from here are safe, since the template record length is 
+  // constant.
+  if (xc.avail() < trlen_) { 
+    return false;
+  }
+  
+  // encode template record header
+  (void) xc.encode(tid_);
+  (void) xc.encode(static_cast<uint16_t>(ies_.size()));
+  
+  // encode fields
+  
+  for (IETemplateIterator iter = ies_.begin();
+       iter != ies_.end();
+       iter++) {
+    if ((*iter)->pen()) {
+      (void) xc.encode(static_cast<uint16_t>((*iter)->number() | kEnterpriseBit));
+      (void) xc.encode((*iter)->len());
+      (void) xc.encode((*iter)->pen());
+    } else {
+      (void) xc.encode((*iter)->number());
+      (void) xc.encode((*iter)->len());
+    }
+  }
+  
+  return true;
+}
+
+bool WireTemplate::decode(XCoder& xc, const StructTemplate &struct_tmpl, void *struct_vp) const {
+  uint8_t* struct_cp = reinterpret_cast<uint8_t *>(struct_vp);
+  
+  // Refuse to decode an with inactive template
+  if (!active_) {
+    throw std::logic_error("Cannot decode using an inactive template");
+  }
+  
+  // Refuse to decode unless we have at _least_ minimum length avail.
+  if (xc.avail() < minlen_) {
+    std::cerr << "decider overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
+    return false;
+  }
+  
+  // Note: Void casts here are safe, since we checked minlen. 
+  //       When we move to varlen encoding, we'll need to checkpoint and rollback.
+  // FIXME this should be sped up by building a transcode plan.
+  xc.checkpoint();
+  for (IETemplateIterator iter = ies_.begin();
+       iter != ies_.end();
+       iter++) {
+    if (struct_tmpl.contains(*iter)) {
+      size_t off = struct_tmpl.offset(*iter);
+      size_t len = struct_tmpl.length(*iter);
+      if (len == kVarlen) {
+        VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
+        if (!xc.decode(vf, *iter)) goto err;
+      } else {
+        if (!xc.decode(struct_cp + off, len, *iter)) goto err;
+      }
+    } 
+  }
+  return true;
+
+err:
+  xc.rollback();
+  return false;
+}
+
+}

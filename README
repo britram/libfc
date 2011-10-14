@@ -1,0 +1,38 @@
+This is libfc, written by and copyright 2011 Brian Trammell <brian@trammell.ch>
+
+TO DO
+
+- finish collector hierarchy
+
+- refactor exceptions into Exceptions.h
+  inherit from runtime and logic error
+
+- ensure encoder and decoder error handling is consistent 
+  with the following rules:
+	return true on success
+	return false on normal failure (EOF, EOM, etc.)
+	throw on premature EOF or format error
+	[ determine a rule for decode errors which do not affect framing,
+	  in principle these should always be recoverable ]
+	
+DESIGN NOTES
+
+What is the interface to the collector?
+
+To answer this, we need to know the interface to the import block.
+
+The import block listens on a socket (or reads from a file), and creates messages.
+
+It requires an iterator of messages.
+
+Should this be a callback mechanism - one object per message type? 
+
+A RecordReceiver. A Collector is created, and a RecordReceiver bound to each minimal template. A domain/set cache is maintained by a callback on Session for each new Template.
+
+Calls on RecordReceiver:
+
+- actual template?
+
+How would this be used by the block? The block knows what kind of templates it wants, and registers a callback that provides a buffer, a mintemplate, and calls the factory from the class.
+
+ 

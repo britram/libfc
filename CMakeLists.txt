@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project(libfc)  
+find_package( Boost 1.46 )
+include_directories (. ${Boost_INCLUDE_DIRS})
+FILE (GLOB FC_OBJ *.cpp)
+add_library (fc ${FC_OBJ})
