@@ -18,7 +18,7 @@ void WireTemplate::add(const InfoElement* ie, size_t offset) {
   // FIXME need to rework the interface such that you can only add offsets
   // for struct templates. for now, just die
   if (offset) {
-      throw std::logic_error("can't add with offset to a wire template")
+    throw std::logic_error("can't add with offset to a wire template");
   }
   
   if (offsets_.empty()) {
@@ -62,7 +62,7 @@ void WireTemplate::clear() {
 void WireTemplate::mimic(const IETemplate& rhs) {
     clear();
     for (IETemplateIterator i = rhs.begin(); i != rhs.end(); ++i) {
-        add(i.get());
+        add(*i);
     }
     activate();
 }

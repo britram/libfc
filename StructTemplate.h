@@ -12,7 +12,7 @@ public:
   StructTemplate():
     IETemplate() {}
 
-  virtual void add(const InfoElement* ie, size_t offset = 0) = 0;
+  virtual void add(const InfoElement* ie, size_t offset = 0);
 
   };
 

@@ -4,7 +4,7 @@
 #include <ctime>
 #include <stdexcept>
 #include "Session.h"
-#include "Xcoder.h"
+#include "XCoder.h"
 
 namespace IPFIX {
 
@@ -23,7 +23,7 @@ public:
   
   void setDomain(uint32_t domain);
   void setTemplate(uint16_t tid);
-  IETemplate *getTemplate(uint16_t tid) { 
+  WireTemplate *getTemplate(uint16_t tid) { 
     return session_.getTemplate(domain_, tid); 
   }
   

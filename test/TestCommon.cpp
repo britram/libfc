@@ -1,6 +1,8 @@
 #include "TestCommon.h"
 
 #include <signal.h>
+#include <sys/time.h>
+#include <cerrno>
 
 static int quit_counter = 0;
 
@@ -15,53 +17,52 @@ void install_quit_handler() {
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGINT,&sa,&osa)) {
-      throw std::runtime_error("sigaction(SIGINT) failed: "+strerror(errno));
+      throw std::runtime_error(std::string("sigaction(SIGINT) failed: ") + strerror(errno));
     }
 
     sa.sa_handler = quit_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGTERM,&sa,&osa)) {
-      throw std::runtime_error("sigaction(SIGINT) failed: "+strerror(errno));
+      throw std::runtime_error(std::string("sigaction(SIGINT) failed: ") + strerror(errno));
     }
 }
 
 bool didQuit() {
-    return quit > 0;
+    return (quit_counter > 0);
 }
 
 uint64_t sys_ms() {
     timeval tv;
-    gettimeofday(&tv);
+    gettimeofday(&tv, NULL);
     return static_cast<uint64_t>(tv.tv_sec) * 1000 +  
            static_cast<uint64_t>(tv.tv_usec) / 1000;
 }
-
-void makeSimpleFlowTemplate(StructTemplate &sfstmpl){
-    sfstmpl.add(model_->lookupIE("flowStartMilliseconds"),    
+void makeSimpleFlowTemplate(InfoModel& model, StructTemplate& sfstmpl) {
+    sfstmpl.add(model.lookupIE("flowStartMilliseconds"),    
         offsetof(SimpleFlow, flowStartMilliseconds));
-    sfstmpl.add(model_->lookupIE("flowEndMilliseconds"),      
+    sfstmpl.add(model.lookupIE("flowEndMilliseconds"),      
         offsetof(SimpleFlow, flowEndMilliseconds));
-    sfstmpl.add(model_->lookupIE("sourceIPv4Address"),        
+    sfstmpl.add(model.lookupIE("sourceIPv4Address"),        
         offsetof(SimpleFlow, sourceIPv4Address));
-    sfstmpl.add(model_->lookupIE("destinationIPv4Address"),   
+    sfstmpl.add(model.lookupIE("destinationIPv4Address"),   
         offsetof(SimpleFlow, destinationIPv4Address));
-    sfstmpl.add(model_->lookupIE("sourceTransportPort"),      
+    sfstmpl.add(model.lookupIE("sourceTransportPort"),      
         offsetof(SimpleFlow, sourceTransportPort));
-    sfstmpl.add(model_->lookupIE("destinationTransportPort"), 
+    sfstmpl.add(model.lookupIE("destinationTransportPort"), 
         offsetof(SimpleFlow, destinationTransportPort));
-    sfstmpl.add(model_->lookupIE("packetDeltaCount[4]"),      
+    sfstmpl.add(model.lookupIE("packetDeltaCount[4]"),      
         offsetof(SimpleFlow, packetDeltaCount));
     sfstmpl.activate();
 }
 
 
-void makeCapfixPacketTemplate(StructTemplate &cpstmpl){
-    cpstmpl.add(model_->lookupIE("observationTimeMilliseconds"), 
+void makeCapfixPacketTemplate(InfoModel& model, StructTemplate& cpstmpl) {
+    cpstmpl.add(model.lookupIE("observationTimeMilliseconds"), 
         offsetof(CapfixPacket, observationTimeMilliseconds));
-    cpstmpl.add(model_->lookupIE("ipTotalLength"),               
+    cpstmpl.add(model.lookupIE("ipTotalLength"),               
         offsetof(CapfixPacket, ipTotalLength));
-    cpstmpl.add(model_->lookupIE("ipPacketHeaderSection"),       
+    cpstmpl.add(model.lookupIE("ipPacketHeaderSection"),       
         offsetof(CapfixPacket, ipPacketHeaderSection));
     cpstmpl.activate();
 }

@@ -1,7 +1,11 @@
 #include "FileWriter.h"
 #include "FileReader.h"
 
-static const uint32_t kTestDomain = 12345;
+static const uint32_t kTestDomain = 0x00C0FFEE;
+static const uint32_t kSimpleFlowTid = 0xAB34;
+static const uint32_t kCapfixPacketTid = 0xAB35;
+
+using namespace IPFIX;
 
 struct SimpleFlow {
     uint64_t flowStartMilliseconds;
@@ -25,8 +29,8 @@ bool didQuit();
 
 uint64_t sys_ms();
 
-void makeSimpleFlowTemplate(StructTemplate &sfstmpl);
-void makeCapfixPacketTemplate(StructTemplate &sfstmpl);
+void makeSimpleFlowTemplate(InfoModel& model, StructTemplate& sfstmpl);
+void makeCapfixPacketTemplate(InfoModel& model, StructTemplate& sfstmpl);
 
-void initSimpleFlow(SimpleFlow &sf);
-void incrSimpleFlow(SimpleFlow &sf);
+void initSimpleFlow(SimpleFlow& sf);
+void incrSimpleFlow(SimpleFlow& sf);

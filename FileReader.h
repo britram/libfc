@@ -2,7 +2,7 @@
 #define IPFIX_FILEREADER_H // hack
 
 #include <cstdio>
-#include "Exporter.h"
+#include "Collector.h"
 
 namespace IPFIX {
  
