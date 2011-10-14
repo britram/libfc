@@ -34,7 +34,7 @@ public:
   void flush() { flush(time(NULL)); }
 
 protected:
-  virtual void sendMessage(uint8_t *base, size_t len) = 0;
+  virtual void _sendMessage(uint8_t *base, size_t len) = 0;
 
 private:
   // make me uncopyable

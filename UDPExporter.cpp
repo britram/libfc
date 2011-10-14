@@ -37,7 +37,7 @@ void UDPExporter::connectfd() {
   }
 }
   
-void UDPExporter::sendMessage(uint8_t *base, size_t len) {
+void UDPExporter::_sendMessage(uint8_t *base, size_t len) {
   int rv;
   
   if (fd_ < 0) {

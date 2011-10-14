@@ -139,7 +139,7 @@ void Exporter::flush(time_t export_time) {
     endSet();
   }
   xcoder_.encodeMessageEnd(export_time, 0, domain_);
-  sendMessage(buf_, xcoder_.len());
+  _sendMessage(buf_, xcoder_.len());
   startMessage();
 }
 

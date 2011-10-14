@@ -22,7 +22,7 @@ public:
   virtual ~UDPExporter();
   
 protected:
-  virtual void sendMessage(uint8_t *base, size_t len);
+  virtual void _sendMessage(uint8_t *base, size_t len);
 
 private:
   void connectfd();

@@ -12,11 +12,19 @@ public:
   FileReader(std::string filename, const InfoModel* model):
     Collector(model),
     filename_(filename),
-    fp_(NULL) {}
+    fp_(NULL) {
+      session_ = getSession(0);
+    }
 
   virtual ~FileReader();
 
+protected:
+  void ensureFP();
+
+  virtual bool _receiveMessage(MBuf& mbuf, Session_SP& session);
+  
 private:
+  Session_SP    session_;
   std::string   filename_;
   mutable FILE *fp_;
 };

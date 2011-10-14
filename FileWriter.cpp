@@ -4,7 +4,7 @@
 
 namespace IPFIX {
   
-void FileWriter::sendMessage(uint8_t *base, size_t len) {
+void FileWriter::_sendMessage(uint8_t *base, size_t len) {
   int rv;
   
   std::cerr << "FileWriter::sendMessage(" << reinterpret_cast<unsigned long> (base)<< ", " << len << ")" << std::endl;

@@ -16,7 +16,7 @@ namespace IPFIX {
   public:
 
     Collector(const InfoModel* model) : model_(model) {}
-    virtual ~Collector();
+    virtual ~Collector() {}
     
     // register a set receiver for an exemplar template
     void registerReceiver(IETemplate* mintmpl, SetReceiver* receiver);
