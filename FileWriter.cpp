@@ -9,8 +9,8 @@ void FileWriter::sendMessage(uint8_t *base, size_t len) {
   
   std::cerr << "FileWriter::sendMessage(" << reinterpret_cast<unsigned long> (base)<< ", " << len << ")" << std::endl;
   if (!fp_) {
-    if (filename == "-") {
-        fp _ = STDOUT;
+    if (filename_ == "-") {
+        fp_ = stdout;
     } else {
         fp_ = fopen(filename_.c_str(), "w");
     }
