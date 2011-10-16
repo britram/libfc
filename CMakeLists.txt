@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)  
 
+# debuggery
+add_definitions(-g -O0)
+
 # include boost
 find_package( Boost 1.46 )
 include_directories (. ${Boost_INCLUDE_DIRS})

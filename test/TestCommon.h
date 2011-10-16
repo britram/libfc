@@ -20,7 +20,7 @@ struct SimpleFlow {
 struct CapfixPacket {
     uint64_t observationTimeMilliseconds;
     uint32_t ipTotalLength;
-    VarlenField ipPacketHeaderSection;
+    VarlenField ipHeaderPacketSection;
 };
 
 void quit_handler(int signum);

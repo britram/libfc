@@ -32,7 +32,7 @@ int main (int argc, char *argv[]) {
     
     initSimpleFlow(sf);
     
-    while (!didQuit) {
+    while (!didQuit()) {
         incrSimpleFlow(sf);
         fw.setTemplate(kSimpleFlowTid);
         fw.exportRecord(sfstmpl, reinterpret_cast<void*>(&sf));
