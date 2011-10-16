@@ -33,7 +33,40 @@ namespace IPFIX {
     const uint32_t sequence() const { return sequence_; } 
     const uint32_t export_time() const { return export_time_; } 
     
-    template <typename T> bool deframe(T source, Session session);
+    
+    // This is moronic, but g++ isn't smart enough to link this unless it's in the damn header.
+    template <typename T> bool deframe(T source, Session& session) {
+      XCoder xc;
+  
+      // Get the message header from the source
+      ensure(kMessageHeaderLen);
+      if (!consume(source, kMessageHeaderLen, 0)) {
+        // No message header available. Assume EOF or equivalent
+        return false;
+      }
+  
+      // Decode it
+      xc.setBase(buf_, kMessageHeaderLen); // FIXME are you sure?
+      // safe - we made the buffer
+      (void)xc.decodeMessageHeader(len_, export_time_, sequence_, domain_);
+
+      // Consume the rest of the message
+      ensure(len_);
+      if (!consume(source, len_ - kMessageHeaderLen, kMessageHeaderLen)) {
+        // Read a header, but no message. Broken. Die.
+        throw FormatError("End of stream after message header");
+      }
+      
+      // Prepare transcoder
+      xc.setBase(buf_, len_);
+      xc.advance(kMessageHeaderLen);
+      
+      // Deframe the message
+      populateSetlist(xc, session);
+
+      // and we're ready
+      return true;
+    }
     
     SetListIterator begin() {return setlist_.begin();}
     SetListIterator end() {return setlist_.end();}
@@ -48,6 +81,7 @@ namespace IPFIX {
     void ensure(size_t length);
     bool consume(int fd, size_t len, size_t off);
     bool consume(FILE *fp, size_t len, size_t off);
+    void populateSetlist(XCoder& xc, Session& session);
     
     uint8_t                                   *buf_;
     size_t                                    bufsz_;
