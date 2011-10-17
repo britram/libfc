@@ -11,7 +11,7 @@ namespace IPFIX {
   class Collector;
   
   typedef std::tr1::shared_ptr<class SetReceiver> SetReceiver_SP;
-  
+    
   class SetReceiver {
     // collector iterates over sets, and calls a function 
     // with a xcoder pointing to the set base and the current template
@@ -20,7 +20,7 @@ namespace IPFIX {
   public:    
     virtual void receive(const Collector* collector, 
                          XCoder& setxc, 
-                         const IETemplate* iet) = 0;
+                         const WireTemplate* iet) = 0;
     
     // setreceiver may supply helpers for doing this
   };

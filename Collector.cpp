@@ -59,8 +59,9 @@ bool Collector::receiveMessage(MBuf& mbuf) {
   return true;
 }
 
-void Collector::registerReceiver(IETemplate* mintmpl, SetReceiver* receiver) {
-  receivers_[IETemplate_SP(mintmpl)] = SetReceiver_SP(receiver);
+void Collector::registerReceiver(const IETemplate* mintmpl, SetReceiver* receiver) {
+  // FIXME we really want to make a copy here, no?
+  receivers_[IETemplate_CSP(mintmpl)] = SetReceiver_SP(receiver);
 }
     
 Session_SP Collector::getSession(int sk) {

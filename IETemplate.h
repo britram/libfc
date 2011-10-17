@@ -28,10 +28,14 @@ namespace IPFIX {
 //   const InfoElement *ie;
 // };
 
+// forward declarations
 class Session;
+class IETemplate;
 
 // Typedefs for C++ generic insanity
-typedef std::tr1::shared_ptr<class IETemplate>   IETemplate_SP;
+typedef std::tr1::shared_ptr<IETemplate>          IETemplate_SP;
+typedef std::tr1::shared_ptr<const IETemplate>    IETemplate_CSP;
+
 typedef std::pair<uint32_t, uint16_t>            IETemplateKey;
 typedef std::vector<const InfoElement *>::const_iterator 
                                                  IETemplateIterator;

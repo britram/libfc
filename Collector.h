@@ -8,7 +8,7 @@
 
 namespace IPFIX {
 
-  typedef std::map<IETemplate_SP, SetReceiver_SP>::const_iterator ReceiverListIterator;
+  typedef std::map<IETemplate_CSP, SetReceiver_SP>::const_iterator ReceiverListIterator;
   typedef std::map<IETemplateKey, SetReceiver_SP>::const_iterator ReceiverCacheIterator;
   
   class Collector {
@@ -19,7 +19,11 @@ namespace IPFIX {
     virtual ~Collector() {}
     
     // register a set receiver for an exemplar template
-    void registerReceiver(IETemplate* mintmpl, SetReceiver* receiver);
+    // FIXME this is a really broken use of shared pointers
+    // need to review ownership
+    // FIXME it's probably more C++ish to take an object and call () on it.
+    // determine the most properly idiomatic way to do that.
+    void registerReceiver(const IETemplate* mintmpl, SetReceiver* receiver);
         
     // process the next message from this collector
     // this is the entry point to the collector runloop, the collector must 
@@ -54,7 +58,7 @@ namespace IPFIX {
     const InfoModel*                                        model_;
     MBuf                                                    buf_;
     std::map<int, Session_SP>                               sessions_;
-    std::map<IETemplate_SP, SetReceiver_SP>                 receivers_;
+    std::map<IETemplate_CSP, SetReceiver_SP>                 receivers_;
     std::map<IETemplateKey, SetReceiver_SP>                 receiver_cache_;
   };
   

@@ -34,3 +34,4 @@ void makeCapfixPacketTemplate(InfoModel& model, StructTemplate& sfstmpl);
 
 void initSimpleFlow(SimpleFlow& sf);
 void incrSimpleFlow(SimpleFlow& sf);
+void matchSimpleFlow(SimpleFlow& expected, SimpleFlow& actual);
