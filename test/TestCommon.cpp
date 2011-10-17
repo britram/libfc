@@ -78,7 +78,7 @@ void initSimpleFlow(SimpleFlow &sf) {
 
 void incrSimpleFlow(SimpleFlow &sf) {
     sf.flowEndMilliseconds = sys_ms();
-    sf.flowStartMilliseconds = sf.flowStartMilliseconds - 1000;
+    sf.flowStartMilliseconds = sf.flowEndMilliseconds - 1000;
     --sf.sourceIPv4Address;
     if (sf.sourceIPv4Address < 0x0AFF0000) 
         sf.sourceIPv4Address = 0x0AFFFFFF;
