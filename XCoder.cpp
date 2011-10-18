@@ -289,6 +289,9 @@ bool XCoder::decodeMessageHeader(uint16_t& len,
     // we already checked for bytes, so we can only fail if the code is wrong.
     throw std::logic_error("unexpected failure in decodeMessageHeader()");
   }
+  
+  // std::cerr << "decodeMessageHeader() version " << version << std::endl;
+  
   if (version != kIpfixVersion) {
     throw FormatError("wrong IPFIX version; trying to decode non-IPFIX data?");
   }
@@ -296,6 +299,9 @@ bool XCoder::decodeMessageHeader(uint16_t& len,
   if (!decode(len)) {
     throw std::logic_error("unexpected failure in decodeMessageHeader()");
   }
+  
+  // std::cerr << "decodeMessageHeader() length " << len << std::endl;
+  
   if (len < kMessageHeaderLen) {
     throw FormatError("nonsensical message length; trying to decode non-IPFIX data?");
   }
@@ -303,13 +309,22 @@ bool XCoder::decodeMessageHeader(uint16_t& len,
   if (!decode(export_time)) {
     throw std::logic_error("unexpected failure in decodeMessageHeader()");
   }
+  
+  // std::cerr << "decodeMessageHeader() export_time " << export_time << std::endl;
+
+  
   if (!decode(sequence)) {
     throw std::logic_error("unexpected failure in decodeMessageHeader()");
   }
+  
+  // std::cerr << "decodeMessageHeader() sequence " << sequence << std::endl;
+
   if (!decode(domain)) {
     throw std::logic_error("unexpected failure in decodeMessageHeader()");
   }
   
+  // std::cerr << "decodeMessageHeader() domain " << domain << std::endl;
+
   return true;
 }
 
@@ -317,13 +332,6 @@ bool XCoder::decodeSetHeader(uint16_t& len, uint16_t& sid) {
 
   if (kSetHeaderLen > avail()) {
     return false;
-  }
-  
-  if (!decode(len)) {
-    throw std::logic_error("unexpected failure in decodeMessageHeader()");
-  }
-  if (len < kSetHeaderLen || len > kMaxSetLen) {
-    throw FormatError("nonsensical set length; trying to decode non-IPFIX data?");
   }
   
   if (!decode(sid)) {
@@ -334,6 +342,13 @@ bool XCoder::decodeSetHeader(uint16_t& len, uint16_t& sid) {
       sid != kOptionTemplateSetID)
   {
     throw FormatError("nonsensical set ID; trying to decode non-IPFIX data?");
+  }
+  
+  if (!decode(len)) {
+    throw std::logic_error("unexpected failure in decodeMessageHeader()");
+  }
+  if (len < kSetHeaderLen || len > kMaxSetLen) {
+    throw FormatError("nonsensical set length; trying to decode non-IPFIX data?");
   }
   
   return true;

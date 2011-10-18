@@ -4,6 +4,7 @@ using namespace IPFIX;
 
 int main (int argc, char *argv[]) {
 
+
     // set up signal handlers
     install_quit_handler();
 
@@ -32,7 +33,7 @@ int main (int argc, char *argv[]) {
     
     initSimpleFlow(sf);
     
-    while (!didQuit()) {
+    for (int i = 0; !didQuit() && i < kMaxFlows; ++i) {
         incrSimpleFlow(sf);
         fw.setTemplate(kSimpleFlowTid);
         fw.exportRecord(sfstmpl, reinterpret_cast<void*>(&sf));

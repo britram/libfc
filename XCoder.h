@@ -110,6 +110,7 @@ class XCoder {
     bool decodeSetHeader(uint16_t& len, uint16_t& sid);
       
   private:
+    
     /* Buffer */
     uint8_t*    base_;    // buffer base pointer
     /* Cursors */
