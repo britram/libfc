@@ -17,14 +17,18 @@ public:
     return &vst_;
   }
   
+  void registerWithCollector(Collector& c) {
+    c.registerReceiver(&vst_, this);
+  }
+  
   virtual void receive(const Collector* collector, 
                        XCoder& setxc, 
                        const WireTemplate* settmpl) {
     SimpleFlow sf;
     
-    while (settmpl.decode(setxc, sfstmpl_, &sf)) {            
+    while (settmpl->decode(setxc, vst_, &sf)) {            
       incrSimpleFlow(vsf_);
-      matchSimpleFlow(vsf_, sf_);
+      matchSimpleFlow(vsf_, sf);
     }
   }
 };
@@ -41,10 +45,10 @@ int main (int argc, char *argv[]) {
     FileReader fr("-", &model);
 
     // register them as minimal templates
-    SimpleFlowReceiver sfsrecv;
+    SimpleFlowReceiver sfsrecv(model);
     
-    fr.registerReceiver(&sfstmpl, &sfsrecv);
-    
+    sfsrecv.registerWithCollector(fr);
+        
     while (!didQuit()) {
       MBuf mbuf;
       fr.receiveMessage(mbuf);
