@@ -328,7 +328,7 @@ bool XCoder::decodeMessageHeader(uint16_t& len,
   return true;
 }
 
-bool XCoder::decodeSetHeader(uint16_t& len, uint16_t& sid) {                                   
+bool XCoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {                                   
 
   if (kSetHeaderLen > avail()) {
     return false;
@@ -350,6 +350,9 @@ bool XCoder::decodeSetHeader(uint16_t& len, uint16_t& sid) {
   if (len < kSetHeaderLen || len > kMaxSetLen) {
     throw FormatError("nonsensical set length; trying to decode non-IPFIX data?");
   }
+  
+  std::cerr << "decodeSetHeader() " << sid << ", length " << len << std::endl;
+
   
   return true;
 }

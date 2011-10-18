@@ -107,7 +107,7 @@ class XCoder {
                              uint32_t& export_time, 
                              uint32_t& sequence, 
                              uint32_t& domain);
-    bool decodeSetHeader(uint16_t& len, uint16_t& sid);
+    bool decodeSetHeader(uint16_t& sid, uint16_t& len);
       
   private:
     
