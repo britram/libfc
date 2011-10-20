@@ -6,16 +6,19 @@
 
 namespace IPFIX {
 
-typedef std::tr1::shared_ptr<class WireTemplate> WireTemplate_SP;
-
 class WireTemplate : public IETemplate {
   
 public:
 
   /** 
-   * Create a new WireTemplate.
+   * Create a new WireTemplate. 
+   *
    * Client code should use Session.getTemplate() instead, 
    * which automatically creates a new template when necessary.
+   *
+   * @param session Session which owns the template
+   * @param domain observation domain ID in which the template lives
+   * @param tid template identifier
    */
   WireTemplate(const Session* session, uint32_t domain, uint16_t tid):
     IETemplate(session, domain, tid) {}

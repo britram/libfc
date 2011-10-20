@@ -185,15 +185,15 @@ private:
   void default5103();
       
   // Information element registry. Keep canonical IEs by autopointer.
-  std::map<uint16_t, InfoElement_SP >
+  std::map<uint16_t, std::tr1::shared_ptr<InfoElement> >
                                 iana_registry_;
-  std::map<uint32_t, std::map<uint16_t, InfoElement_SP > >
+  std::map<uint32_t, std::map<uint16_t, std::tr1::shared_ptr<InfoElement> > >
                                 pen_registry_;
-  std::vector<InfoElement_SP >
+  std::vector<std::tr1::shared_ptr<InfoElement> >
                                 rle_registry_;
 
   // Information element name lookup. 
-  std::map<std::string, InfoElement_SP >
+  std::map<std::string, std::tr1::shared_ptr<InfoElement> >
                                 name_registry_;
   
   // Information element type lookup.

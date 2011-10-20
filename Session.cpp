@@ -20,10 +20,10 @@ WireTemplate* Session::getTemplate(uint32_t domain, uint16_t tid) {
   }
   
   IETemplateKey tk(domain, tid);
-  WireTemplate_SP tsp = tib_[tk];
+  std::tr1::shared_ptr<WireTemplate> tsp = tib_[tk];
   if (!tsp.get()) {
     std::cerr << "    miss, create new template" << std::endl;
-    tsp = WireTemplate_SP(new WireTemplate(this, domain, tid));
+    tsp = std::tr1::shared_ptr<WireTemplate>(new WireTemplate(this, domain, tid));
     tib_[tk] = tsp;
   }
   return tsp.get();
@@ -37,7 +37,7 @@ void Session::deleteTemplate(uint32_t domain, uint16_t tid) {
 std::list<const WireTemplate *> Session::activeTemplates(uint32_t domain) {
   std::list<const WireTemplate *> out;
   
-  for (TibIterator iter = tib_.begin();
+  for (TibIter iter = tib_.begin();
                    iter != tib_.end();
                    iter++) {
     if (domain == 0 || (*iter).first.first == domain) {

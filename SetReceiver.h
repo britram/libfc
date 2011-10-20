@@ -9,9 +9,7 @@
 namespace IPFIX {
 
   class Collector;
-  
-  typedef std::tr1::shared_ptr<class SetReceiver> SetReceiver_SP;
-    
+      
   class SetReceiver {
     // collector iterates over sets, and calls a function 
     // with a xcoder pointing to the set base and the current template

@@ -17,7 +17,7 @@ void FileReader::ensureFP() {
   }
 }
 
-bool FileReader::_receiveMessage(MBuf& mbuf, Session_SP& session) {
+bool FileReader::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session) {
   int rv;
 
   // make sure we have a file to read from

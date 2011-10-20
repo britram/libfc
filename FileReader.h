@@ -21,12 +21,12 @@ public:
 protected:
   void ensureFP();
 
-  virtual bool _receiveMessage(MBuf& mbuf, Session_SP& session);
+  virtual bool _receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session);
   
 private:
-  Session_SP    session_;
-  std::string   filename_;
-  mutable FILE *fp_;
+  std::tr1::shared_ptr<Session>    session_;
+  std::string                      filename_;
+  mutable FILE                     *fp_;
 };
 
 } // namespace IPFIX

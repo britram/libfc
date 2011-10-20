@@ -32,13 +32,10 @@ namespace IPFIX {
 class Session;
 class IETemplate;
 
-// Typedefs for C++ generic insanity
-typedef std::tr1::shared_ptr<IETemplate>          IETemplate_SP;
-typedef std::tr1::shared_ptr<const IETemplate>    IETemplate_CSP;
-
+// typedef away some craziness
 typedef std::pair<uint32_t, uint16_t>            IETemplateKey;
 typedef std::vector<const InfoElement *>::const_iterator 
-                                                 IETemplateIterator;
+                                                 IETemplateIter;
 typedef boost::unordered_map<const InfoElement *, size_t, InfoElement::ptrIdHash, InfoElement::ptrIdEqual> 
                                                  IndexMap;
 
@@ -66,7 +63,7 @@ public:
   }
   
   bool containsAll(const IETemplate* rhs) const {
-    for (IETemplateIterator iter = rhs->begin(); iter != rhs->end(); iter++) {
+    for (IETemplateIter iter = rhs->begin(); iter != rhs->end(); iter++) {
       if (!contains(*iter)) return false;
     }
     return true;
@@ -80,13 +77,13 @@ public:
     return ies_.at(index_map_.at(ie))->len();
   }
 
-  IETemplateIterator begin() const { return ies_.begin(); } 
+  IETemplateIter begin() const { return ies_.begin(); } 
   
-  IETemplateIterator end() const { return ies_.end(); }
+  IETemplateIter end() const { return ies_.end(); }
       
   void dump(std::ostream& os) const {
     os << "# Template "<< domain_ << "/" << tid_ << std::endl; 
-    for (IETemplateIterator iter = ies_.begin();
+    for (IETemplateIter iter = ies_.begin();
          iter != ies_.end();
          iter++) {    
       os << (*iter)->toIESpec() << std::endl;

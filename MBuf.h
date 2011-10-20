@@ -16,7 +16,7 @@ namespace IPFIX {
     size_t      off;
   };
 
-  typedef std::list<SetListEntry>::iterator       SetListIterator;
+  typedef std::list<SetListEntry>::iterator       SetListIter;
 
 /**
  * Represents a deframed IPFIX Message received at a collector
@@ -68,8 +68,8 @@ namespace IPFIX {
       return true;
     }
     
-    SetListIterator begin() {return setlist_.begin();}
-    SetListIterator end() {return setlist_.end();}
+    SetListIter begin() {return setlist_.begin();}
+    SetListIter end() {return setlist_.end();}
     
     void transcodeBy(XCoder& xc) { xc.setBase(buf_, len_); }
 

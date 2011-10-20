@@ -61,7 +61,7 @@ void WireTemplate::clear() {
 
 void WireTemplate::mimic(const IETemplate& rhs) {
     clear();
-    for (IETemplateIterator i = rhs.begin(); i != rhs.end(); ++i) {
+    for (IETemplateIter i = rhs.begin(); i != rhs.end(); ++i) {
         add(*i);
     }
     activate();
@@ -72,7 +72,7 @@ void WireTemplate::mimic(const IETemplate& rhs) {
 // {
 //   std::list<TCEntry> plan;
 //   
-//   for (IETemplateIterator iter = ies_.begin();
+//   for (IETemplateIter iter = ies_.begin();
 //        iter != ies_.end();
 //        iter++) {
 //     if (struct_tmpl.contains(*iter)) {
@@ -104,7 +104,7 @@ void WireTemplate::mimic(const IETemplate& rhs) {
 //   //       When we move to varlen encoding, we'll need to checkpoint and rollback.
 //   // FIXME this should be sped up by specifically building a transcode plan.
 //   encoder.checkpoint();
-//   for (TCEntryIterator iter = plan.begin();
+//   for (TCEntryIter iter = plan.begin();
 //        iter != plan.end();
 //        iter++) {
 //     if (iter->ie) {
@@ -140,7 +140,7 @@ bool WireTemplate::encode(XCoder& xc, const StructTemplate &struct_tmpl, void *s
   //       When we move to varlen encoding, we'll need to checkpoint and rollback.
   // FIXME this should be sped up by specifically building a transcode plan.
   xc.checkpoint();
-  for (IETemplateIterator iter = ies_.begin();
+  for (IETemplateIter iter = ies_.begin();
        iter != ies_.end();
        iter++) {
     if (struct_tmpl.contains(*iter)) {
@@ -185,7 +185,7 @@ bool WireTemplate::encodeTemplateRecord(XCoder &xc) const {
   
   // encode fields
   
-  for (IETemplateIterator iter = ies_.begin();
+  for (IETemplateIter iter = ies_.begin();
        iter != ies_.end();
        iter++) {
     if ((*iter)->pen()) {
@@ -219,7 +219,7 @@ bool WireTemplate::decode(XCoder& xc, const StructTemplate &struct_tmpl, void *s
   //       When we move to varlen encoding, we'll need to checkpoint and rollback.
   // FIXME this should be sped up by building a transcode plan.
   xc.checkpoint();
-  for (IETemplateIterator iter = ies_.begin();
+  for (IETemplateIter iter = ies_.begin();
        iter != ies_.end();
        iter++) {
     if (struct_tmpl.contains(*iter)) {

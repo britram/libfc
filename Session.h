@@ -10,9 +10,7 @@
 
 namespace IPFIX {
 
-typedef std::tr1::shared_ptr<class Session>                   Session_SP;
-
-typedef std::map<IETemplateKey, WireTemplate_SP>::iterator    TibIterator;
+typedef std::map<IETemplateKey, std::tr1::shared_ptr<WireTemplate> >::iterator    TibIter;
 
 class Session {
 public:
@@ -36,7 +34,7 @@ public:
 private:
   const InfoModel*                                          model_;
   std::map<uint32_t, uint32_t>                              next_seq_;
-  std::map<IETemplateKey, WireTemplate_SP>                  tib_;
+  std::map<IETemplateKey, std::tr1::shared_ptr<WireTemplate> >                  tib_;
 };
 
 }

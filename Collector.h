@@ -8,8 +8,8 @@
 
 namespace IPFIX {
 
-  typedef std::map<IETemplate_CSP, SetReceiver_SP>::const_iterator ReceiverListIterator;
-  typedef std::map<IETemplateKey, SetReceiver_SP>::const_iterator ReceiverCacheIterator;
+  typedef std::map<std::tr1::shared_ptr<const IETemplate>, std::tr1::shared_ptr<SetReceiver> >::const_iterator ReceiverListIter;
+  typedef std::map<IETemplateKey, std::tr1::shared_ptr<SetReceiver> >::const_iterator ReceiverCacheIter;
   
   class Collector {
     
@@ -19,8 +19,6 @@ namespace IPFIX {
     virtual ~Collector() {}
     
     // register a set receiver for an exemplar template
-    // FIXME this is a really broken use of shared pointers
-    // need to review ownership
     // FIXME it's probably more C++ish to take an object and call () on it.
     // determine the most properly idiomatic way to do that.
     void registerReceiver(const IETemplate* mintmpl, SetReceiver* receiver);
@@ -48,18 +46,23 @@ namespace IPFIX {
                       from which message was received
      * @return true if message available, false otherwise
      */
-    virtual bool _receiveMessage(MBuf& mbuf, Session_SP& session) = 0;
+    virtual bool _receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session) = 0;
     
-    Session_SP getSession(const int sessionKey);
+    /**
+     * Get a session for a given session key. Creates a new session if
+     * no session exists for the given key.
+     */
+    std::tr1::shared_ptr<Session> getSession(const int sessionKey);
+    
     void endSession(const int sessionKey);
     
   private:
     
     const InfoModel*                                        model_;
     MBuf                                                    buf_;
-    std::map<int, Session_SP>                               sessions_;
-    std::map<IETemplate_CSP, SetReceiver_SP>                 receivers_;
-    std::map<IETemplateKey, SetReceiver_SP>                 receiver_cache_;
+    std::map<int, std::tr1::shared_ptr<Session> >           sessions_;
+    std::map<std::tr1::shared_ptr<const IETemplate>, std::tr1::shared_ptr<SetReceiver> > receivers_;
+    std::map<IETemplateKey, std::tr1::shared_ptr<SetReceiver> > receiver_cache_;
   };
   
 } // namespace IPFIX

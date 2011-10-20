@@ -7,8 +7,6 @@
 #include "IEType.h"
 
 namespace IPFIX {
-  
-typedef std::tr1::shared_ptr<class InfoElement> InfoElement_SP;
 
 /**
  * Immutable class representing an IPFIX Information Element. InfoElements 
@@ -168,7 +166,7 @@ private:
   uint16_t      number_;
   const IEType* ietype_;
   uint16_t      len_;
-  mutable std::map<uint16_t, InfoElement_SP > rle_;
+  mutable std::map<uint16_t, std::tr1::shared_ptr<InfoElement> > rle_;
 };
 
 }
