@@ -17,6 +17,12 @@
 #include "IEType.h"
 #include "InfoElement.h"
 
+//Brian this may be refactored according to the singleton pattern 
+//thread safety has to be enforced in case new Infoelements have to be added at runtime
+
+
+
+
 namespace IPFIX {
 
 /**
