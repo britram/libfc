@@ -39,23 +39,15 @@ uint64_t sys_ms() {
            static_cast<uint64_t>(tv.tv_usec) / 1000;
 }
 void makeSimpleFlowTemplate(InfoModel& model, StructTemplate& sfstmpl) {
-    sfstmpl.add(model.lookupIE("flowStartMilliseconds"),    
-        offsetof(SimpleFlow, flowStartMilliseconds));
-    sfstmpl.add(model.lookupIE("flowEndMilliseconds"),      
-        offsetof(SimpleFlow, flowEndMilliseconds));
-    sfstmpl.add(model.lookupIE("sourceIPv4Address"),        
-        offsetof(SimpleFlow, sourceIPv4Address));
-    sfstmpl.add(model.lookupIE("destinationIPv4Address"),   
-        offsetof(SimpleFlow, destinationIPv4Address));
-    sfstmpl.add(model.lookupIE("sourceTransportPort"),      
-        offsetof(SimpleFlow, sourceTransportPort));
-    sfstmpl.add(model.lookupIE("destinationTransportPort"), 
-        offsetof(SimpleFlow, destinationTransportPort));
-    sfstmpl.add(model.lookupIE("packetDeltaCount[4]"),      
-        offsetof(SimpleFlow, packetDeltaCount));
+    sfstmpl.add(model.lookupIE("flowStartMilliseconds"),    offsetof(SimpleFlow, flowStartMilliseconds));
+    sfstmpl.add(model.lookupIE("flowEndMilliseconds"),      offsetof(SimpleFlow, flowEndMilliseconds));
+    sfstmpl.add(model.lookupIE("sourceIPv4Address"),        offsetof(SimpleFlow, sourceIPv4Address));
+    sfstmpl.add(model.lookupIE("destinationIPv4Address"),   offsetof(SimpleFlow, destinationIPv4Address));
+    sfstmpl.add(model.lookupIE("sourceTransportPort"),      offsetof(SimpleFlow, sourceTransportPort));
+    sfstmpl.add(model.lookupIE("destinationTransportPort"), offsetof(SimpleFlow, destinationTransportPort));
+    sfstmpl.add(model.lookupIE("packetDeltaCount[4]"),      offsetof(SimpleFlow, packetDeltaCount));
     sfstmpl.activate();
 }
-
 
 void makeCapfixPacketTemplate(InfoModel& model, StructTemplate& cpstmpl) {
     cpstmpl.add(model.lookupIE("observationTimeMilliseconds"), 

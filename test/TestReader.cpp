@@ -1,4 +1,5 @@
 #include "TestCommon.h"
+#include <cstdio>
 
 using namespace IPFIX;
 
@@ -25,10 +26,24 @@ public:
                        XCoder& setxc, 
                        const WireTemplate* settmpl) {
     SimpleFlow sf;
+    static int packet_count = 0;
     
     while (settmpl->decode(setxc, vst_, &sf)) {            
       incrSimpleFlow(vsf_);
       matchSimpleFlow(vsf_, sf);
+
+      fprintf(stdout, "[X %5u] %016llx - %016llx %08x:%04x -> %08x:%04x (%08x)\n",
+              packet_count, 
+              vsf_.flowStartMilliseconds, vsf_.flowEndMilliseconds, 
+              vsf_.sourceIPv4Address, vsf_.sourceTransportPort, 
+              vsf_.destinationIPv4Address, vsf_.destinationTransportPort,
+              vsf_.packetDeltaCount);      
+      fprintf(stdout, "[A %5u] %016llx - %016llx %08x:%04x -> %08x:%04x (%08x)\n",
+              packet_count++, 
+              sf.flowStartMilliseconds, sf.flowEndMilliseconds, 
+              sf.sourceIPv4Address, sf.sourceTransportPort, 
+              sf.destinationIPv4Address, sf.destinationTransportPort,
+              sf.packetDeltaCount);
     }
   }
 };

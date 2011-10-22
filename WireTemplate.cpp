@@ -150,6 +150,7 @@ bool WireTemplate::encode(XCoder& xc, const StructTemplate &struct_tmpl, void *s
         VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
         if (!xc.encode(vf, *iter)) goto err;
       } else {
+        std::cerr << "enc [" << off << ":" << (off + len) << "] to " << (*iter)->toIESpec() << std::endl;
         if (!xc.encode(struct_cp + off, len, *iter)) goto err;
       }
     } else {
@@ -184,7 +185,6 @@ bool WireTemplate::encodeTemplateRecord(XCoder &xc) const {
   (void) xc.encode(static_cast<uint16_t>(ies_.size()));
   
   // encode fields
-  
   for (IETemplateIter iter = ies_.begin();
        iter != ies_.end();
        iter++) {
@@ -211,7 +211,7 @@ bool WireTemplate::decode(XCoder& xc, const StructTemplate &struct_tmpl, void *s
   
   // Refuse to decode unless we have at _least_ minimum length avail.
   if (xc.avail() < minlen_) {
-    std::cerr << "decider overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
+    std::cerr << "decoder overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
     return false;
   }
   
@@ -229,6 +229,7 @@ bool WireTemplate::decode(XCoder& xc, const StructTemplate &struct_tmpl, void *s
         VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
         if (!xc.decode(vf, *iter)) goto err;
       } else {
+          std::cerr << "dec " << (*iter)->toIESpec() << " to [" << off << ":" << (off + len) << "]" << std::endl;
         if (!xc.decode(struct_cp + off, len, *iter)) goto err;
       }
     } 

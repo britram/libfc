@@ -206,6 +206,7 @@ void XCoder::encodeSetEnd() {
   cur_ = save;
 }
 
+// FIXME this does NOT WORK.
 bool XCoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
