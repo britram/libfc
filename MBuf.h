@@ -75,8 +75,8 @@ namespace IPFIX {
 
   private:
     // make me uncopyable
-    MBuf(MBuf& rhs) {};
-    MBuf& operator=(MBuf& rhs) {};
+    MBuf(MBuf& rhs);
+    MBuf& operator=(MBuf& rhs);
 
     void ensure(size_t length);
     bool consume(int fd, size_t len, size_t off);

@@ -12,7 +12,7 @@ int main (int argc, char *argv[]) {
     InfoModel model(10, false);
     
     // create a file exporter for stdout
-    FileWriter fw("-", &model, kTestDomain);
+    FileWriter fw("test.ipfix", &model, kTestDomain);
 
     // create templates for our structures
     StructTemplate sfstmpl;

@@ -57,12 +57,11 @@ void MBuf::populateSetlist(XCoder& xc, Session& session) {
   // Clear the set list
   setlist_.empty();
 
-
   while(xc.avail()) {
     SetListEntry sle;
 
     // read a set header into a set list entry
-    sle.off = xc.len() - kSetHeaderLen;
+    sle.off = xc.len();
     xc.decodeSetHeader(sle.id, sle.len);
 
     // handle templates, skip future magic sets
@@ -85,6 +84,7 @@ void MBuf::populateSetlist(XCoder& xc, Session& session) {
     } else {
       setlist_.push_back(sle);
       xc.advance(sle.len - kSetHeaderLen);
+      fprintf(stderr, "add set id %u offset %u length %u\n", sle.id, sle.off, sle.len);
     }
   }
 }

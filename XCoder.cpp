@@ -6,6 +6,12 @@
 
 namespace IPFIX {
 
+/* 
+ * Transcode left-justified. When copying from a smaller field to
+ * a larger field, zero pads the end of the field. When copying
+ * from a larger field to a smaller field, cuts bytes from the
+ * end of the field.
+ */
 static uint8_t *xcode_raw_left(uint8_t *src, size_t s_len, 
                                 uint8_t *dst, size_t d_len) {
   if (s_len >= d_len) {
@@ -19,6 +25,12 @@ static uint8_t *xcode_raw_left(uint8_t *src, size_t s_len,
   return dst;
 }
 
+/* 
+ * Transcode right-justified. When copying from a smaller field to
+ * a larger field, zero pads the beginning of the field. When copying
+ * from a larger field to a smaller field, cuts bytes from the
+ * beginning of the field.
+ */
 #if defined(BOOST_BIG_ENDIAN)
 static uint8_t *xcode_raw_right(uint8_t *src, size_t s_len, 
                                  uint8_t *dst, size_t d_len) {
@@ -208,6 +220,10 @@ void XCoder::encodeSetEnd() {
 
 // FIXME this does NOT WORK.
 bool XCoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
+  
+  fprintf(stderr, "xc 0x%016lx decode %50s at %4lu to 0x%016lx (len %lu)\n",
+    base_, ie->toIESpec().c_str(), cur_ - base_, val, len);
+  
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
   
@@ -351,9 +367,6 @@ bool XCoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {
   if (len < kSetHeaderLen || len > kMaxSetLen) {
     throw FormatError("nonsensical set length; trying to decode non-IPFIX data?");
   }
-  
-  std::cerr << "decodeSetHeader() " << sid << ", length " << len << std::endl;
-
   
   return true;
 }

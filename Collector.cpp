@@ -48,11 +48,12 @@ bool Collector::receiveMessage(MBuf& mbuf) {
       // No receiver, none registered. Skip it.
       break;
     } else {
-      // restrict transcoder to the set and skip the header
-      xc.subBuffer(sliter->off, sliter->len);
-      xc.advance(kSetHeaderLen);
+      // restrict transcoder to the set content
+      xc.focus(sliter->off + kSetHeaderLen, sliter->len - kSetHeaderLen);
       // handle set
       receiver->receive(this, xc, set_tmpl);
+      // and defocus
+      xc.defocus();
     }
   }
   

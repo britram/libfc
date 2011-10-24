@@ -75,12 +75,12 @@ void InfoModel::add(const InfoElement& ie) {
     name_registry_[ie.name()] = 
       pen_registry_[ie.pen()][ie.number()] = 
       std::tr1::shared_ptr<InfoElement>(new InfoElement(ie));
-    std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
+    //std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
   } else {
     name_registry_[ie.name()] = 
       iana_registry_[ie.number()] = 
       std::tr1::shared_ptr<InfoElement>(new InfoElement(ie));
-    std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
+    //std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
   }
 }
 

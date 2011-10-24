@@ -229,7 +229,9 @@ bool WireTemplate::decode(XCoder& xc, const StructTemplate &struct_tmpl, void *s
         VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
         if (!xc.decode(vf, *iter)) goto err;
       } else {
-          std::cerr << "dec " << (*iter)->toIESpec() << " to [" << off << ":" << (off + len) << "]" << std::endl;
+        //fprintf(stderr, "dec %-60s at 0x%016lx to [%u:%u] at 0x%016lx\n", 
+        //    (*iter)->toIESpec().c_str(), reinterpret_cast<long>(xc.cur()), 
+        //    off, off + len, reinterpret_cast<long>(struct_cp));
         if (!xc.decode(struct_cp + off, len, *iter)) goto err;
       }
     } 

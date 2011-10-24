@@ -57,7 +57,7 @@ int main (int argc, char *argv[]) {
     InfoModel model(10, false);
     
     // create a file exporter for stdout
-    FileReader fr("-", &model);
+    FileReader fr("test.ipfix", &model);
 
     // register them as minimal templates
     SimpleFlowReceiver sfsrecv(model);

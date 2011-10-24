@@ -42,36 +42,98 @@ class XCoder {
       cur_(NULL),
       check_(NULL),
       max_(NULL),
+      savemax_(NULL),
       msg_base_(NULL),
       set_base_(NULL)
     {}
     
+    /**
+     * Zero the buffer managed by the transcoder
+     */
     void zero() { memset(base_, 0, max_ - base_); }
 
+    /**
+     * Set the buffer used by the transcoder. This buffer must
+     * be owned by the client.
+     *
+     * @param buf base pointer to buffer
+     * @param sz size of bugger
+     */
+  
     void setBase(uint8_t *buf, size_t sz) { 
       base_ = buf; 
       cur_ = buf; 
       max_ = buf + sz;
     }
     
+    /**
+     * Return the length of content written to or read from
+     * the buffer to this point
+     */
     size_t len() const { return cur_ - base_; }
+  
+    /**
+     * Return the length of available content to be read from,
+     * or the space still available for writing to, the buffer
+     */
     size_t avail() const { return max_ - cur_; }
 
+    /**
+     * Return the base pointer to the buffer used by
+     * the transcoder.
+     */
     const uint8_t* base() const { return base_; }
+
+    /**
+     * Return the transcoder cursor
+     */
     const uint8_t* cur() const { return cur_; }
     
+    /**
+     * Checkpoint the buffer. 
+     * Saves the cursor for a subsequent call to rollback()
+     */
     void checkpoint() { check_ = cur_; }
+  
+    /**
+     * Restore the cursor to its state before the 
+     * most recent checkpoint() call.
+     */
     void rollback() { if (check_) cur_ = check_; }
 
-    void subBuffer(size_t off, size_t len) {
+    /**
+     * Focus the transcoder to a subset of the managed buffer.
+     * Moves the cursor to a given offset from the base, and sets
+     * a temporary maximum.
+     *
+     * @param off offset from the base() pointer to focus on; 
+     *            cursor starts here
+     * @param len length of the subset to focus on.
+     */
+    void focus(size_t off, size_t len) {
       checkpoint();
+      cur_ = base_ + off;
+      if (savemax_) {
+        throw std::logic_error("attempt to focus an already focused transcoder");
+      }
       savemax_ = max_;
       if (max_ > cur_ + len) max_ = cur_ + len;
+      fprintf(stderr, "xc 0x%016lx   focus from %u to %u\n",
+              base_, cur_ - base_, max_ - base_);
     }
-    
-    void desubBuffer() { 
+
+    /**
+     * Restore a transcoder to its state before a previous focus() call.
+     */  
+    void defocus() { 
+      if (!savemax_) {
+        throw std::logic_error("attempt to defocus a defocused transcoder");
+      }
       rollback();
       max_ = savemax_;
+      savemax_ = NULL;
+      fprintf(stderr, "xc 0x%016lx defocus from %u to %u\n",
+      base_, cur_ - base_, max_ - base_);
     }
 
     // Primitive for skipping forward in the buffer; also used for reading zeroes.
@@ -79,6 +141,7 @@ class XCoder {
       if (size > avail()) return false; 
       cur_ += size; return true;
     }
+  
     bool advance(const InfoElement *ie) { 
       return advance(ie->len()); 
     } 
