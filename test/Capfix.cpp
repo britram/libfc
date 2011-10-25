@@ -2,26 +2,36 @@
 
 using namespace IPFIX;
 
-gboolean cafAppendPacket(Exporter& e,
-                         const pcap_pkthdr* caphdr,
-                         const uint8_t* capbuf);
-                         fBuf_t                      *fbuf,
-                         const struct pcap_pkthdr    *caphdr,
-                         const uint8_t               *capbuf,
-                         GError                      **err)
-{
+bool exportPacket (Exporter& e,
+                   const pcap_pkthdr* caphdr,
+                   const uint8_t* capbuf);
   CapfixPacket pkt;
   
-  fbrec.observationTimeMilliseconds = (uint64_t)caphdr->ts.tv_sec * 1000;
-  fbrec.observationTimeMilliseconds += caphdr->ts.tv_usec / 1000;
-  fbrec.ipTotalLength = caphdr->len;
-  fbrec.ipHeaderPacketSection.len = (size_t)caphdr->caplen;
-  fbrec.ipHeaderPacketSection.buf = (uint8_t *)capbuf;
+  pkt.observationTimeMilliseconds = (uint64_t)caphdr->ts.tv_sec * 1000;
+  pkt.observationTimeMilliseconds += caphdr->ts.tv_usec / 1000;
+  pkt.ipTotalLength = caphdr->len;
+  pkt.ipHeaderPacketSection.len = (size_t)caphdr->caplen;
+  pkt.ipHeaderPacketSection.cp = (uint8_t *)capbuf;
   
-  if (!fBufSetExportTemplate(fbuf, PKT_TID, err)) return FALSE;
-  if (!fBufSetInternalTemplate(fbuf, PKT_TID, err)) return FALSE;
-  return fBufAppend(fbuf, (uint8_t *)&fbrec, sizeof(fbrec), err);
+  e.setTemplate(kCapfixPacketTid);
+  e.exportRecord(caftmpl, reinterpret_cast<void*>(&pkt));
 }
+
+bool importPacket (Transcoder& xc,
+                   const pcap_pkthdr* caphdr,
+                   const uint8_t* capbuf);
+CapfixPacket pkt;
+
+pkt.observationTimeMilliseconds = (uint64_t)caphdr->ts.tv_sec * 1000;
+pkt.observationTimeMilliseconds += caphdr->ts.tv_usec / 1000;
+pkt.ipTotalLength = caphdr->len;
+pkt.ipHeaderPacketSection.len = (size_t)caphdr->caplen;
+pkt.ipHeaderPacketSection.cp = (uint8_t *)capbuf;
+
+e.setTemplate(kCapfixPacketTid);
+e.exportRecord(caftmpl, reinterpret_cast<void*>(&pkt));
+}
+
 
 
 int main (int argc, char *argv[]) {
