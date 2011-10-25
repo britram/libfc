@@ -18,12 +18,8 @@ int main (int argc, char *argv[]) {
     StructTemplate sfstmpl;
     makeSimpleFlowTemplate(model, sfstmpl);
 
-    StructTemplate cpstmpl;
-    makeCapfixPacketTemplate(model, cpstmpl);
-
     // create (direct) export templates for these
     fw.getTemplate(kSimpleFlowTid)->mimic(sfstmpl);
-    fw.getTemplate(kCapfixPacketTid)->mimic(cpstmpl);
 
     // export them
     fw.exportTemplatesForDomain();
