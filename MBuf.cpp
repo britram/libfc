@@ -85,7 +85,7 @@ void MBuf::populateSetlist(Transcoder& xc, Session& session) {
     } else {
       setlist_.push_back(sle);
       xc.advance(sle.len - kSetHeaderLen);
-      fprintf(stderr, "add set id %u offset %u length %u\n", sle.id, sle.off, sle.len);
+//      fprintf(stderr, "add set id %u offset %u length %u\n", sle.id, sle.off, sle.len);
     }
   }
 }

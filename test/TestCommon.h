@@ -5,7 +5,7 @@ static const uint32_t kTestDomain = 0x00C0FFEE;
 static const uint32_t kSimpleFlowTid = 0xAB34;
 static const uint32_t kCapfixPacketTid = 0xAB35;
 
-static const int kMaxFlows = 10;
+static const int kMaxFlows = 100000;
 using namespace IPFIX;
 
 struct SimpleFlow {

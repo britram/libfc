@@ -6,6 +6,11 @@
 
 namespace IPFIX {
 
+const InfoElement Transcoder::u16ie("_internal_unsigned16",0,0,IEType::unsigned16(),sizeof(uint16_t));
+
+const InfoElement Transcoder::u32ie("_internal_unsigned32",0,0,IEType::unsigned16(),sizeof(uint16_t));
+
+  
 /* 
  * Transcode left-justified. When copying from a smaller field to
  * a larger field, zero pads the end of the field. When copying
@@ -46,6 +51,9 @@ static uint8_t *xcode_raw_right(uint8_t *src, size_t s_len,
 }
 #endif
 
+/* 
+ * Encode length as a varlen field
+ */
 static uint8_t *encode_varlen_length(uint8_t *dst, size_t varlen) {
   if (varlen < 255) {
     *dst++ = static_cast<uint8_t>(varlen);
@@ -110,10 +118,6 @@ bool Transcoder::encode(uint8_t* val, size_t len, const InfoElement* ie) {
   return true;
 }
 
-bool Transcoder::encode(const VarlenField* vf, const InfoElement *ie) {
-  return this->encode(vf->cp, vf->len, ie);
-}
-
 bool Transcoder::encodeZero(const InfoElement* ie) {
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
@@ -132,15 +136,6 @@ bool Transcoder::encodeZero(const InfoElement* ie) {
   return true;
 }
 
-bool Transcoder::encode(uint16_t val) {
-  static const InfoElement u16ie("",0,0,IEType::unsigned16(),sizeof(uint16_t));
-  return encode(reinterpret_cast<uint8_t *>(&val), sizeof(uint16_t), &u16ie);
-}
-
-bool Transcoder::encode(uint32_t val) {
-  static const InfoElement u32ie("",0,0,IEType::unsigned32(),sizeof(uint32_t));
-  return encode(reinterpret_cast<uint8_t *>(&val), sizeof(uint32_t), &u32ie);
-}
 
 bool Transcoder::encodeMessageStart() {
   if (msg_base_) {
@@ -218,11 +213,10 @@ void Transcoder::encodeSetEnd() {
   cur_ = save;
 }
 
-// FIXME this does NOT WORK.
 bool Transcoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
   
-  fprintf(stderr, "xc 0x%016lx decode %50s at %4lu to 0x%016lx (len %lu)\n",
-    base_, ie->toIESpec().c_str(), cur_ - base_, val, len);
+//  fprintf(stderr, "xc 0x%016lx decode %50s at %4lu to 0x%016lx (len %lu)\n",
+//    base_, ie->toIESpec().c_str(), cur_ - base_, val, len);
   
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
@@ -269,27 +263,6 @@ bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
   throw std::runtime_error("Varlen decode not implemented");
 }
 
-bool Transcoder::decode(uint16_t& val) {
-  static const InfoElement u16ie("",0,0,IEType::unsigned16(),sizeof(uint16_t));
-  uint16_t deval;
-  if (decode(reinterpret_cast<uint8_t *>(&deval), sizeof(uint16_t), &u16ie)) {
-    val = deval;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool Transcoder::decode(uint32_t& val) {
-  static const InfoElement u32ie("",0,0,IEType::unsigned32(),sizeof(uint32_t));
-  uint32_t deval;
-  if (decode(reinterpret_cast<uint8_t *>(&deval), sizeof(uint32_t), &u32ie)) {
-    val = deval;
-    return true;
-  } else {
-    return false;
-  }
-}
 
 
 bool Transcoder::decodeMessageHeader(uint16_t& len, 

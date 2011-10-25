@@ -150,7 +150,6 @@ bool WireTemplate::encode(Transcoder& xc, const StructTemplate &struct_tmpl, voi
         VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
         if (!xc.encode(vf, *iter)) goto err;
       } else {
-        std::cerr << "enc [" << off << ":" << (off + len) << "] to " << (*iter)->toIESpec() << std::endl;
         if (!xc.encode(struct_cp + off, len, *iter)) goto err;
       }
     } else {
