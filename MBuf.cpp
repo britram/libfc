@@ -39,7 +39,8 @@ bool MBuf::consume(FILE *fp, size_t len, size_t off) {
 
 void MBuf::ensure(size_t length) {
   if (bufsz_ > length) return;
-  
+
+  // FIXME do something smarter here
   if (buf_) {
     buf_ = reinterpret_cast<uint8_t *>(realloc(buf_, length));
   } else {

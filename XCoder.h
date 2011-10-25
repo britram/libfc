@@ -8,10 +8,11 @@
 namespace IPFIX {
 
 /**
- * Use to represent variable-length IEs in structures represented by
- * VarlenTemplates. Content will be copied to message on encode. Pointer
- * will point inside the set buffer on decode, and must be copied or
- * processed before set processing is completed.
+ * Represents a variable-length field in a C structure described by a
+ * StructTemplate. Content will be copied to message on encode. Pointer
+ * will point inside the a libfc-internal set buffer on decode, 
+ * and must be copied before the set is processed (i.e., within
+ * SetReceiver.receive().
  */
 
 struct VarlenField {
@@ -33,6 +34,20 @@ public:
     std::runtime_error(what_arg) {}
 };
 
+/**
+ * A libfc transcoder. Transcoders handle low-level encoding, decoding,
+ * and endianness issues. Each transcoder wraps an external buffer,
+ * owned by the client.
+ *
+ * Transcoders are used extensively within libfc's internals (Exporter
+ * and Collector). They are only exposed to libfc clients through the
+ * SetReceiver interface. See the documentation for SetReceiver.receive()
+ * for detailed information.
+ *
+ * FIXME this class is rather cavalier about copyability and constness.
+ *       fix this.
+ */
+  
 class XCoder {
   
   public:
@@ -118,8 +133,8 @@ class XCoder {
       }
       savemax_ = max_;
       if (max_ > cur_ + len) max_ = cur_ + len;
-      fprintf(stderr, "xc 0x%016lx   focus from %u to %u\n",
-              base_, cur_ - base_, max_ - base_);
+//      fprintf(stderr, "xc 0x%016lx   focus from %u to %u\n",
+//              base_, cur_ - base_, max_ - base_);
     }
 
     /**
@@ -132,14 +147,20 @@ class XCoder {
       rollback();
       max_ = savemax_;
       savemax_ = NULL;
-      fprintf(stderr, "xc 0x%016lx defocus from %u to %u\n",
-      base_, cur_ - base_, max_ - base_);
+//      fprintf(stderr, "xc 0x%016lx defocus from %u to %u\n",
+//              base_, cur_ - base_, max_ - base_);
     }
 
-    // Primitive for skipping forward in the buffer; also used for reading zeroes.
-    bool advance(size_t size) { 
-      if (size > avail()) return false; 
-      cur_ += size; return true;
+    /**
+     * Skip octets in the transcoder by advancing the cursor.
+     *
+     * @param len number of octets to skip
+     * @return true if len octets are available and were 
+     *         skipped, false otherwise.
+     */
+    bool advance(size_t len) { 
+      if (len > avail()) return false; 
+      cur_ += len; return true;
     }
   
     bool advance(const InfoElement *ie) { 
