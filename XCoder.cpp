@@ -1,4 +1,4 @@
-#include "XCoder.h"
+#include "Transcoder.h"
 #include "Constants.h" 
 #include "IETemplate.h" 
 
@@ -73,7 +73,7 @@ static void xcode_swap(uint8_t *buf, size_t len) {
   }
 }
 
-bool XCoder::encode(uint8_t* val, size_t len, const InfoElement* ie) {
+bool Transcoder::encode(uint8_t* val, size_t len, const InfoElement* ie) {
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
   
@@ -110,11 +110,11 @@ bool XCoder::encode(uint8_t* val, size_t len, const InfoElement* ie) {
   return true;
 }
 
-bool XCoder::encode(const VarlenField* vf, const InfoElement *ie) {
+bool Transcoder::encode(const VarlenField* vf, const InfoElement *ie) {
   return this->encode(vf->cp, vf->len, ie);
 }
 
-bool XCoder::encodeZero(const InfoElement* ie) {
+bool Transcoder::encodeZero(const InfoElement* ie) {
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
   
@@ -132,17 +132,17 @@ bool XCoder::encodeZero(const InfoElement* ie) {
   return true;
 }
 
-bool XCoder::encode(uint16_t val) {
+bool Transcoder::encode(uint16_t val) {
   static const InfoElement u16ie("",0,0,IEType::unsigned16(),sizeof(uint16_t));
   return encode(reinterpret_cast<uint8_t *>(&val), sizeof(uint16_t), &u16ie);
 }
 
-bool XCoder::encode(uint32_t val) {
+bool Transcoder::encode(uint32_t val) {
   static const InfoElement u32ie("",0,0,IEType::unsigned32(),sizeof(uint32_t));
   return encode(reinterpret_cast<uint8_t *>(&val), sizeof(uint32_t), &u32ie);
 }
 
-bool XCoder::encodeMessageStart() {
+bool Transcoder::encodeMessageStart() {
   if (msg_base_) {
     throw std::logic_error("out-of-sequence call to encodeMessageStart()");
   }
@@ -156,7 +156,7 @@ bool XCoder::encodeMessageStart() {
   return advance(kMessageHeaderLen);
 }
 
-void XCoder::encodeMessageEnd(uint32_t export_time, uint32_t sequence, uint32_t domain) {
+void Transcoder::encodeMessageEnd(uint32_t export_time, uint32_t sequence, uint32_t domain) {
   if (!msg_base_) {
     throw std::logic_error("out-of-sequence call to encodeMessageEnd()");
   }
@@ -178,7 +178,7 @@ void XCoder::encodeMessageEnd(uint32_t export_time, uint32_t sequence, uint32_t 
   cur_ = save;
 }
 
-bool XCoder::encodeSetStart(uint16_t set_id) {
+bool Transcoder::encodeSetStart(uint16_t set_id) {
   if (set_base_) {
     throw std::logic_error("out-of-sequence call to encodeSetStart()");
   }
@@ -198,7 +198,7 @@ bool XCoder::encodeSetStart(uint16_t set_id) {
   return true;
 }
 
-void XCoder::encodeSetEnd() {
+void Transcoder::encodeSetEnd() {
   if (!set_base_) {
     throw std::logic_error("out-of-sequence call to encodeSetEnd()");
   }
@@ -219,7 +219,7 @@ void XCoder::encodeSetEnd() {
 }
 
 // FIXME this does NOT WORK.
-bool XCoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
+bool Transcoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
   
   fprintf(stderr, "xc 0x%016lx decode %50s at %4lu to 0x%016lx (len %lu)\n",
     base_, ie->toIESpec().c_str(), cur_ - base_, val, len);
@@ -259,7 +259,7 @@ bool XCoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
   return true;
 }
 
-bool XCoder::decode(VarlenField *vf, const InfoElement *ie) {
+bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
   // FIXME need to write this
   // what does this need to do?
   // get the length of the information element from the IE
@@ -269,7 +269,7 @@ bool XCoder::decode(VarlenField *vf, const InfoElement *ie) {
   throw std::runtime_error("Varlen decode not implemented");
 }
 
-bool XCoder::decode(uint16_t& val) {
+bool Transcoder::decode(uint16_t& val) {
   static const InfoElement u16ie("",0,0,IEType::unsigned16(),sizeof(uint16_t));
   uint16_t deval;
   if (decode(reinterpret_cast<uint8_t *>(&deval), sizeof(uint16_t), &u16ie)) {
@@ -280,7 +280,7 @@ bool XCoder::decode(uint16_t& val) {
   }
 }
 
-bool XCoder::decode(uint32_t& val) {
+bool Transcoder::decode(uint32_t& val) {
   static const InfoElement u32ie("",0,0,IEType::unsigned32(),sizeof(uint32_t));
   uint32_t deval;
   if (decode(reinterpret_cast<uint8_t *>(&deval), sizeof(uint32_t), &u32ie)) {
@@ -292,7 +292,7 @@ bool XCoder::decode(uint32_t& val) {
 }
 
 
-bool XCoder::decodeMessageHeader(uint16_t& len, 
+bool Transcoder::decodeMessageHeader(uint16_t& len, 
                                  uint32_t& export_time, 
                                  uint32_t& sequence, 
                                  uint32_t& domain) {
@@ -345,7 +345,7 @@ bool XCoder::decodeMessageHeader(uint16_t& len,
   return true;
 }
 
-bool XCoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {                                   
+bool Transcoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {                                   
 
   if (kSetHeaderLen > avail()) {
     return false;

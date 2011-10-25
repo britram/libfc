@@ -4,7 +4,7 @@
 #include <ctime>
 #include <stdexcept>
 #include "IETemplate.h"
-#include "XCoder.h"
+#include "Transcoder.h"
 
 namespace IPFIX {
 
@@ -17,7 +17,7 @@ namespace IPFIX {
     // note that this needs restrictable xcoders to work.
   public:    
     virtual void receive(const Collector* collector, 
-                         XCoder& setxc, 
+                         Transcoder& setxc, 
                          const WireTemplate* iet) = 0;
     
     // setreceiver may supply helpers for doing this

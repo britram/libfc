@@ -23,7 +23,7 @@ public:
   }
   
   virtual void receive(const Collector* collector, 
-                       XCoder& setxc, 
+                       Transcoder& setxc, 
                        const WireTemplate* settmpl) {
     SimpleFlow sf;
     static int packet_count = 0;

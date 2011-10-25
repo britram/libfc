@@ -48,11 +48,11 @@ public:
  *       fix this.
  */
   
-class XCoder {
+class Transcoder {
   
   public:
         
-    XCoder():
+    Transcoder():
       base_(NULL),
       cur_(NULL),
       check_(NULL),

@@ -29,7 +29,7 @@ public:
   
   std::list<const WireTemplate *>activeTemplates(uint32_t domain);
 
-  bool decodeTemplateRecord(XCoder& xc, uint32_t domain);
+  bool decodeTemplateRecord(Transcoder& xc, uint32_t domain);
 
 private:
   const InfoModel*                                          model_;

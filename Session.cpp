@@ -48,7 +48,7 @@ std::list<const WireTemplate *> Session::activeTemplates(uint32_t domain) {
   return out;
 }
 
-bool Session::decodeTemplateRecord(XCoder &xc, uint32_t domain) {
+bool Session::decodeTemplateRecord(Transcoder &xc, uint32_t domain) {
   
   // Ensure template record header is available
   if (xc.avail() < kTemplateHeaderLen) {

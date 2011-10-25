@@ -36,7 +36,7 @@ namespace IPFIX {
     
     // This is moronic, but g++ isn't smart enough to link this unless it's in the damn header.
     template <typename T> bool deframe(T source, Session& session) {
-      XCoder xc;
+      Transcoder xc;
   
       // Get the message header from the source
       ensure(kMessageHeaderLen);
@@ -71,7 +71,7 @@ namespace IPFIX {
     SetListIter begin() {return setlist_.begin();}
     SetListIter end() {return setlist_.end();}
     
-    void transcodeBy(XCoder& xc) { xc.setBase(buf_, len_); }
+    void transcodeBy(Transcoder& xc) { xc.setBase(buf_, len_); }
 
   private:
     // make me uncopyable
@@ -81,7 +81,7 @@ namespace IPFIX {
     void ensure(size_t length);
     bool consume(int fd, size_t len, size_t off);
     bool consume(FILE *fp, size_t len, size_t off);
-    void populateSetlist(XCoder& xc, Session& session);
+    void populateSetlist(Transcoder& xc, Session& session);
     
     uint8_t                                   *buf_;
     size_t                                    bufsz_;

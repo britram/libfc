@@ -1,5 +1,5 @@
 #include "MBuf.h"
-#include "XCoder.h"
+#include "Transcoder.h"
 #include "Constants.h"
 
 #include <cerrno>
@@ -54,7 +54,7 @@ void MBuf::ensure(size_t length) {
   }
 }
 
-void MBuf::populateSetlist(XCoder& xc, Session& session) {
+void MBuf::populateSetlist(Transcoder& xc, Session& session) {
   // Clear the set list
   setlist_.empty();
 

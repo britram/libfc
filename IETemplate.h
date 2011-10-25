@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <boost/unordered_map.hpp>
 #include "InfoElement.h"
-#include "XCoder.h"
+#include "Transcoder.h"
 #include "Constants.h"
 
 namespace IPFIX {

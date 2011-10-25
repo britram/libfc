@@ -4,7 +4,7 @@
 #include <ctime>
 #include <stdexcept>
 #include "Session.h"
-#include "XCoder.h"
+#include "Transcoder.h"
 
 namespace IPFIX {
 
@@ -50,7 +50,7 @@ private:
   
   
   uint8_t*                  buf_;
-  XCoder                    xcoder_;
+  Transcoder                    xcoder_;
   uint16_t                  set_id_;
   bool                      msg_empty_;
   bool                      set_active_;

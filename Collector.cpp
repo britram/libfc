@@ -9,7 +9,7 @@ bool Collector::receiveMessage(MBuf& mbuf) {
   if (!this->_receiveMessage(mbuf, session)) return false;
   
   std::tr1::shared_ptr<SetReceiver> receiver;
-  XCoder xc;
+  Transcoder xc;
   mbuf.transcodeBy(xc);
   
   // Iterate over sets

@@ -28,7 +28,7 @@ public:
   /* a template should be able to provide a transcode plan from another template. */
   // FIXME doesn't build
   // std::list<IPFIX::TCEntry> planTranscode(const IETemplate &struct_tmpl) const;
-  // bool encode(XCoder& encoder, const std::list<TCEntry>& plan, void *struct_vp) const;
+  // bool encode(Transcoder& encoder, const std::list<TCEntry>& plan, void *struct_vp) const;
 
   void clear();
   
@@ -36,11 +36,11 @@ public:
 
   virtual void add(const InfoElement* ie, size_t offset = 0);
   
-  bool encode(XCoder& encoder, const StructTemplate &struct_tmpl, void *struct_vp) const;
+  bool encode(Transcoder& encoder, const StructTemplate &struct_tmpl, void *struct_vp) const;
   
-  bool encodeTemplateRecord(XCoder& xcoder) const;
+  bool encodeTemplateRecord(Transcoder& xcoder) const;
   
-  bool decode(XCoder& decoder, const StructTemplate &struct_tmpl, void *struct_vp) const;
+  bool decode(Transcoder& decoder, const StructTemplate &struct_tmpl, void *struct_vp) const;
 
 private:
     WireTemplate():
