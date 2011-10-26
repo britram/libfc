@@ -1,3 +1,18 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ * 
+ * Defines the abstract collector interface.
+ *
+ * To receive IPFIX Messages, client code should create an instance
+ * of a Collector subclass for the necessary transport, register
+ * a SetReceiver for each type of message you want to receive, and
+ * continually call receiveMessage() in your runloop to receive messages.
+ */
+
+
 #ifndef IPFIX_COLLECTOR_H // idem
 #define IPFIX_COLLECTOR_H // hack
 

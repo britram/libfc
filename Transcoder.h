@@ -1,7 +1,24 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ * 
+ * Defines the libfc transcoder interface.
+ *
+ * Transcoders are used for low-level message encoding and decoding, 
+ * and wrap a non-owned buffer with an encode and decode interface.
+ *
+ * Transcoders are only exposed to client code through the SetReceiver
+ * interface; see SetReceiver.h and Collector.h for more.
+ */
+
 #ifndef IPFIX_XCODER_H // idem
 #define IPFIX_XCODER_H // hack
 
 #include <cstring>
+#include <cerrno>
+#include <stdexcept>
 #include <stdint.h>
 #include "InfoElement.h"
 
@@ -22,12 +39,24 @@ namespace IPFIX {
     uint8_t*  cp;
   };
   
+  /**
+   * Runtime error thrown when a low-level IO error occurs during transcoding.
+   * FIXME make sure this gets used properly
+   */
   class IOError : public std::runtime_error {
   public:
+    IOError():
+    std::runtime_error(strerror(errno));
+    
     explicit IOError(const std::string& what_arg): 
     std::runtime_error(what_arg) {}
   };
   
+  /**
+   * Runtime error thrown during decoding when a message is poorly formatted.
+   * Usually indicates that the input stream isn't really IPFIX.
+   * FIXME make sure this gets used properly
+   */
   class FormatError : public std::runtime_error {
   public:
     explicit FormatError(const std::string& what_arg): 

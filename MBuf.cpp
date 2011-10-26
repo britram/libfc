@@ -2,9 +2,7 @@
 #include "Transcoder.h"
 #include "Constants.h"
 
-#include <cerrno>
-#include <cstring>
-#include <stdexcept>
+
 
 namespace IPFIX {
 
