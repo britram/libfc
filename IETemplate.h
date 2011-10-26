@@ -34,8 +34,10 @@ class IETemplate;
 
 // typedef away some craziness
 typedef std::pair<uint32_t, uint16_t>            IETemplateKey;
+  
 typedef std::vector<const InfoElement *>::const_iterator 
                                                  IETemplateIter;
+  
 typedef boost::unordered_map<const InfoElement *, size_t, InfoElement::ptrIdHash, InfoElement::ptrIdEqual> 
                                                  IndexMap;
 
@@ -56,7 +58,11 @@ public:
 
   bool active() const { return active_; }
 
+  uint32_t domain() const { return domain_; }
+  
   uint16_t tid() const { return tid_; }
+  
+  const IETemplateKey& key() const {return IETemplateKey(domain_, tid_);}
   
   bool contains(const InfoElement* ie) const {
     return index_map_.count(ie);

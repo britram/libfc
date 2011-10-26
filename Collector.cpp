@@ -1,7 +1,30 @@
 #include "Collector.h"
 
 namespace IPFIX {
-    
+
+const std::tr1::shared_ptr<SetReceiver>& Collector::receiverForTemplate(const WireTemplate* wt) {
+  IETemplateKey wtk = wt->key();
+  
+  // first look in the receiver cache
+  ReceiverCacheIter rciter = receiver_cache_.find(wtk);
+  if (rciter != receiver_cache_.end()) {
+    return rciter->second;
+  }
+  
+  // nope, look in the receiver list
+  for (ReceiverListIter rliter = receivers_.begin();
+                        rliter != receivers_.end();
+                        rliter++) {
+    if (wt->containsAll(rliter->first.get())) {
+      receiver_cache_[wtk] = rliter->second;
+      return rliter->second;
+    }
+  }
+  
+  // If we're here, we missed completely
+  return std::tr1::shared_ptr<SetReceiver>();
+}
+  
 bool Collector::receiveMessage(MBuf& mbuf) {
   std::tr1::shared_ptr<Session> session;
   
@@ -16,45 +39,25 @@ bool Collector::receiveMessage(MBuf& mbuf) {
   for (SetListIter sliter = mbuf.begin(); sliter != mbuf.end(); sliter++) {
     const WireTemplate* set_tmpl = 
           session->getTemplate(mbuf.domain(), sliter->id);
+
     if (!set_tmpl->active()) {
       // Inactive set template means that the template hasn't been 
-      // read in yet. Skip. We might want to count these later.
+      // received yet. Skip. We might want to count these later.
       break;
     }
     
-    // Look for a receiver for this set in the receiver cache 
-    IETemplateKey tk(mbuf.domain(), sliter->id);
-    
-    ReceiverCacheIter rciter = receiver_cache_.find(tk);
-    if (rciter != receiver_cache_.end()) {
-      // In cache, take the first one
-      receiver = rciter->second;
-    } else {
-      for (ReceiverListIter rliter = receivers_.begin();
-                                rliter != receivers_.end();
-                                rliter++) {
-        // Search the receivers
-        if (set_tmpl->containsAll(rliter->first.get())) {
-          // Found one. Stick it in the cache
-          // FIXME how to invalidate this cache?
-          receiver = rliter->second;
-          receiver_cache_[tk] = receiver;
-          break;
-        }
-      }
-    }
-    
+    receiver = receiverForTemplate(set_tmpl);
     if (receiver.get() == NULL) {
       // No receiver, none registered. Skip it.
       break;
-    } else {
-      // restrict transcoder to the set content
-      xc.focus(sliter->off + kSetHeaderLen, sliter->len - kSetHeaderLen);
-      // handle set
-      receiver->receive(this, xc, set_tmpl);
-      // and defocus
-      xc.defocus();
     }
+    
+    // restrict transcoder to the set content
+    xc.focus(sliter->off + kSetHeaderLen, sliter->len - kSetHeaderLen);
+    // handle set
+    receiver->receive(this, xc, set_tmpl);
+    // and defocus
+    xc.defocus();
   }
   
   return true;

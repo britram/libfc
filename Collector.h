@@ -33,18 +33,48 @@ namespace IPFIX {
     Collector(const InfoModel* model) : model_(model) {}
     virtual ~Collector() {}
     
-    // register a set receiver for an exemplar template
-    // FIXME it's probably more C++ish to take an object and call () on it.
-    // determine the most properly idiomatic way to do that.
+    /**
+     * Register a SetReceiver instance for a given minimal template. 
+     * As new templates are received at the collector, they will be
+     * compared to this minimal template. The first minimal template found
+     * (in order of calls to registerReceiver()) such that all the IEs
+     * in the minimal template appear in the newly received template 
+     * will bind the new template to this receiver.
+     *
+     * @param mintmpl minimal template associated with the receiver.
+     * @param receiver receiver to bind
+     */
     void registerReceiver(const IETemplate* mintmpl, SetReceiver* receiver);
         
     // process the next message from this collector
     // this is the entry point to the collector runloop, the collector must 
     // check for new peers here, and so on. returns true if a message was
     // collected, false if none was available
+    
+    /**
+     * Receive and process the next message sent to this collector.
+     *
+     * Calls the receive() method on any registered receiver matching
+     * templates in the received message. Allows the caller to pass in
+     * a message buffer by reference; for instance, to save on message
+     * buffer reallocation or to implement delayed message processing.
+     *
+     * @param mbuf message buffer to use for; will be overwritten with
+     *             received message content.
+     * @return true if a message was received, false otherwise.
+     */
+    
     bool receiveMessage(MBuf& mbuf);
     
-    // receive a message with a throwaway message buffer
+    /**
+     * Receive and process the next message sent to this collector.
+     *
+     * Calls the receive() method on any registered receiver matching
+     * templates in the received message. Uses a transient message
+     * buffer.
+     *
+     * @return true if a message was received, false otherwise.
+     */
     bool receiveMessage() {
       MBuf transient_mbuf;
       return this->receiveMessage(transient_mbuf);
@@ -56,6 +86,8 @@ namespace IPFIX {
      * Receive and deframe the next message into the given message buffer;
      * return the session on which it was received by reference.
      *
+     * Implemented by subclasses to provide transport-specific deframing.
+     *
      * @param mbuf buffer to deframe message into
      * @param session (returned by reference) shared pointer to session 
                       from which message was received
@@ -66,13 +98,45 @@ namespace IPFIX {
     /**
      * Get a session for a given session key. Creates a new session if
      * no session exists for the given key.
+     *
+     * Used by subclasses to map session keys to sessions.
+     *
+     * @param sessionKey integer identifying the session; e.g. a file descriptor.
+     * @return shared pointer to the session
      */
     std::tr1::shared_ptr<Session> getSession(const int sessionKey);
     
+    /**
+     * Discard the session for a given session key.
+     *
+     * Used by subclasses to end sessions on session shutdown.
+     *
+     * @param sessionKey integer identifying the session; e.g. a file descriptor.
+     */
     void endSession(const int sessionKey);
     
   private:
+
+    /**
+     * Get the receiver for a given wire template. 
+     * Caches the receiver if necessary.
+     *
+     * @param wt template to get receiver for
+     * @return shared pointer to the receiver (or to NULL if no receiver registered)
+     */
+    const std::tr1::shared_ptr<SetReceiver>& receiverForTemplate(const WireTemplate* wt);
     
+    /**
+     * Signal that a given wire template has been withdrawn.
+     *
+     * Removes any cached receivers for this template.
+     *
+     * @param tk template to decache.
+     */
+    void templateWithdrawn(IETemplateKey& tk) {
+      receiver_cache_.erase(tk);
+    }
+            
     const InfoModel*                                        model_;
     MBuf                                                    buf_;
     std::map<int, std::tr1::shared_ptr<Session> >           sessions_;

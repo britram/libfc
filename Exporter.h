@@ -1,3 +1,23 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ * 
+ * Defines the abstract exporter interface.
+ *
+ * To send IPFIX Messages, client code should create an instance
+ * of an Exporter subclass for the necessary transport, set the
+ * observation domain via setDomain() and the export template via
+ * setTemplate(), and call exportRecord() to send each record.
+ *
+ * flush() can be called to explicitly end a message.
+ *
+ * Template management is achieved through getTemplate() (which will
+ * create a new template for export if it doesn't exist yet) and
+ * exportTemplatesForDomain().
+ */
+
 #ifndef IPFIX_EXPORTER_H // idem
 #define IPFIX_EXPORTER_H // hack
 
@@ -50,7 +70,7 @@ private:
   
   
   uint8_t*                  buf_;
-  Transcoder                    xcoder_;
+  Transcoder                xcoder_;
   uint16_t                  set_id_;
   bool                      msg_empty_;
   bool                      set_active_;
