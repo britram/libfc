@@ -46,7 +46,7 @@ namespace IPFIX {
   class IOError : public std::runtime_error {
   public:
     IOError():
-    std::runtime_error(strerror(errno));
+    std::runtime_error(strerror(errno)) {}
     
     explicit IOError(const std::string& what_arg): 
     std::runtime_error(what_arg) {}
