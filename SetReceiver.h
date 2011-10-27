@@ -1,24 +1,39 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ * 
+ * Defines the set receiver interface.
+ *
+ * Once a SetReceiver is registered for a given minimal template
+ * (see Collector::registerReceiver()), its receive() method will 
+ * be called for each set for which it is registered in the message.
+ */
 #ifndef IPFIX_SETRECEIVER_H // idem
 #define IPFIX_SETRECEIVER_H // hack
 
-#include <ctime>
-#include <stdexcept>
-#include "IETemplate.h"
 #include "Transcoder.h"
+#include "WireTemplate.h"
 
 namespace IPFIX {
 
   class Collector;
       
   class SetReceiver {
-    // collector iterates over sets, and calls a function 
-    // with a xcoder pointing to the set base and the current template
-    // it is up to the called entity to actually decode.
-    // note that this needs restrictable xcoders to work.
   public:    
+    /**
+     * Receive the next set for which this receiver is registered. 
+     *
+     * @param collector the collector on which this set was received
+     * @param setxc a Transcoder, focused on the content of the set
+     * @param wt the wire template describing the records in the set
+     *
+     * FIXME what else might a receiver require?
+     */
     virtual void receive(const Collector* collector, 
                          Transcoder& setxc, 
-                         const WireTemplate* iet) = 0;
+                         const WireTemplate* wt) = 0;
     
     // setreceiver may supply helpers for doing this
   };
