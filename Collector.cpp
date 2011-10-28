@@ -2,7 +2,10 @@
 
 namespace IPFIX {
 
-const std::tr1::shared_ptr<SetReceiver>& Collector::receiverForTemplate(const WireTemplate* wt) {
+typedef std::map<std::tr1::shared_ptr<const IETemplate>, std::tr1::shared_ptr<SetReceiver> >::const_iterator ReceiverListIter;
+typedef std::map<IETemplateKey, std::tr1::shared_ptr<SetReceiver> >::const_iterator ReceiverCacheIter;    
+  
+const std::tr1::shared_ptr<SetReceiver> Collector::receiverForTemplate(const WireTemplate* wt) {
   IETemplateKey wtk = wt->key();
   
   // first look in the receiver cache

@@ -38,6 +38,14 @@ class Exporter {
   
 public:
 
+  /**
+   * Create a new Exporter for a given information model,
+   * inital observation domain, and maximum message size.
+   *
+   * Called by subclasses to initialize Exporter internal
+   * structures.
+   *
+   */
   Exporter(const InfoModel* model, uint32_t domain, size_t mtu);
   virtual ~Exporter();
   

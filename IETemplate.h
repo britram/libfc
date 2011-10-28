@@ -62,7 +62,7 @@ public:
   
   uint16_t tid() const { return tid_; }
   
-  const IETemplateKey& key() const {return IETemplateKey(domain_, tid_);}
+  const IETemplateKey key() const {return IETemplateKey(domain_, tid_);}
   
   bool contains(const InfoElement* ie) const {
     return index_map_.count(ie);

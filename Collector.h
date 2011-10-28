@@ -24,9 +24,6 @@
 
 namespace IPFIX {
 
-  typedef std::map<std::tr1::shared_ptr<const IETemplate>, std::tr1::shared_ptr<SetReceiver> >::const_iterator ReceiverListIter;
-  typedef std::map<IETemplateKey, std::tr1::shared_ptr<SetReceiver> >::const_iterator ReceiverCacheIter;
-  
   class Collector {
     
   public:
@@ -125,7 +122,7 @@ namespace IPFIX {
      * @param wt template to get receiver for
      * @return shared pointer to the receiver (or to NULL if no receiver registered)
      */
-    const std::tr1::shared_ptr<SetReceiver>& receiverForTemplate(const WireTemplate* wt);
+    const std::tr1::shared_ptr<SetReceiver> receiverForTemplate(const WireTemplate* wt);
     
     /**
      * Signal that a given wire template has been withdrawn.

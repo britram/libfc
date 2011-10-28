@@ -35,7 +35,6 @@ namespace IPFIX {
                          Transcoder& setxc, 
                          const WireTemplate* wt) = 0;
     
-    // setreceiver may supply helpers for doing this
   };
 
 }

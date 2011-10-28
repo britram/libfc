@@ -17,11 +17,7 @@
 #include "IEType.h"
 #include "InfoElement.h"
 
-//Brian this may be refactored according to the singleton pattern 
-//thread safety has to be enforced in case new Infoelements have to be added at runtime
-
-
-
+//FIXME enforce thread safety on changes to the infomodel
 
 namespace IPFIX {
 
@@ -36,43 +32,56 @@ public:
 
 /**
  * Represents an IPFIX Information Model, a collection of canonical 
- * Information Elements. An application using IPFIX should use a single
- * Information Model for all sessions, initializing it at startup time.
+ * Information Elements. 
  */
 class InfoModel {
   
 public:
   
   /**
-   * Create a new InfoModel with a type lookup table, but no
-   * canonical InfoElements. Use this constructor when initializing the
-   * Information Model from a file using add()
+   * InfoModel instance accessor.
+   *
+   * InfoModel is a singleton; this class accessor ensures only one 
+   * InfoModel exists at once. 
+   *
+   * At startup time, your application should initialize this instance
+   * using one of the three initialization methods, defaultV9(), defaultIPFIX(),
+   * or default5103().
    */
-  InfoModel() {
-    initTypes();
+  static InfoModel& instance() {
+    static InfoModel instance_;
+    return instance_;
   }
   
   /**
-   * Create a new InfoModel with a type lookup table and a set of canonical
-   * InfoElements for a given version of the protocol.
+   * Default initializor for InfoModel for NetFlowV9 Information Elements.
    *
-   * @param version Version of the protocol to support. 
-   *                9 = NetFlowV9-compatible IEs only.
-   *                10 = all IPFIX IEs
-   * @param rfc5103 Support RFC5103 biflows through reverse IEs 
-   *                in PEN 29305. Implies version 10.
-   */                
-  InfoModel(unsigned int version, bool rfc5103) {
-    initTypes();
-    if (version < 10) {
-      defaultV9();
-    } else if (rfc5103) {
-      default5103();
-    } else {
-      defaultIPFIX();
-    }
-  }
+   * Initializes this InfoModel for NetFlowV9 only. NetFlowV9 applications
+   * should call this method once on the default instance.
+   */
+  
+  void defaultV9();
 
+  /**
+   * Default initializor for InfoModel for IPFIX Information Elements.
+   *
+   * Initializes this InfoModel for IPFIX. IPFIX applications not using 
+   * bidirectional flows as per RFC5103 should call this method once on 
+   * the default instance returned by instance() at startup.
+   */
+  void defaultIPFIX();
+
+  
+  /**
+   * Default initializor for InfoModel for IPFIX Information Elements.
+   *
+   * Initializes this InfoModel for IPFIX with RFC5103 support. IPFIX 
+   * applications using bidirectional flows as per RFC5103 should call 
+   * this method once on the default instance returned by instance() at 
+   * startup.
+   */
+  void default5103();
+  
   /**
    * Create a new (non-canonical) Information Element by parsing a complete
    * IESpec. The return is suitable for canonicalization via lookupIE() or 
@@ -174,7 +183,6 @@ public:
     return ietypes_bynum_.at(number); 
   }
 
-
   /**
    * Debugging. Dump this InfoModel as a bunch of IESpect to a given output stream.
    *
@@ -183,13 +191,21 @@ public:
   void dump(std::ostream& os) const;
   
 private:
+  /**
+   * Create a new InfoModel with a type lookup table, but no
+   * canonical InfoElements. Use this constructor when initializing the
+   * Information Model from a file using add()
+   */
+  InfoModel() {
+    initTypes();
+  }
+  
+  // FIXME make InfoModel uncopyable
+  
+  // Type initialization; internal
   void registerIEType(const IEType* iet);
   void initTypes();
 
-  void defaultV9();
-  void defaultIPFIX();
-  void default5103();
-      
   // Information element registry. Keep canonical IEs by autopointer.
   std::map<uint16_t, std::tr1::shared_ptr<InfoElement> >
                                 iana_registry_;

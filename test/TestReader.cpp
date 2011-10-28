@@ -54,7 +54,8 @@ int main (int argc, char *argv[]) {
     install_quit_handler();
 
     // create an information model for IPFIX, no biflows
-    InfoModel model(10, false);
+  InfoModel& model = InfoModel::instance();
+    model.defaultIPFIX();
     
     // create a file exporter for stdout
     FileReader fr("test.ipfix", &model);
