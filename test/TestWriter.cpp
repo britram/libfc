@@ -8,15 +8,15 @@ int main (int argc, char *argv[]) {
     // set up signal handlers
     install_quit_handler();
 
-    // create an information model for IPFIX, no biflows
-    InfoModel model(10, false);
+    // initialize information model for IPFIX, no biflows
+    InfoModel::instance().defaultIPFIX();
     
     // create a file exporter for stdout
-    FileWriter fw("test.ipfix", &model, kTestDomain);
+    FileWriter fw("test.ipfix", kTestDomain);
 
     // create templates for our structures
     StructTemplate sfstmpl;
-    makeSimpleFlowTemplate(model, sfstmpl);
+    makeSimpleFlowTemplate(sfstmpl);
 
     // create (direct) export templates for these
     fw.getTemplate(kSimpleFlowTid)->mimic(sfstmpl);

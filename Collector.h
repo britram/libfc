@@ -28,7 +28,7 @@ namespace IPFIX {
     
   public:
 
-    Collector(const InfoModel* model) : model_(model) {}
+    Collector() {}
     virtual ~Collector() {}
     
     /**
@@ -135,8 +135,6 @@ namespace IPFIX {
       receiver_cache_.erase(tk);
     }
             
-    const InfoModel*                                        model_;
-    MBuf                                                    buf_;
     std::map<int, std::tr1::shared_ptr<Session> >           sessions_;
     std::map<std::tr1::shared_ptr<const IETemplate>, std::tr1::shared_ptr<SetReceiver> > receivers_;
     std::map<IETemplateKey, std::tr1::shared_ptr<SetReceiver> > receiver_cache_;

@@ -11,8 +11,8 @@ public:
   
   static const size_t kDefaultMTU = 65535;
 
-  FileWriter(std::string filename, const InfoModel* model, uint32_t domain, size_t mtu=kDefaultMTU):
-    Exporter(model, domain, mtu),
+  FileWriter(std::string filename, uint32_t domain, size_t mtu=kDefaultMTU):
+    Exporter(domain, mtu),
     filename_(filename),
     fp_(NULL) {}
   

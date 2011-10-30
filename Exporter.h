@@ -46,7 +46,7 @@ public:
    * structures.
    *
    */
-  Exporter(const InfoModel* model, uint32_t domain, size_t mtu);
+  Exporter(uint32_t domain, size_t mtu);
   virtual ~Exporter();
   
   void setDomain(uint32_t domain);

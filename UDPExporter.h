@@ -12,9 +12,9 @@ public:
   static const size_t kDefaultMTU = 1476;
 
   UDPExporter(std::string host, std::string port, 
-              const InfoModel* model, uint32_t domain, 
+              uint32_t domain, 
               size_t mtu=kDefaultMTU):
-    Exporter(model, domain, mtu),
+    Exporter(domain, mtu),
     host_(host),
     port_(port),
     fd_(-1) {}

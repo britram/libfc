@@ -74,7 +74,7 @@ void Collector::registerReceiver(const IETemplate* mintmpl, SetReceiver* receive
 std::tr1::shared_ptr<Session> Collector::getSession(int sk) {
   std::tr1::shared_ptr<Session> ssp = sessions_[sk];
   if (!ssp.get()) {
-    ssp = std::tr1::shared_ptr<Session>(new Session(model_));
+    ssp = std::tr1::shared_ptr<Session>(new Session());
     sessions_[sk] = ssp;
   }
   return ssp;

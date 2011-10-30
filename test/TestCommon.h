@@ -30,8 +30,8 @@ bool didQuit();
 
 uint64_t sys_ms();
 
-void makeSimpleFlowTemplate(InfoModel& model, StructTemplate& sfstmpl);
-void makeCapfixPacketTemplate(InfoModel& model, StructTemplate& sfstmpl);
+void makeSimpleFlowTemplate(StructTemplate& sfstmpl);
+void makeCapfixPacketTemplate(StructTemplate& sfstmpl);
 
 void initSimpleFlow(SimpleFlow& sf);
 void incrSimpleFlow(SimpleFlow& sf);

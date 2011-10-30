@@ -3,12 +3,12 @@
 
 namespace IPFIX {
 
-Exporter::Exporter(const InfoModel* model, uint32_t domain, size_t mtu): 
+Exporter::Exporter(uint32_t domain, size_t mtu): 
   buf_(NULL),
   set_id_(0),
   msg_empty_(true),
   set_active_(false),
-  session_(model),
+  session_(),
   tmpl_(NULL),
   domain_(domain),
   mtu_(mtu) {

@@ -9,8 +9,8 @@ namespace IPFIX {
 class FileReader : public Collector {
 public:
   
-  FileReader(std::string filename, const InfoModel* model):
-    Collector(model),
+  FileReader(std::string filename):
+    Collector(),
     filename_(filename),
     fp_(NULL) {
       session_ = getSession(0);

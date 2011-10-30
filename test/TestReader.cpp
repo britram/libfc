@@ -9,9 +9,9 @@ private:
   StructTemplate vst_;
   
 public:
-  SimpleFlowReceiver(InfoModel& model) {
+  SimpleFlowReceiver() {
     initSimpleFlow(vsf_);
-    makeSimpleFlowTemplate(model, vst_);
+    makeSimpleFlowTemplate(vst_);
   }
   
   const IETemplate *structTemplate() {
@@ -53,15 +53,14 @@ int main (int argc, char *argv[]) {
     // set up signal handlers
     install_quit_handler();
 
-    // create an information model for IPFIX, no biflows
-  InfoModel& model = InfoModel::instance();
-    model.defaultIPFIX();
+    // initialize an information model for IPFIX, no biflows
+    InfoModel::instance().defaultIPFIX();
     
     // create a file exporter for stdout
-    FileReader fr("test.ipfix", &model);
+    FileReader fr("test.ipfix");
 
     // register them as minimal templates
-    SimpleFlowReceiver sfsrecv(model);
+    SimpleFlowReceiver sfsrecv;
     
     sfsrecv.registerWithCollector(fr);
         

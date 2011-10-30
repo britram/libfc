@@ -90,7 +90,7 @@ bool Session::decodeTemplateRecord(Transcoder &xc, uint32_t domain) {
     }
     
     // add IE to template 
-    const InfoElement *ie = model_->lookupIE(iepen, ienum, ielen);
+    const InfoElement *ie = InfoModel::instance().lookupIE(iepen, ienum, ielen);
     if (ie == NULL) {
       // FIXME add to the model with a fake name. later.
       throw std::runtime_error("Unknown IE in template; check information model and try again");

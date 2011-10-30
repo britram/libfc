@@ -13,12 +13,10 @@ namespace IPFIX {
 typedef std::map<IETemplateKey, std::tr1::shared_ptr<WireTemplate> >::iterator    TibIter;
 
 class Session {
-public:
-  Session(const InfoModel *model):
-   model_(model) 
-  {}
 
-  const InfoModel *model() const { return model_; }
+public:
+  Session() {}
+
   uint32_t nextSequence(uint32_t domain) { return next_seq_[domain]; }
 
   uint32_t incrementSequence(uint32_t domain, uint32_t increment);
@@ -32,7 +30,6 @@ public:
   bool decodeTemplateRecord(Transcoder& xc, uint32_t domain);
 
 private:
-  const InfoModel*                                          model_;
   std::map<uint32_t, uint32_t>                              next_seq_;
   std::map<IETemplateKey, std::tr1::shared_ptr<WireTemplate> >                  tib_;
 };
