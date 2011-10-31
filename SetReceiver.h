@@ -10,6 +10,9 @@
  * (see Collector::registerReceiver()), its receive() method will 
  * be called for each set for which it is registered in the message.
  */
+
+// FIXME provide a SetReceiver subclass that does record-level transcoding.
+
 #ifndef IPFIX_SETRECEIVER_H // idem
 #define IPFIX_SETRECEIVER_H // hack
 

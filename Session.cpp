@@ -19,7 +19,7 @@ WireTemplate* Session::getTemplate(uint32_t domain, uint16_t tid) {
     throw std::logic_error("Cannot get template with reserved ID");
   }
   
-  IETemplateKey tk(domain, tid);
+  WireTemplateKey tk(domain, tid);
   std::tr1::shared_ptr<WireTemplate> tsp = tib_[tk];
   if (!tsp.get()) {
     std::cerr << "    miss, create new template" << std::endl;
@@ -30,7 +30,7 @@ WireTemplate* Session::getTemplate(uint32_t domain, uint16_t tid) {
 }
 
 void Session::deleteTemplate(uint32_t domain, uint16_t tid) {
-  IETemplateKey tk(domain, tid);
+  WireTemplateKey tk(domain, tid);
   tib_.erase(tk);
 }
 

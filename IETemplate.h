@@ -1,3 +1,17 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ * 
+ * Defines the abstract template interface.
+ *
+ * A template is an ordered list of Information Elements describing
+ * a record format. Client code will use either WireTemplate, which 
+ * represents a template for encoding/decoding IPFIX messages on
+ * the wire; or StructTemplate, which represents a C struct in memory.
+ */
+
 #ifndef IPFIX_IETEMPLATE_H // idem
 #define IPFIX_IETEMPLATE_H // hack
 
@@ -12,7 +26,6 @@
 
 namespace IPFIX {
 
-// FIXME doesn't build
 // struct TCEntry {
 //   TCEntry(): 
 //           offset(0),
@@ -32,9 +45,6 @@ namespace IPFIX {
 class Session;
 class IETemplate;
 
-// typedef away some craziness
-typedef std::pair<uint32_t, uint16_t>            IETemplateKey;
-  
 typedef std::vector<const InfoElement *>::const_iterator 
                                                  IETemplateIter;
   
@@ -52,18 +62,12 @@ public:
       throw std::logic_error("Cannot activate active template");
     }
 
-    std::cerr << "activate template (" << domain_ << "," << tid_ << "), " << ies_.size() << " IEs" << std::endl;
+    //std::cerr << "activate template (" << domain_ << "," << tid_ << "), " << ies_.size() << " IEs" << std::endl;
     active_ = true;
   }
 
   bool active() const { return active_; }
 
-  uint32_t domain() const { return domain_; }
-  
-  uint16_t tid() const { return tid_; }
-  
-  const IETemplateKey key() const {return IETemplateKey(domain_, tid_);}
-  
   bool contains(const InfoElement* ie) const {
     return index_map_.count(ie);
   }
@@ -87,40 +91,25 @@ public:
   
   IETemplateIter end() const { return ies_.end(); }
       
-  void dump(std::ostream& os) const {
-    os << "# Template "<< domain_ << "/" << tid_ << std::endl; 
-    for (IETemplateIter iter = ies_.begin();
-         iter != ies_.end();
-         iter++) {    
-      os << (*iter)->toIESpec() << std::endl;
-    }
-  }
+//  void dump(std::ostream& os) const {
+//    os << "# Template "<< domain_ << "/" << tid_ << std::endl; 
+//    for (IETemplateIter iter = ies_.begin();
+//         iter != ies_.end();
+//         iter++) {    
+//      os << (*iter)->toIESpec() << std::endl;
+//    }
+//  }
   
   virtual void add(const InfoElement* ie, size_t offset = 0) = 0;
     
 protected:
   
   IETemplate() : 
-    session_(NULL), 
-    domain_(0),
-    tid_(0), 
     minlen_(0),
     trlen_(4),
     active_(false) {}
-  
-  IETemplate(const Session* session, uint32_t domain, uint16_t tid):
-    session_(session),
-    domain_(domain),
-    tid_(tid),
-    minlen_(0),
-    trlen_(4),
-    active_(false) {}
-  
+    
   // pointer to session containing template
-  const Session*                           session_;
-  // domain and tid identifying template
-  uint32_t                                 domain_;
-  uint16_t                                 tid_;
   // vector of information elements
   std::vector <const InfoElement *>        ies_;
   // vector of information element offsets

@@ -19,7 +19,10 @@ namespace IPFIX {
   typedef std::list<SetListEntry>::iterator       SetListIter;
 
 /**
- * Represents a deframed IPFIX Message received at a collector
+ * A message buffer contains a deframed IPFIX message at a receiver.
+ * This class is used internally by Collector.
+ *
+ * FIXME genericize this to handle V9.
  */
 
   class MBuf {
@@ -29,12 +32,25 @@ namespace IPFIX {
       
     ~MBuf() { if (buf_) free(buf_); }
     
+    /** Get the domain of the last read message */
     const uint32_t domain() const { return domain_; } 
+
+    /** Get the sequence number of the last read message */
     const uint32_t sequence() const { return sequence_; } 
+
+    /** Get the export time of the last read message */
     const uint32_t export_time() const { return export_time_; } 
     
     
-    // This is moronic, but g++ isn't smart enough to link this unless it's in the damn header.
+    /** 
+     * Given a source containing a message and a session for state management,
+     * deframe a message into this message buffer, replacing its previous 
+     * contents.
+     *
+     * @param source source to read from
+     * @param session session to store state in
+     */
+    // g++ isn't smart enough to link this unless it's in the damn header.
     template <typename T> bool deframe(T source, Session& session) {
       Transcoder xc;
   
@@ -68,8 +84,21 @@ namespace IPFIX {
       return true;
     }
     
+    /**
+     * Return an iterator for the start of the set list
+     */
     SetListIter begin() {return setlist_.begin();}
+
+    /**
+     * Return an iterator for the end of the set list
+     */
     SetListIter end() {return setlist_.end();}
+    
+    /**
+     * Use a specified transcoder to transcode this message buffer
+     *
+     * FIXME determine whether this is really the right interface.
+     */
     
     void transcodeBy(Transcoder& xc) { xc.setBase(buf_, len_); }
 
@@ -79,8 +108,23 @@ namespace IPFIX {
     MBuf& operator=(MBuf& rhs);
 
     void ensure(size_t length);
+    
+    /**
+     * Low-level interface to consume bytes from a source into the buffer
+     * into a specified offset in the buffer; works with file descriptors
+     */
     bool consume(int fd, size_t len, size_t off);
+
+    /**
+     * Low-level interface to consume bytes from a source into the buffer
+     * into a specified offset in the buffer; works with file pointers
+     */
     bool consume(FILE *fp, size_t len, size_t off);
+    
+    /**
+     * Given a transcoder positioned after the message header, replace the
+     * contents of this buffer's setlist with the sets contained in the message.
+     */
     void populateSetlist(Transcoder& xc, Session& session);
     
     uint8_t                                   *buf_;

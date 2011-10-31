@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ * 
+ * A FileReader is an Exporter that writes to a file.
+ *
+ */
+
 #ifndef IPFIX_FILEWRITER_H // idem
 #define IPFIX_FILEWRITER_H // hack
 

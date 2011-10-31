@@ -28,6 +28,10 @@
 
 namespace IPFIX {
 
+/**
+ * Logic error signifying that a too-small
+ * MTU has been set on an Exporter for a given message.
+ */
 class MTUError : public std::runtime_error {
 public:
   explicit MTUError(const std::string& what_arg): 
@@ -39,29 +43,82 @@ class Exporter {
 public:
 
   /**
-   * Create a new Exporter for a given information model,
-   * inital observation domain, and maximum message size.
+   * Change the active observation domain for the exporter.
    *
-   * Called by subclasses to initialize Exporter internal
-   * structures.
-   *
+   * @param domain new observation domain ID
    */
-  Exporter(uint32_t domain, size_t mtu);
-  virtual ~Exporter();
-  
   void setDomain(uint32_t domain);
+
+  /**
+   * Change the active template for the exporter.
+   *
+   * @param tid new template ID
+   */
   void setTemplate(uint16_t tid);
+  
+  /**
+   * Get the WireTemplate for a given template ID in the current 
+   * observation domain. Creates a new inactive template if no
+   * template has yet been created for this ID.
+   *
+   * @param tid template ID to get
+   * @return pointer to template for given ID
+   */
   WireTemplate *getTemplate(uint16_t tid) { 
     return session_.getTemplate(domain_, tid); 
   }
   
+  /**
+   * Export all active templates for the current observation domain.
+   */
   void exportTemplatesForDomain();
   
+  /**
+   * Export a record using the current wire template, for a given 
+   */
   void exportRecord(const StructTemplate &struct_tmpl, void *struct_vp);
+  
+  /**
+   * Flush the current message with the given export time
+   *
+   * @param export time export time in epoch seconds
+   */
   void flush(time_t export_time);
+
+  /**
+   * Flush the current message with the export time
+   *
+   * @param export time export time in epoch seconds
+   */  
   void flush() { flush(time(NULL)); }
+  
+  // FIXME fix signed/unsigned issues in export time throughout libfc
+  // FIXME add a way to withdraw a template
 
 protected:
+  /**
+   * Create a new Exporter.
+   *
+   * Called by subclasses to initialize Exporter internal
+   * structures.
+   *
+   * @param domain initial observation domain; 
+   *               can be changed after creation with setDomain()
+   * @param mtu maximum message size
+   */
+  Exporter(uint32_t domain, size_t mtu);
+  
+  /**
+   * Exporter virtual destructor
+   */
+  virtual ~Exporter();
+  
+  /**
+   * Low-level interface to export interface; overridden by subclasses
+   *
+   * @param base pointer to buffer to send
+   * @param len length of buffer to send
+   */  
   virtual void _sendMessage(uint8_t *base, size_t len) = 0;
 
 private:

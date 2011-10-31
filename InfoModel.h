@@ -17,7 +17,7 @@
 #include "IEType.h"
 #include "InfoElement.h"
 
-//FIXME enforce thread safety on changes to the infomodel
+// FIXME enforce thread safety on changes to the infomodel
 
 namespace IPFIX {
 

@@ -1,3 +1,15 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ *
+ * This file specifies the interface to WireTemplate, an IETemplate
+ * subclass that represents an IPFIX Template on the wire. WireTemplates
+ * are used to encode and decode IPFIX-framed information, and can be
+ * read from and written to IPFIX Messages.
+ */
+
 #ifndef IPFIX_WIRETEMPLATE_H // idem
 #define IPFIX_WIRETEMPLATE_H // hack
 
@@ -6,6 +18,11 @@
 
 namespace IPFIX {
 
+/**
+ * Convenience type for a domain/tid pair uniquely identifying a Template within a session
+ */
+typedef std::pair<uint32_t, uint16_t>            WireTemplateKey;
+  
 class WireTemplate : public IETemplate {
   
 public:
@@ -21,7 +38,10 @@ public:
    * @param tid template identifier
    */
   WireTemplate(const Session* session, uint32_t domain, uint16_t tid):
-    IETemplate(session, domain, tid) {}
+    IETemplate(),
+    session_(session),
+    domain_(domain),
+    tid_(tid) {}
     
   /**
    * Clear and deactivate this WireTemplate.
@@ -80,16 +100,39 @@ public:
    */  
   bool decode(Transcoder& decoder, const StructTemplate &struct_tmpl, void *struct_vp) const;
 
+  /**
+   * Return the template's observation domain
+   */
+  uint32_t domain() const { return domain_; }
+  
+  /**
+   * Return the template's template ID
+   */
+  uint16_t tid() const { return tid_; }
+  
+  /**
+   * Return a WireTemplateKey uniquely identifying this template
+   */
+  const WireTemplateKey key() const {return WireTemplateKey(domain_, tid_);}
+  
+  
   /* a template should be able to provide a transcode plan from another template. */
   // FIXME doesn't build
   // std::list<IPFIX::TCEntry> planTranscode(const IETemplate &struct_tmpl) const;
   // bool encode(Transcoder& encoder, const std::list<TCEntry>& plan, void *struct_vp) const;
   
-private:
+
+  
+  private:
     WireTemplate():
     IETemplate() {}
   
     // FIXME make noncopyable
+  
+    const Session*                           session_;
+    uint32_t                                 domain_;
+    uint16_t                                 tid_;
+  
   
   };
 

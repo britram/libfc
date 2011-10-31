@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ * 
+ * A FileReader is a collector that reads from a file.
+ *
+ */
+
 #ifndef IPFIX_FILEREADER_H // idem
 #define IPFIX_FILEREADER_H // hack
 
@@ -9,6 +19,11 @@ namespace IPFIX {
 class FileReader : public Collector {
 public:
   
+/**
+ * Create a new FileReader for a given filename. 
+ *
+ * @param filename name of file to read. Use "-" for stdin.
+ */
   FileReader(std::string filename):
     Collector(),
     filename_(filename),
@@ -16,6 +31,9 @@ public:
       session_ = getSession(0);
     }
 
+  /**
+   * FileReader destructor; ensures the file is closed.
+   */
   virtual ~FileReader();
 
 protected:
