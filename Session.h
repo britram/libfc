@@ -1,3 +1,17 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ * 
+ * Defines Session, a container for per session state. 
+ * It is used by Collector and Exporter, which expose 
+ * any necessary functionality to client code. 
+ *
+ * Session is the owner for all WireTemplate instances in libfc; 
+ * therefore, WireTemplates should only be handled by pointer as 
+ * retrieved from Session::getTemplate() 
+ */
 #ifndef IPFIX_SESSION_H // idem
 #define IPFIX_SESSION_H // hack
 
