@@ -54,9 +54,12 @@ typedef boost::unordered_map<const InfoElement *, size_t, InfoElement::ptrIdHash
 class IETemplate {
   
 public:
-    
-  size_t minlen() const { return minlen_; } 
-
+  
+  /**
+   * Make this template active. Templates are created inactive.
+   * A template can be added to only
+   * before it is activated, and used only afterward.
+   */
   void activate() {
     if (active_) {
       throw std::logic_error("Cannot activate active template");
@@ -66,12 +69,29 @@ public:
     active_ = true;
   }
 
-  bool active() const { return active_; }
+  /**
+   * Return true if this template is active.
+   */
+  bool isActive() const { return active_; }
 
+  
+  /**
+   * Determine whether this template contains an instance of the given IE
+   *
+   * @param ie information element to search for; must be a canonical
+   *           IE retrieved from InfoModel::instance().
+   * @return true if this template contains the given IE in any size
+   */
   bool contains(const InfoElement* ie) const {
     return index_map_.count(ie);
   }
   
+  /**
+   * Determine whether this template contains all the IEs in a given template.
+   *
+   * @param rhs template to 
+   * @return true if this template contains the given IE in any size
+   */
   bool containsAll(const IETemplate* rhs) const {
     for (IETemplateIter iter = rhs->begin(); iter != rhs->end(); iter++) {
       if (!contains(*iter)) return false;
@@ -79,16 +99,49 @@ public:
     return true;
   }
   
+  /**
+   * Get the offset of a given IE in this template. 
+   * Throws std::out_of_range if the template does not contain the IE.
+   * 
+   * @param ie information element to search for; must be a canonical
+   *           IE retrieved from InfoModel::instance().
+   * @return offset to IE in this template
+   */
   size_t offset(const InfoElement* ie) const {
     return offsets_.at(index_map_.at(ie));
   }
   
+  /**
+   * Get the length of a given IE in this template. 
+   * Throws std::out_of_range if the template does not contain the IE.
+   * 
+   * @param ie information element to search for; must be a canonical
+   *           IE retrieved from InfoModel::instance().
+   * @return length of IE in this template
+   */
   size_t length(const InfoElement* ie) const {
     return ies_.at(index_map_.at(ie))->len();
   }
 
+  /**
+   * Get the minimum length of a record represented by this template.
+   * 
+   * @return minimum record length
+   */
+  size_t minlen() const { return minlen_; } 
+  
+  /**
+   * Begin iterating on the IEs in this template
+   * 
+   * @return begin iterator
+   */
   IETemplateIter begin() const { return ies_.begin(); } 
   
+  /**
+   * End iterating on the IEs in this template
+   * 
+   * @return end iterator
+   */
   IETemplateIter end() const { return ies_.end(); }
       
 //  void dump(std::ostream& os) const {
@@ -100,14 +153,27 @@ public:
 //    }
 //  }
   
-  virtual void add(const InfoElement* ie, size_t offset = 0) = 0;
-    
 protected:
   
   IETemplate() : 
     minlen_(0),
-    trlen_(4),
     active_(false) {}
+  
+  /**
+   * Add an information element to internal maps; used by subclasses
+   */
+  void add_inner(const InfoElement* ie) {
+    // Can't add to an active template
+    if (active_) {
+      throw std::logic_error("Cannot add IEs to an active template");
+    }
+    
+    // Add the IE to the IE vector
+    ies_.push_back(ie);
+    
+    // Add the IE to the index map
+    index_map_[ie] = ies_.size()-1;
+  }
     
   // pointer to session containing template
   // vector of information elements
@@ -118,8 +184,6 @@ protected:
   IndexMap                                 index_map_;
   // minimum length of record represented by template
   size_t                                   minlen_;
-  // length of template record
-  size_t                                   trlen_;
   // flag to indicate whether template is active. active templates
   // can be used to encode and decode, inactive templates can be
   // added to.

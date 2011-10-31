@@ -1,3 +1,12 @@
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ *
+ * This file defines InfoElement, which represents an IPFIX Information Element
+ */
+
 #ifndef IPFIX_INFOELEMENT_H // idem
 #define IPFIX_INFOELEMENT_H // hack
 

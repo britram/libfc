@@ -41,7 +41,8 @@ public:
     IETemplate(),
     session_(session),
     domain_(domain),
-    tid_(tid) {}
+    tid_(tid),
+    trlen_(kTemplateHeaderLen) {}
     
   /**
    * Clear and deactivate this WireTemplate.
@@ -63,9 +64,8 @@ public:
    *
    * @param ie pointer to Information Element to add; must be canonical
                (retrieved from InfoModel::instance())
-   * @param offset unused, MUST be zero.
    */
-  virtual void add(const InfoElement* ie, size_t offset = 0);
+  void add(const InfoElement* ie);
 
   /**
    * Use this Template to encode a structure described by a template to 
@@ -117,11 +117,9 @@ public:
   
   
   /* a template should be able to provide a transcode plan from another template. */
-  // FIXME doesn't build
+  // FIXME add transcode-plan based interface
   // std::list<IPFIX::TCEntry> planTranscode(const IETemplate &struct_tmpl) const;
   // bool encode(Transcoder& encoder, const std::list<TCEntry>& plan, void *struct_vp) const;
-  
-
   
   private:
     WireTemplate():
@@ -132,7 +130,8 @@ public:
     const Session*                           session_;
     uint32_t                                 domain_;
     uint16_t                                 tid_;
-  
+    size_t                                   trlen_;
+
   
   };
 

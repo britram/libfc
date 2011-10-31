@@ -73,7 +73,7 @@ bool Session::decodeTemplateRecord(Transcoder &xc, uint32_t domain) {
   
   // FIXME need to handle template withdrawals
   // for now, just overwrite (this is too permissive)
-  if (tmpl->active()) {
+  if (tmpl->isActive()) {
     tmpl->clear();
   }
   

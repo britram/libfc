@@ -51,7 +51,7 @@ void Exporter::setTemplate(uint16_t tid)
 
   // Make sure template is already active
   WireTemplate *new_tmpl = session_.getTemplate(domain_, tid);
-  if (!new_tmpl->active()) {
+  if (!new_tmpl->isActive()) {
     throw std::logic_error("Cannot set inactive template");
   }
   

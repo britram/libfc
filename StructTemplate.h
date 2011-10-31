@@ -30,9 +30,9 @@ public:
    *
    * @param ie pointer to Information Element to add; must be canonical
     *          (retrieved from InfoModel::instance())
-   * @param offset unused, MUST be zero.
+   * @param offset offset to struct member, as returned by offsetof
    */
-  virtual void add(const InfoElement* ie, size_t offset = 0);
+  void add(const InfoElement* ie, size_t offset);
 
   };
 

@@ -43,7 +43,7 @@ bool Collector::receiveMessage(MBuf& mbuf) {
     const WireTemplate* set_tmpl = 
           session->getTemplate(mbuf.domain(), sliter->id);
 
-    if (!set_tmpl->active()) {
+    if (!set_tmpl->isActive()) {
       // Inactive set template means that the template hasn't been 
       // received yet. Skip. We might want to count these later.
       break;
