@@ -95,6 +95,10 @@ public:
   // FIXME fix signed/unsigned issues in export time throughout libfc
   // FIXME add a way to withdraw a template
 
+  /**
+   * Exporter virtual destructor
+   */
+  virtual ~Exporter();
 protected:
   /**
    * Create a new Exporter.
@@ -108,10 +112,6 @@ protected:
    */
   Exporter(uint32_t domain, size_t mtu);
   
-  /**
-   * Exporter virtual destructor
-   */
-  virtual ~Exporter();
   
   /**
    * Low-level interface to export interface; overridden by subclasses
