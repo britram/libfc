@@ -76,7 +76,7 @@ public:
   /**
    * Export a record using the current wire template, for a given 
    */
-  void exportRecord(const StructTemplate &struct_tmpl, void *struct_vp);
+  void exportRecord(const StructTemplate &struct_tmpl, uint8_t* struct_cp);
   
   /**
    * Flush the current message with the given export time

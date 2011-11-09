@@ -83,14 +83,14 @@ void Exporter::exportTemplatesForDomain() {
   msg_empty_ = false;
 }
 
-void Exporter::exportRecord(const StructTemplate &struct_tmpl, void *struct_vp) {
+void Exporter::exportRecord(const StructTemplate& struct_tmpl, uint8_t* struct_cp) {
   ensureSet();
   
-  if (!tmpl_->encode(xcoder_, struct_tmpl, struct_vp)) {
+  if (!tmpl_->encode(xcoder_, struct_tmpl, struct_cp)) {
     // Not enough room to encode this record. Flush and try again.
     flush();
     ensureSet();
-    if (!tmpl_->encode(xcoder_, struct_tmpl, struct_vp)) {
+    if (!tmpl_->encode(xcoder_, struct_tmpl, struct_cp)) {
       // If it doesn't work now, it never will. Throw.
       throw MTUError("MTU too small for record");
     }

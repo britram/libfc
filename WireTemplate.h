@@ -76,7 +76,7 @@ public:
    * @param struct_vp void pointer to struct to encode
    * @return true if encode succeeded, false if not enough space
    */
-  bool encode(Transcoder& encoder, const StructTemplate &struct_tmpl, void *struct_vp) const;
+  bool encode(Transcoder& encoder, const StructTemplate &struct_tmpl, uint8_t* struct_cp) const;
   
   /**
    * Encode this Template as a template record to a given transcoder.
@@ -98,7 +98,7 @@ public:
    * @param struct_vp void pointer to struct into which to decode
    * @return true if decode succeeded, false if not enough content
    */  
-  bool decode(Transcoder& decoder, const StructTemplate &struct_tmpl, void *struct_vp) const;
+  bool decode(Transcoder& decoder, const StructTemplate &struct_tmpl, uint8_t* struct_cp) const;
 
   /**
    * Return the template's observation domain
@@ -119,7 +119,7 @@ public:
   /* a template should be able to provide a transcode plan from another template. */
   // FIXME add transcode-plan based interface
   // std::list<IPFIX::TCEntry> planTranscode(const IETemplate &struct_tmpl) const;
-  // bool encode(Transcoder& encoder, const std::list<TCEntry>& plan, void *struct_vp) const;
+  // bool encode(Transcoder& encoder, const std::list<TCEntry>& plan, uint8_t* struct_cp) const;
   
   private:
     WireTemplate():

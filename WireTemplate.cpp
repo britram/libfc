@@ -65,7 +65,7 @@ void WireTemplate::mimic(const IETemplate& rhs) {
 //   return plan;
 // }
 // 
-// bool IETemplate::encode(Transcoder& encoder, const std::list<TCEntry>& plan, void *struct_vp) const
+// bool IETemplate::encode(Transcoder& encoder, const std::list<TCEntry>& plan, uint8_t* struct_cp) const
 // {
 //   uint8_t* struct_cp = reinterpret_cast<uint8_t *>(struct_vp);
 //   
@@ -101,10 +101,8 @@ void WireTemplate::mimic(const IETemplate& rhs) {
 //   return false;
 // }
 
-bool WireTemplate::encode(Transcoder& xc, const StructTemplate &struct_tmpl, void *struct_vp) const
-{
-  uint8_t* struct_cp = reinterpret_cast<uint8_t *>(struct_vp);
-  
+bool WireTemplate::encode(Transcoder& xc, const StructTemplate& struct_tmpl, uint8_t* struct_cp) const
+{  
   // Refuse to encode an with inactive template
   if (!active_) {
     throw std::logic_error("Cannot encode using an inactive template");
@@ -180,9 +178,7 @@ bool WireTemplate::encodeTemplateRecord(Transcoder &xc) const {
   return true;
 }
 
-bool WireTemplate::decode(Transcoder& xc, const StructTemplate &struct_tmpl, void *struct_vp) const {
-  uint8_t* struct_cp = reinterpret_cast<uint8_t *>(struct_vp);
-  
+bool WireTemplate::decode(Transcoder& xc, const StructTemplate &struct_tmpl, uint8_t* struct_cp) const {  
   // Refuse to decode an with inactive template
   if (!active_) {
     throw std::logic_error("Cannot decode using an inactive template");

@@ -44,7 +44,7 @@ void UDPExporter::_sendMessage(uint8_t *base, size_t len) {
     connectfd();
   }
 
-  if ((rv = send(fd_, reinterpret_cast<void *>(base), len, 0)) < 0) {
+  if ((rv = send(fd_, base, len, 0)) < 0) {
     throw IOError(strerror(errno));
   }
   
