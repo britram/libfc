@@ -9,6 +9,9 @@
  * by the IPFIX encoder and decoder internals.
  */
 
+// FIXME add an IEValue (or IEType::Value) class for representing values in a std::map 
+// for the flexible, non-transcoding version of the interface
+
 #ifndef IPFIX_IETYPE_H // idem
 #define IPFIX_IETYPE_H // hack
 

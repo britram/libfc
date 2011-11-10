@@ -28,7 +28,7 @@ public:
     SimpleFlow sf;
     static int packet_count = 0;
     
-    while (settmpl->decode(setxc, vst_, &sf)) {            
+    while (settmpl->decode(setxc, vst_, reinterpret_cast<uint8_t*>(&sf))) {            
       incrSimpleFlow(vsf_);
       matchSimpleFlow(vsf_, sf);
 

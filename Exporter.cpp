@@ -132,6 +132,7 @@ void Exporter::ensureTemplateSet() {
   ensureSet();
 }
 
+// FIXME refuse to send an empty message  
 void Exporter::flush(time_t export_time) {
   std::cerr << "flush()" << std::endl;
   

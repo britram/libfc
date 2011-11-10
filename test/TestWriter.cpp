@@ -32,7 +32,7 @@ int main (int argc, char *argv[]) {
     for (int i = 0; !didQuit() && i < kMaxFlows; ++i) {
         incrSimpleFlow(sf);
         fw.setTemplate(kSimpleFlowTid);
-        fw.exportRecord(sfstmpl, reinterpret_cast<void*>(&sf));
+        fw.exportRecord(sfstmpl, reinterpret_cast<uint8_t*>(&sf));
     }
     
     fw.flush();
