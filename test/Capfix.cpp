@@ -15,6 +15,32 @@ using namespace IPFIX;
 
 static StructTemplate caftmpl;
 static int datalink;
+
+class CapfixReceiver : public SetReceiver {
+private:
+  pcap_dumper_t* dumper_;
+  
+public: 
+  CapfixReceiver(pcap_dumper_t* dumper): dumper_(dumper) {}
+  
+  virtual void receive(const Collector* collector, 
+                       Transcoder& setxc, 
+                       const WireTemplate* wt) {
+    
+    CapfixPacket pkt;
+    pcap_pkthdr caphdr;
+    
+    while (wt->decode(setxc, caftmpl, reinterpret_cast<uint8_t*>(&pkt))) {
+      caphdr.ts.tv_sec = pkt.observationTimeMilliseconds / 1000;
+      caphdr.ts.tv_usec = (pkt.observationTimeMilliseconds % 1000) * 1000;
+      caphdr.len = pkt.ipTotalLength;
+      caphdr.caplen = pkt.ipHeaderPacketSection.len;
+      pcap_dump(reinterpret_cast<unsigned char*>(dumper_), &caphdr, pkt.ipHeaderPacketSection.cp);
+    }
+  }
+};
+
+
 void exportPacket (unsigned char *evp,
                    const pcap_pkthdr* caphdr,
                    const uint8_t* capbuf) {
@@ -52,9 +78,37 @@ std::string new_extension(const std::string& filename, const std::string& extens
 }
 
 int main_to_pcap(const std::string& filename) {
-  std::string outname = new_extension(filename, std::string("pcap"));
-  std::cerr << "ipfix to pcap not yet supported." << std::endl;
-  return 1;
+
+  // open an ipfix source
+  FileReader fr(filename);
+  
+  // open a pcap sink
+  pcap_t* pcap = pcap_open_dead(DLT_RAW, 65535);
+  if (!pcap) {
+    std::cerr << "failed to open pcap dead" << std::endl;
+    return 1;
+  }
+  
+  pcap_dumper_t* dumper = pcap_dump_open(pcap, new_extension(filename, std::string("pcap")).c_str());
+  if (!pcap) {
+    std::cerr << "failed to open pcap dumper" << std::endl;
+    return 1;
+  }
+  
+  // create a capfix receiver around the output file
+  CapfixReceiver cr(dumper);
+  
+  // register our set receiver
+  fr.registerReceiver(&caftmpl, &cr);
+  
+  while (!didQuit()) {
+    MBuf mbuf;
+    if (!fr.receiveMessage(mbuf)) { doQuit(0); }
+  }
+  
+  // clean up (file reader closes automatically on destruction)
+  pcap_close(pcap);
+  return 0;
 }
 
 int main_to_ipfix(const std::string& filename) {
@@ -86,22 +140,26 @@ int main_to_ipfix(const std::string& filename) {
   fw.getTemplate(kCapfixPacketTid)->mimic(caftmpl);
   fw.exportTemplatesForDomain();
   
-  
   // runloop
+  int rv;
   while (!didQuit()) {
     int pcrv = pcap_dispatch(pcap, 1, exportPacket, reinterpret_cast<uint8_t *>(&fw));
     if (pcrv == 0) {
       // no packets, normal exit
+      rv = 0;
       break;
     } else if (pcrv < 0) {
+      // something broke, run away screaming
       std::cerr << "pcap error: " << errbuf << std::endl;
-      fw.flush();
-      return 1;
+      rv = 1;
+      break;
     }
   }
   
+  // clean up
   fw.flush();
-  return 0;
+  pcap_close(pcap);
+  return rv;
 }
 
 int main (int argc, char *argv[]) {

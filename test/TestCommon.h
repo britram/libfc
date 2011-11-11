@@ -24,9 +24,9 @@ struct CapfixPacket {
     VarlenField ipHeaderPacketSection;
 };
 
-void quit_handler(int signum);
 void install_quit_handler();
 bool didQuit();
+void doQuit(int signum);
 
 uint64_t sys_ms();
 

@@ -6,21 +6,21 @@
 
 static int quit_counter = 0;
 
-void quit_handler(int signum) {
+void doQuit(int signum) {
     quit_counter++;
 }
 
 void install_quit_handler() {
     struct sigaction sa, osa;
 
-    sa.sa_handler = quit_handler;
+    sa.sa_handler = doQuit;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGINT,&sa,&osa)) {
       throw std::runtime_error(std::string("sigaction(SIGINT) failed: ") + strerror(errno));
     }
 
-    sa.sa_handler = quit_handler;
+    sa.sa_handler = doQuit;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGTERM,&sa,&osa)) {

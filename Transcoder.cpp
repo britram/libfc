@@ -254,13 +254,30 @@ bool Transcoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
 }
 
 bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
-  // FIXME need to write this
-  // what does this need to do?
-  // get the length of the information element from the IE
-  // get the base pointer to the content
-  // fill in the length and the base pointer to the content
-  // advance the transcoder to the end of the content
-  throw std::runtime_error("Varlen decode not implemented");
+  const IEType *iet = ie->ietype();
+  size_t ielen = ie->len();
+  
+  // Get variable length
+  if (ielen == kVarlen) {
+    cur_ = decode_varlen_length(cur_, ielen);
+  }
+
+  // Ensure there are enough bytes available in the buffer
+  if (ielen > avail()) {
+    return false;
+  }
+
+  // Ensure the length is permitted for the IE
+  if (!iet->permitsLength(ielen)) {
+    throw IETypeError("IE type size mismatch");
+  }
+  
+  // store pointer to content and length in vf
+  vf->cp = cur_;
+  vf->len = ielen;
+  
+  // and skip
+  return advance(ielen);
 }
 
 

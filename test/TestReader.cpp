@@ -26,24 +26,23 @@ public:
                        Transcoder& setxc, 
                        const WireTemplate* settmpl) {
     SimpleFlow sf;
-    static int packet_count = 0;
     
     while (settmpl->decode(setxc, vst_, reinterpret_cast<uint8_t*>(&sf))) {            
       incrSimpleFlow(vsf_);
       matchSimpleFlow(vsf_, sf);
 
-      fprintf(stdout, "[X %5u] %016llx - %016llx %08x:%04x -> %08x:%04x (%08x)\n",
-              packet_count, 
-              vsf_.flowStartMilliseconds, vsf_.flowEndMilliseconds, 
-              vsf_.sourceIPv4Address, vsf_.sourceTransportPort, 
-              vsf_.destinationIPv4Address, vsf_.destinationTransportPort,
-              vsf_.packetDeltaCount);      
-      fprintf(stdout, "[A %5u] %016llx - %016llx %08x:%04x -> %08x:%04x (%08x)\n",
-              packet_count++, 
-              sf.flowStartMilliseconds, sf.flowEndMilliseconds, 
-              sf.sourceIPv4Address, sf.sourceTransportPort, 
-              sf.destinationIPv4Address, sf.destinationTransportPort,
-              sf.packetDeltaCount);
+//      fprintf(stdout, "[X %5u] %016llx - %016llx %08x:%04x -> %08x:%04x (%08x)\n",
+//              packet_count, 
+//              vsf_.flowStartMilliseconds, vsf_.flowEndMilliseconds, 
+//              vsf_.sourceIPv4Address, vsf_.sourceTransportPort, 
+//              vsf_.destinationIPv4Address, vsf_.destinationTransportPort,
+//              vsf_.packetDeltaCount);      
+//      fprintf(stdout, "[A %5u] %016llx - %016llx %08x:%04x -> %08x:%04x (%08x)\n",
+//              packet_count++, 
+//              sf.flowStartMilliseconds, sf.flowEndMilliseconds, 
+//              sf.sourceIPv4Address, sf.sourceTransportPort, 
+//              sf.destinationIPv4Address, sf.destinationTransportPort,
+//              sf.packetDeltaCount);
     }
   }
 };
@@ -66,6 +65,6 @@ int main (int argc, char *argv[]) {
         
     while (!didQuit()) {
       MBuf mbuf;
-      fr.receiveMessage(mbuf);
+      if (!fr.receiveMessage(mbuf)) { doQuit(0); }
     }
 }
