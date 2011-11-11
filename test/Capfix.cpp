@@ -81,17 +81,10 @@ int main_to_pcap(const std::string& filename) {
 
   // open an ipfix source
   FileReader fr(filename);
-  
-  // open a pcap sink
   pcap_t* pcap = pcap_open_dead(DLT_RAW, 65535);
-  if (!pcap) {
-    std::cerr << "failed to open pcap dead" << std::endl;
-    return 1;
-  }
-  
   pcap_dumper_t* dumper = pcap_dump_open(pcap, new_extension(filename, std::string("pcap")).c_str());
-  if (!pcap) {
-    std::cerr << "failed to open pcap dumper" << std::endl;
+  if (!dumper) {
+    std::cerr << "failed to open pcap dumper: " << pcap_geterr(pcap) << std::endl;
     return 1;
   }
   
@@ -107,7 +100,7 @@ int main_to_pcap(const std::string& filename) {
   }
   
   // clean up (file reader closes automatically on destruction)
-  pcap_close(pcap);
+  pcap_dump_close(dumper);
   return 0;
 }
 
