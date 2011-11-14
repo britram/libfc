@@ -132,16 +132,18 @@ void Exporter::ensureTemplateSet() {
   ensureSet();
 }
 
-// FIXME refuse to send an empty message  
 void Exporter::flush(time_t export_time) {
-  std::cerr << "flush()" << std::endl;
+  std::cerr << "flush(" << export_time << ")" << std::endl;
   
   if (set_active_) {
     endSet();
   }
-  xcoder_.encodeMessageEnd(export_time, 0, domain_);
-  _sendMessage(buf_, xcoder_.len());
-  startMessage();
+  
+  if (xcoder_.len() > kMessageHeaderLen) {
+    xcoder_.encodeMessageEnd(export_time, 0, domain_);
+    _sendMessage(buf_, xcoder_.len());
+    startMessage();
+  }
 }
 
 }

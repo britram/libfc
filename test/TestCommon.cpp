@@ -56,7 +56,7 @@ void makeCapfixPacketTemplate(StructTemplate& cpstmpl) {
 
     cpstmpl.add(model.lookupIE("observationTimeMilliseconds"), 
         offsetof(CapfixPacket, observationTimeMilliseconds));
-    cpstmpl.add(model.lookupIE("ipTotalLength"),               
+    cpstmpl.add(model.lookupIE("ipTotalLength[4]"),
         offsetof(CapfixPacket, ipTotalLength));
     cpstmpl.add(model.lookupIE("ipHeaderPacketSection"),       
         offsetof(CapfixPacket, ipHeaderPacketSection));

@@ -7,8 +7,8 @@
 namespace IPFIX {
 
 const InfoElement Transcoder::u16ie("_internal_unsigned16",0,0,IEType::unsigned16(),sizeof(uint16_t));
-
-const InfoElement Transcoder::u32ie("_internal_unsigned32",0,0,IEType::unsigned16(),sizeof(uint16_t));
+  
+const InfoElement Transcoder::u32ie("_internal_unsigned32",0,0,IEType::unsigned32(),sizeof(uint32_t));
 
   
 /* 
@@ -168,6 +168,8 @@ void Transcoder::encodeMessageEnd(uint32_t export_time, uint32_t sequence, uint3
     throw std::logic_error("unexpected failure in encodeMessageEnd()");
   }
 
+  std::cerr << "encodeMessageEnd "<< export_time << " " << sequence << " " << domain << std::endl;
+  
   // restore current pointer, mark no current message
   msg_base_ = NULL;
   cur_ = save;

@@ -44,8 +44,8 @@ public:
   bool decodeTemplateRecord(Transcoder& xc, uint32_t domain);
 
 private:
-  std::map<uint32_t, uint32_t>                              next_seq_;
-  std::map<WireTemplateKey, std::tr1::shared_ptr<WireTemplate> >                  tib_;
+  std::map<uint32_t, uint32_t>                                    next_seq_;
+  std::map<WireTemplateKey, std::tr1::shared_ptr<WireTemplate> >  tib_;
 };
 
 }
