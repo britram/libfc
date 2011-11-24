@@ -34,7 +34,12 @@ public:
    */
   void add(const InfoElement* ie, size_t offset);
 
-  };
+  virtual void dumpIdent(std::ostream& os) const {
+    os << "*** StructTemplate " << reinterpret_cast<uint64_t> (this) << std::endl;
+  }
+
+};
+  
 
 } // namespace IPFIX
 

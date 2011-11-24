@@ -115,6 +115,9 @@ public:
    */
   const WireTemplateKey key() const {return WireTemplateKey(domain_, tid_);}
   
+  virtual void dumpIdent(std::ostream& os) const {
+    os << "*** WireTemplate " << domain_ << "/" << tid_ << std::endl;
+  }
   
   /* a template should be able to provide a transcode plan from another template. */
   // FIXME add transcode-plan based interface

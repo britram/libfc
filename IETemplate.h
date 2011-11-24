@@ -143,15 +143,16 @@ public:
    * @return end iterator
    */
   IETemplateIter end() const { return ies_.end(); }
-      
-//  void dump(std::ostream& os) const {
-//    os << "# Template "<< domain_ << "/" << tid_ << std::endl; 
-//    for (IETemplateIter iter = ies_.begin();
-//         iter != ies_.end();
-//         iter++) {    
-//      os << (*iter)->toIESpec() << std::endl;
-//    }
-//  }
+  
+  virtual void dumpIdent(std::ostream &os) const = 0;
+  
+  void dump(std::ostream& os) const {
+    dumpIdent(os);
+    os << "  count " << ies_.size() << " minlen " << minlen_ << std::endl;
+    for (unsigned i = 0; i < ies_.size(); i ++) {
+      os << "    " << ies_[i]->toIESpec() << " off " << offsets_[i] << std::endl;
+    }
+  }
   
 protected:
   

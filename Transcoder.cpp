@@ -254,7 +254,7 @@ bool Transcoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
   cur_ += ielen;
   return true;
 }
-
+  
 bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
@@ -278,8 +278,11 @@ bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
   vf->cp = cur_;
   vf->len = ielen;
   
+  std::cerr << "** decoding vf len " << ielen << std::endl;
+  
   // and skip
-  return advance(ielen);
+  cur_ += ielen;
+  return true;
 }
 
 
