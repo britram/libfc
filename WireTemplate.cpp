@@ -1,4 +1,5 @@
 #include "WireTemplate.h"
+#include <arpa/inet.h>
 
 namespace IPFIX {
 
