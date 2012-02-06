@@ -2,10 +2,10 @@
 
 namespace IPFIX {
 
-typedef std::map<std::tr1::shared_ptr<const IETemplate>, std::tr1::shared_ptr<SetReceiver> >::const_iterator ReceiverListIter;
-typedef std::map<WireTemplateKey, std::tr1::shared_ptr<SetReceiver> >::const_iterator ReceiverCacheIter;    
+typedef std::map<const IETemplate*, SetReceiver* >::const_iterator ReceiverListIter;
+typedef std::map<WireTemplateKey, SetReceiver* >::const_iterator ReceiverCacheIter;    
   
-const std::tr1::shared_ptr<SetReceiver> Collector::receiverForTemplate(const WireTemplate* wt) {
+SetReceiver* Collector::receiverForTemplate(const WireTemplate* wt) {
   WireTemplateKey wtk = wt->key();
   
   // first look in the receiver cache
@@ -18,14 +18,14 @@ const std::tr1::shared_ptr<SetReceiver> Collector::receiverForTemplate(const Wir
   for (ReceiverListIter rliter = receivers_.begin();
                         rliter != receivers_.end();
                         rliter++) {
-    if (wt->containsAll(rliter->first.get())) {
+    if (wt->containsAll(rliter->first)) {
       receiver_cache_[wtk] = rliter->second;
       return rliter->second;
     }
   }
   
   // If we're here, we missed completely
-  return std::tr1::shared_ptr<SetReceiver>();
+  return NULL;
 }
   
 bool Collector::receiveMessage(MBuf& mbuf) {
@@ -34,7 +34,7 @@ bool Collector::receiveMessage(MBuf& mbuf) {
   // get the next message and session key from the derived class
   if (!this->_receiveMessage(mbuf, session)) return false;
   
-  std::tr1::shared_ptr<SetReceiver> receiver;
+  SetReceiver* receiver;
   Transcoder xc;
   mbuf.transcodeBy(xc);
   
@@ -50,7 +50,7 @@ bool Collector::receiveMessage(MBuf& mbuf) {
     }
     
     receiver = receiverForTemplate(set_tmpl);
-    if (receiver.get() == NULL) {
+    if (receiver == NULL) {
       // No receiver, none registered. Skip it.
       break;
     }
@@ -66,9 +66,9 @@ bool Collector::receiveMessage(MBuf& mbuf) {
   return true;
 }
 
-void Collector::registerReceiver(const IETemplate* mintmpl, SetReceiver* receiver) {
-  // FIXME we really want to make a copy here, no?
-  receivers_[std::tr1::shared_ptr<const IETemplate>(mintmpl)] = std::tr1::shared_ptr<SetReceiver>(receiver);
+void Collector::registerReceiver(const IETemplate* mintmpl, 
+                                 SetReceiver* receiver) {
+  receivers_[mintmpl] = receiver;
 }
     
 std::tr1::shared_ptr<Session> Collector::getSession(int sk) {

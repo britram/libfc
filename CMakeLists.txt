@@ -8,6 +8,8 @@ add_definitions(-g -O0)
 find_package( Boost 1.46 )
 include_directories (. ${Boost_INCLUDE_DIRS})
 
+# include pcap
+
 # core objects
 file (GLOB FC_OBJ *.cpp)
 add_library (fc ${FC_OBJ})
@@ -22,4 +24,4 @@ add_executable(fccapfix ${CF_OBJ})
 
 target_link_libraries(fctest_write fc)
 target_link_libraries(fctest_read fc)
-target_link_libraries(fccapfix fc)
+target_link_libraries(fccapfix fc pcap)

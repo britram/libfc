@@ -24,7 +24,7 @@ namespace IPFIX {
   class Collector;
       
   class SetReceiver {
-  public:    
+  public:      
     /**
      * Receive the next set for which this receiver is registered. 
      *

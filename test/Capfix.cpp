@@ -108,7 +108,7 @@ int main_to_pcap(const std::string& filename) {
   
   // create a capfix receiver around the output file
   CapfixReceiver cr(dumper);
-  
+
   // register our set receiver
   fr.registerReceiver(&caftmpl, &cr);
   

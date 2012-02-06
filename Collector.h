@@ -40,15 +40,10 @@ namespace IPFIX {
      * will bind the new template to this receiver.
      *
      * @param mintmpl minimal template associated with the receiver.
-     * @param receiver receiver to bind
+     * @param receiver receiver to bind; caller retains ownership.
      */
-    void registerReceiver(const IETemplate* mintmpl, SetReceiver* receiver);
-        
-    // process the next message from this collector
-    // this is the entry point to the collector runloop, the collector must 
-    // check for new peers here, and so on. returns true if a message was
-    // collected, false if none was available
-    
+     void registerReceiver(const IETemplate* mintmpl, 
+                           SetReceiver* receiver);
     /**
      * Receive and process the next message sent to this collector.
      *
@@ -122,7 +117,7 @@ namespace IPFIX {
      * @param wt template to get receiver for
      * @return shared pointer to the receiver (or to NULL if no receiver registered)
      */
-    const std::tr1::shared_ptr<SetReceiver> receiverForTemplate(const WireTemplate* wt);
+    SetReceiver* receiverForTemplate(const WireTemplate* wt);
     
     /**
      * Signal that a given wire template has been withdrawn.
@@ -136,8 +131,8 @@ namespace IPFIX {
     }
             
     std::map<int, std::tr1::shared_ptr<Session> >           sessions_;
-    std::map<std::tr1::shared_ptr<const IETemplate>, std::tr1::shared_ptr<SetReceiver> > receivers_;
-    std::map<WireTemplateKey, std::tr1::shared_ptr<SetReceiver> > receiver_cache_;
+    std::map<const IETemplate*, SetReceiver* > receivers_;
+    std::map<WireTemplateKey, SetReceiver* >   receiver_cache_;
   };
   
 } // namespace IPFIX

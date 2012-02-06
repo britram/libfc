@@ -7,6 +7,7 @@ class SimpleFlowReceiver : public SetReceiver {
 private:
   SimpleFlow vsf_;
   StructTemplate vst_;
+  std::tr1::shared_ptr<SimpleFlowReceiver> thissp_;
   
 public:
   SimpleFlowReceiver() {
@@ -17,7 +18,7 @@ public:
   const IETemplate *structTemplate() {
     return &vst_;
   }
-  
+
   void registerWithCollector(Collector& c) {
     c.registerReceiver(&vst_, this);
   }
