@@ -131,8 +131,8 @@ namespace IPFIX {
     }
             
     std::map<int, std::tr1::shared_ptr<Session> >           sessions_;
-    std::map<const IETemplate*, SetReceiver* > receivers_;
-    std::map<WireTemplateKey, SetReceiver* >   receiver_cache_;
+    std::map<const IETemplate*, SetReceiver* >              receivers_;
+    std::map<WireTemplateKey, SetReceiver* >                receiver_cache_;
   };
   
 } // namespace IPFIX
