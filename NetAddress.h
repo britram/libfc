@@ -9,30 +9,39 @@ namespace IPFIX {
     
     class NetAddress{
         
-        static const uint8_t NA_UDP = 17;
-        static const uint8_t NA_TCP = 6;
-        
     public:
-        NetAddress(const std::string& host, const std::string& port, uint8_t protocol);
+        NetAddress(const std::string* hostname, const std::string* servname, uint8_t proto):
+            hostname_(hostname),
+            servname_(servname),
+            proto_(proto),
+            ai_(NULL) {}
 
-        NetAddress(const std::string& host, uint16_t port, uint8_t protocol);
-        
-        NetAddress(const sockaddr_storage* sa);
+        NetAddress(const sockaddr_storage* sa):
+            hostname_(), servname_(), proto_(0), ai_(NULL);
+        {
+            memcpy(&sa_, sa, sizeof(*sa));
+        }
         
         NetAddress(int peersock);
         
         int create_connected_socket();
         
+        int create_passive_socket();
+        
         const sockaddr_storage *get_sockaddr();
         
-        const std::string& hostaddr();
+        const std::string& hostname() const;
+
+        const std::string& servname() const;
         
-        const uint16_t port();
-        
-        const uint8_t protocol();
+        const uint8_t protocol() const;
         
     private:
-        // FIXME figure out what the backing store is
+        mutable std::string         hostname_;
+        mutable std::string         servname_;
+        mutable uint8_t             proto_;
+        mutable addrinfo*           ai_;
+        mutable sockaddr_storage    sa_;
     };
 }
   // 
