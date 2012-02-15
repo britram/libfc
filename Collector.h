@@ -97,7 +97,7 @@ namespace IPFIX {
      * @param sessionKey integer identifying the session; e.g. a file descriptor.
      * @return shared pointer to the session
      */
-    std::tr1::shared_ptr<Session> getSession(const int sessionKey);
+    std::tr1::shared_ptr<Session> getSession(const std::string sessionKey);
     
     /**
      * Discard the session for a given session key.
@@ -106,7 +106,7 @@ namespace IPFIX {
      *
      * @param sessionKey integer identifying the session; e.g. a file descriptor.
      */
-    void endSession(const int sessionKey);
+    void endSession(const std::string sessionKey);
     
   private:
 
@@ -130,7 +130,7 @@ namespace IPFIX {
       receiver_cache_.erase(tk);
     }
             
-    std::map<int, std::tr1::shared_ptr<Session> >           sessions_;
+    std::map<std::string, std::tr1::shared_ptr<Session> >           sessions_;
     std::map<const IETemplate*, SetReceiver* >              receivers_;
     std::map<WireTemplateKey, SetReceiver* >                receiver_cache_;
   };
