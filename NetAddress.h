@@ -62,6 +62,11 @@ namespace IPFIX {
             if (servname_.length() == 0) cache_names();
             return servname_;
         }
+
+        const std::string& sessionname() const {
+            if (sessionname_.length() == 0) cache_names();
+            return sessionname_;
+        }
         
         const uint8_t protocol() const {
             return proto_;
@@ -76,7 +81,7 @@ namespace IPFIX {
                 return create_socket_ai();
             }
         }
-
+        
     protected:
         
         int socktype() const;
@@ -84,24 +89,20 @@ namespace IPFIX {
         int create_socket_sa();
         int create_socket_ai();
         uint16_t port() const;
+        void cache_names() const;
         
         void set_sockaddr(const struct sockaddr* sa, size_t len) {
             memcpy(&sa_, sa, len);
             family_ = sa->sa_family;
             sa_valid_ = true;            
         }
-
-        void cache_names() const {
-            char pcstr[INET6_ADDRSTRLEN];
-            inet_ntop(family_, &sa_, pcstr, INET6_ADDRSTRLEN);
-            hostname_ = std::string(pcstr);
-            servname_ = boost::lexical_cast<std::string>(port());
-        }
         
     private:
 
         mutable std::string         hostname_;
         mutable std::string         servname_;
+        mutable std::string         sessionname_;
+        
         mutable uint8_t             proto_;
         mutable int                 family_;
 

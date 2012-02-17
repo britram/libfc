@@ -115,6 +115,23 @@ uint16_t NetAddress::port() const {
     }
 }
 
+void NetAddress::cache_names() const {
+    if (!hostname_.length()) {
+        char pcstr[INET6_ADDRSTRLEN];
+        inet_ntop(family_, &sa_, pcstr, INET6_ADDRSTRLEN);
+        hostname_ = std::string(pcstr);
+    }
+    
+    if (!servname_.length()) {
+        servname_ = boost::lexical_cast<std::string>(port());
+    }
+    
+    if (!sessionname_.length()) {
+        sessionname_ = hostname_ + "/" + 
+                       servname_ + "/" +
+                       boost::lexical_cast<std::string>(proto_);
+    }
+}
 
 
 }
