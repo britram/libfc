@@ -13,6 +13,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <memory.h>
 
 #include <boost/lexical_cast.hpp>
 
