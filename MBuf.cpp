@@ -35,6 +35,21 @@ bool MBuf::consume(FILE *fp, size_t len, size_t off) {
 
 }
 
+bool MBuf::consume(std::istream& is, size_t len, size_t off) {
+
+  is.read(reinterpret_cast<char*>(buf_ + off), len);
+
+  if (is.gcount() == len) {
+    return true;
+  } else if (is.eof()) {
+      return false;
+  } else {
+      throw IOError("short read");   
+  }
+
+}
+
+
 void MBuf::ensure(size_t length) {
   if (bufsz_ > length) return;
 

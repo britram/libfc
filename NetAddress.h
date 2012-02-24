@@ -29,15 +29,39 @@ namespace IPFIX {
                    bool passive):
             hostname_(hostname),
             servname_(servname),
+            sessionname_(),
             proto_(proto),
             family_(family),
             passive_(passive),
             sa_valid_(false)
             {}
 
+        NetAddress(const std::string& hostname, 
+                   const std::string& servname,
+                   uint8_t proto):
+            hostname_(hostname),
+            servname_(servname),
+            sessionname_(),
+            proto_(proto),
+            family_(PF_UNSPEC),
+            passive_(false),
+            sa_valid_(false)
+            {}
+
+        NetAddress(const std::string& servname, uint8_t proto, int family):
+            hostname_(),
+            servname_(servname),
+            sessionname_(),
+            proto_(proto),
+            family_(family),
+            passive_(true),
+            sa_valid_(false)
+            {}
+
         NetAddress(const struct sockaddr* sa, size_t sa_len, uint8_t proto):
             hostname_(),
             servname_(), 
+            sessionname_(),
             proto_(proto),
             family_(PF_UNSPEC),
             passive_(false),
@@ -73,8 +97,6 @@ namespace IPFIX {
             return proto_;
         }
         
-        bool operator==(const NetAddress& rhs) const;
-
         int create_socket() {
             if (sa_valid_) {
                 return create_socket_sa();

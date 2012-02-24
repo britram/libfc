@@ -94,10 +94,10 @@ namespace IPFIX {
      *
      * Used by subclasses to map session keys to sessions.
      *
-     * @param sessionKey integer identifying the session; e.g. a file descriptor.
+     * @param sessionKey socket address of peer
      * @return shared pointer to the session
      */
-    std::tr1::shared_ptr<Session> getSession(const std::string sessionKey);
+    std::tr1::shared_ptr<Session> getSession(const std::string& sk);
     
     /**
      * Discard the session for a given session key.

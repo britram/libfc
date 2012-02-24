@@ -41,7 +41,6 @@ namespace IPFIX {
     /** Get the export time of the last read message */
     const uint32_t export_time() const { return export_time_; } 
     
-    
     /** 
      * Given a source containing a message and a session for state management,
      * deframe a message into this message buffer, replacing its previous 
@@ -51,7 +50,7 @@ namespace IPFIX {
      * @param session session to store state in
      */
     // g++ isn't smart enough to link this unless it's in the damn header.
-    template <typename T> bool deframe(T source, Session& session) {
+    template <typename T> bool deframe(T& source, Session& session) {
       Transcoder xc;
   
       // Get the message header from the source
@@ -120,6 +119,13 @@ namespace IPFIX {
      * into a specified offset in the buffer; works with file pointers
      */
     bool consume(FILE *fp, size_t len, size_t off);
+
+    /**
+     * Low-level interface to consume bytes from a source into the buffer
+     * into a specified offset in the buffer; works with file pointers
+     */
+    bool consume(std::istream& is, size_t len, size_t off);
+
     
     /**
      * Given a transcoder positioned after the message header, replace the

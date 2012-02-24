@@ -28,7 +28,7 @@ public:
     Collector(),
     filename_(filename),
     fp_(NULL) {
-      session_ = getSession(0);
+      session_ = getSession("");
     }
 
   /**
