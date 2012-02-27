@@ -16,9 +16,12 @@ bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& se
   }
 
   // receive a packet into an array
-  size_t len = recvfrom(sock_, packbuf, 65536, 0, reinterpret_cast<struct sockaddr*>(&sa), &sa_len);
+  ssize_t len = recvfrom(sock_, packbuf, 65536, 0, reinterpret_cast<struct sockaddr*>(&sa), &sa_len);
   
-  // FIXME check for errors
+  if (len == -1) {
+    // FIXME handle errors consistently
+    return false;
+  }
   
   // FIXME slow -- get a session name for each packet  
   std::string sk = NetAddress(reinterpret_cast<struct sockaddr*>(&sa), sa_len, IPPROTO_UDP).sessionname();
@@ -29,5 +32,13 @@ bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& se
 
   return mbuf.deframe(packis, *(getSession(sk)));      
 }
+
+UDPCollector::~UDPCollector() {
+  if (sock_) {
+    close(sock_);
+    sock_ = -1;
+  }
+}
+
 
 }

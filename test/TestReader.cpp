@@ -65,16 +65,29 @@ int main (int argc, char *argv[]) {
     // initialize an information model for IPFIX, no biflows
     InfoModel::instance().defaultIPFIX();
     
-    // create a file exporter for stdout
-    FileReader fr("test.ipfix");
-
+    // create a collector
+    Collector *c;
+    
+    if (argc >= 2) {
+      std::string inspec(argv[1]);
+      if (inspec == "udp") {
+        c = new UDPCollector();
+      } else {
+        c = new FileReader(inspec);
+      }
+    } else {
+      c = new FileReader("test.ipfix");
+    }
+    
     // register them as minimal templates
     SimpleFlowReceiver sfsrecv;
     
-    sfsrecv.registerWithCollector(fr);
+    sfsrecv.registerWithCollector(*c);
         
     while (!didQuit()) {
       MBuf mbuf;
-      if (!fr.receiveMessage(mbuf)) { doQuit(0); }
+      if (!c->receiveMessage(mbuf)) { doQuit(0); }
     }
+    
+    delete c;
 }

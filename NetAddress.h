@@ -11,6 +11,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#ifndef IPFIX_NETADDRESS_H // idem
+#define IPFIX_NETADDRESS_H // hack
+
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <memory.h>
@@ -134,3 +137,5 @@ namespace IPFIX {
         bool                        sa_valid_;
     };
 }
+
+#endif //idem hack
