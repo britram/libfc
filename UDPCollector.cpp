@@ -13,6 +13,7 @@ bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& se
   // FIXME not super stable
   if (sock_ == -1) {
       sock_ = netaddr_.create_socket();
+      std::cerr << "create_socket() returned " << sock_ << std::endl;
   }
 
   // receive a packet into an array
@@ -20,6 +21,7 @@ bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& se
   
   if (len == -1) {
     // FIXME handle errors consistently
+    std::cerr << "recvfrom() returned -1" << std::endl;
     return false;
   }
   
@@ -30,7 +32,9 @@ bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& se
   std::string packstr(packbuf, len);
   std::istringstream packis(packstr);
 
-  return mbuf.deframe(packis, *(getSession(sk)));      
+  session = getSession(sk);
+
+  return mbuf.deframe(packis, *session);      
 }
 
 UDPCollector::~UDPCollector() {

@@ -24,7 +24,7 @@ void install_quit_handler() {
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGTERM,&sa,&osa)) {
-      throw std::runtime_error(std::string("sigaction(SIGINT) failed: ") + strerror(errno));
+      throw std::runtime_error(std::string("sigaction(SIGTERM) failed: ") + strerror(errno));
     }
 }
 

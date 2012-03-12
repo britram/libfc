@@ -44,8 +44,13 @@ int main (int argc, char *argv[]) {
     
     for (int i = 0; !didQuit() && i < kMaxFlows; ++i) {
         incrSimpleFlow(sf);
-        e->setTemplate(kSimpleFlowTid);
-        e->exportRecord(sfstmpl, reinterpret_cast<uint8_t*>(&sf));
+        try {
+            e->setTemplate(kSimpleFlowTid);
+            e->exportRecord(sfstmpl, reinterpret_cast<uint8_t*>(&sf));
+        } catch (std::runtime_error const &e) {
+            std::cerr << "I/O error on send: " << e.what() << std::endl;
+            doQuit(0);
+        }
     }
     
     e->flush();

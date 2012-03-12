@@ -31,7 +31,7 @@ SetReceiver* Collector::receiverForTemplate(const WireTemplate* wt) {
 bool Collector::receiveMessage(MBuf& mbuf) {
   std::tr1::shared_ptr<Session> session;
   
-  // get the next message and session key from the derived class
+  // get the next message and session from the derived class
   if (!this->_receiveMessage(mbuf, session)) return false;
   
   SetReceiver* receiver;

@@ -4,6 +4,8 @@
 namespace IPFIX {
 
 int NetAddress::create_socket_sa() {
+    std::cerr << "in create_socket_sa()" << std::endl;
+    
     /* grab family from sockaddr */
     family_ = reinterpret_cast<struct sockaddr*>(&sa_)->sa_family;
     
@@ -31,6 +33,8 @@ int NetAddress::create_socket_ai() {
     addrinfo hints, *lai, *ai;
     int ai_error;
 
+    std::cerr << "in create_socket_ai()" << std::endl;
+
     hints.ai_flags = AI_ADDRCONFIG;
     if (passive_) hints.ai_flags |= AI_PASSIVE;
     hints.ai_family = family_;
@@ -42,18 +46,19 @@ int NetAddress::create_socket_ai() {
     const char* servname_cs = 
         (servname_.length() > 0) ? servname_.c_str() : NULL;
 
-    if ((ai_error = getaddrinfo(hostname_cs, servname_cs, &hints, &ai))) {
+    if ((ai_error = getaddrinfo(hostname_cs, servname_cs, &hints, &lai))) {
         // FIXME handle lookup error -- cache this in the object itself?
+        std::cerr << "lookup error " << ai_error << std::endl;
         return -1;                
     }
     
-    int sock;
+    int sock = -1;
     for (ai = lai; ai; ai = ai->ai_next) {
         sock = socket(ai->ai_family, 
-                          ai->ai_socktype, 
-                          ai->ai_protocol);
+                      ai->ai_socktype, 
+                      ai->ai_protocol);
         if (sock < 0) continue;
-
+        
         int rv;
         if (passive_) {
             // FIXME only binds the first bindable
@@ -99,6 +104,7 @@ size_t NetAddress::addrlen() const {
         default:
         throw std::invalid_argument("unsupported addrtype");
     }
+    return 0; // warning fix
 }
 
 uint16_t NetAddress::port() const {

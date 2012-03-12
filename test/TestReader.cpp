@@ -86,7 +86,11 @@ int main (int argc, char *argv[]) {
         
     while (!didQuit()) {
       MBuf mbuf;
-      if (!c->receiveMessage(mbuf)) { doQuit(0); }
+      std::cerr << "waiting for message" << std::endl;
+      if (!c->receiveMessage(mbuf)) { 
+        std::cerr << "collector signaled end of stream" << std::endl;
+        doQuit(0); 
+      }
     }
     
     delete c;
