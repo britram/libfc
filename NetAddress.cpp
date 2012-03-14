@@ -1,5 +1,6 @@
 #include <NetAddress.h>
 #include <stdexcept>
+#include <iostream>
 
 namespace IPFIX {
 
