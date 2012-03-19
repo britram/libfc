@@ -70,6 +70,9 @@ void InfoModel::add(const InfoElement& ie) {
   if (!ie.name().size() || !ie.number() || ie.ietype() == IEType::unknown()) {
     throw IESpecError("Incomplete IESpec for InfoModel addition");
   }
+  
+  // Only add if we don't have an existing IE for the given name and pen
+  if (lookupIE(ie.pen(), ie.number(), ie.len())) return;
 
   if (ie.pen()) {
     name_registry_[ie.name()] = 
@@ -96,17 +99,17 @@ const InfoElement *InfoModel::lookupIE(uint32_t pen, uint16_t number, uint16_t l
     std::map<uint32_t, std::map<uint16_t, std::tr1::shared_ptr<InfoElement> > >::const_iterator peniter;
 
     if ((peniter = pen_registry_.find(pen)) == pen_registry_.end()) {
-      std::cerr << "    no such pen" << std::endl;
+      //std::cerr << "    no such pen" << std::endl;
       return NULL;
     } else {
       if ((iter = peniter->second.find(number)) == peniter->second.end()) {
-        std::cerr << "    not in pen registry" << std::endl;
+        //std::cerr << "    not in pen registry" << std::endl;
         return NULL;
       }
     }
   } else {
     if ((iter = iana_registry_.find(number)) == iana_registry_.end()) {
-      std::cerr << "    not in iana registry" << std::endl;
+      //std::cerr << "    not in iana registry" << std::endl;
       return NULL;
     }
   }

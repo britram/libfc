@@ -105,6 +105,8 @@ public:
   /**
    * Add a copy of an Information Element to the Information Model
    *
+   * Idempotent; will only add the Information Element once.
+   *
    * @param specie the Information Element to add
    */
   void add(const InfoElement& specie);

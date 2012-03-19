@@ -44,6 +44,7 @@ namespace IPFIX {
      */
      void registerReceiver(const IETemplate* mintmpl, 
                            SetReceiver* receiver);
+
     /**
      * Receive and process the next message sent to this collector.
      *
@@ -56,7 +57,6 @@ namespace IPFIX {
      *             received message content.
      * @return true if a message was received, false otherwise.
      */
-    
     bool receiveMessage(MBuf& mbuf);
     
     /**
@@ -71,6 +71,10 @@ namespace IPFIX {
     bool receiveMessage() {
       MBuf transient_mbuf;
       return this->receiveMessage(transient_mbuf);
+    }
+    
+    void restart() {
+      // FIXME support collecting process restart
     }
     
   protected:
