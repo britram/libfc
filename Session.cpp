@@ -23,7 +23,7 @@ WireTemplate* Session::getTemplate(uint32_t domain, uint16_t tid) {
   std::tr1::shared_ptr<WireTemplate> tsp = tib_[tk];
   if (!tsp.get()) {
     std::cerr << "    miss, create new template" << std::endl;
-    tsp = std::tr1::shared_ptr<WireTemplate>(new WireTemplate(this, domain, tid));
+    tsp = std::tr1::shared_ptr<WireTemplate>(new WireTemplate(domain, tid));
     tib_[tk] = tsp;
   }
   return tsp.get();

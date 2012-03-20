@@ -37,9 +37,8 @@ public:
    * @param domain observation domain ID in which the template lives
    * @param tid template identifier
    */
-  WireTemplate(const Session* session, uint32_t domain, uint16_t tid):
+  WireTemplate(uint32_t domain, uint16_t tid):
     IETemplate(),
-    session_(session),
     domain_(domain),
     tid_(tid),
     trlen_(kTemplateHeaderLen) {}
@@ -130,7 +129,6 @@ public:
   
     // FIXME make noncopyable
   
-    const Session*                           session_;
     uint32_t                                 domain_;
     uint16_t                                 tid_;
     size_t                                   trlen_;
