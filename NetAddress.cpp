@@ -4,9 +4,7 @@
 
 namespace IPFIX {
 
-int NetAddress::create_socket_sa() {
-    std::cerr << "in create_socket_sa()" << std::endl;
-    
+int NetAddress::create_socket_sa() {    
     /* grab family from sockaddr */
     family_ = reinterpret_cast<struct sockaddr*>(&sa_)->sa_family;
     
@@ -33,8 +31,6 @@ int NetAddress::create_socket_sa() {
 int NetAddress::create_socket_ai() {
     addrinfo hints, *lai, *ai;
     int ai_error;
-
-    std::cerr << "in create_socket_ai()" << std::endl;
 
     hints.ai_flags = AI_ADDRCONFIG;
     if (passive_) hints.ai_flags |= AI_PASSIVE;

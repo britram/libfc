@@ -83,7 +83,7 @@ void InfoModel::add(const InfoElement& ie) {
     name_registry_[ie.name()] = 
       iana_registry_[ie.number()] = 
       std::tr1::shared_ptr<InfoElement>(new InfoElement(ie));
-    //std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
+    // std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
   }
 }
 
@@ -94,7 +94,7 @@ void InfoModel::add(const std::string& iespec) {
 const InfoElement *InfoModel::lookupIE(uint32_t pen, uint16_t number, uint16_t len) const {  
   std::map<uint16_t, std::tr1::shared_ptr<InfoElement> >::const_iterator iter;
 
-  std::cerr << "lookupIE (" << pen << "/" << number << ")[" << len << "]" << std::endl;
+  // std::cerr << "lookupIE (" << pen << "/" << number << ")[" << len << "]" << std::endl;
   if (pen) {
     std::map<uint32_t, std::map<uint16_t, std::tr1::shared_ptr<InfoElement> > >::const_iterator peniter;
 
@@ -125,10 +125,10 @@ const InfoElement *InfoModel::lookupIE(const InfoElement& specie) const {
     // Nothing to look up.
     throw IESpecError("Incomplete IESpec for InfoModel lookup.");
   } else {
-    std::cerr << "lookupIE " << specie.name() << std::endl;
+    // std::cerr << "lookupIE " << specie.name() << std::endl;
     std::map<std::string, std::tr1::shared_ptr<InfoElement> >::const_iterator iter = name_registry_.find(specie.name());
     if (iter == name_registry_.end()) {
-      std::cerr << "    not in name registry" << std::endl;
+      // std::cerr << "    not in name registry" << std::endl;
       return NULL;
     } else {
       return iter->second->forLen(specie.len());

@@ -10,10 +10,10 @@ bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& se
   char packbuf[65536];
   
   // make sure we have a socket to read from
-  // FIXME not super stable
   if (sock_ == -1) {
+      std::cerr << "LibFC UDPCollector starting on " << netaddr_.sessionname() << " : ";
       sock_ = netaddr_.create_socket();
-      std::cerr << "create_socket() returned " << sock_ << std::endl;
+      std::cerr << "socket " << sock_ << std::endl;
   }
 
   // receive a packet into an array
