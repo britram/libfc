@@ -42,6 +42,12 @@ int NetAddress::create_socket_ai() {
         (hostname_.length() > 0) ? hostname_.c_str() : NULL;
     const char* servname_cs = 
         (servname_.length() > 0) ? servname_.c_str() : NULL;
+        
+    if (hostname_cs) {
+        std::cerr << "hostname_cs in create_socket_ai is " << hostname_cs << std::endl;
+    } else {
+        std::cerr << "hostname_cs in create_socket_ai is NULL" << std::endl;        
+    }
 
     if ((ai_error = getaddrinfo(hostname_cs, servname_cs, &hints, &lai))) {
         // FIXME handle lookup error -- cache this in the object itself?
