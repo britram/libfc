@@ -52,6 +52,8 @@ protected:
     virtual bool _receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session);
   
 private:
+    bool ensureSocket();
+
     NetAddress      netaddr_;
     int             sock_;
 };

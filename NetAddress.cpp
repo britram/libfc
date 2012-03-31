@@ -38,10 +38,19 @@ int NetAddress::create_socket_ai() {
     hints.ai_socktype = socktype();
     hints.ai_protocol = proto_;
 
-    const char* hostname_cs = 
-        (hostname_.length() > 0) ? hostname_.c_str() : NULL;
-    const char* servname_cs = 
-        (servname_.length() > 0) ? servname_.c_str() : NULL;
+    const char* hostname_cs;
+    if (hostname_.length() == 0 || hostname_ == "*") {
+        hostname_cs = NULL;
+    } else {
+        hostname_cs = hostname_.c_str();
+    }
+
+    const char* servname_cs;
+    if (servname_.length() == 0) {
+        servname_cs = NULL;
+    } else {
+        servname_cs = servname_.c_str();
+    }
         
     if (hostname_cs) {
         std::cerr << "hostname_cs in create_socket_ai is " << hostname_cs << std::endl;
@@ -126,9 +135,13 @@ uint16_t NetAddress::port() const {
 
 void NetAddress::cache_names() const {
     if (!hostname_.length()) {
-        char pcstr[INET6_ADDRSTRLEN];
-        inet_ntop(family_, &sa_, pcstr, INET6_ADDRSTRLEN);
-        hostname_ = std::string(pcstr);
+        if (nil_host_) {
+            hostname_ = std::string("*");
+        } else {
+            char pcstr[INET6_ADDRSTRLEN];
+            inet_ntop(family_, &sa_, pcstr, INET6_ADDRSTRLEN);
+            hostname_ = std::string(pcstr);
+        }
     }
     
     if (!servname_.length()) {

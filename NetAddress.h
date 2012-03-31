@@ -36,8 +36,11 @@ namespace IPFIX {
             proto_(proto),
             family_(family),
             passive_(passive),
+            nil_host_(false),
             sa_valid_(false)
-            {}
+            {
+                if (hostname_.length() == 0) nil_host_ = true;
+            }
 
         NetAddress(const std::string& hostname, 
                    const std::string& servname,
@@ -48,8 +51,11 @@ namespace IPFIX {
             proto_(proto),
             family_(PF_UNSPEC),
             passive_(false),
+            nil_host_(false),
             sa_valid_(false)
-            {}
+            {
+                if (hostname_.length() == 0) nil_host_ = true;
+            }
 
         NetAddress(const std::string& servname, uint8_t proto, int family):
             hostname_(),
@@ -58,6 +64,7 @@ namespace IPFIX {
             proto_(proto),
             family_(family),
             passive_(true),
+            nil_host_(true),
             sa_valid_(false)
             {}
 
@@ -68,6 +75,7 @@ namespace IPFIX {
             proto_(proto),
             family_(PF_UNSPEC),
             passive_(false),
+            nil_host_(false),
             sa_valid_(false)
         {
             set_sockaddr(sa, sa_len);
@@ -134,6 +142,7 @@ namespace IPFIX {
 
         struct sockaddr_storage     sa_;
         bool                        passive_;
+        bool                        nil_host_;
         bool                        sa_valid_;
     };
 }
