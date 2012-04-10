@@ -26,7 +26,9 @@ public:
  */
     TCPSingleCollector():
         Collector(),
+        session_(),
         netaddr_("4739", IPPROTO_TCP, AF_INET),
+        lsock_(-1),
         sock_(-1)
         {}
 
@@ -35,7 +37,9 @@ public:
  */
     TCPSingleCollector(const NetAddress& netaddr):
         Collector(),
+        session_(),
         netaddr_(netaddr),
+        lsock_(-1),
         sock_(-1)
         {}
 
@@ -52,9 +56,10 @@ protected:
 private:
     bool ensureSocket();
 
-    NetAddress      netaddr_;
-    int             lsock_;
-    int             sock_;
+    std::tr1::shared_ptr<Session>    session_;
+    NetAddress                       netaddr_;
+    int                              lsock_;
+    int                              sock_;
 };
 
 } // namespace IPFIX

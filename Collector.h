@@ -98,7 +98,12 @@ namespace IPFIX {
      *
      * Used by subclasses to map session keys to sessions.
      *
-     * @param sessionKey socket address of peer
+     * FIXME really need to fix how session handling is done; a one-size fits
+     * all approach is wrong. these should be keyed by active socket on TCP/SCTP,
+     * and by... what? on UDP. Each Collector subclass should handle its own
+     * Session management.
+     *
+     * @param sessionKey string identifying session
      * @return shared pointer to the session
      */
     std::tr1::shared_ptr<Session> getSession(const std::string& sk);
@@ -108,7 +113,7 @@ namespace IPFIX {
      *
      * Used by subclasses to end sessions on session shutdown.
      *
-     * @param sessionKey integer identifying the session; e.g. a file descriptor.
+     * @param sessionKey string identifying session
      */
     void endSession(const std::string sessionKey);
     
