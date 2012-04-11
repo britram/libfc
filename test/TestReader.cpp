@@ -72,6 +72,8 @@ int main (int argc, char *argv[]) {
       std::string inspec(argv[1]);
       if (inspec == "udp") {
         c = new UDPCollector();
+      } else if (inspec == "tcp") {
+        c = new TCPSingleCollector();
       } else {
         c = new FileReader(inspec);
       }

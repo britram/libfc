@@ -2,6 +2,8 @@
 #include "FileReader.h"
 #include "UDPExporter.h"
 #include "UDPCollector.h"
+#include "TCPExporter.h"
+#include "TCPSingleCollector.h"
 
 static const uint32_t kTestDomain = 0x00C0FFEE;
 static const uint32_t kSimpleFlowTid = 0xAB34;

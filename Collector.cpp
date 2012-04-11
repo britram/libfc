@@ -70,18 +70,5 @@ void Collector::registerReceiver(const IETemplate* mintmpl,
                                  SetReceiver* receiver) {
   receivers_[mintmpl] = receiver;
 }
-    
-std::tr1::shared_ptr<Session> Collector::getSession(const std::string& sk) {
-  std::tr1::shared_ptr<Session> ssp = sessions_[sk];
-  if (!ssp.get()) {
-    ssp = std::tr1::shared_ptr<Session>(new Session());
-    sessions_[sk] = ssp;
-  }
-  return ssp;
-}
-
-void Collector::endSession(std::string sk) {
-  sessions_.erase(sk);
-}
 
 } /* namespace IPFIX */

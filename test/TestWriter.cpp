@@ -19,6 +19,9 @@ int main (int argc, char *argv[]) {
       if (protocol == "udp") {
         NetAddress na(outspec,"4739",IPPROTO_UDP);
         e = new UDPExporter(na, kTestDomain);
+      } else if (protocol == "tcp") {
+          NetAddress na(outspec,"4739",IPPROTO_TCP);
+          e = new TCPExporter(na, kTestDomain);
       } else {
         e = new FileWriter(outspec, kTestDomain);
       }

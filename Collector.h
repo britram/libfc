@@ -91,32 +91,7 @@ namespace IPFIX {
      * @return true if message available, false otherwise
      */
     virtual bool _receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session) = 0;
-    
-    /**
-     * Get a session for a given session key. Creates a new session if
-     * no session exists for the given key.
-     *
-     * Used by subclasses to map session keys to sessions.
-     *
-     * FIXME really need to fix how session handling is done; a one-size fits
-     * all approach is wrong. these should be keyed by active socket on TCP/SCTP,
-     * and by... what? on UDP. Each Collector subclass should handle its own
-     * Session management.
-     *
-     * @param sessionKey string identifying session
-     * @return shared pointer to the session
-     */
-    std::tr1::shared_ptr<Session> getSession(const std::string& sk);
-    
-    /**
-     * Discard the session for a given session key.
-     *
-     * Used by subclasses to end sessions on session shutdown.
-     *
-     * @param sessionKey string identifying session
-     */
-    void endSession(const std::string sessionKey);
-    
+        
   private:
 
     /**
@@ -139,7 +114,6 @@ namespace IPFIX {
       receiver_cache_.erase(tk);
     }
             
-    std::map<std::string, std::tr1::shared_ptr<Session> >           sessions_;
     std::map<const IETemplate*, SetReceiver* >              receivers_;
     std::map<WireTemplateKey, SetReceiver* >                receiver_cache_;
   };

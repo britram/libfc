@@ -26,9 +26,9 @@ public:
  */
   FileReader(std::string filename):
     Collector(),
+    session_(),
     filename_(filename),
     fp_(NULL) {
-      session_ = getSession("");
     }
 
   /**

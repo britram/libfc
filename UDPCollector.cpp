@@ -43,16 +43,12 @@ bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& se
     return false;
   }
   
-  // FIXME slow -- get a session name for each packet  
-  std::string sk = NetAddress(reinterpret_cast<struct sockaddr*>(&sa), sa_len, IPPROTO_UDP).sessionname();
-  
   // wrap the packet in an istringstream
   std::string packstr(packbuf, len);
   std::istringstream packis(packstr);
 
-  session = getSession(sk);
-
-  return mbuf.deframe(packis, *session);      
+  // FIXME everything in the same session, not 5101 compliant
+  return mbuf.deframe(packis, session_);      
 }
 
 UDPCollector::~UDPCollector() {

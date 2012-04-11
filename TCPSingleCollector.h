@@ -26,7 +26,7 @@ public:
  */
     TCPSingleCollector():
         Collector(),
-        session_(),
+        session_(NULL),
         netaddr_("4739", IPPROTO_TCP, AF_INET),
         lsock_(-1),
         sock_(-1)
@@ -37,7 +37,7 @@ public:
  */
     TCPSingleCollector(const NetAddress& netaddr):
         Collector(),
-        session_(),
+        session_(NULL),
         netaddr_(netaddr),
         lsock_(-1),
         sock_(-1)
@@ -56,7 +56,7 @@ protected:
 private:
     bool ensureSocket();
 
-    std::tr1::shared_ptr<Session>    session_;
+    Session*                         session_;
     NetAddress                       netaddr_;
     int                              lsock_;
     int                              sock_;

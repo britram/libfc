@@ -24,7 +24,7 @@ bool TCPSingleCollector::ensureSocket() {
             return false;
         }
     
-        std::cerr << "ensureSocket() listening on TCP passive socket " << sock_ << std::endl;
+        std::cerr << "ensureSocket() listening on TCP passive socket " << lsock_ << std::endl;
     }
     
     // We have a listener socket, and we don't have a receiver socket.
@@ -36,8 +36,11 @@ bool TCPSingleCollector::ensureSocket() {
         return false;
     }
     
-    // We have a socket. Create a new session.
-    session_ = std::tr1::shared_ptr<Session>(new Session());
+    std::cerr << "ensureSocket() got TCP socket " << sock_ << std::endl;
+    
+    // We have a socket. Bounce the session
+    if (session_) delete session_;
+    session_ = new Session();
     return true;
 }
   
@@ -66,6 +69,5 @@ TCPSingleCollector::~TCPSingleCollector() {
   }
 
 }
-
 
 }
