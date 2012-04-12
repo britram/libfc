@@ -38,18 +38,18 @@ bool TCPSingleCollector::ensureSocket() {
     
     std::cerr << "ensureSocket() got TCP socket " << sock_ << std::endl;
     
-    // We have a socket. Bounce the session
-    if (session_) delete session_;
-    session_ = new Session();
+    // We have a socket. Bounce the session.
+    session_->reset();
     return true;
 }
   
 bool TCPSingleCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session) {
 
-  char packbuf[65536];
-  
   // make sure we have a socket to read from
   if (!ensureSocket()) return false;
+
+  // return session (we're a single file reader, we only have one)
+  session = session_;
   
   // deframe directly from the socket
   return mbuf.deframe(sock_, *session_);

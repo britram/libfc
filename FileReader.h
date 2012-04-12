@@ -26,7 +26,7 @@ public:
  */
   FileReader(std::string filename):
     Collector(),
-    session_(),
+    session_(new Session()),
     filename_(filename),
     fp_(NULL) {
     }
@@ -42,9 +42,9 @@ protected:
   virtual bool _receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session);
   
 private:
-  std::tr1::shared_ptr<Session>    session_;
-  std::string                      filename_;
-  mutable FILE                     *fp_;
+  std::tr1::shared_ptr<Session>     session_;
+  std::string                       filename_;
+  mutable FILE                      *fp_;
 };
 
 } // namespace IPFIX

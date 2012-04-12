@@ -42,6 +42,11 @@ public:
   std::list<const WireTemplate *>activeTemplates(uint32_t domain);
 
   bool decodeTemplateRecord(Transcoder& xc, uint32_t domain);
+  
+  void reset() {
+      next_seq_.clear();
+      tib_.clear();
+  }
 
 private:
   std::map<uint32_t, uint32_t>                                    next_seq_;

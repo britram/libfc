@@ -46,9 +46,12 @@ bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& se
   // wrap the packet in an istringstream
   std::string packstr(packbuf, len);
   std::istringstream packis(packstr);
+  
+  // return session
+  session = session_;
 
   // FIXME everything in the same session, not 5101 compliant
-  return mbuf.deframe(packis, session_);      
+  return mbuf.deframe(packis, *session_);      
 }
 
 UDPCollector::~UDPCollector() {

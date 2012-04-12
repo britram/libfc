@@ -28,7 +28,7 @@ public:
  */
     UDPCollector():
         Collector(),
-        session_(),
+        session_(new Session()),
         netaddr_("4739", IPPROTO_UDP, AF_INET),
         sock_(-1)
         {}
@@ -38,7 +38,7 @@ public:
  */
     UDPCollector(const NetAddress& netaddr):
         Collector(),
-        session_(),
+        session_(new Session()),
         netaddr_(netaddr),
         sock_(-1)
         {}
@@ -56,7 +56,7 @@ protected:
 private:
     bool ensureSocket();
 
-    Session         session_;
+    std::tr1::shared_ptr<Session>         session_;
     NetAddress      netaddr_;
     int             sock_;
 };
