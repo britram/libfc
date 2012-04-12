@@ -92,14 +92,15 @@ void MBuf::populateSetlist(Transcoder& xc, Session& session) {
         }
       }
     
-    } else if (sle.id < kMinSetID) {
-      // FIXME log skip
-      std::cerr << "skipping unsupported set ID" << sle.id << std::endl;
-    } else {
+    } else if (sle.id >= kMinSetID) {
+      // this is a data set
       setlist_.push_back(sle);
       xc.advance(sle.len - kSetHeaderLen);
-//      fprintf(stderr, "add set id %u offset %u length %u\n", sle.id, sle.off, sle.len);
-    }
+    } else {
+      // this is a new/illegal template set; just skip it and keep going
+      std::cerr << "skipping unsupported set ID" << sle.id << std::endl;
+      xc.advance(sle.len - kSetHeaderLen);
+    } 
   }
 }
 
