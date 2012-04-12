@@ -118,6 +118,17 @@ public:
    * @param iespec the Information Element to add as an IESpec
    */
   void add(const std::string& iespec);
+  
+  /**
+   * Add an unknown Information Element with no type information 
+   * (as received in a template) to the Information Model. Stores the IE
+   * as an octetArray with a generated name.
+   *
+   * @param pen the private enterprise number to add, or 0 for an IANA IE
+   * @param number the IE number (low-order 15 bits without enterprise bit)
+   * @param size the IE length
+   */
+  void add_unknown(uint32_t pen, uint16_t number, uint16_t size);
 
   /**
    * Look up and return a pointer to the canonical Information Element given 

@@ -55,8 +55,8 @@ bool Session::decodeTemplateRecord(Transcoder &xc, uint32_t domain) {
     return false;
   }
   
-  uint16_t tid, iecount, ienum, ielen;
-  uint32_t iepen;
+  uint16_t tid = 0, iecount = 0, ienum = 0, ielen = 0;
+  uint32_t iepen = 0;
   
   // decode template record header
   (void) xc.decode(tid);
@@ -92,8 +92,12 @@ bool Session::decodeTemplateRecord(Transcoder &xc, uint32_t domain) {
     // add IE to template 
     const InfoElement *ie = InfoModel::instance().lookupIE(iepen, ienum, ielen);
     if (ie == NULL) {
-      // FIXME add to the model with a fake name. later.
-      throw std::runtime_error("Unknown IE in template; check information model and try again");
+        // Add IE to infomodel if we don't know about it yet
+        InfoModel::instance().add_unknown(iepen, ienum, ielen);
+        ie = InfoModel::instance().lookupIE(iepen, ienum, ielen);
+        if (ie == NULL) {
+            throw std::logic_error("Failed to add unknown IE from template");
+        }
     }
     tmpl->add(ie);
   }

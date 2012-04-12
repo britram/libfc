@@ -90,6 +90,15 @@ void InfoModel::add(const InfoElement& ie) {
 void InfoModel::add(const std::string& iespec) {
   add(parseIESpec(iespec));
 }
+
+void InfoModel::add_unknown(uint32_t pen, uint16_t number, uint16_t len) {
+  std::string name = "_unknown_" + boost::lexical_cast<std::string>(pen) + 
+                     "_" + boost::lexical_cast<std::string>(number);
+
+  InfoElement ie(name, pen, number, lookupIEType("octetArray"), len);
+
+  add(ie);
+}
   
 const InfoElement *InfoModel::lookupIE(uint32_t pen, uint16_t number, uint16_t len) const {  
   std::map<uint16_t, std::tr1::shared_ptr<InfoElement> >::const_iterator iter;
@@ -145,7 +154,6 @@ const InfoElement *InfoModel::lookupIE(const char* iespec) const {
   // Parse the Information Element and look it up
   return lookupIE(parseIESpec(iespec));
 }    
-
 
 void InfoModel::dump(std::ostream &os) const {
   
