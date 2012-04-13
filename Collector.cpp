@@ -46,12 +46,14 @@ bool Collector::receiveMessage(MBuf& mbuf) {
     if (!set_tmpl->isActive()) {
       // Inactive set template means that the template hasn't been 
       // received yet. Skip. We might want to count these later.
+      std::cerr << "No template for set " << sliter->id << "; skipping." << std::endl;
       break;
     }
     
     receiver = receiverForTemplate(set_tmpl);
     if (receiver == NULL) {
       // No receiver, none registered. Skip it.
+      std::cerr << "No receiver for set " << sliter->id << "; skipping." << std::endl;
       break;
     }
     
@@ -69,6 +71,8 @@ bool Collector::receiveMessage(MBuf& mbuf) {
 void Collector::registerReceiver(const IETemplate* mintmpl, 
                                  SetReceiver* receiver) {
   receivers_[mintmpl] = receiver;
+  std::cerr << "Registered a receiver for template:" << std::endl;
+  mintmpl->dump(std::cerr);
 }
 
 } /* namespace IPFIX */

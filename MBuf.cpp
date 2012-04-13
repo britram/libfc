@@ -98,7 +98,7 @@ void MBuf::populateSetlist(Transcoder& xc, Session& session) {
       xc.advance(sle.len - kSetHeaderLen);
     } else {
       // this is a new/illegal template set; just skip it and keep going
-      std::cerr << "skipping unsupported set ID" << sle.id << std::endl;
+      std::cerr << "skipping unsupported set ID " << sle.id << std::endl;
       xc.advance(sle.len - kSetHeaderLen);
     } 
   }
