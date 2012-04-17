@@ -8,7 +8,7 @@ bool TCPSingleCollector::ensureSocket() {
     socklen_t sa_len;
 
     // Short-circuit if we have a receiver socket
-    if (sock_ >= 0) return true;
+    if (fp_) return true;
     
     // First make sure we have a listener
     if (lsock_ < 0) {
@@ -38,6 +38,9 @@ bool TCPSingleCollector::ensureSocket() {
     
     std::cerr << "ensureSocket() got TCP socket " << sock_ << std::endl;
     
+    // Wrap the socket in a file pointer (buffers segment boundaries)
+    fp_ = fdopen(sock_, "r");
+    
     // We have a socket. Bounce the session.
     session_->reset();
     return true;
@@ -48,18 +51,19 @@ bool TCPSingleCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Sessio
   // make sure we have a socket to read from
   if (!ensureSocket()) return false;
 
-  // return session (we're a single file reader, we only have one)
+  // return session (we're a single TCP reader, we only have one)
   session = session_;
   
   // deframe directly from the socket
-  return mbuf.deframe(sock_, *session_);
+  return mbuf.deframe(fp_, *session_);
   
   // FIXME need to handle closed socket
 }
 
 TCPSingleCollector::~TCPSingleCollector() {
-  if (sock_ >= 0) {
-    close(sock_);
+  if (fp_) {
+    fclose(fp_);
+    fp_ = NULL;
     sock_ = -1;
   }
 

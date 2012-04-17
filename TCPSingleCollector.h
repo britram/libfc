@@ -29,7 +29,8 @@ public:
         session_(new Session()),
         netaddr_("4739", IPPROTO_TCP, AF_INET),
         lsock_(-1),
-        sock_(-1)
+        sock_(-1),
+        fp_(NULL)
         {}
 
 /**
@@ -40,7 +41,8 @@ public:
         session_(new Session()),
         netaddr_(netaddr),
         lsock_(-1),
-        sock_(-1)
+        sock_(-1),
+        fp_(NULL)
         {}
 
 
@@ -56,10 +58,11 @@ protected:
 private:
     bool ensureSocket();
 
-    std::tr1::shared_ptr<Session>                         session_;
+    std::tr1::shared_ptr<Session>    session_;
     NetAddress                       netaddr_;
     int                              lsock_;
     int                              sock_;
+    FILE*                            fp_;
 };
 
 } // namespace IPFIX
