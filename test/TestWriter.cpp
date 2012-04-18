@@ -21,14 +21,13 @@ int main (int argc, char *argv[]) {
         e = new UDPExporter(na, kTestDomain);
       } else if (protocol == "tcp") {
           NetAddress na(outspec,"4739",IPPROTO_TCP);
-          e = new TCPExporter(na, kTestDomain);
+          e = new TCPExporter(na, kTestDomain, true);
       } else {
         e = new FileWriter(outspec, kTestDomain);
       }
     } else {
       e = new FileWriter("test.ipfix", kTestDomain);
     }
-
 
     // create templates for our structures
     StructTemplate sfstmpl;
