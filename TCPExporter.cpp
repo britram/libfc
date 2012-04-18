@@ -31,7 +31,9 @@ namespace IPFIX {
                 ts.tv_nsec = 0;
 
                 // FIXME check return, add max count, all that friendly stuff
-                nanosleep(&ts, NULL);
+                if (nanosleep(&ts, NULL) < 0) {
+                    throw IOError("TCPExporter killed while retrying.");
+                }
 
                 // try to reconnect
                 fd_ = addr_.create_socket();
