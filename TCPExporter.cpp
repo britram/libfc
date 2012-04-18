@@ -29,11 +29,13 @@ namespace IPFIX {
                 // wait before retry
                 ts.tv_sec = retry_delay_;
                 ts.tv_nsec = 0;
-                
+
+                // FIXME check return, add max count, all that friendly stuff
                 nanosleep(&ts, NULL);
 
                 // try to reconnect
                 fd_ = addr_.create_socket();
+                
             } else {
                 throw IOError(strerror(errno));
             }            
