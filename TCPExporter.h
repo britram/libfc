@@ -10,7 +10,7 @@ namespace IPFIX {
 class TCPExporter : public Exporter {
 public:
   
-  static const size_t kDefaultMTU = 1476;
+  static const size_t kDefaultMTU = 65535;
   
   TCPExporter(const NetAddress& addr, 
               uint32_t domain, 
