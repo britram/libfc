@@ -191,9 +191,8 @@ bool WireTemplate::decode(Transcoder& xc, const StructTemplate &struct_tmpl, uin
     return false;
   }
   
-  // Note: Void casts here are safe, since we checked minlen. 
-  //       When we move to varlen encoding, we'll need to checkpoint and rollback.
-  // FIXME this should be sped up by building a transcode plan.
+  // FIXME speed this up with a transcode plan
+
   xc.checkpoint();
   for (IETemplateIter iter = ies_.begin();
        iter != ies_.end();
@@ -210,7 +209,10 @@ bool WireTemplate::decode(Transcoder& xc, const StructTemplate &struct_tmpl, uin
         //    off, off + len, reinterpret_cast<long>(struct_cp));
         if (!xc.decode(struct_cp + off, len, *iter)) goto err;
       }
-    } 
+    } else {
+        // not in struct template, need to skip this IE
+        xc.decodeSkip(*iter);
+    }
   }
   return true;
 

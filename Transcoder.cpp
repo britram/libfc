@@ -286,6 +286,26 @@ bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
 }
 
 
+bool Transcoder::decodeSkip(const InfoElement *ie) {
+  size_t ielen = ie->len();
+  
+  // Get variable length
+  if (ielen == kVarlen) {
+    cur_ = decode_varlen_length(cur_, ielen);
+  }
+
+  // Ensure there are enough bytes available in the buffer
+  if (ielen > avail()) {
+    return false;
+  }
+  
+  std::cerr << "** skipping len " << ielen << std::endl;
+  
+  // and skip
+  cur_ += ielen;
+  return true;
+}
+
 
 bool Transcoder::decodeMessageHeader(uint16_t& len, 
                                  uint32_t& export_time, 

@@ -320,7 +320,23 @@ namespace IPFIX {
      *         false if not enough content available
      */
     bool decode(uint8_t* val, size_t len, const InfoElement *ie);
+
+    /**
+     * Decode the value described by a given information element
+     * at the cursor into an unbounded VarlenField
+     * FIXME what is the ownership contract here
+     *
+     * @param vf pointer to VarlenField to fill
+     * @param ie pointer to IE representing the field to decode;
+     *           the length and type of the field to decode
+     *           is taken from this IE. 
+     * @return true if the decode succeeded, 
+     *         false if not enough content available
+     */
+
     bool decode(VarlenField *vf, const InfoElement *ie);
+
+    bool decodeSkip(const InfoElement *ie);
 
     /**
      * Decode a 16-bit integer at the cursor. Used for internal 
