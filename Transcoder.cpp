@@ -278,7 +278,7 @@ bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
   vf->cp = cur_;
   vf->len = ielen;
   
-  std::cerr << "** decoding vf len " << ielen << std::endl;
+  //std::cerr << "** decoding vf len " << ielen << std::endl;
   
   // and skip
   cur_ += ielen;
@@ -299,7 +299,7 @@ bool Transcoder::decodeSkip(const InfoElement *ie) {
     return false;
   }
   
-  std::cerr << "** skipping len " << ielen << std::endl;
+  //std::cerr << "** skipping len " << ielen << std::endl;
   
   // and skip
   cur_ += ielen;
