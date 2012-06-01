@@ -68,7 +68,8 @@ static uint8_t *encode_varlen_length(uint8_t *dst, size_t varlen) {
 static uint8_t *decode_varlen_length(uint8_t *src, size_t& varlen) {
   varlen = *(src++);
   if (varlen == 255) {
-    varlen = ((*(src++)) << 8) + (*(src++));
+      varlen = ((*(src++)) << 8);
+      varlen += (*(src++));
   }
   return src;
 }
