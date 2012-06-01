@@ -95,12 +95,10 @@ std::string new_extension(const std::string& filename, const std::string& extens
   }
 }
 
-int main_to_pcap(const std::string& filename) {
+int main_to_pcap_inner(Collector &c, const std::string pcap_filename) {
 
-  // open an ipfix source
-  FileReader fr(filename);
   pcap_t* pcap = pcap_open_dead(DLT_RAW, 65535);
-  pcap_dumper_t* dumper = pcap_dump_open(pcap, new_extension(filename, std::string("pcap")).c_str());
+  pcap_dumper_t* dumper = pcap_dump_open(pcap, pcap_filename.c_str());
   if (!dumper) {
     std::cerr << "failed to open pcap dumper: " << pcap_geterr(pcap) << std::endl;
     return 1;
@@ -110,16 +108,36 @@ int main_to_pcap(const std::string& filename) {
   CapfixReceiver cr(dumper);
 
   // register our set receiver
-  fr.registerReceiver(&caftmpl, &cr);
+  c.registerReceiver(&caftmpl, &cr);
   
   while (!didQuit()) {
     MBuf mbuf;
-    if (!fr.receiveMessage(mbuf)) { doQuit(0); }
+    if (!c.receiveMessage(mbuf)) { doQuit(0); }
   }
   
   // clean up (file reader closes automatically on destruction)
   pcap_dump_close(dumper);
   return 0;
+    
+}
+
+int main_to_pcap_file(const std::string& filename) {
+
+  // open an ipfix source
+  FileReader fr(filename);
+  
+  // and go
+  return main_to_pcap_inner(fr, new_extension(filename, std::string("pcap")));
+
+}
+
+int main_to_pcap_tcp(const std::string& pcap_filename) {
+
+  // open an ipfix source on tcp
+  TCPSingleCollector tc;
+  
+  // and go
+  return main_to_pcap_inner(tc, pcap_filename);
 }
 
 int main_to_ipfix(const std::string& filename) {
@@ -189,10 +207,13 @@ int main (int argc, char *argv[]) {
   if (argc >= 2) {
     std::string filename(argv[1]);
     if (filename.find(".ipfix", filename.length() - 6) != std::string::npos) {
-      return main_to_pcap(filename);
+      return main_to_pcap_file(filename);
     } else if (filename.find(".pcap", filename.length() - 5) != std::string::npos) {
       return main_to_ipfix(filename);
     } 
+  } else {
+     // no args, receive to capfix.pcap
+     return main_to_pcap_tcp("capfix.pcap");
   }
   
   std::cerr << "need a filename ending in .ipfix or .pcap to continue..." << std::endl;
