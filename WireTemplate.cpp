@@ -1,5 +1,8 @@
-#include "WireTemplate.h"
 #include <arpa/inet.h>
+
+#include "WireTemplate.h"
+
+#include "exceptions/TemplateInactiveError.h"
 
 namespace IPFIX {
 
@@ -106,12 +109,12 @@ bool WireTemplate::encode(Transcoder& xc, const StructTemplate& struct_tmpl, uin
 {  
   // Refuse to encode an with inactive template
   if (!active_) {
-    throw std::logic_error("Cannot encode using an inactive template");
+    throw TemplateInactiveError("encode");
   }
   
   // Refuse to encode unless we have at _least_ minimum length avail.
   if (xc.avail() < minlen_) {
-    std::cerr << "encoder overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
+    //std::cerr << "encoder overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
     return false;
   }
   
@@ -148,7 +151,7 @@ bool WireTemplate::encodeTemplateRecord(Transcoder &xc) const {
 
   // Refuse to encode an inactive template
   if (!active_) {
-    throw std::logic_error("Cannot encode an inactive template");
+    throw TemplateInactiveError("encode");
   }
 
   // Make sure the encoder has space for the encoded version of the template
@@ -182,12 +185,12 @@ bool WireTemplate::encodeTemplateRecord(Transcoder &xc) const {
 bool WireTemplate::decode(Transcoder& xc, const StructTemplate &struct_tmpl, uint8_t* struct_cp) const {  
   // Refuse to decode an with inactive template
   if (!active_) {
-    throw std::logic_error("Cannot decode using an inactive template");
+    throw TemplateInactiveError("decode");
   }
   
   // Refuse to decode unless we have at _least_ minimum length avail.
   if (xc.avail() < minlen_) {
-    std::cerr << "decoder overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
+    //std::cerr << "decoder overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
     return false;
   }
   

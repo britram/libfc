@@ -1,6 +1,11 @@
-#include <NetAddress.h>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
+#include <string>
+
+#include "NetAddress.h"
+
+#include "exceptions/AddrtypeUnsupportedError.h"
+#include "exceptions/SockaddrMissingError.h"
 
 namespace IPFIX {
 
@@ -109,19 +114,19 @@ int NetAddress::socktype() const {
 size_t NetAddress::addrlen() const {
     if (!sa_valid_) 
     switch (family_) {
-        case PF_INET:
+    case PF_INET:
         return sizeof(struct sockaddr_in);
-        case PF_INET6:
+    case PF_INET6:
         return sizeof(struct sockaddr_in6);
-        default:
-        throw std::invalid_argument("unsupported addrtype");
+    default:
+        throw AddrtypeUnsupportedError(family_);
     }
     return 0; // warning fix
 }
 
 uint16_t NetAddress::port() const {
     if (!sa_valid_) {
-        throw std::invalid_argument("can't get a port without a struct sockaddr");
+        throw SockaddrMissingError();
     }
     switch(family_) {
         case PF_INET:
@@ -145,13 +150,13 @@ void NetAddress::cache_names() const {
     }
     
     if (!servname_.length()) {
-        servname_ = boost::lexical_cast<std::string>(port());
+      servname_ = std::to_string(port());
     }
     
     if (!sessionname_.length()) {
         sessionname_ = hostname_ + "/" + 
                        servname_ + "/" +
-                       boost::lexical_cast<std::string>(proto_);
+          std::to_string(proto_);
     }
 }
 

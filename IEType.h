@@ -15,25 +15,20 @@
 #ifndef IPFIX_IETYPE_H // idem
 #define IPFIX_IETYPE_H // hack
 
-#include <string>
 #include <cstring>
-#include <vector>
 #include <map>
 #include <stdexcept>
+#include <string>
+#include <vector>
+
 #include <boost/any.hpp>
 
 #include "Constants.h"
 
+#include "exceptions/IETypeError.h"
+
 namespace IPFIX {
 
-/**
- * A logic error indicating a programming fault concerning the handling of IPFIX types
- */
-class IETypeError : public std::logic_error {
-public:
-  explicit IETypeError(const std::string& what_arg): 
-    std::logic_error(what_arg) {}
-};
 
 class IEType {
 

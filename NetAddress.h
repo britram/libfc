@@ -4,21 +4,20 @@
  * NetAddress represents a network (peer) endpoint (address, protocol, port),
  * whether looked up from a name or derived from a socket address.
  */
+#ifndef IPFIX_NETADDRESS_H // idem
+#define IPFIX_NETADDRESS_H // hack
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#ifndef IPFIX_NETADDRESS_H // idem
-#define IPFIX_NETADDRESS_H // hack
 
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <memory.h>
 
-#include <boost/lexical_cast.hpp>
 
 namespace IPFIX {
     
@@ -28,34 +27,16 @@ namespace IPFIX {
         NetAddress(const std::string& hostname, 
                    const std::string& servname, 
                    uint8_t proto, 
-                   int family, 
-                   bool passive):
+                   int family = PF_UNSPEC, 
+                   bool passive = false):
             hostname_(hostname),
             servname_(servname),
             sessionname_(),
             proto_(proto),
             family_(family),
             passive_(passive),
-            nil_host_(false),
-            sa_valid_(false)
-            {
-                if (hostname_.length() == 0) nil_host_ = true;
-            }
-
-        NetAddress(const std::string& hostname, 
-                   const std::string& servname,
-                   uint8_t proto):
-            hostname_(hostname),
-            servname_(servname),
-            sessionname_(),
-            proto_(proto),
-            family_(PF_UNSPEC),
-            passive_(false),
-            nil_host_(false),
-            sa_valid_(false)
-            {
-                if (hostname_.length() == 0) nil_host_ = true;
-            }
+            nil_host_(hostname.length() == 0),
+            sa_valid_(false) {}
 
         NetAddress(const std::string& servname, uint8_t proto, int family):
             hostname_(),

@@ -1,0 +1,246 @@
+                     How testing works in lib/fc
+
+                                - or -
+
+          How I learned to stop worrying and love Boost.Test
+
+by Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+
+
+1 EXECUTING THE TESTS
+
+There is one big testing executable in lib/fc, called fctest.  You use
+it as follows:
+
+   ./fctest [--show-progress] [--log-level=test_suite|...] [--run_test=test]
+
+If you omit all arguments, the entire set of tests are run.  There are
+more options; inquire about them with --help.
+
+Tests are organised as a tree and, like directories and files, suites
+and tests have names.  If you want to run only a specific battery of
+tests, specify them with --run_test=...  For example, at the time of
+writing, there are these tests:
+
+Basics
+  Constants
+  NetAddress
+  MBuf
+Reader
+  Consume
+Writer
+  File
+
+So, to run all "Basic" tests, say
+
+    ./fctest --run_test=Basic
+
+To run the File test of the Writer test suite, say
+
+   ./fctest --run_test=Writer/File
+
+Of course it would also be possible to organise the tests by class;
+this is not yet settled.
+
+
+2 WRITING YOUR OWN TESTS
+
+First, a rant.
+
+The thing is, once you've understood how it works, it's really
+simple.  But of course, you'd never get that form the official
+documentation. Case in point, the official documentation begins like
+this, in a section entitled "Part I. Boost Test Library: The Execution
+Monitor":
+
+   Sometimes we need to call a function and make sure that no user or
+   system originated exceptions are being thrown by it. Uniform
+   exception reporting is also may be convenient. That's the purpose
+   of the Boost.Test's Execution Monitor.
+
+   The Execution Monitor is a lower-level component of the Boost Test
+   Library. It is the base for implementing all other Boost.Test
+   components, but also can be used standalone to get controlled
+   execution of error-prone functions with a uniform error
+   notification. The Execution Monitor calls a user-supplied function
+   in a controlled environment, relieving users from messy error
+   detection.
+
+I kid you not, these are genuinely the first paragraphs of the
+documentation.  What's that you say? This is not the User's guide?
+Fair point. *That* piece of documentation begins like this:
+
+   The Execution Monitor is designed to solve the problem of executing
+   potentially dangerous function that may result in any number of
+   error conditions, in monitored environment that should prevent any
+   undesirable exceptions to propagate out of function call and
+   produce consistent result report for all outcomes. The Execution
+   Monitor is able to produce informative report for all standard C++
+   exceptions and intrinsic types. All other exceptions are reported
+   as unknown. If you prefer different message for your exception
+   class or need to perform any action, the Execution Monitor supports
+   custom exception translators. There are several other parameters of
+   the monitored environment can be configured by setting appropriate
+   properties of the Execution Monitor.
+
+   All symbols in the Execution Monitor implementation are located in
+   the namespace boost. To use the Execution Monitor you need to:
+
+       1. #include <boost/test/execution_monitor.hpp>
+       2. Make an instance of execution_monitor
+       3. Optionally register custom exception translators for
+          exception classes which require special processing.
+
+There. Happy now? Of course, you should know that when you write a
+test case, you need do none of these things.
+
+Okay, so how do you do it?  Simple really.  Let's say you've created a
+brand new class IPFIX::Foo and want to write test cases for it.
+
+First, create lib/fc/test/TestFoo.cpp.  Here is a good skeleton:
+
+-------- 8< ------- snip ------ Skeleton for class tests
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/test_tools.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include "Foo.h"
+
+using namespace IPFIX;
+
+BOOST_AUTO_TEST_SUITE(Suite Name)
+
+BOOST_AUTO_TEST_CASE(Testcase Name) {
+  BOOST_CHECK_EQUAL(0, 1);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+-------- 8< ------- snip ------
+
+The file name must comply with the glob pattern lib/fc/Test*.cpp.
+
+This file contains just one test case, but you can have many; just
+use more BOOST_AUTO_TEST_CASE(...).  You can also in the same file
+create test cases that are in different suites (different places in
+the testing tree). To do that, use more BOOST_AUT_TEST_SUITE(...)
+... BOOST_AUTO_TEST_SUITE_END().  For example, let's say you want to
+put some Foo tests into the "Basic" suite and some in the "Reader"
+suite:
+
+-------- 8< ------- snip ------ Example of multiple suites and tests
+BOOST_AUTO_TEST_SUITE(Basics)
+
+BOOST_AUTO_TEST_CASE(Foo01) { /* ... */ }
+BOOST_AUTO_TEST_CASE(Foo02) { /* ... */ }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(Reader)
+
+BOOST_AUTO_TEST_CASE(Foo01) { /* ... */ }
+BOOST_AUTO_TEST_CASE(Foo02) { /* ... */ }
+
+BOOST_AUTO_TEST_SUITE_END()
+-------- 8< ------- snip ------
+
+Congratulations, you've now added tests Basics/Foo01, Basics/Foo02,
+Reader/Foo01, and Reader/Foo02.
+
+Now, in the lib/fc directory, say
+
+    cmake .
+    make
+
+and you will get a fresh fctest executable, where you can run your
+tests like so:
+
+    fctest --run-test=Basics/Foo01
+
+If you want to nest even further, you could do it like this:
+
+-------- 8< ------- snip ------ Example of nested suites
+BOOST_AUTO_TEST_SUITE(Basics)
+BOOST_AUTO_TEST_SUITE(Foo)
+
+BOOST_AUTO_TEST_CASE(Foo01) { /* ... */ }
+BOOST_AUTO_TEST_CASE(Foo02) { /* ... */ }
+
+BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()
+-------- 8< ------- snip ------
+
+You would now have tests Basics/Foo/Foo01 and Basics/Foo/Foo02.  This
+would give you the ability to run all Foo-related Basics tests like
+this:
+
+    fctest --run-test=Basics/Foo
+
+and only the Foo02 test like this:
+
+    fctest --run-test=Basics/Foo/Foo02
+
+I'm not going to describe all the assertions that you can do with
+Boost.Test; for this you really should go and read the fine manual.
+But I am going to show you one neat little trick.
+
+Let's say that you have a function "int foo(int)" that you want to
+test for prime numbers less than 30, where foo(i) should return i.
+The short way to write this would probably use the new C++11 feature
+called lambda:
+
+-------- 8< ------- snip ------ Call function many times
+BOOST_AUTO_TEST_CASE(Foo03) {
+  int primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 };
+
+  std::for_each(primes, primes + sizeof(primes)/sizeof(primes[0]),
+                [] (int i) { 
+                  BOOST_CHECK_EQUAL(foo(i), i);
+                });
+}
+-------- 8< ------- snip ------
+
+The "[]" introduces the lambda, then comes the parameter list and then
+the function body.
+
+The "[]" specifies the closure, that is, which names of the
+surrounding environment you want to use inside the lambda.  That comes
+in handy occasionally.  For example, if foo() is a binary function,
+say "int foo(const char*, int)", and you want to keep the first
+parameter constant while varying the second one, you can do this:
+
+-------- 8< ------- snip ------ Lambda closures
+BOOST_AUTO_TEST_CASE(Foo04) {
+  int primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 };
+  const char* name = "testing foo";
+
+  std::for_each(primes, primes + sizeof(primes)/sizeof(primes[0]),
+                [name] (int i) { 
+                  BOOST_CHECK_EQUAL(foo(name, i), i);
+                });
+}
+-------- 8< ------- snip ------
+
+This would cause foo() to be called as
+
+    foo("testing foo", 2);
+    foo("testing foo", 3);
+    ...
+    foo("testing foo", 29);
+
+If you want also to change the variable from the environment, use
+an ampersand before the name:
+
+-------- 8< ------- snip ------ Lambda closures, writing to variables
+BOOST_AUTO_TEST_CASE(Foo04) {
+  int primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 };
+  const char* name = "testing foo";
+  unsigned int n_errs = 0;
+
+  std::for_each(primes, primes + sizeof(primes)/sizeof(primes[0]),
+                [name, &n_errs] (int i) { 
+                  if (foo(name, i) != i)
+                    n_errs++;
+                });
+  BOOST_CHECK_EQUAL(n_errs, 0);
+}
+-------- 8< ------- snip ------

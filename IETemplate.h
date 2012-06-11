@@ -15,14 +15,18 @@
 #ifndef IPFIX_IETEMPLATE_H // idem
 #define IPFIX_IETEMPLATE_H // hack
 
-#include <vector>
 #include <cstring>
 #include <iostream>
 #include <stdint.h>
+#include <vector>
+
 #include <boost/unordered_map.hpp>
+
 #include "InfoElement.h"
 #include "Transcoder.h"
 #include "Constants.h"
+
+#include "exceptions/TemplateActiveError.h"
 
 namespace IPFIX {
 
@@ -62,7 +66,7 @@ public:
    */
   void activate() {
     if (active_) {
-      throw std::logic_error("Cannot activate active template");
+      throw TemplateActiveError();
     }
 
     //std::cerr << "activate template (" << domain_ << "," << tid_ << "), " << ies_.size() << " IEs" << std::endl;
@@ -166,7 +170,7 @@ protected:
   void add_inner(const InfoElement* ie) {
     // Can't add to an active template
     if (active_) {
-      throw std::logic_error("Cannot add IEs to an active template");
+      throw TemplateActiveError("adding IEs");
     }
     
     // Add the IE to the IE vector

@@ -1,5 +1,8 @@
 #include "Session.h"
 
+#include "exceptions/IEUnknownError.h"
+#include "exceptions/ReservedTemplateIDError.h"
+
 namespace IPFIX {
 
 uint32_t Session::incrementSequence(uint32_t domain, uint32_t increment) {
@@ -13,16 +16,16 @@ uint32_t Session::checkSequence(uint32_t domain, uint32_t sequence) {
 }
 
 WireTemplate* Session::getTemplate(uint32_t domain, uint16_t tid) {
-  std::cerr << "session getTemplate(" << domain << "," << tid << ")" << std::endl;
+  //std::cerr << "session getTemplate(" << domain << "," << tid << ")" << std::endl;
 
   if (tid < kMinSetID) {
-    throw std::logic_error("Cannot get template with reserved ID");
+    throw ReservedTemplateIDError(tid, kMinSetID);
   }
   
   WireTemplateKey tk(domain, tid);
   std::tr1::shared_ptr<WireTemplate> tsp = tib_[tk];
   if (!tsp.get()) {
-    std::cerr << "    miss, create new template" << std::endl;
+    //std::cerr << "    miss, create new template" << std::endl;
     tsp = std::tr1::shared_ptr<WireTemplate>(new WireTemplate(domain, tid));
     tib_[tk] = tsp;
   }
@@ -96,7 +99,7 @@ bool Session::decodeTemplateRecord(Transcoder &xc, uint32_t domain) {
         InfoModel::instance().add_unknown(iepen, ienum, ielen);
         ie = InfoModel::instance().lookupIE(iepen, ienum, ielen);
         if (ie == NULL) {
-            throw std::logic_error("Failed to add unknown IE from template");
+            throw IEUnknownError(iepen, ienum, ielen);
         }
     }
     tmpl->add(ie);

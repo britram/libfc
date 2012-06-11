@@ -11,7 +11,8 @@
 #ifndef IPFIX_K_H // idem
 #define IPFIX_K_H // hack
 
-#include <stdint.h>
+#include <cstring>
+#include <cstdint>
 
 namespace IPFIX {
     

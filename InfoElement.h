@@ -17,23 +17,26 @@
 
 namespace IPFIX {
 
-/**
- * Immutable class representing an IPFIX Information Element. InfoElements 
- * have a name, number, size, and type. To support reduced-length encoding, an
- * InfoElement may keep a reference to different-sized versions of itself.
- * Canonical InfoElements are stored within an InfoModel, and only 
- * canonical InfoElements should be used in IETemplates; use the lookupIE() 
- * method on InfoModel to get one for an example (constructed or parsed)
- * InfoElement.
+/** An IPFIX Information Element.
+ *
+ * InfoElements have a name, number, size, and type. To support
+ * reduced-length encoding, an InfoElement may keep a reference to
+ * different-sized versions of itself.  Canonical InfoElements are
+ * stored within an InfoModel, and only canonical InfoElements should
+ * be used in IETemplates; use the lookupIE() method on InfoModel to
+ * get one for an example (constructed or parsed) InfoElement.
+ *
+ * This class does not contain any mutator methods; instances of this
+ * class are therefore immutable.
  */
 class InfoElement {
 
 public:
   
-  /**
-   * Create a new, empty InfoElement. Creates a nonsensical, 
-   * nameless IE of size 0; used primarily 
-   * for sticking InfoElements in STL containers before assignment.
+  /** Creates a new, empty InfoElement.
+   *
+   * Creates a nonsensical, nameless IE of size 0; used primarily for
+   * sticking InfoElements in STL containers before assignment.
    */
   InfoElement(): 
     name_(std::string()),
@@ -42,8 +45,7 @@ public:
     ietype_(IEType::octetArray()),
     len_(0) {}
 
-  /**
-   * Create a new InfoElement by copying an existing one.
+  /** Creates a new InfoElement by copying an existing one.
    *
    * @param rhs the IE to copy
    */
@@ -54,10 +56,9 @@ public:
     ietype_(rhs.ietype()),
     len_(rhs.len()) {}   
 
-  /**
-   * Create a new InfoElement given values for its fields.
+  /** Creates a new InfoElement given values for its fields.
    *
-   * @param name the IE name as a std::string
+   * @param name the IE name
    * @param pen the private enterprise number (0 for IANA IEs)
    * @param number the IE number (with the enterprise bit set to 0)
    * @param ietype pointer to the IEType representing the IE's type; get from
@@ -75,8 +76,8 @@ public:
     ietype_(ietype),
     len_(len) {}
     
-  /**
-   * Create a new InfoElement by copying an existing one and changing its size
+  /** Creates a new InfoElement by copying an existing one and
+   * changing its size.
    *
    * @param rhs the IE to copy
    * @param nlen the new length
@@ -88,52 +89,46 @@ public:
     ietype_(rhs.ietype()),
     len_(nlen) {}   
     
-  /** 
-   * Get the IE's name
+  /** Gets the IE's name
    *
    * @return the IE's name
    */
   const std::string& name() const { return name_; }
 
-  /** 
-   * Get the IE's private enterprise number.
+  /** Gets the IE's private enterprise number.
    *
    * @return the IE's PEN. Returns 0 if the IE is in the IANA registry.
    */
   uint32_t pen() const { return pen_; }
 
-  /** 
-   * Get the IE's number.
+  /** Gets the IE's number.
    *
    * @return the IE's number. The enterprise bit is cleared, even if the IE 
    *         is enterprise-specific.
    */
   uint16_t number() const { return number_; }
   
-  /**
-   * Get a pointer to the IE's type
+  /** Gets a pointer to the IE's type
    *
    * @return a pointer to the IE's type
    */
   const IEType* ietype() const { return ietype_; }
   
-  /** 
-   * Get the IE's length.
+  /** Gets the IE's length.
    *
    * @return the IE's length.
    */  
   uint16_t len() const { return len_; }
 
-  /**
-   * Get an IE derived from or identical to this IE for a given length
+  /** Gets an IE derived from or identical to this IE for a given
+   * length.
    *
    * @return a pointer to the IE's type
    */
   const InfoElement* forLen(uint16_t len) const;
 
-  /**
-   * Determine whether two IE's match each other for purposes of template 
-   * compatibility, based on number and PEN only.
+  /** Determines whether two IE's match each other for purposes of
+   * template compatibility, based on number and PEN only.
    *
    * @param rhs the InfoElement to compare to
    * @return true if the number and PEN match
@@ -142,15 +137,13 @@ public:
     return (rhs.pen() == pen_) && (rhs.number() == number_);
   }
 
-  /**
-   * Get a complete IESpec for this InfoElement.
+  /** Gets a complete IESpec for this InfoElement.
    *
    * @return an iespec
    */ 
   std::string toIESpec() const;
 
-  /**
-   * Helper class for hashmapping IE by pointer based on number and PEN.
+  /** Helper class for hashmapping IE by pointer based on number and PEN.
    */
   class ptrIdHash {
   public:
@@ -159,8 +152,7 @@ public:
     } 
   };
 
-  /**
-   * Helper class for comparing IE by pointer based on number and PEN.
+  /** Helper class for comparing IE by pointer based on number and PEN.
    */
   class ptrIdEqual {
   public:

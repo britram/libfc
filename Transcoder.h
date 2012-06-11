@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /**
  * @file
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
@@ -37,30 +38,6 @@ namespace IPFIX {
     size_t    len;
     // content pointer
     uint8_t*  cp;
-  };
-  
-  /**
-   * Runtime error thrown when a low-level IO error occurs during transcoding.
-   * FIXME make sure this gets used properly
-   */
-  class IOError : public std::runtime_error {
-  public:
-    IOError():
-    std::runtime_error(strerror(errno)) {}
-    
-    explicit IOError(const std::string& what_arg): 
-    std::runtime_error(what_arg) {}
-  };
-  
-  /**
-   * Runtime error thrown during decoding when a message is poorly formatted.
-   * Usually indicates that the input stream isn't really IPFIX.
-   * FIXME make sure this gets used properly
-   */
-  class FormatError : public std::runtime_error {
-  public:
-    explicit FormatError(const std::string& what_arg): 
-    std::runtime_error(what_arg) {}
   };
   
   /**
@@ -159,31 +136,12 @@ namespace IPFIX {
      *            cursor starts here
      * @param len length of the subset to focus on.
      */
-    void focus(size_t off, size_t len) {
-      checkpoint();
-      cur_ = base_ + off;
-      if (savemax_) {
-        throw std::logic_error("attempt to focus an already focused transcoder");
-      }
-      savemax_ = max_;
-      if (max_ > cur_ + len) max_ = cur_ + len;
-      //      fprintf(stderr, "xc 0x%016lx   focus from %u to %u\n",
-      //              base_, cur_ - base_, max_ - base_);
-    }
+    void focus(size_t off, size_t len);
     
     /**
      * Restore a transcoder to its state before a previous focus() call.
      */  
-    void defocus() { 
-      if (!savemax_) {
-        throw std::logic_error("attempt to defocus a defocused transcoder");
-      }
-      rollback();
-      max_ = savemax_;
-      savemax_ = NULL;
-      //      fprintf(stderr, "xc 0x%016lx defocus from %u to %u\n",
-      //              base_, cur_ - base_, max_ - base_);
-    }
+    void defocus();
     
     /**
      * Skip octets in the transcoder by advancing the cursor.

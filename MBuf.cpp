@@ -1,20 +1,33 @@
+#include <cstdlib>
+
+#include "Constants.h"
 #include "MBuf.h"
 #include "Transcoder.h"
-#include "Constants.h"
 
-
+#include "exceptions/IOError.h"
 
 namespace IPFIX {
 
+  void MBuf::clear() {
+    delete[] buf_;
+    buf_ = 0;
+    bufsz_ = 0;
+    len_ = 0;
+    domain_ = 0;
+    sequence_ = 0;
+    export_time_ = 0;
+    setlist_.clear();
+  }
+
 bool MBuf::consume(int fd, size_t len, size_t off) {
 
-  int rc = read(fd, buf_ + off, len);
+  ssize_t rc = read(fd, buf_ + off, len);
 
   if (rc == 0) {
     return false;
   } else if (rc == -1) {
     throw IOError(strerror(errno));
-  } else if (rc < len) {
+  } else if (static_cast<size_t>(rc) < len) {
     throw FormatError("Short read: end of stream in message body");    
   } else {
     return true;
@@ -23,7 +36,7 @@ bool MBuf::consume(int fd, size_t len, size_t off) {
   
 bool MBuf::consume(FILE *fp, size_t len, size_t off) {
 
-  int rc = fread(buf_ + off, len, 1, fp);
+  size_t rc = fread(buf_ + off, len, 1, fp);
   
   if (rc == 1) {
     return true;
@@ -39,7 +52,7 @@ bool MBuf::consume(std::istream& is, size_t len, size_t off) {
 
   is.read(reinterpret_cast<char*>(buf_ + off), len);
 
-  if (is.gcount() == len) {
+  if (static_cast<size_t>(is.gcount()) == len) {
     return true;
   } else if (is.eof()) {
       return false;
@@ -51,20 +64,20 @@ bool MBuf::consume(std::istream& is, size_t len, size_t off) {
 
 
 void MBuf::ensure(size_t length) {
-  if (bufsz_ > length) return;
+  if (bufsz_ >= length) return;
 
-  // FIXME do something smarter here
   if (buf_) {
-    buf_ = reinterpret_cast<uint8_t *>(realloc(buf_, length));
+    uint8_t* new_buf = new uint8_t[length];
+    memcpy(new_buf, buf_, bufsz_);
+    memset(new_buf + bufsz_, '\0', length - bufsz_);
+    delete[] buf_;
+    buf_ = new_buf;
   } else {
-    buf_ = reinterpret_cast<uint8_t *>(malloc(length));
+    buf_ = new uint8_t[length];
+    memset(buf_, '\0', length);
   }
   
-  if (buf_) {
-    bufsz_ = length;
-  } else {
-    throw std::bad_alloc();
-  }
+  bufsz_ = length;
 }
 
 void MBuf::populateSetlist(Transcoder& xc, Session& session) {

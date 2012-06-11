@@ -1,3 +1,8 @@
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/parameterized_test.hpp>
+#include <boost/test/test_tools.hpp>
+#include <boost/test/unit_test.hpp>
+
 #include "TestCommon.h"
 
 #include <cerrno>
@@ -23,9 +28,9 @@ private:
 public: 
   CapfixReceiver(pcap_dumper_t* dumper): dumper_(dumper) {}
   
-  virtual void receive(const Collector* collector, 
+  void receive(const Collector* collector, 
                        Transcoder& setxc, 
-                       const WireTemplate* wt) {
+                       const WireTemplate* wt)  {
     
     static int set_count = 0;
     static int rec_count = 0;
@@ -95,10 +100,12 @@ std::string new_extension(const std::string& filename, const std::string& extens
   }
 }
 
-int main_to_pcap_inner(Collector &c, const std::string pcap_filename) {
+int main_to_pcap(const std::string& filename) {
 
+  // open an ipfix source
+  FileReader fr(filename);
   pcap_t* pcap = pcap_open_dead(DLT_RAW, 65535);
-  pcap_dumper_t* dumper = pcap_dump_open(pcap, pcap_filename.c_str());
+  pcap_dumper_t* dumper = pcap_dump_open(pcap, new_extension(filename, std::string("pcap")).c_str());
   if (!dumper) {
     std::cerr << "failed to open pcap dumper: " << pcap_geterr(pcap) << std::endl;
     return 1;
@@ -108,36 +115,16 @@ int main_to_pcap_inner(Collector &c, const std::string pcap_filename) {
   CapfixReceiver cr(dumper);
 
   // register our set receiver
-  c.registerReceiver(&caftmpl, &cr);
+  fr.registerReceiver(&caftmpl, &cr);
   
   while (!didQuit()) {
     MBuf mbuf;
-    if (!c.receiveMessage(mbuf)) { doQuit(0); }
+    if (!fr.receiveMessage(mbuf)) { doQuit(0); }
   }
   
   // clean up (file reader closes automatically on destruction)
   pcap_dump_close(dumper);
   return 0;
-    
-}
-
-int main_to_pcap_file(const std::string& filename) {
-
-  // open an ipfix source
-  FileReader fr(filename);
-  
-  // and go
-  return main_to_pcap_inner(fr, new_extension(filename, std::string("pcap")));
-
-}
-
-int main_to_pcap_tcp(const std::string& pcap_filename) {
-
-  // open an ipfix source on tcp
-  TCPSingleCollector tc;
-  
-  // and go
-  return main_to_pcap_inner(tc, pcap_filename);
 }
 
 int main_to_ipfix(const std::string& filename) {
@@ -191,7 +178,7 @@ int main_to_ipfix(const std::string& filename) {
   return rv;
 }
 
-int main (int argc, char *argv[]) {
+static int test_capfix (const std::string& filename) {
   
   // set up signal handlers
   install_quit_handler();
@@ -204,18 +191,25 @@ int main (int argc, char *argv[]) {
   caftmpl.dump(std::cerr);
   
   // determine what kind of file we're looking at
-  if (argc >= 2) {
-    std::string filename(argv[1]);
-    if (filename.find(".ipfix", filename.length() - 6) != std::string::npos) {
-      return main_to_pcap_file(filename);
-    } else if (filename.find(".pcap", filename.length() - 5) != std::string::npos) {
-      return main_to_ipfix(filename);
-    } 
-  } else {
-     // no args, receive to capfix.pcap
-     return main_to_pcap_tcp("capfix.pcap");
-  }
+  if (filename.find(".ipfix", filename.length() - 6) != std::string::npos) {
+    return main_to_pcap(filename);
+  } else if (filename.find(".pcap", filename.length() - 5) != std::string::npos) {
+    return main_to_ipfix(filename);
+  } 
   
   std::cerr << "need a filename ending in .ipfix or .pcap to continue..." << std::endl;
   return 1;
 }
+
+BOOST_AUTO_TEST_SUITE(Capfix)
+
+BOOST_AUTO_TEST_CASE(CapfixTest) {
+  const char* filenames[] = {"test01.ipfix", "test01.pcap"};
+
+  std::for_each(filenames, filenames + sizeof(filenames)/sizeof(filenames[0]),
+                [] (const char* filename) {
+                  BOOST_CHECK_EQUAL(test_capfix(filename), 0);
+                });
+}
+
+BOOST_AUTO_TEST_SUITE_END()

@@ -8,9 +8,7 @@ std::string InfoElement::toIESpec() const {
 
   os << name_ << "(";
   if (pen_) os << pen_ << "/";
-  os << number_ << ")";
-  os << "<" << ietype_->name() << ">";
-  os << "[" << len_ << "]";
+  os << number_ << ")" << "<" << ietype_->name() << ">" << "[" << len_ << "]";
   
   return os.str();
 };

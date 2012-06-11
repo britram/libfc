@@ -1,12 +1,14 @@
 #ifndef IPFIX_MBUF_H // idem
 #define IPFIX_MBUF_H // hack
 
-#include "Session.h"
-
 #include <stdint.h>
 #include <memory>
 #include <cstdio>
 #include <list>
+
+#include "Session.h"
+
+#include "exceptions/FormatError.h"
 
 namespace IPFIX {
 
@@ -28,10 +30,15 @@ namespace IPFIX {
   class MBuf {
   public:
     MBuf():
-      buf_(NULL), bufsz_(0) {}
+    buf_(NULL), bufsz_(0), len_(0), domain_(0), sequence_(0), export_time_(0) {}
       
-    ~MBuf() { if (buf_) free(buf_); }
-    
+    ~MBuf() { 
+      delete[] buf_; /* Works correctly if buf_ == NULL */
+    }
+
+    /** Clears this MBuf so it's as good as new. */
+    void clear();
+
     /** Get the domain of the last read message */
     const uint32_t domain() const { return domain_; } 
 
@@ -103,8 +110,8 @@ namespace IPFIX {
 
   private:
     // make me uncopyable
-    MBuf(MBuf& rhs);
-    MBuf& operator=(MBuf& rhs);
+    MBuf(MBuf& rhs) = delete;
+    MBuf& operator=(MBuf& rhs) = delete;
 
     void ensure(size_t length);
     

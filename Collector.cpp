@@ -71,8 +71,8 @@ bool Collector::receiveMessage(MBuf& mbuf) {
 void Collector::registerReceiver(const IETemplate* mintmpl, 
                                  SetReceiver* receiver) {
   receivers_[mintmpl] = receiver;
-  std::cerr << "Registered a receiver for template:" << std::endl;
-  mintmpl->dump(std::cerr);
+  //std::cerr << "Registered a receiver for template:" << std::endl;
+  //mintmpl->dump(std::cerr);
 }
 
 } /* namespace IPFIX */

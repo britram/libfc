@@ -1,8 +1,11 @@
+#include <climits>
+#include <sstream>
+#include <string>
+
 #include "InfoModel.h"
 #include "Constants.h"
 
-#include <sstream>
-#include <boost/lexical_cast.hpp>
+#include "exceptions/IESpecError.h"
 
 namespace IPFIX {
 
@@ -37,11 +40,22 @@ const InfoElement InfoModel::parseIESpec(const std::string& iespec) const {
           size = kVarlen;
         } else {
           // parse size
+          unsigned long my_size;
           try {
-            size = boost::lexical_cast<uint16_t>( sizesb.str() );
-          } catch (boost::bad_lexical_cast &e) {
-            throw IESpecError("Bad size in IESpec");
+            my_size = std::stoul(sizesb.str());
+          } catch (std::invalid_argument) {
+            throw IESpecError("bad size " + sizesb.str() + " (invalid format)");
+          } catch (std::out_of_range) {
+            throw IESpecError("bad size " + sizesb.str() + " (out of range)");
           }
+          if (my_size > UINT_MAX)
+            throw IESpecError("bad size (" + std::to_string(my_size)
+                              + ", which is greater than the allowed maximum "
+                              + std::to_string(UINT_MAX) + ")");
+          // Compiler may warn here (mine doesn't: g++ 4.5.3), but at this
+          // point, 0 <= my_size <= UINT_MAX, so *if* the compiler warns
+          // (usually about losing precision), use a static_cast.
+          size = my_size;
         }
     } else if (iestream.peek() == '{') {  // parse (and ignore) context
       iestream >> ignore;
@@ -68,7 +82,7 @@ void InfoModel::add(const InfoElement& ie) {
   // Short circuit unless we have a record valid for insertion:
   // at least a name, number, and valid, known type
   if (!ie.name().size() || !ie.number() || ie.ietype() == IEType::unknown()) {
-    throw IESpecError("Incomplete IESpec for InfoModel addition");
+    throw IESpecError("incomplete IESpec for InfoModel addition");
   }
   
   // Only add if we don't have an existing IE for the given name and pen
@@ -92,8 +106,8 @@ void InfoModel::add(const std::string& iespec) {
 }
 
 void InfoModel::add_unknown(uint32_t pen, uint16_t number, uint16_t len) {
-  std::string name = "_unknown_" + boost::lexical_cast<std::string>(pen) + 
-                     "_" + boost::lexical_cast<std::string>(number);
+  std::string name = "_unknown_" + std::to_string(pen) + 
+    "_" + std::to_string(number);
 
   InfoElement ie(name, pen, number, lookupIEType("octetArray"), len);
 
@@ -132,7 +146,7 @@ const InfoElement *InfoModel::lookupIE(const InfoElement& specie) const {
     return lookupIE(specie.pen(), specie.number(), specie.len());
   } else if (specie.name().empty()) {
     // Nothing to look up.
-    throw IESpecError("Incomplete IESpec for InfoModel lookup.");
+    throw IESpecError("incomplete IESpec for InfoModel lookup.");
   } else {
     // std::cerr << "lookupIE " << specie.name() << std::endl;
     std::map<std::string, std::tr1::shared_ptr<InfoElement> >::const_iterator iter = name_registry_.find(specie.name());

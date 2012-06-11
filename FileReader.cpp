@@ -1,6 +1,9 @@
-#include "FileReader.h"
 #include <cerrno>
 #include <cstring>
+
+#include "FileReader.h"
+
+#include "exceptions/IOError.h"
 
 namespace IPFIX {
 

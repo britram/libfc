@@ -1,14 +1,24 @@
-#include "Transcoder.h"
 #include "Constants.h" 
 #include "IETemplate.h" 
+#include "Transcoder.h"
+
+#include "exceptions/EncodingError.h"
+#include "exceptions/FormatError.h"
+#include "exceptions/IOError.h"
+#include "exceptions/TranscoderDefocusedError.h"
+#include "exceptions/TranscoderFocusedError.h"
 
 #include <boost/detail/endian.hpp>
 
 namespace IPFIX {
 
-const InfoElement Transcoder::u16ie("_internal_unsigned16",0,0,IEType::unsigned16(),sizeof(uint16_t));
+const InfoElement Transcoder::u16ie("_internal_unsigned16",
+                                    0, 0, IEType::unsigned16(),
+                                    sizeof(uint16_t));
   
-const InfoElement Transcoder::u32ie("_internal_unsigned32",0,0,IEType::unsigned32(),sizeof(uint32_t));
+const InfoElement Transcoder::u32ie("_internal_unsigned32",
+                                    0, 0, IEType::unsigned32(),
+                                    sizeof(uint32_t));
 
   
 /* 
@@ -68,8 +78,17 @@ static uint8_t *encode_varlen_length(uint8_t *dst, size_t varlen) {
 static uint8_t *decode_varlen_length(uint8_t *src, size_t& varlen) {
   varlen = *(src++);
   if (varlen == 255) {
-      varlen = ((*(src++)) << 8);
-      varlen += (*(src++));
+    // Don't do this:
+    //
+    //   varlen = (*(src++) << 8) + *(src++)
+    //
+    // because it's not defined whether the first *(src++) or the
+    // second one will be evaluated first.  Also, I'm not sure whether
+    // the expression *(src++) << 8 causes *(src++) to be promoted to
+    // something longer than a uint8_t. If so, fine. If not, this is a
+    // slightly expensive way to write "0".
+    varlen = *(src++);
+    varlen = (varlen << 8) + *(src++);
   }
   return src;
 }
@@ -140,7 +159,7 @@ bool Transcoder::encodeZero(const InfoElement* ie) {
 
 bool Transcoder::encodeMessageStart() {
   if (msg_base_) {
-    throw std::logic_error("out-of-sequence call to encodeMessageStart()");
+    throw EncodingError("out-of-sequence call to encodeMessageStart()");
   }
 
   if (kMessageHeaderLen > avail()) {
@@ -154,7 +173,7 @@ bool Transcoder::encodeMessageStart() {
 
 void Transcoder::encodeMessageEnd(uint32_t export_time, uint32_t sequence, uint32_t domain) {
   if (!msg_base_) {
-    throw std::logic_error("out-of-sequence call to encodeMessageEnd()");
+    throw EncodingError("out-of-sequence call to encodeMessageEnd()");
   }
 
   // grab length and save current
@@ -166,10 +185,10 @@ void Transcoder::encodeMessageEnd(uint32_t export_time, uint32_t sequence, uint3
   if (!encode(static_cast<uint16_t>(kIpfixVersion)) ||
       !encode(static_cast<uint16_t>(msg_len)) ||
       !encode(export_time) || !encode(sequence) || !encode(domain)) {
-    throw std::logic_error("unexpected failure in encodeMessageEnd()");
+    throw EncodingError("unexpected failure in encodeMessageEnd()");
   }
 
-  std::cerr << "encodeMessageEnd "<< export_time << " " << sequence << " " << domain << std::endl;
+  //std::cerr << "encodeMessageEnd "<< export_time << " " << sequence << " " << domain << std::endl;
   
   // restore current pointer, mark no current message
   msg_base_ = NULL;
@@ -178,7 +197,7 @@ void Transcoder::encodeMessageEnd(uint32_t export_time, uint32_t sequence, uint3
 
 bool Transcoder::encodeSetStart(uint16_t set_id) {
   if (set_base_) {
-    throw std::logic_error("out-of-sequence call to encodeSetStart()");
+    throw EncodingError("out-of-sequence call to encodeSetStart()");
   }
   
   // precheck buffer for room for set header
@@ -190,7 +209,7 @@ bool Transcoder::encodeSetStart(uint16_t set_id) {
   // encode set ID, but skip length for later
   if (!encode(set_id) || !encode(static_cast<uint16_t>(0))) { 
     // we already checked for room, so we can only fail if the code is wrong.
-    throw std::logic_error("unexpected failure in encodeSetStart()");
+    throw EncodingError("unexpected failure in encodeSetStart()");
   }
   
   return true;
@@ -198,7 +217,7 @@ bool Transcoder::encodeSetStart(uint16_t set_id) {
 
 void Transcoder::encodeSetEnd() {
   if (!set_base_) {
-    throw std::logic_error("out-of-sequence call to encodeSetEnd()");
+    throw EncodingError("out-of-sequence call to encodeSetEnd()");
   }
 
   // grab length and save current
@@ -208,7 +227,7 @@ void Transcoder::encodeSetEnd() {
   // encode set length
   cur_ = set_base_ + kSetLenOffset;
   if (!encode(static_cast<uint16_t>(set_len))) {
-    throw std::logic_error("unexpected failure in encodeSetEnd()");
+    throw EncodingError("unexpected failure in encodeSetEnd()");
   }
   
   // restore current pointer, mark no current set
@@ -320,7 +339,7 @@ bool Transcoder::decodeMessageHeader(uint16_t& len,
   uint16_t version;
   if (!decode(version)) {
     // we already checked for bytes, so we can only fail if the code is wrong.
-    throw std::logic_error("unexpected failure in decodeMessageHeader()");
+    throw EncodingError("unexpected failure in decodeMessageHeader()");
   }
   
   // std::cerr << "decodeMessageHeader() version " << version << std::endl;
@@ -330,7 +349,7 @@ bool Transcoder::decodeMessageHeader(uint16_t& len,
   }
   
   if (!decode(len)) {
-    throw std::logic_error("unexpected failure in decodeMessageHeader()");
+    throw EncodingError("unexpected failure in decodeMessageHeader()");
   }
   
   // std::cerr << "decodeMessageHeader() length " << len << std::endl;
@@ -340,20 +359,20 @@ bool Transcoder::decodeMessageHeader(uint16_t& len,
   }
   
   if (!decode(export_time)) {
-    throw std::logic_error("unexpected failure in decodeMessageHeader()");
+    throw EncodingError("unexpected failure in decodeMessageHeader()");
   }
   
   // std::cerr << "decodeMessageHeader() export_time " << export_time << std::endl;
 
   
   if (!decode(sequence)) {
-    throw std::logic_error("unexpected failure in decodeMessageHeader()");
+    throw EncodingError("unexpected failure in decodeMessageHeader()");
   }
   
   // std::cerr << "decodeMessageHeader() sequence " << sequence << std::endl;
 
   if (!decode(domain)) {
-    throw std::logic_error("unexpected failure in decodeMessageHeader()");
+    throw EncodingError("unexpected failure in decodeMessageHeader()");
   }
   
   // std::cerr << "decodeMessageHeader() domain " << domain << std::endl;
@@ -368,7 +387,7 @@ bool Transcoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {
   }
   
   if (!decode(sid)) {
-    throw std::logic_error("unexpected failure in decodeMessageHeader()");
+    throw EncodingError("unexpected failure in decodeMessageHeader()");
   }
   if (sid < kMinSetID && 
       sid != kTemplateSetID && 
@@ -378,7 +397,7 @@ bool Transcoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {
   }
   
   if (!decode(len)) {
-    throw std::logic_error("unexpected failure in decodeMessageHeader()");
+    throw EncodingError("unexpected failure in decodeMessageHeader()");
   }
   if (len < kSetHeaderLen || len > kMaxSetLen) {
     throw FormatError("nonsensical set length; trying to decode non-IPFIX data?");
@@ -387,4 +406,27 @@ bool Transcoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {
   return true;
 }
 
+void Transcoder::focus(size_t off, size_t len) {
+  checkpoint();
+  cur_ = base_ + off;
+  if (savemax_) {
+    throw TranscoderFocusedError();
+  }
+  savemax_ = max_;
+  if (max_ > cur_ + len) max_ = cur_ + len;
+  //      fprintf(stderr, "xc 0x%016lx   focus from %u to %u\n",
+  //              base_, cur_ - base_, max_ - base_);
 }
+
+void Transcoder::defocus() { 
+  if (!savemax_) {
+    throw TranscoderDefocusedError();
+  }
+  rollback();
+  max_ = savemax_;
+  savemax_ = NULL;
+  //      fprintf(stderr, "xc 0x%016lx defocus from %u to %u\n",
+  //              base_, cur_ - base_, max_ - base_);
+}
+
+} // namespace IPFIX

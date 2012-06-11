@@ -28,16 +28,6 @@
 
 namespace IPFIX {
 
-/**
- * Logic error signifying that a too-small
- * MTU has been set on an Exporter for a given message.
- */
-class MTUError : public std::runtime_error {
-public:
-  explicit MTUError(const std::string& what_arg): 
-    std::runtime_error(what_arg) {}
-};
-  
 class Exporter {
   
 public:

@@ -3,32 +3,23 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  *
  */
-
 #ifndef IPFIX_INFOMODEL_H // idem
 #define IPFIX_INFOMODEL_H // hack
 
-#include <string>
-#include <map>
+#include <cstdint>
 #include <iostream>
+#include <map>
 #include <stdexcept>
+#include <string>
+
 #include <tr1/memory>
 
-#include <stdint.h>
 #include "IEType.h"
 #include "InfoElement.h"
 
 // FIXME enforce thread safety on changes to the infomodel
 
 namespace IPFIX {
-
-/**
- * A runtime error signifying a problem with parsing or handling an IESpec.
- */
-class IESpecError : public std::runtime_error {
-public:
-  explicit IESpecError(const std::string& what_arg): 
-    std::runtime_error(what_arg) {}
-};
 
 /**
  * Represents an IPFIX Information Model, a collection of canonical 
@@ -45,8 +36,8 @@ public:
    * InfoModel exists at once. 
    *
    * At startup time, your application should initialize this instance
-   * using one of the three initialization methods, defaultV9(), defaultIPFIX(),
-   * or default5103().
+   * using one of the three initialization methods, defaultV9(),
+   * defaultIPFIX(), or default5103().
    */
   static InfoModel& instance() {
     static InfoModel instance_;
@@ -54,16 +45,15 @@ public:
   }
   
   /**
-   * Default initializor for InfoModel for NetFlowV9 Information Elements.
+   * Default initializer for InfoModel for NetFlowV9 Information Elements.
    *
    * Initializes this InfoModel for NetFlowV9 only. NetFlowV9 applications
    * should call this method once on the default instance.
    */
-  
   void defaultV9();
 
   /**
-   * Default initializor for InfoModel for IPFIX Information Elements.
+   * Default initializer for InfoModel for IPFIX Information Elements.
    *
    * Initializes this InfoModel for IPFIX. IPFIX applications not using 
    * bidirectional flows as per RFC5103 should call this method once on 
@@ -73,7 +63,7 @@ public:
 
   
   /**
-   * Default initializor for InfoModel for IPFIX Information Elements.
+   * Default initializer for InfoModel for IPFIX Information Elements.
    *
    * Initializes this InfoModel for IPFIX with RFC5103 support. IPFIX 
    * applications using bidirectional flows as per RFC5103 should call 

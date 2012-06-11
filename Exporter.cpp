@@ -1,6 +1,10 @@
 #include "Exporter.h"
 #include "Constants.h"
 
+#include "exceptions/MTUError.h"
+#include "exceptions/ReservedTemplateIDError.h"
+#include "exceptions/TemplateInactiveError.h"
+
 namespace IPFIX {
 
 Exporter::Exporter(uint32_t domain, size_t mtu): 
@@ -13,18 +17,18 @@ Exporter::Exporter(uint32_t domain, size_t mtu):
   domain_(domain),
   mtu_(mtu) {
 
-  /* allocate buffer */
-  if (!(buf_ = reinterpret_cast<uint8_t *>(malloc(mtu)))) throw std::bad_alloc();
+  /* allocate buffer; will throw std::bad_alloc on failure */
+  buf_ = new uint8_t[mtu];
   
-  std::cerr << "allocated buffer " << reinterpret_cast<unsigned long> (buf_) << " length " << mtu << std::endl;
+  //std::cerr << "allocated buffer " << static_cast<void*> (buf_) << " length " << mtu << std::endl;
 	  
   /* start a message */
   startMessage();
 }
 
 Exporter::~Exporter() {
-  std::cerr << "freed buffer " << reinterpret_cast<unsigned long> (buf_) << std::endl;
-  free(buf_);
+  //std::cerr << "freed buffer " << static_cast<void*> (buf_) << std::endl;
+  delete buf_;
 }
 
 void Exporter::setDomain(uint32_t domain)
@@ -46,13 +50,13 @@ void Exporter::setTemplate(uint16_t tid)
 
   // die on bad template ID
   if (tid < kMinSetID) {
-    throw std::logic_error("Cannot set template with reserved ID");
+    throw ReservedTemplateIDError(tid, kMinSetID);
   }
 
   // Make sure template is already active
   WireTemplate *new_tmpl = session_.getTemplate(domain_, tid);
   if (!new_tmpl->isActive()) {
-    throw std::logic_error("Cannot set inactive template");
+    throw TemplateInactiveError();
   }
   
   // Finalize existing set if necessary
@@ -67,15 +71,13 @@ void Exporter::exportTemplatesForDomain() {
   ensureTemplateSet();
 
   std::list<const WireTemplate *> tmpl_list = session_.activeTemplates(domain_);  
-  for (std::list<const WireTemplate *>::iterator iter = tmpl_list.begin();
-                                               iter != tmpl_list.end();
-                                               iter++) {
+  for (auto iter = tmpl_list.begin(); iter != tmpl_list.end(); iter++) {
     if (!(*iter)->encodeTemplateRecord(xcoder_)) {
       flush();
       ensureSet();
       if (!(*iter)->encodeTemplateRecord(xcoder_)) {
         // If it doesn't work now, it never will. Throw.
-        throw MTUError("MTU too small for template record");
+        throw MTUError("template record");
       }
     }
   }
@@ -92,7 +94,7 @@ void Exporter::exportRecord(const StructTemplate& struct_tmpl, uint8_t* struct_c
     ensureSet();
     if (!tmpl_->encode(xcoder_, struct_tmpl, struct_cp)) {
       // If it doesn't work now, it never will. Throw.
-      throw MTUError("MTU too small for record");
+      throw MTUError("record");
     }
   }
   
@@ -103,7 +105,7 @@ void Exporter::exportRecord(const StructTemplate& struct_tmpl, uint8_t* struct_c
 void Exporter::startMessage() {
   xcoder_.setBase(buf_,mtu_);
   if (!xcoder_.encodeMessageStart()) {
-    throw MTUError("MTU too small for message");
+    throw MTUError("message");
   }
   msg_empty_ = true;
 }
@@ -113,7 +115,7 @@ void Exporter::ensureSet() {
     if (!xcoder_.encodeSetStart(set_id_)) {
       flush();
       if (!xcoder_.encodeSetStart(set_id_)) {
-        throw MTUError("MTU too small for initial set header");
+        throw MTUError("initial set header");
       }
     }
     set_active_ = true;
@@ -133,7 +135,7 @@ void Exporter::ensureTemplateSet() {
 }
 
 void Exporter::flush(time_t export_time) {
-  std::cerr << "flush(" << export_time << ")" << std::endl;
+  //std::cerr << "flush(" << export_time << ")" << std::endl;
   
   if (set_active_) {
     endSet();
@@ -146,4 +148,4 @@ void Exporter::flush(time_t export_time) {
   }
 }
 
-}
+} // namespace IPFIX
