@@ -102,8 +102,6 @@ namespace IPFIX {
     
     /**
      * Use a specified transcoder to transcode this message buffer
-     *
-     * FIXME determine whether this is really the right interface.
      */
     
     void transcodeBy(Transcoder& xc) { xc.setBase(buf_, len_); }

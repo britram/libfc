@@ -1,3 +1,4 @@
+/* Hi Emacs, this is -*- C++ -*- */
 /**
  * @file
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
@@ -73,7 +74,7 @@ namespace IPFIX {
       return this->receiveMessage(transient_mbuf);
     }
     
-    void restart() {
+    virtual void restart() {
       // FIXME support collecting process restart
     }
     

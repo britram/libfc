@@ -82,7 +82,7 @@ void MBuf::ensure(size_t length) {
 
 void MBuf::populateSetlist(Transcoder& xc, Session& session) {
   // Clear the set list
-  setlist_.empty();
+  setlist_.clear();
 
   while(xc.avail()) {
     SetListEntry sle;
@@ -93,7 +93,7 @@ void MBuf::populateSetlist(Transcoder& xc, Session& session) {
 
     // handle templates, skip future magic sets
     if (sle.id == kTemplateSetID) {
-      // find end of set an
+      // find end of set and complete this comment FIXME
       const uint8_t* xcend = xc.cur() + (sle.len - kSetHeaderLen);
   
       while ((xcend - xc.cur()) >= kTemplateHeaderLen) {
