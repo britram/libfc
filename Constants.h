@@ -12,7 +12,7 @@
 #define IPFIX_K_H // hack
 
 #include <cstring>
-#include <cstdint>
+#include <stdint.h>
 
 namespace IPFIX {
     

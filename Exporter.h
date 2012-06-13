@@ -6,10 +6,34 @@
  * 
  * Defines the abstract exporter interface.
  *
+
+ * This interface provides two ways of exporting data in IPFIX messages.
+ * The first (and lower-level) interface is based on C-structure 
+ * transcoding. To use it, client code should place the data to be exported 
+ * in a C structure, create a StructTemplate describing that structure, 
+ * then use exportStruct() to export the record according to the 
+ * current wire template. The current wire template can be set via 
+ * setTemplate(), and the current observation domain via setDomain().
+ *
+ * Structures to be exported via this interface must contain only
+ * fixed-length primitive data members or variable-length data members 
+ * represented by an IPFIX::VarlenField structure. Information Elements in 
+ * the wire template not represented in the structure will be exported 
+ * as zeroes. No additional encoding (e.g., of NTP timestamps for 
+ * dateTimeMicroseconds typed InfoElements) is done for export.
+ *
+ * The second interface uses a record cursor and directly addresses 
+ * InfoElements within the export template. It is generally slower but more
+ * flexible, and provides for flexible encoding of data values. To use it, 
+ * open a new record with beginRecord(), then write individual record values
+ * with one of the putValue() methods, and finish the record with 
+ * exportRecord(). Information Elements in the current wire template which 
+ * are not written to by a putValue() call will be exported as zeroes.
+ *
  * To send IPFIX Messages, client code should create an instance
  * of an Exporter subclass for the necessary transport, set the
  * observation domain via setDomain() and the export template via
- * setTemplate(), and call exportRecord() to send each record.
+ * setTemplate(), and call exportStruct() to send each record.
  *
  * flush() can be called to explicitly end a message.
  *
@@ -40,7 +64,7 @@ public:
   void setDomain(uint32_t domain);
 
   /**
-   * Change the active template for the exporter.
+   * Change the active template for the exporter. 
    *
    * @param tid new template ID
    */
@@ -64,9 +88,25 @@ public:
   void exportTemplatesForDomain();
   
   /**
-   * Export a record using the current wire template, for a given 
+   * Export a record stored in a C structure described by a given structure 
+   * template, using the current wire template.
+   *
+   * @param struct_tmpl template describing struct_cp
+   * @param struct_cp pointer to structure to export
    */
-  void exportRecord(const StructTemplate &struct_tmpl, uint8_t* struct_cp);
+  void exportStruct(const StructTemplate &struct_tmpl, uint8_t* struct_cp);
+  
+  /**
+   * Start record cursor export with the current wire template.
+   */
+  
+  // void beginRecord();
+
+  /**
+   * Export the currently open record cursor.
+   */
+   
+  // void exportRecord();
   
   /**
    * Flush the current message with the given export time

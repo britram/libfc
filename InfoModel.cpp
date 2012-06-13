@@ -91,12 +91,12 @@ void InfoModel::add(const InfoElement& ie) {
   if (ie.pen()) {
     name_registry_[ie.name()] = 
       pen_registry_[ie.pen()][ie.number()] = 
-      std::tr1::shared_ptr<InfoElement>(new InfoElement(ie));
+      std::shared_ptr<InfoElement>(new InfoElement(ie));
     //std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
   } else {
     name_registry_[ie.name()] = 
       iana_registry_[ie.number()] = 
-      std::tr1::shared_ptr<InfoElement>(new InfoElement(ie));
+      std::shared_ptr<InfoElement>(new InfoElement(ie));
     // std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
   }
 }
@@ -115,11 +115,11 @@ void InfoModel::add_unknown(uint32_t pen, uint16_t number, uint16_t len) {
 }
   
 const InfoElement *InfoModel::lookupIE(uint32_t pen, uint16_t number, uint16_t len) const {  
-  std::map<uint16_t, std::tr1::shared_ptr<InfoElement> >::const_iterator iter;
+  std::map<uint16_t, std::shared_ptr<InfoElement> >::const_iterator iter;
 
   // std::cerr << "lookupIE (" << pen << "/" << number << ")[" << len << "]" << std::endl;
   if (pen) {
-    std::map<uint32_t, std::map<uint16_t, std::tr1::shared_ptr<InfoElement> > >::const_iterator peniter;
+    std::map<uint32_t, std::map<uint16_t, std::shared_ptr<InfoElement> > >::const_iterator peniter;
 
     if ((peniter = pen_registry_.find(pen)) == pen_registry_.end()) {
       //std::cerr << "    no such pen" << std::endl;
@@ -149,7 +149,7 @@ const InfoElement *InfoModel::lookupIE(const InfoElement& specie) const {
     throw IESpecError("incomplete IESpec for InfoModel lookup.");
   } else {
     // std::cerr << "lookupIE " << specie.name() << std::endl;
-    std::map<std::string, std::tr1::shared_ptr<InfoElement> >::const_iterator iter = name_registry_.find(specie.name());
+    std::map<std::string, std::shared_ptr<InfoElement> >::const_iterator iter = name_registry_.find(specie.name());
     if (iter == name_registry_.end()) {
       // std::cerr << "    not in name registry" << std::endl;
       return NULL;
@@ -171,7 +171,7 @@ const InfoElement *InfoModel::lookupIE(const char* iespec) const {
 
 void InfoModel::dump(std::ostream &os) const {
   
-  std::map<uint16_t, std::tr1::shared_ptr<InfoElement> >::const_iterator   iana_keyiter;
+  std::map<uint16_t, std::shared_ptr<InfoElement> >::const_iterator   iana_keyiter;
 
   for (iana_keyiter = iana_registry_.begin();
        iana_keyiter != iana_registry_.end();

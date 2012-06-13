@@ -39,10 +39,10 @@ public:
 protected:
   void ensureFP();
 
-  virtual bool _receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session);
+  virtual bool _receiveMessage(MBuf& mbuf, std::shared_ptr<Session>& session);
   
 private:
-  std::tr1::shared_ptr<Session>     session_;
+  std::shared_ptr<Session>     session_;
   std::string                       filename_;
   mutable FILE                      *fp_;
 };

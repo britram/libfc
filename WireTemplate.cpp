@@ -51,60 +51,6 @@ void WireTemplate::mimic(const IETemplate& rhs) {
     activate();
 }
 
-
-// std::list<TCEntry> IETemplate::planTranscode(const IETemplate &struct_tmpl) const 
-// {
-//   std::list<TCEntry> plan;
-//   
-//   for (IETemplateIter iter = ies_.begin();
-//        iter != ies_.end();
-//        iter++) {
-//     if (struct_tmpl.contains(*iter)) {
-//       plan.push_back(TCEntry(struct_tmpl.offset(*iter), struct_tmpl.length(*iter), *iter))
-//     } else {
-//       plan.push_back(TCEntry(0, (*iter)->len(), NULL);
-//     }
-//   }
-//   
-//   return plan;
-// }
-// 
-// bool IETemplate::encode(Transcoder& encoder, const std::list<TCEntry>& plan, uint8_t* struct_cp) const
-// {
-//   uint8_t* struct_cp = reinterpret_cast<uint8_t *>(struct_vp);
-//   
-//   // Refuse to encode an with inactive template
-//   if (!active_) {
-//     throw std::logic_error("Cannot encode using an inactive template");
-//   }
-//   
-//   // Refuse to encode unless we have at _least_ minimum length avail.
-//   if (encoder.avail() < minlen_) {
-//     std::cerr << "encoder overrun (at least " << encoder.avail() << " avail, " << minlen_ << " required.)" << std::endl;
-//     return false;
-//   }
-//   
-//   // Note: Void casts here are safe, since we checked minlen. 
-//   //       When we move to varlen encoding, we'll need to checkpoint and rollback.
-//   // FIXME this should be sped up by specifically building a transcode plan.
-//   encoder.checkpoint();
-//   for (TCEntryIter iter = plan.begin();
-//        iter != plan.end();
-//        iter++) {
-//     if (iter->ie) {
-//       encoder.encode(struct_cp + iter->offset, iter->length, iter->ie) || goto err;
-//     } else {
-//       encoder.encodeZero(iter->length) || goto err;
-//     }
-//   }
-//   
-//   return true;
-// 
-// err:
-//   encoder.rollback();
-//   return false;
-// }
-
 bool WireTemplate::encode(Transcoder& xc, const StructTemplate& struct_tmpl, uint8_t* struct_cp) const
 {  
   // Refuse to encode an with inactive template

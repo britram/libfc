@@ -3,6 +3,7 @@
 #  define IPFIX_EXCEPTION_H
 
 #  include <stdexcept>
+#  include <string>
 
 namespace IPFIX {
 

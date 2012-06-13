@@ -4,18 +4,18 @@
 #ifndef IPFIX_SESSION_H // idem
 #define IPFIX_SESSION_H // hack
 
-#include <cstdint>
+#include <stdint.h>
 #include <list>
 #include <map>
 
-#include <tr1/memory>
+#include <memory>
 
 #include "InfoModel.h"
 #include "WireTemplate.h"
 
 namespace IPFIX {
 
-typedef std::map<WireTemplateKey, std::tr1::shared_ptr<WireTemplate> >::iterator    TibIter;
+typedef std::map<WireTemplateKey, std::shared_ptr<WireTemplate> >::iterator    TibIter;
 
 /** A container for per-session state. 
  *
@@ -50,7 +50,7 @@ public:
 
 private:
   std::map<uint32_t, uint32_t>                                    next_seq_;
-  std::map<WireTemplateKey, std::tr1::shared_ptr<WireTemplate> >  tib_;
+  std::map<WireTemplateKey, std::shared_ptr<WireTemplate> >  tib_;
 };
 
 }

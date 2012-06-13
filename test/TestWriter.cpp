@@ -45,7 +45,7 @@ test_writer(const std::string& protocol, const std::string& outspec) {
         incrSimpleFlow(sf);
         try {
             e->setTemplate(kSimpleFlowTid);
-            e->exportRecord(sfstmpl, reinterpret_cast<uint8_t*>(&sf));
+            e->exportStruct(sfstmpl, reinterpret_cast<uint8_t*>(&sf));
         } catch (std::runtime_error const &e) {
             std::cerr << "I/O error on send: " << e.what() << std::endl;
             ret = 1;
@@ -59,16 +59,16 @@ test_writer(const std::string& protocol, const std::string& outspec) {
     return ret;
 }
 
-BOOST_AUTO_TEST_SUITE(Writer)
-
-BOOST_AUTO_TEST_CASE(File) {
-  const char* outspec = "localhost";
-  const char* protocols[] = {/*"tcp", "udp", */ "test.ipfix" };
-
-  std::for_each(protocols, protocols + sizeof(protocols)/sizeof(protocols[0]),
-                [outspec] (const char* proto) { 
-                  BOOST_CHECK_EQUAL(test_writer(outspec, proto), 0);
-                });
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+// BOOST_AUTO_TEST_SUITE(Writer)
+// 
+// BOOST_AUTO_TEST_CASE(File) {
+//   const char* outspec = "localhost";
+//   const char* protocols[] = {/*"tcp", "udp", */ "test.ipfix" };
+// 
+//   std::for_each(protocols, protocols + sizeof(protocols)/sizeof(protocols[0]),
+//                 [outspec] (const char* proto) { 
+//                   BOOST_CHECK_EQUAL(test_writer(outspec, proto), 0);
+//                 });
+// }
+// 
+// BOOST_AUTO_TEST_SUITE_END()

@@ -78,15 +78,6 @@ static uint8_t *encode_varlen_length(uint8_t *dst, size_t varlen) {
 static uint8_t *decode_varlen_length(uint8_t *src, size_t& varlen) {
   varlen = *(src++);
   if (varlen == 255) {
-    // Don't do this:
-    //
-    //   varlen = (*(src++) << 8) + *(src++)
-    //
-    // because it's not defined whether the first *(src++) or the
-    // second one will be evaluated first.  Also, I'm not sure whether
-    // the expression *(src++) << 8 causes *(src++) to be promoted to
-    // something longer than a uint8_t. If so, fine. If not, this is a
-    // slightly expensive way to write "0".
     varlen = *(src++);
     varlen = (varlen << 8) + *(src++);
   }

@@ -11,7 +11,7 @@
 #define IPFIX_INFOELEMENT_H // hack
 
 #include <string>
-#include <tr1/memory>
+#include <memory>
 #include <stdint.h>
 #include "IEType.h"
 
@@ -167,7 +167,7 @@ private:
   uint16_t      number_;
   const IEType* ietype_;
   uint16_t      len_;
-  mutable std::map<uint16_t, std::tr1::shared_ptr<InfoElement> > rle_;
+  mutable std::map<uint16_t, std::shared_ptr<InfoElement> > rle_;
 };
 
 }

@@ -8,7 +8,7 @@
 #define IPFIX_NETADDRESS_H // hack
 
 #include <string>
-#include <cstdint>
+#include <stdint.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>

@@ -17,7 +17,7 @@ const InfoElement* InfoElement::forLen(uint16_t len) const {
   if (len_ == len || len == 0) return this;
   
   if (!rle_[len]) {
-    rle_[len] = std::tr1::shared_ptr<InfoElement>(new InfoElement(*this, len));
+    rle_[len] = std::shared_ptr<InfoElement>(new InfoElement(*this, len));
   }
 
   return rle_[len].get();

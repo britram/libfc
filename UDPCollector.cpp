@@ -27,7 +27,7 @@ bool UDPCollector::ensureSocket() {
     return true;
 }
   
-bool UDPCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session) {
+bool UDPCollector::_receiveMessage(MBuf& mbuf, std::shared_ptr<Session>& session) {
 
   struct sockaddr_storage sa;
   socklen_t sa_len;

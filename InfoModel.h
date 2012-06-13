@@ -6,13 +6,13 @@
 #ifndef IPFIX_INFOMODEL_H // idem
 #define IPFIX_INFOMODEL_H // hack
 
-#include <cstdint>
+#include <stdint.h>
 #include <iostream>
 #include <map>
 #include <stdexcept>
 #include <string>
 
-#include <tr1/memory>
+#include <memory>
 
 #include "IEType.h"
 #include "InfoElement.h"
@@ -210,15 +210,15 @@ private:
   void initTypes();
 
   // Information element registry. Keep canonical IEs by autopointer.
-  std::map<uint16_t, std::tr1::shared_ptr<InfoElement> >
+  std::map<uint16_t, std::shared_ptr<InfoElement> >
                                 iana_registry_;
-  std::map<uint32_t, std::map<uint16_t, std::tr1::shared_ptr<InfoElement> > >
+  std::map<uint32_t, std::map<uint16_t, std::shared_ptr<InfoElement> > >
                                 pen_registry_;
-  std::vector<std::tr1::shared_ptr<InfoElement> >
+  std::vector<std::shared_ptr<InfoElement> >
                                 rle_registry_;
 
   // Information element name lookup. 
-  std::map<std::string, std::tr1::shared_ptr<InfoElement> >
+  std::map<std::string, std::shared_ptr<InfoElement> >
                                 name_registry_;
   
   // Information element type lookup.

@@ -53,12 +53,12 @@ public:
 
 protected:
 
-    virtual bool _receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session);
+    virtual bool _receiveMessage(MBuf& mbuf, std::shared_ptr<Session>& session);
   
 private:
     bool ensureSocket();
 
-    std::tr1::shared_ptr<Session>    session_;
+    std::shared_ptr<Session>    session_;
     NetAddress                       netaddr_;
     int                              lsock_;
     int                              sock_;

@@ -85,7 +85,7 @@ void Exporter::exportTemplatesForDomain() {
   msg_empty_ = false;
 }
 
-void Exporter::exportRecord(const StructTemplate& struct_tmpl, uint8_t* struct_cp) {
+void Exporter::exportStruct(const StructTemplate& struct_tmpl, uint8_t* struct_cp) {
   ensureSet();
   
   if (!tmpl_->encode(xcoder_, struct_tmpl, struct_cp)) {
@@ -100,7 +100,6 @@ void Exporter::exportRecord(const StructTemplate& struct_tmpl, uint8_t* struct_c
   
   msg_empty_ = false;
 }
-
 
 void Exporter::startMessage() {
   xcoder_.setBase(buf_,mtu_);

@@ -68,7 +68,7 @@ public:
 
   /**
    * Use this Template to encode a structure described by a template to 
-   * a given transcoder. Client code should use Exporter::exportRecord().
+   * a given transcoder. Client code should use Exporter::exportStruct().
    *
    * @param encoder transcoder cued to the location to encode the record
    * @param struct_tmpl template describing the structure in struct_vp

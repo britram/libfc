@@ -91,7 +91,7 @@ namespace IPFIX {
                       from which message was received
      * @return true if message available, false otherwise
      */
-    virtual bool _receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session) = 0;
+    virtual bool _receiveMessage(MBuf& mbuf, std::shared_ptr<Session>& session) = 0;
         
   private:
 

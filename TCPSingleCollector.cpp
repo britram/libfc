@@ -46,7 +46,7 @@ bool TCPSingleCollector::ensureSocket() {
     return true;
 }
   
-bool TCPSingleCollector::_receiveMessage(MBuf& mbuf, std::tr1::shared_ptr<Session>& session) {
+bool TCPSingleCollector::_receiveMessage(MBuf& mbuf, std::shared_ptr<Session>& session) {
 
   // make sure we have a socket to read from
   if (!ensureSocket()) return false;
