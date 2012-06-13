@@ -99,6 +99,59 @@ void Exporter::exportStruct(const StructTemplate& struct_tmpl, uint8_t* struct_c
   msg_empty_ = false;
 }
 
+void Exporter::beginRecord() {
+
+// bool WireTemplate::encode(Transcoder& xc, const StructTemplate& struct_tmpl, uint8_t* struct_cp) const
+// {  
+//   // Refuse to encode an with inactive template
+//   if (!active_) {
+//     throw TemplateInactiveError("encode");
+//   }
+//   
+//   // Refuse to encode unless we have at _least_ minimum length avail.
+//   if (xc.avail() < minlen_) {
+//     //std::cerr << "encoder overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
+//     return false;
+//   }
+//   
+//   // Note: Void casts here are safe, since we checked minlen. 
+//   //       When we move to varlen encoding, we'll need to checkpoint and rollback.
+//   // FIXME this should be sped up by specifically building a transcode plan.
+//   xc.checkpoint();
+//   for (IETemplateIter iter = ies_.begin();
+//        iter != ies_.end();
+//        iter++) {
+//     if (struct_tmpl.contains(*iter)) {
+//       size_t off = struct_tmpl.offset(*iter);
+//       size_t len = struct_tmpl.length(*iter);
+//       if (len == kVarlen) {
+//         VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
+//         if (!xc.encode(vf, *iter)) goto err;
+//       } else {
+//         if (!xc.encode(struct_cp + off, len, *iter)) goto err;
+//       }
+//     } else {
+//       if (!xc.encodeZero(*iter)) goto err;
+//     }
+//   }
+//   
+//   return true;
+// 
+// err:
+//   xc.rollback();
+//   return false;
+// }
+
+}
+
+void Exporter::exportRecord() {
+
+}
+
+void Exporter::rollbackRecord() {
+
+}
+
 void Exporter::startMessage() {
   xcoder_.setBase(buf_,mtu_);
   if (!xcoder_.encodeMessageStart()) {

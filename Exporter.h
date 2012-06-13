@@ -97,16 +97,41 @@ public:
   void exportStruct(const StructTemplate &struct_tmpl, uint8_t* struct_cp);
   
   /**
-   * Start record cursor export with the current wire template.
+   * Begin a new record for export with the current wire template.
    */
   
-  // void beginRecord();
+  void beginRecord();
 
   /**
    * Export the currently open record cursor.
    */
    
-  // void exportRecord();
+  void exportRecord();
+
+  /**
+   * Roll back the currently open record cursor.
+   */
+   
+  void rollbackRecord();
+  
+  /**
+   * Put a value at the given Information Element in the current record.
+   * Performs no operation if the given Information Element does not exist
+   * in the current wire template. Overwrites previously put values for
+   * Information Elements which are fixed length in the current wire template.
+   *
+   * Variable-length Information Elements must be put in the order in which
+   * they appear in the wire template, and cannot be overwritten. 
+   * 
+   * @param ie pointer to Information Element describing the value.
+   * @param vp pointer to the value to copy into the message. This value must
+   *           be in host byte order, and of appropriate type for the given
+   *           Information Element. No type checks are performed.
+   * @param len Length of the value in vp.
+   * @return 
+   */
+  
+  //bool putValue(const InfoElement* ie, uint8_t* vp, size_t len);
   
   /**
    * Flush the current message with the given export time
@@ -166,6 +191,7 @@ private:
   
   uint8_t*                  buf_;
   Transcoder                xcoder_;
+//  Cursor                    cursor_;
   uint16_t                  set_id_;
   bool                      msg_empty_;
   bool                      set_active_;
