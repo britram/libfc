@@ -4,9 +4,6 @@
 
 #include "NetAddress.h"
 
-#include "exceptions/AddrtypeUnsupportedError.h"
-#include "exceptions/SockaddrMissingError.h"
-
 namespace IPFIX {
 
 int NetAddress::create_socket_sa() {    
@@ -119,14 +116,14 @@ size_t NetAddress::addrlen() const {
     case PF_INET6:
         return sizeof(struct sockaddr_in6);
     default:
-        throw AddrtypeUnsupportedError(family_);
+      throw std::logic_error("address type unsupported");
     }
     return 0; // warning fix
 }
 
 uint16_t NetAddress::port() const {
     if (!sa_valid_) {
-        throw SockaddrMissingError();
+      throw std::logic_error("sockaddr missing");
     }
     switch(family_) {
         case PF_INET:

@@ -19,7 +19,7 @@ void StructTemplate::add(const InfoElement* ie, size_t offset) {
   
   // Check offset monotonity invariant
   if (!offsets_.empty() && offset < offsets_.back()) {
-    throw IETypeError("Cannot add IE with negative offset");
+    throw std::logic_error("Cannot add IE with negative offset");
   }
 
   // Add offset to offset table

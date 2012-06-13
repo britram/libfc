@@ -5,8 +5,6 @@
 #include "exceptions/EncodingError.h"
 #include "exceptions/FormatError.h"
 #include "exceptions/IOError.h"
-#include "exceptions/TranscoderDefocusedError.h"
-#include "exceptions/TranscoderFocusedError.h"
 
 #include <boost/detail/endian.hpp>
 
@@ -109,7 +107,7 @@ bool Transcoder::encode(uint8_t* val, size_t len, const InfoElement* ie) {
     }
   }
   if (!iet->permitsLength(ielen)) {
-    throw IETypeError("IE type size mismatch");
+    throw std::logic_error("IE type size mismatch");
   }
   
   if (iet->isEndian()) {
@@ -134,7 +132,7 @@ bool Transcoder::encodeZero(const InfoElement* ie) {
   size_t ielen = ie->len();
   
   if (!iet->permitsLength(ielen)) {
-    throw IETypeError("IE type size mismatch");
+    throw std::logic_error("IE type size mismatch");
   }
   
   if (ielen > avail()) {
@@ -246,7 +244,7 @@ bool Transcoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
   
   // Ensure the length is permitted for the IE
   if (!iet->permitsLength(ielen)) {
-    throw IETypeError("IE type size mismatch");
+    throw std::logic_error("IE type size mismatch");
   }
   
   if (iet->isEndian()) {
@@ -282,7 +280,7 @@ bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
 
   // Ensure the length is permitted for the IE
   if (!iet->permitsLength(ielen)) {
-    throw IETypeError("IE type size mismatch");
+    throw std::logic_error("IE type size mismatch");
   }
   
   // store pointer to content and length in vf
@@ -401,7 +399,7 @@ void Transcoder::focus(size_t off, size_t len) {
   checkpoint();
   cur_ = base_ + off;
   if (savemax_) {
-    throw TranscoderFocusedError();
+    throw std::logic_error("transcoder already focused");;
   }
   savemax_ = max_;
   if (max_ > cur_ + len) max_ = cur_ + len;
@@ -411,7 +409,7 @@ void Transcoder::focus(size_t off, size_t len) {
 
 void Transcoder::defocus() { 
   if (!savemax_) {
-    throw TranscoderDefocusedError();
+    throw std::logic_error("transcoder is defocused");
   }
   rollback();
   max_ = savemax_;

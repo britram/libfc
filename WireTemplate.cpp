@@ -2,8 +2,6 @@
 
 #include "WireTemplate.h"
 
-#include "exceptions/TemplateInactiveError.h"
-
 namespace IPFIX {
 
 void WireTemplate::add(const InfoElement* ie) {  
@@ -55,7 +53,7 @@ bool WireTemplate::encode(Transcoder& xc, const StructTemplate& struct_tmpl, uin
 {  
   // Refuse to encode an with inactive template
   if (!active_) {
-    throw TemplateInactiveError("encode");
+    throw std::logic_error("template inactive during encode");
   }
   
   // Refuse to encode unless we have at _least_ minimum length avail.
@@ -97,7 +95,7 @@ bool WireTemplate::encodeTemplateRecord(Transcoder &xc) const {
 
   // Refuse to encode an inactive template
   if (!active_) {
-    throw TemplateInactiveError("encode");
+    throw std::logic_error("template inactive during encoding of template record");
   }
 
   // Make sure the encoder has space for the encoded version of the template
@@ -131,7 +129,7 @@ bool WireTemplate::encodeTemplateRecord(Transcoder &xc) const {
 bool WireTemplate::decode(Transcoder& xc, const StructTemplate &struct_tmpl, uint8_t* struct_cp) const {  
   // Refuse to decode an with inactive template
   if (!active_) {
-    throw TemplateInactiveError("decode");
+    throw std::logic_error("template inactive during decode");
   }
   
   // Refuse to decode unless we have at _least_ minimum length avail.

@@ -1,7 +1,6 @@
 #include "Session.h"
 
 #include "exceptions/IEUnknownError.h"
-#include "exceptions/ReservedTemplateIDError.h"
 
 namespace IPFIX {
 
@@ -19,7 +18,7 @@ WireTemplate* Session::getTemplate(uint32_t domain, uint16_t tid) {
   //std::cerr << "session getTemplate(" << domain << "," << tid << ")" << std::endl;
 
   if (tid < kMinSetID) {
-    throw ReservedTemplateIDError(tid, kMinSetID);
+    throw std::logic_error("template ID reserved");
   }
   
   WireTemplateKey tk(domain, tid);

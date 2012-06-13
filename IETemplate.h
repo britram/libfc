@@ -26,8 +26,6 @@
 #include "Transcoder.h"
 #include "Constants.h"
 
-#include "exceptions/TemplateActiveError.h"
-
 namespace IPFIX {
 
 // struct TCEntry {
@@ -66,7 +64,7 @@ public:
    */
   void activate() {
     if (active_) {
-      throw TemplateActiveError();
+      throw std::logic_error("template is already active");
     }
 
     //std::cerr << "activate template (" << domain_ << "," << tid_ << "), " << ies_.size() << " IEs" << std::endl;
@@ -170,7 +168,7 @@ protected:
   void add_inner(const InfoElement* ie) {
     // Can't add to an active template
     if (active_) {
-      throw TemplateActiveError("adding IEs");
+      throw std::logic_error("template is active while adding IEs");
     }
     
     // Add the IE to the IE vector

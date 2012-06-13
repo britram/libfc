@@ -2,8 +2,6 @@
 #include "Constants.h"
 
 #include "exceptions/MTUError.h"
-#include "exceptions/ReservedTemplateIDError.h"
-#include "exceptions/TemplateInactiveError.h"
 
 namespace IPFIX {
 
@@ -50,13 +48,13 @@ void Exporter::setTemplate(uint16_t tid)
 
   // die on bad template ID
   if (tid < kMinSetID) {
-    throw ReservedTemplateIDError(tid, kMinSetID);
+    throw std::logic_error("template ID is reserved");
   }
 
   // Make sure template is already active
   WireTemplate *new_tmpl = session_.getTemplate(domain_, tid);
   if (!new_tmpl->isActive()) {
-    throw TemplateInactiveError();
+    throw std::logic_error("template is inactive");
   }
   
   // Finalize existing set if necessary

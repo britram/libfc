@@ -25,8 +25,6 @@
 
 #include "Constants.h"
 
-#include "exceptions/IETypeError.h"
-
 namespace IPFIX {
 
 
