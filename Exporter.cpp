@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "Exporter.h"
 #include "Constants.h"
 
@@ -47,15 +49,11 @@ void Exporter::setTemplate(uint16_t tid)
   }
 
   // die on bad template ID
-  if (tid < kMinSetID) {
-    throw std::logic_error("template ID is reserved");
-  }
+  assert (tid >= kMinSetID);
 
   // Make sure template is already active
   WireTemplate *new_tmpl = session_.getTemplate(domain_, tid);
-  if (!new_tmpl->isActive()) {
-    throw std::logic_error("template is inactive");
-  }
+  assert (new_tmpl->isActive());
   
   // Finalize existing set if necessary
   if (set_id_) endSet();

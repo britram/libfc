@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <arpa/inet.h>
 
 #include "WireTemplate.h"
@@ -52,9 +54,7 @@ void WireTemplate::mimic(const IETemplate& rhs) {
 bool WireTemplate::encode(Transcoder& xc, const StructTemplate& struct_tmpl, uint8_t* struct_cp) const
 {  
   // Refuse to encode an with inactive template
-  if (!active_) {
-    throw std::logic_error("template inactive during encode");
-  }
+  assert(active_);
   
   // Refuse to encode unless we have at _least_ minimum length avail.
   if (xc.avail() < minlen_) {
@@ -94,9 +94,7 @@ err:
 bool WireTemplate::encodeTemplateRecord(Transcoder &xc) const {
 
   // Refuse to encode an inactive template
-  if (!active_) {
-    throw std::logic_error("template inactive during encoding of template record");
-  }
+  assert(active_);
 
   // Make sure the encoder has space for the encoded version of the template
   // Void casts from here are safe, since the template record length is 
@@ -128,9 +126,7 @@ bool WireTemplate::encodeTemplateRecord(Transcoder &xc) const {
 
 bool WireTemplate::decode(Transcoder& xc, const StructTemplate &struct_tmpl, uint8_t* struct_cp) const {  
   // Refuse to decode an with inactive template
-  if (!active_) {
-    throw std::logic_error("template inactive during decode");
-  }
+  assert(active_);
   
   // Refuse to decode unless we have at _least_ minimum length avail.
   if (xc.avail() < minlen_) {

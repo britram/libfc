@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "Session.h"
 
 #include "exceptions/IEUnknownError.h"
@@ -17,9 +19,7 @@ uint32_t Session::checkSequence(uint32_t domain, uint32_t sequence) {
 WireTemplate* Session::getTemplate(uint32_t domain, uint16_t tid) {
   //std::cerr << "session getTemplate(" << domain << "," << tid << ")" << std::endl;
 
-  if (tid < kMinSetID) {
-    throw std::logic_error("template ID reserved");
-  }
+  assert(tid >= kMinSetID);
   
   WireTemplateKey tk(domain, tid);
   std::shared_ptr<WireTemplate> tsp = tib_[tk];

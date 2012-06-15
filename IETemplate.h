@@ -15,6 +15,7 @@
 #ifndef IPFIX_IETEMPLATE_H // idem
 #define IPFIX_IETEMPLATE_H // hack
 
+#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <stdint.h>
@@ -63,9 +64,7 @@ public:
    * before it is activated, and used only afterward.
    */
   void activate() {
-    if (active_) {
-      throw std::logic_error("template is already active");
-    }
+    assert(!active_);
 
     //std::cerr << "activate template (" << domain_ << "," << tid_ << "), " << ies_.size() << " IEs" << std::endl;
     active_ = true;
@@ -167,9 +166,7 @@ protected:
    */
   void add_inner(const InfoElement* ie) {
     // Can't add to an active template
-    if (active_) {
-      throw std::logic_error("template is active while adding IEs");
-    }
+    assert(!active_);
     
     // Add the IE to the IE vector
     ies_.push_back(ie);

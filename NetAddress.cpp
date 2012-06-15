@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -7,6 +8,7 @@
 namespace IPFIX {
 
 int NetAddress::create_socket_sa() {    
+    assert(sa_valid_);
     /* grab family from sockaddr */
     family_ = reinterpret_cast<struct sockaddr*>(&sa_)->sa_family;
     
@@ -109,30 +111,18 @@ int NetAddress::socktype() const {
 }
 
 size_t NetAddress::addrlen() const {
-    if (!sa_valid_) 
-    switch (family_) {
-    case PF_INET:
-        return sizeof(struct sockaddr_in);
-    case PF_INET6:
-        return sizeof(struct sockaddr_in6);
-    default:
-      throw std::logic_error("address type unsupported");
-    }
-    return 0; // warning fix
+    assert(family_ == PF_INET || family_ == PF_INET6);
+    return family_ ==  PF_INET 
+      ? sizeof(struct sockaddr_in) 
+      : sizeof(struct sockaddr_in6);
 }
 
 uint16_t NetAddress::port() const {
-    if (!sa_valid_) {
-      throw std::logic_error("sockaddr missing");
-    }
-    switch(family_) {
-        case PF_INET:
-        return ntohs(reinterpret_cast<const struct sockaddr_in*>(&sa_)->sin_port);
-        case PF_INET6:
-        return ntohs(reinterpret_cast<const struct sockaddr_in6*>(&sa_)->sin6_port);
-        default:
-        return 0;
-    }
+    assert(sa_valid_);
+    assert(family_ == PF_INET || family_ == PF_INET6);
+    return family_ == PF_INET
+      ? ntohs(reinterpret_cast<const struct sockaddr_in*>(&sa_)->sin_port)
+      : ntohs(reinterpret_cast<const struct sockaddr_in6*>(&sa_)->sin6_port);
 }
 
 void NetAddress::cache_names() const {

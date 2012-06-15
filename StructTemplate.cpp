@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "StructTemplate.h"
 
 namespace IPFIX {
@@ -16,11 +18,9 @@ void StructTemplate::add(const InfoElement* ie, size_t offset) {
       offset = offsets_.back() + ie->len();
     }
   }
-  
+
   // Check offset monotonity invariant
-  if (!offsets_.empty() && offset < offsets_.back()) {
-    throw std::logic_error("Cannot add IE with negative offset");
-  }
+  assert(offsets_.empty() || offset >= offsets_.back());
 
   // Add offset to offset table
   offsets_.push_back(offset);

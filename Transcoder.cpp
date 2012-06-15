@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "Constants.h" 
 #include "IETemplate.h" 
 #include "Transcoder.h"
@@ -106,9 +108,7 @@ bool Transcoder::encode(uint8_t* val, size_t len, const InfoElement* ie) {
       return false;
     }
   }
-  if (!iet->permitsLength(ielen)) {
-    throw std::logic_error("IE type size mismatch");
-  }
+  assert(iet->permitsLength(ielen));
   
   if (iet->isEndian()) {
 #if defined(BOOST_BIG_ENDIAN)
@@ -131,9 +131,7 @@ bool Transcoder::encodeZero(const InfoElement* ie) {
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
   
-  if (!iet->permitsLength(ielen)) {
-    throw std::logic_error("IE type size mismatch");
-  }
+  assert(iet->permitsLength(ielen));
   
   if (ielen > avail()) {
     return false;
@@ -243,9 +241,7 @@ bool Transcoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
   }
   
   // Ensure the length is permitted for the IE
-  if (!iet->permitsLength(ielen)) {
-    throw std::logic_error("IE type size mismatch");
-  }
+  assert(iet->permitsLength(ielen));
   
   if (iet->isEndian()) {
 #if defined(BOOST_BIG_ENDIAN)
@@ -279,9 +275,7 @@ bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
   }
 
   // Ensure the length is permitted for the IE
-  if (!iet->permitsLength(ielen)) {
-    throw std::logic_error("IE type size mismatch");
-  }
+  assert(iet->permitsLength(ielen));
   
   // store pointer to content and length in vf
   vf->cp = cur_;
@@ -398,9 +392,9 @@ bool Transcoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {
 void Transcoder::focus(size_t off, size_t len) {
   checkpoint();
   cur_ = base_ + off;
-  if (savemax_) {
-    throw std::logic_error("transcoder already focused");;
-  }
+
+  assert(savemax_ == 0);
+
   savemax_ = max_;
   if (max_ > cur_ + len) max_ = cur_ + len;
   //      fprintf(stderr, "xc 0x%016lx   focus from %u to %u\n",
@@ -408,9 +402,8 @@ void Transcoder::focus(size_t off, size_t len) {
 }
 
 void Transcoder::defocus() { 
-  if (!savemax_) {
-    throw std::logic_error("transcoder is defocused");
-  }
+  assert (savemax_ != 0);
+
   rollback();
   max_ = savemax_;
   savemax_ = NULL;
