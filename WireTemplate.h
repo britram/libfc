@@ -41,7 +41,9 @@ public:
     IETemplate(),
     domain_(domain),
     tid_(tid),
-    trlen_(kTemplateHeaderLen) {}
+    trlen_(kTemplateHeaderLen),
+    maxoff_(0),
+    varlen_count_(0) {}
     
   /**
    * Clear and deactivate this WireTemplate.
@@ -110,6 +112,19 @@ public:
   uint16_t tid() const { return tid_; }
   
   /**
+   * Return the maximum non-variable offset of an Information Element
+   */
+  
+  size_t maxFixedOffset() const { return maxoff_; }
+  
+  /**
+   * Return the number of variable length IEs
+   */
+  
+  size_t varlenCount() const { return varlen_count_; }
+
+  
+  /**
    * Return a WireTemplateKey uniquely identifying this template
    */
   const WireTemplateKey key() const {return WireTemplateKey(domain_, tid_);}
@@ -129,10 +144,11 @@ public:
   
     // FIXME make noncopyable
   
-    uint32_t                                 domain_;
-    uint16_t                                 tid_;
-    size_t                                   trlen_;
-
+    uint32_t                            domain_;
+    uint16_t                            tid_;
+    size_t                              trlen_;
+    size_t                              maxoff_;
+    size_t                              varlen_count_;
   
   };
 

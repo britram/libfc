@@ -49,6 +49,7 @@
 #include <stdexcept>
 #include "Session.h"
 #include "Transcoder.h"
+#include "ExportCursor.h"
 
 namespace IPFIX {
 
@@ -98,6 +99,9 @@ public:
   
   /**
    * Begin a new record for export with the current wire template.
+   * Initializes all Information Elements in the export record to zero.
+   * May cause export of a message if there is not space for the new record
+   * in the current message.
    */
   
   void beginRecord();
@@ -106,13 +110,27 @@ public:
    * Export the currently open record cursor.
    */
    
-  void exportRecord();
+  void exportRecord() { endRecord(true); }
 
   /**
    * Roll back the currently open record cursor.
    */
    
-  void rollbackRecord();
+  void rollbackRecord() { endRecord(false); }
+  
+  /**
+   * Reserve space in the current record for a variable-length Information 
+   * Element; a subsequent call to putRecord() for this Information Element 
+   * must have the same size. Reservations of lengths for fixed-length 
+   * Information Elements are no-ops. May cause export of a message if 
+   * the reservation would require more space than available.
+   *
+   * @param ie information element to reserve length for
+   * @param len length to reserve
+
+   */
+  
+   void reserveLength(const InfoElement *ie, size_t len);
   
   /**
    * Put a value at the given Information Element in the current record.
@@ -120,18 +138,21 @@ public:
    * in the current wire template. Overwrites previously put values for
    * Information Elements which are fixed length in the current wire template.
    *
-   * Variable-length Information Elements must be put in the order in which
-   * they appear in the wire template, and cannot be overwritten. 
+   * If space has not been reserved for variable-length Information
+   * Elements using reserveValueLength(), these must be put in the order 
+   * in which, cannot be overwritten, and may throw if they would overrun the
+   * message buffer. Client code is therefore strongly encouraged to use
+   * reserveValueLength() directly after beginRecord(), if possible. 
    * 
    * @param ie pointer to Information Element describing the value.
    * @param vp pointer to the value to copy into the message. This value must
    *           be in host byte order, and of appropriate type for the given
    *           Information Element. No type checks are performed.
    * @param len Length of the value in vp.
-   * @return 
+   * @return true if the value was put, false if no such IE exists.
    */
   
-  //bool putValue(const InfoElement* ie, uint8_t* vp, size_t len);
+  bool putValue(const InfoElement* ie, uint8_t* vp, size_t len);
   
   /**
    * Flush the current message with the given export time
@@ -167,6 +188,7 @@ protected:
    */
   Exporter(uint32_t domain, size_t mtu);
   
+  void endRecord(bool do_export); 
   
   /**
    * Low-level interface to export interface; overridden by subclasses
@@ -188,17 +210,32 @@ private:
   void startMessage();
   void endMessage(time_t export_time);
   
-  
+  // Low-level storage
+  // storage for message buffer
   uint8_t*                  buf_;
+  // transcoder (handles low-level IPFIX formatting)
   Transcoder                xcoder_;
-//  Cursor                    cursor_;
-  uint16_t                  set_id_;
-  bool                      msg_empty_;
-  bool                      set_active_;
-  Session                   session_;
-  WireTemplate*             tmpl_;
-  uint32_t                  domain_;
+  // Maximum message size
   size_t                    mtu_;
+  
+  // Message export state
+  // Session for storing IPFIX state
+  Session                   session_;
+  // Current domain for export
+  uint32_t                  domain_;
+  // current Set ID for export
+  uint16_t                  set_id_;
+  // TRUE if message has no content
+  bool                      msg_empty_;
+  // TRUE if there is an active set
+  bool                      set_active_;
+  // Wire template describing the set
+  WireTemplate*             tmpl_;
+
+  // TRUE if there is an active record
+  bool                      rec_active_;
+  // Export cursor state
+  ExportCursor              ec_;
 };
 
 }

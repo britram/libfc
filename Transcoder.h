@@ -166,10 +166,39 @@ namespace IPFIX {
     bool advance(const InfoElement *ie) { 
       return advance(ie->len()); 
     } 
-    
+
     /**
      * Given a pointer to a value of a given length, encode it 
-     * to the transcoder at the cursor.
+     * to the transcoder at a given offset from the cursor. 
+     * Does not advance the cursor.
+     *
+     * @param val pointer to value to encode
+     * @param len length of value to encode
+     * @param off offset from the cursor at which to encode the value
+     * @param ie pointer to IE representing the field to encode;
+     *           the length of the encoded field and type info
+     *           is taken from this IE. The type of val is assumed
+     *           to be type-compatible with this IE.
+     * @return offset from the cursor to the first byte after the 
+     *         encoded byte, or 0 if nor enough space available.
+     */
+    size_t encodeAt(uint8_t* val, size_t len, size_t off, 
+                     const InfoElement* ie);
+
+    /**
+     * Encode a zero of a given length from the given offset from the cursor.
+     * Does not advance the cursor.
+     *
+     * @param ie pointer to InfoElement representing the field to zero.
+     * @return offset from the cursor to the first byte after the encoded
+     *         zero, or 0 if not enough space available.
+     */
+     size_t encodeZeroAt(size_t len, size_t off);
+
+    /**
+     * Given a pointer to a value of a given length, encode it 
+     * to the transcoder at the cursor. Advances the cursor to
+     * the byte after the encoded value. Used for in-order encoding. 
      *
      * @param val pointer to value to encode
      * @param len length of value to encode
@@ -180,11 +209,19 @@ namespace IPFIX {
      * @return true if the encode succeeded, 
      *         false if not enough space available
      */
-    bool encode(uint8_t* val, size_t len, const InfoElement* ie);
+    bool encode(uint8_t* val, size_t len, const InfoElement* ie) {
+      size_t rv = encodeAt(val, len, 0, ie);
+      if (rv) {
+        cur_ += rv;
+        return true;
+      } else {
+        return false;
+      }
+    }
     
     /**
      * Given a pointer to a VarlenField, encode it 
-     * to the transcoder at the cursor.
+     * to the transcoder at the cursor. Advances the cursor.
      *
      * @param vf pointer to VarlenField to encode
      * @param ie pointer to IE representing the field to encode;
@@ -199,8 +236,8 @@ namespace IPFIX {
     }
     
     /**
-     * Encode a 16-bit integer at the cursor. Used for internal 
-     * template and header encoding.
+     * Encode a 16-bit integer at the cursor. Advances the cursor.
+     * Used for internal template and header encoding.
      *
      * @param val integer to encode
      * @return true if the encode succeeded, 
@@ -211,8 +248,8 @@ namespace IPFIX {
     }
     
     /**
-     * Encode a 32-bit integer at the cursor. Used for internal 
-     * template and header encoding.
+     * Encode a 32-bit integer at the cursor. Advances the cursor. 
+     * Used for internal template and header encoding.
      *
      * @param val integer to encode
      * @return true if the encode succeeded, 
@@ -223,15 +260,15 @@ namespace IPFIX {
     }
     
     /**
-     * Encode zero for the length of the given IE at the cursor.
+     * Encode zero for the length of the given IE at the cursor. 
+     * Advances the cursor.
      *
      * @param ie pointer to InfoElement representing the field to zero.
      * @return true if the encode succeeded, 
      *         false if not enough space available
      */
     bool encodeZero(const InfoElement* ie);
-    
-    
+
     /**
      * Open a new message at the cursor. Used internally by Exporter.
      *

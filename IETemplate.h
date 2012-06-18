@@ -52,7 +52,7 @@ typedef std::vector<const InfoElement *>::const_iterator
                                                  IETemplateIter;
   
 typedef boost::unordered_map<const InfoElement *, size_t, InfoElement::ptrIdHash, InfoElement::ptrIdEqual> 
-                                                 IndexMap;
+                                                 IEIndexMap;
 
 class IETemplate {
   
@@ -75,7 +75,6 @@ public:
    */
   bool isActive() const { return active_; }
 
-  
   /**
    * Determine whether this template contains an instance of the given IE
    *
@@ -123,6 +122,22 @@ public:
   size_t length(const InfoElement* ie) const {
     return ies_.at(index_map_.at(ie))->len();
   }
+  
+  /**
+   * Get the IE matching a given IE in the template.
+   * Used by Exporter for external encoding.
+   * Throws std::out_of_range if the template does not contain the IE.
+   * 
+   * FIXME kind of breaks encapsulation; consider bringing record 
+   * cursor export support into WireTemplate somehow.
+   * 
+   * @param ie information element to search for; must be a canonical
+   *           IE retrieved from InfoModel::instance().
+   * @return version of the IE in the template; may differ in length
+   */
+  const InfoElement* ieFor(const InfoElement* ie) const {
+    return ies_.at(index_map_.at(ie));
+  }
 
   /**
    * Get the minimum length of a record represented by this template.
@@ -145,6 +160,7 @@ public:
    */
   IETemplateIter end() const { return ies_.end(); }
   
+     
   virtual void dumpIdent(std::ostream &os) const = 0;
   
   void dump(std::ostream& os) const {
@@ -181,7 +197,7 @@ protected:
   // vector of information element offsets
   std::vector <size_t>                     offsets_;
   // map of information elements back to vector indices
-  IndexMap                                 index_map_;
+  IEIndexMap                               index_map_;
   // minimum length of record represented by template
   size_t                                   minlen_;
   // flag to indicate whether template is active. active templates

@@ -6,33 +6,39 @@
 
 namespace IPFIX {
 
-void WireTemplate::add(const InfoElement* ie) {  
-  add_inner(ie);
-  
-  // calculate offset
-  size_t offset;
-  if (offsets_.empty()) {
-    offset = 0;
-  } else if (offsets_.back() == kVarlen ||
-                   ie->len() == kVarlen) {
-    offset = kVarlen;
-  } else {
-    offset = offsets_.back() + ies_.back()->len();
-  }
-  
-  // Add offset to offset table
-  offsets_.push_back(offset);
-  
-  // Add the length of the IE to the minimum length
-  if (ie->len() == kVarlen) {
-    minlen_ += 1;
-  } else {
-    minlen_ += ie->len();
-  }
-  
-  // Add the length of the IE's fields to the template record length
-  trlen_ += ie->pen() ? 8 : 4;
-}
+    void WireTemplate::add(const InfoElement* ie) {  
+        add_inner(ie);
+
+        // calculate offset
+        size_t offset;
+        if (offsets_.empty()) {
+            offset = 0;
+        } else if (offsets_.back() == kVarlen ||
+                  ie->len() == kVarlen) {
+            offset = kVarlen;
+        } else {
+            offset = offsets_.back() + ies_.back()->len();
+        }
+
+        // Add offset to offset table
+        offsets_.push_back(offset);
+
+        // Track maximum constant offset
+        if (offset != kVarlen) {
+            maxoff_ = offset;
+        } 
+
+        // Add the length of the IE to the minimum length
+        if (ie->len() == kVarlen) {
+            minlen_ += 1;
+            varlen_count_ += 1;
+        } else {
+            minlen_ += ie->len();
+        }
+
+        // Add the length of the IE's fields to the template record length
+        trlen_ += ie->pen() ? 8 : 4;
+    }
 
 void WireTemplate::clear() {
   ies_.clear();

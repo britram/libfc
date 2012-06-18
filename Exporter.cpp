@@ -9,16 +9,18 @@ namespace IPFIX {
 
 Exporter::Exporter(uint32_t domain, size_t mtu): 
   buf_(NULL),
+  session_(),
+  mtu_(mtu),
+  domain_(domain),
   set_id_(0),
   msg_empty_(true),
   set_active_(false),
-  session_(),
   tmpl_(NULL),
-  domain_(domain),
-  mtu_(mtu) {
+  rec_active_(false)
+ {
 
   /* allocate buffer; will throw std::bad_alloc on failure */
-  buf_ = new uint8_t[mtu];
+  buf_ = new uint8_t[mtu_];
   
   //std::cerr << "allocated buffer " << static_cast<void*> (buf_) << " length " << mtu << std::endl;
 	  
@@ -61,6 +63,9 @@ void Exporter::setTemplate(uint16_t tid)
   // Set new template and set ID
   tmpl_ = new_tmpl;
   set_id_ = new_tmpl->tid();
+  
+  // create a new cursor
+  ec_ = ExportCursor(tmpl_);
 }
 
 void Exporter::exportTemplatesForDomain() {
@@ -98,57 +103,90 @@ void Exporter::exportStruct(const StructTemplate& struct_tmpl, uint8_t* struct_c
 }
 
 void Exporter::beginRecord() {
-
-// bool WireTemplate::encode(Transcoder& xc, const StructTemplate& struct_tmpl, uint8_t* struct_cp) const
-// {  
-//   // Refuse to encode an with inactive template
-//   if (!active_) {
-//     throw TemplateInactiveError("encode");
-//   }
-//   
-//   // Refuse to encode unless we have at _least_ minimum length avail.
-//   if (xc.avail() < minlen_) {
-//     //std::cerr << "encoder overrun (" << xc.avail() << " avail, " << minlen_ << " required.)" << std::endl;
-//     return false;
-//   }
-//   
-//   // Note: Void casts here are safe, since we checked minlen. 
-//   //       When we move to varlen encoding, we'll need to checkpoint and rollback.
-//   // FIXME this should be sped up by specifically building a transcode plan.
-//   xc.checkpoint();
-//   for (IETemplateIter iter = ies_.begin();
-//        iter != ies_.end();
-//        iter++) {
-//     if (struct_tmpl.contains(*iter)) {
-//       size_t off = struct_tmpl.offset(*iter);
-//       size_t len = struct_tmpl.length(*iter);
-//       if (len == kVarlen) {
-//         VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
-//         if (!xc.encode(vf, *iter)) goto err;
-//       } else {
-//         if (!xc.encode(struct_cp + off, len, *iter)) goto err;
-//       }
-//     } else {
-//       if (!xc.encodeZero(*iter)) goto err;
-//     }
-//   }
-//   
-//   return true;
-// 
-// err:
-//   xc.rollback();
-//   return false;
-// }
-
+    assert(!rec_active_);
+    
+    // Write a set header if we don't have one yet.
+    ensureSet();
+    
+    // Start a new message if we don't have at least enough 
+    // space for a record.
+    if (xcoder_.avail() < tmpl_->minlen()) {
+        flush();
+        ensureSet();
+        // Check again in case the MTU is simply too small
+        if (xcoder_.avail() < tmpl_->minlen()) {
+            throw MTUError("record");
+        }
+    }
+    
+    // Zero record
+    xcoder_.encodeZeroAt(tmpl_->minlen(), 0);
+    
+    // Create new record state
+    rec_active_ = true;
 }
 
-void Exporter::exportRecord() {
-
+void Exporter::endRecord(bool do_export) {
+    assert(rec_active_);
+    
+    // Advance cursor to end of record if exporting
+    if (do_export) {
+        xcoder_.advance(ec_.len());
+    }
+    
+    // Clear record state
+    ec_.clear();
+    rec_active_ = false;
 }
 
-void Exporter::rollbackRecord() {
+void Exporter::reserveLength(const InfoElement *ie, size_t len) {
+    assert(rec_active_);
+    
+    // reserve in the present cursor
+    ec_.setIELen(ie, len);
+    
+    // check for fit, start over if not
+    if (!ec_.fitsIn(xcoder_.avail())) {
+        rollbackRecord();
+        flush();
+        ensureSet();
 
+        if (!ec_.fitsIn(xcoder_.avail())) {
+            // we started over and it still doesn't fit. die.
+            throw MTUError("value length reservation");
+        }        
+    }
 }
+
+bool Exporter::putValue(const InfoElement* ie, uint8_t* vp, size_t len) {
+    // check for no current record
+    if (!rec_active_) {
+        throw std::logic_error("cannot put in inactive record");
+    }
+    
+    // skip if the current template doesn't contain the value
+    if (!tmpl_->contains(ie)) {
+        return false;
+    }
+    
+    // Figure out where to put the value.
+    size_t off = ec_.offsetOf(ie);
+    
+    // Make sure the length is reserved in the export cursor
+    // (throws if value put doesn't match preiously reserved value)
+    ec_.setIELen(ie, len);
+   
+    // now encode
+    size_t nextoff = xcoder_.encodeAt(vp, len, off, tmpl_->ieFor(ie));
+    
+    // And tell the export cursor if we have additional varlen encoding
+    if (nextoff - off - len > 1) {
+        ec_.addLen(nextoff - off - len - 1);
+    }
+    
+    return true;
+}
+
 
 void Exporter::startMessage() {
   xcoder_.setBase(buf_,mtu_);

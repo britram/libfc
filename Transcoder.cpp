@@ -92,39 +92,52 @@ static void xcode_swap(uint8_t *buf, size_t len) {
   }
 }
 
-bool Transcoder::encode(uint8_t* val, size_t len, const InfoElement* ie) {
+size_t Transcoder::encodeAt(uint8_t* val, size_t len, size_t off, const InfoElement* ie) {
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
   
   // Verify length
   if (ielen == kVarlen) {
     ielen = len;
-    if (ielen + (ielen > 254 ? 3 : 1) > avail()) {
-      return false;
+    if (off + ielen + (ielen > 254 ? 3 : 1) > avail()) {
+      return 0;
     }
-    cur_ = encode_varlen_length(cur_, ielen);
+    
+    off = (encode_varlen_length(cur_ + off, ielen) - cur_);
+    
   } else {
-    if (ielen > avail()) {
-      return false;
+    if (off + ielen > avail()) {
+      return 0;
     }
   }
+
   assert(iet->permitsLength(ielen));
+  
+  size_t new_off;
   
   if (iet->isEndian()) {
 #if defined(BOOST_BIG_ENDIAN)
-    cur_ = xcode_raw_right(val, len, cur_, ielen);
+    new_off = xcode_raw_right(val, len, cur_ + off, ielen) - cur_;
 #elif defined(BOOST_LITTLE_ENDIAN)
-    uint8_t* next = xcode_raw_left(val, len, cur_, ielen);
-    xcode_swap(cur_, ielen);
-    cur_ = next;
+    new_off = xcode_raw_left(val, len, cur_ + off, ielen) - cur_;
+    xcode_swap(cur_ + off, ielen);
 #else
 #error libfc does not compile on weird-endian machines.
 #endif
   } else {
-    cur_ = xcode_raw_left(val, len, cur_, ielen);
+    new_off = xcode_raw_left(val, len, cur_ + off, ielen) - cur_; 
   }
   
-  return true;
+  return new_off;
+}
+
+size_t Transcoder::encodeZeroAt(size_t len, size_t off) {  
+  if (off + len > avail()) {
+    return 0;
+  }
+  
+  memset(cur_ + off, 0, len);
+  return off + len;
 }
 
 bool Transcoder::encodeZero(const InfoElement* ie) {
