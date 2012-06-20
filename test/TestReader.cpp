@@ -46,7 +46,7 @@ public:
     
     SimpleFlow sf;
     
-    while (settmpl->decode(setxc, vst_, reinterpret_cast<uint8_t*>(&sf))) {            
+    while (settmpl->decodeStruct(setxc, vst_, reinterpret_cast<uint8_t*>(&sf))) {            
 
       //std::cerr << " in set " << std::dec << set_count << " record " << rec_count << 
       //" at " << std::hex << reinterpret_cast<uint64_t>(setxc.cur()) << std::endl;

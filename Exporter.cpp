@@ -89,11 +89,11 @@ void Exporter::exportTemplatesForDomain() {
 void Exporter::exportStruct(const StructTemplate& struct_tmpl, uint8_t* struct_cp) {
   ensureSet();
   
-  if (!tmpl_->encode(xcoder_, struct_tmpl, struct_cp)) {
+  if (!tmpl_->encodeStruct(xcoder_, struct_tmpl, struct_cp)) {
     // Not enough room to encode this record. Flush and try again.
     flush();
     ensureSet();
-    if (!tmpl_->encode(xcoder_, struct_tmpl, struct_cp)) {
+    if (!tmpl_->encodeStruct(xcoder_, struct_tmpl, struct_cp)) {
       // If it doesn't work now, it never will. Throw.
       throw MTUError("record");
     }

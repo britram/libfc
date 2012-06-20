@@ -40,7 +40,7 @@ public:
     
     std::cerr << "template id " << wt->tid() << " minlen " << wt->minlen();
     
-    while (wt->decode(setxc, caftmpl, reinterpret_cast<uint8_t*>(&pkt))) {
+    while (wt->decodeStruct(setxc, caftmpl, reinterpret_cast<uint8_t*>(&pkt))) {
       caphdr.ts.tv_sec = pkt.observationTimeMilliseconds / 1000;
       caphdr.ts.tv_usec = (pkt.observationTimeMilliseconds % 1000) * 1000;
       caphdr.len = pkt.ipTotalLength;

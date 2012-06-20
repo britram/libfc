@@ -303,6 +303,27 @@ namespace IPFIX {
     
     /**
      * Decode the value described by a given information element
+     * from a given offset from the cursor into a bounded value buffer.
+     * For variable length Information Elements, offset must point
+     * to the start of the length encoding. The decoded value is in
+     * host byte order but otherwise in IPFIX native encoding for the
+     * information element. Does not advance the cursor.
+     *
+     * @param val pointer to storage for decoded value
+     * @param len length of storage for decoded value
+     * @param off offset from cursor to value to decode
+     * @param ie pointer to IE representing the field to decode;
+     *           the length and type of the field to decode
+     *           is taken from this IE. The type of *val will be
+     *           type-compatible with this IE.
+     * @return true if the decode succeeded, 
+     *         false if not enough content available
+     */
+    size_t decodeAt(uint8_t* val, size_t len, size_t off, const InfoElement *ie);
+
+
+    /**
+     * Decode the value described by a given information element
      * at the cursor into a bounded value buffer.
      *
      * @param val pointer to storage for decoded value
@@ -314,8 +335,17 @@ namespace IPFIX {
      * @return true if the decode succeeded, 
      *         false if not enough content available
      */
-    bool decode(uint8_t* val, size_t len, const InfoElement *ie);
+    bool decode(uint8_t* val, size_t len, const InfoElement *ie) {
+      size_t rv = decodeAt(val, len, 0, ie);
+      if (rv) {
+          cur_ += rv;
+          return true;
+      } else {
+          return false;
+      }
+    }
 
+    
     /**
      * Decode the value described by a given information element
      * at the cursor into an unbounded VarlenField
@@ -332,6 +362,8 @@ namespace IPFIX {
     bool decode(VarlenField *vf, const InfoElement *ie);
 
     bool decodeSkip(const InfoElement *ie);
+
+    size_t decodeVarlenLengthAt(size_t off, size_t &varlen);
 
     /**
      * Decode a 16-bit integer at the cursor. Used for internal 

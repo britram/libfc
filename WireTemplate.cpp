@@ -57,7 +57,7 @@ void WireTemplate::mimic(const IETemplate& rhs) {
     activate();
 }
 
-bool WireTemplate::encode(Transcoder& xc, const StructTemplate& struct_tmpl, uint8_t* struct_cp) const
+bool WireTemplate::encodeStruct(Transcoder& xc, const StructTemplate& struct_tmpl, uint8_t* struct_cp) const
 {  
   // Refuse to encode an with inactive template
   assert(active_);
@@ -130,7 +130,7 @@ bool WireTemplate::encodeTemplateRecord(Transcoder &xc) const {
   return true;
 }
 
-bool WireTemplate::decode(Transcoder& xc, const StructTemplate &struct_tmpl, uint8_t* struct_cp) const {  
+bool WireTemplate::decodeStruct(Transcoder& xc, const StructTemplate &struct_tmpl, uint8_t* struct_cp) const {  
   // Refuse to decode an with inactive template
   assert(active_);
   

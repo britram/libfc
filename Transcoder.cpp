@@ -22,113 +22,119 @@ const InfoElement Transcoder::u32ie("_internal_unsigned32",
 
   
 /* 
- * Transcode left-justified. When copying from a smaller field to
- * a larger field, zero pads the end of the field. When copying
- * from a larger field to a smaller field, cuts bytes from the
- * end of the field.
- */
-static uint8_t *xcode_raw_left(uint8_t *src, size_t s_len, 
-                                uint8_t *dst, size_t d_len) {
-  if (s_len >= d_len) {
-    memcpy(dst, src, d_len);
-    dst += d_len;
-  } else { // s_len < d_len, need to zero pad on the right
-    memcpy(dst, src, s_len);
-    memset(dst + s_len, 0, d_len - s_len);
-    dst += d_len;
-  }
-  return dst;
+* Transcode left-justified. When copying from a smaller field to
+* a larger field, zero pads the end of the field. When copying
+* from a larger field to a smaller field, cuts bytes from the
+* end of the field.
+*/
+  static uint8_t *xcode_raw_left(uint8_t *src, size_t s_len, 
+uint8_t *dst, size_t d_len) {
+    if (s_len >= d_len) {
+        memcpy(dst, src, d_len);
+        dst += d_len;
+    } else { // s_len < d_len, need to zero pad on the right
+        memcpy(dst, src, s_len);
+        memset(dst + s_len, 0, d_len - s_len);
+        dst += d_len;
+    }
+    return dst;
 }
 
 /* 
- * Transcode right-justified. When copying from a smaller field to
- * a larger field, zero pads the beginning of the field. When copying
- * from a larger field to a smaller field, cuts bytes from the
- * beginning of the field.
- */
+* Transcode right-justified. When copying from a smaller field to
+* a larger field, zero pads the beginning of the field. When copying
+* from a larger field to a smaller field, cuts bytes from the
+* beginning of the field.
+*/
 #if defined(BOOST_BIG_ENDIAN)
 static uint8_t *xcode_raw_right(uint8_t *src, size_t s_len, 
-                                 uint8_t *dst, size_t d_len) {
-  if (s_len >= d_len) {
-    memcpy(dst, src + (s_len - d_len), d_len);
-    dst += d_len;
-  } else { // s_len < d_len, need to zero pad on the left
-    memset(dst, 0, d_len - s_len);
-    memcpy(dst + (d_len - s_len), src, s_len);
-    dst += d_len;
-  }
-  return dst;
+uint8_t *dst, size_t d_len) {
+    if (s_len >= d_len) {
+        memcpy(dst, src + (s_len - d_len), d_len);
+        dst += d_len;
+    } else { // s_len < d_len, need to zero pad on the left
+        memset(dst, 0, d_len - s_len);
+        memcpy(dst + (d_len - s_len), src, s_len);
+        dst += d_len;
+    }
+    return dst;
 }
 #endif
 
 /* 
- * Encode length as a varlen field
- */
+* Encode length as a varlen field
+*/
 static uint8_t *encode_varlen_length(uint8_t *dst, size_t varlen) {
-  if (varlen < 255) {
-    *dst++ = static_cast<uint8_t>(varlen);
-  } else {
-    *dst++ = 255;
-    *dst++ = static_cast<uint8_t>(varlen >> 8);
-    *dst++ = static_cast<uint8_t>(varlen & 0xFF);
-  }
-  return dst;
+    if (varlen < 255) {
+        *dst++ = static_cast<uint8_t>(varlen);
+    } else {
+        *dst++ = 255;
+        *dst++ = static_cast<uint8_t>(varlen >> 8);
+        *dst++ = static_cast<uint8_t>(varlen & 0xFF);
+    }
+    return dst;
 }
 
+/* 
+* Decode varlen field length
+*/
 static uint8_t *decode_varlen_length(uint8_t *src, size_t& varlen) {
-  varlen = *(src++);
-  if (varlen == 255) {
     varlen = *(src++);
-    varlen = (varlen << 8) + *(src++);
-  }
-  return src;
+    if (varlen == 255) {
+        varlen = *(src++);
+        varlen = (varlen << 8) + *(src++);
+    }
+    return src;
 }
-  
+
+/*
+ * Swap byte order in place
+ */
 static void xcode_swap(uint8_t *buf, size_t len) {
-  for (size_t i = 0 ; i < len/2; i++) {
-    uint8_t t = buf[i];
-    buf[i] = buf[(len-1)-i];
-    buf[(len-1)-i] = t;
-  }
+    for (size_t i = 0 ; i < len/2; i++) {
+        uint8_t t = buf[i];
+        buf[i] = buf[(len-1)-i];
+        buf[(len-1)-i] = t;
+    }
 }
 
 size_t Transcoder::encodeAt(uint8_t* val, size_t len, size_t off, const InfoElement* ie) {
-  const IEType *iet = ie->ietype();
-  size_t ielen = ie->len();
-  
-  // Verify length
-  if (ielen == kVarlen) {
-    ielen = len;
-    if (off + ielen + (ielen > 254 ? 3 : 1) > avail()) {
-      return 0;
-    }
-    
-    off = (encode_varlen_length(cur_ + off, ielen) - cur_);
-    
-  } else {
-    if (off + ielen > avail()) {
-      return 0;
-    }
-  }
 
-  assert(iet->permitsLength(ielen));
-  
-  size_t new_off;
-  
-  if (iet->isEndian()) {
+    size_t ielen = ie->len();
+
+    // Verify length
+    if (ielen == kVarlen) {
+        ielen = len;
+        if (off + ielen + (ielen > 254 ? 3 : 1) > avail()) {
+            return 0;
+        }
+
+        off = (encode_varlen_length(cur_ + off, ielen) - cur_);
+
+    } else {
+        if (off + ielen > avail()) {
+            return 0;
+        }
+    }
+
+    assert(ie->ietype()->permitsLength(ielen));
+
+    size_t new_off;
+
+    if (ie->ietype()->isEndian()) {
 #if defined(BOOST_BIG_ENDIAN)
-    new_off = xcode_raw_right(val, len, cur_ + off, ielen) - cur_;
+        new_off = xcode_raw_right(val, len, cur_ + off, ielen) - cur_;
 #elif defined(BOOST_LITTLE_ENDIAN)
-    new_off = xcode_raw_left(val, len, cur_ + off, ielen) - cur_;
-    xcode_swap(cur_ + off, ielen);
+        new_off = xcode_raw_left(val, len, cur_ + off, ielen) - cur_;
+        xcode_swap(cur_ + off, ielen);
 #else
 #error libfc does not compile on weird-endian machines.
 #endif
-  } else {
-    new_off = xcode_raw_left(val, len, cur_ + off, ielen) - cur_; 
-  }
-  
-  return new_off;
+    } else {
+        new_off = xcode_raw_left(val, len, cur_ + off, ielen) - cur_; 
+    }
+
+    return new_off;
 }
 
 size_t Transcoder::encodeZeroAt(size_t len, size_t off) {  
@@ -141,10 +147,9 @@ size_t Transcoder::encodeZeroAt(size_t len, size_t off) {
 }
 
 bool Transcoder::encodeZero(const InfoElement* ie) {
-  const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
   
-  assert(iet->permitsLength(ielen));
+  assert(ie->ietype()->permitsLength(ielen));
   
   if (ielen > avail()) {
     return false;
@@ -235,43 +240,78 @@ void Transcoder::encodeSetEnd() {
   cur_ = save;
 }
 
-bool Transcoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
+size_t Transcoder::decodeAt(uint8_t* val, size_t len, size_t off, const InfoElement *ie) {
   
-//  fprintf(stderr, "xc 0x%016lx decode %50s at %4lu to 0x%016lx (len %lu)\n",
-//    base_, ie->toIESpec().c_str(), cur_ - base_, val, len);
+  size_t      ielen = ie->len();  
+  uint8_t*    dp = cur_ + off;
   
-  const IEType *iet = ie->ietype();
-  size_t ielen = ie->len();
-  
-  // Get variable length
+  // Decode variable length
   if (ielen == kVarlen) {
-    cur_ = decode_varlen_length(cur_, ielen);
+    dp = decode_varlen_length(dp, ielen);
   }
   
   // Ensure there are enough bytes available in the buffer
-  if (ielen > avail()) {
-      return false;
+  if ((dp + ielen) - cur_ > avail()) {
+      return 0;
   }
   
   // Ensure the length is permitted for the IE
-  assert(iet->permitsLength(ielen));
+  assert(ie->ietype()->permitsLength(ielen));
   
-  if (iet->isEndian()) {
+  if (ie->ietype()->isEndian()) {
 #if defined(BOOST_BIG_ENDIAN)
-    (void)xcode_raw_right(cur_, ielen, val, len);
+    (void)xcode_raw_right(dp, ielen, val, len);
 #elif defined(BOOST_LITTLE_ENDIAN)
-    (void)xcode_raw_left(cur_, ielen, val, len);
+    (void)xcode_raw_left(dp, ielen, val, len);
     xcode_swap(val, len);
 #else
 #error libfc does not compile on weird-endian machines.
 #endif
   } else {
-    (void)xcode_raw_left(cur_, ielen, val, len);
+    (void)xcode_raw_left(dp, ielen, val, len);
   }
   
-  cur_ += ielen;
-  return true;
+  // return the offset after the decode
+  return dp + ielen - cur_;
 }
+
+// bool Transcoder::decode(uint8_t* val, size_t len, const InfoElement *ie) {
+//   
+// //  fprintf(stderr, "xc 0x%016lx decode %50s at %4lu to 0x%016lx (len %lu)\n",
+// //    base_, ie->toIESpec().c_str(), cur_ - base_, val, len);
+//   
+//   const IEType *iet = ie->ietype();
+//   size_t ielen = ie->len();
+//   
+//   // Get variable length
+//   if (ielen == kVarlen) {
+//     cur_ = decode_varlen_length(cur_, ielen);
+//   }
+//   
+//   // Ensure there are enough bytes available in the buffer
+//   if (ielen > avail()) {
+//       return false;
+//   }
+//   
+//   // Ensure the length is permitted for the IE
+//   assert(iet->permitsLength(ielen));
+//   
+//   if (iet->isEndian()) {
+// #if defined(BOOST_BIG_ENDIAN)
+//     (void)xcode_raw_right(cur_, ielen, val, len);
+// #elif defined(BOOST_LITTLE_ENDIAN)
+//     (void)xcode_raw_left(cur_, ielen, val, len);
+//     xcode_swap(val, len);
+// #else
+// #error libfc does not compile on weird-endian machines.
+// #endif
+//   } else {
+//     (void)xcode_raw_left(cur_, ielen, val, len);
+//   }
+//   
+//   cur_ += ielen;
+//   return true;
+// }
   
 bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
   const IEType *iet = ie->ietype();
@@ -322,6 +362,18 @@ bool Transcoder::decodeSkip(const InfoElement *ie) {
   return true;
 }
 
+size_t Transcoder::decodeVarlenLengthAt(size_t off, size_t& varlen) {
+    if (off + 1 > avail()) return 0;
+    
+    varlen = cur_[off];
+    if (varlen == 255) {
+        if (off + 3 > avail()) return 0;
+        varlen = cur_[off+1];
+        varlen = (varlen << 8) + cur_[off+2];
+        return off + 3;
+    }
+    return off + 1;
+}
 
 bool Transcoder::decodeMessageHeader(uint16_t& len, 
                                  uint32_t& export_time, 
