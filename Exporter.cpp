@@ -9,8 +9,8 @@ namespace IPFIX {
 
 Exporter::Exporter(uint32_t domain, size_t mtu): 
   buf_(NULL),
-  session_(),
   mtu_(mtu),
+  //  session_(),
   domain_(domain),
   set_id_(0),
   msg_empty_(true),

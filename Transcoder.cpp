@@ -251,7 +251,8 @@ size_t Transcoder::decodeAt(uint8_t* val, size_t len, size_t off, const InfoElem
   }
   
   // Ensure there are enough bytes available in the buffer
-  if ((dp + ielen) - cur_ > avail()) {
+  //if ((dp + ielen) - cur_ > avail()) {
+  if (dp + ielen > cur_ + avail()) {
       return 0;
   }
   

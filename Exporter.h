@@ -6,7 +6,7 @@
  * 
  * Defines the abstract exporter interface.
  *
-
+ * 
  * This interface provides two ways of exporting data in IPFIX messages.
  * The first (and lower-level) interface is based on C-structure 
  * transcoding. To use it, client code should place the data to be exported 

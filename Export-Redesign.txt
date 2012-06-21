@@ -94,7 +94,7 @@ according to the template ID.
 This could be translated into the following program:
 
 1: JNMB 8   ; Jump if No More Bytes to location 8
-2: NR 256   ; Create new Record for template 256
+2: NR       ; Create new Record for the current template
 3: RIP4     ; Read an IPv4 address into the first offset
 4: RIP4     ; Read an IPv4 address into the second offset
 5: RUI32    ; Read an unsigned 32-bit integer into the third offset
@@ -195,7 +195,7 @@ public:
     pc = 0;
 
     while (!done_executing)
-      instructions[pc].execute(e);
+      instructions[pc].execute(*this);
   }
 };
 
