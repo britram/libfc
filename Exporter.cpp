@@ -16,7 +16,8 @@ Exporter::Exporter(uint32_t domain, size_t mtu):
   msg_empty_(true),
   set_active_(false),
   tmpl_(NULL),
-  rec_active_(false)
+  rec_active_(false),
+  oc_(NULL, &xcoder_)
  {
 
   /* allocate buffer; will throw std::bad_alloc on failure */
@@ -65,7 +66,7 @@ void Exporter::setTemplate(uint16_t tid)
   set_id_ = new_tmpl->tid();
   
   // create a new cursor
-  ec_ = ExportCursor(tmpl_);
+  oc_ = ExporterOffsetCache(tmpl_, &xcoder_);
 }
 
 void Exporter::exportTemplatesForDomain() {
@@ -131,27 +132,28 @@ void Exporter::endRecord(bool do_export) {
     
     // Advance cursor to end of record if exporting
     if (do_export) {
-        xcoder_.advance(ec_.len());
+        oc_.advance();
+    } else {
+        oc_.clear();
     }
     
     // Clear record state
-    ec_.clear();
     rec_active_ = false;
 }
 
-void Exporter::reserveLength(const InfoElement *ie, size_t len) {
+void Exporter::reserveVarlen(const InfoElement *ie, size_t len) {
     assert(rec_active_);
     
     // reserve in the present cursor
-    ec_.setIELen(ie, len);
+    oc_.setIELen(ie, len);
     
     // check for fit, start over if not
-    if (!ec_.fitsIn(xcoder_.avail())) {
+    if (!oc_.mightFit()) {
         rollbackRecord();
         flush();
         ensureSet();
 
-        if (!ec_.fitsIn(xcoder_.avail())) {
+        if (!oc_.mightFit()) {
             // we started over and it still doesn't fit. die.
             throw MTUError("value length reservation");
         }        
@@ -170,20 +172,14 @@ bool Exporter::putValue(const InfoElement* ie, uint8_t* vp, size_t len) {
     }
     
     // Figure out where to put the value.
-    size_t off = ec_.offsetOf(ie);
+    size_t off = oc_.offsetOf(ie);
     
-    // Make sure the length is reserved in the export cursor
-    // (throws if value put doesn't match preiously reserved value)
-    ec_.setIELen(ie, len);
+    // Make sure the length is reserved
+    oc_.setIELen(ie, len);
    
     // now encode
     size_t nextoff = xcoder_.encodeAt(vp, len, off, tmpl_->ieFor(ie));
-    
-    // And tell the export cursor if we have additional varlen encoding
-    if (nextoff - off - len > 1) {
-        ec_.addLen(nextoff - off - len - 1);
-    }
-    
+
     return true;
 }
 

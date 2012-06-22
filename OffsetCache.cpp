@@ -16,8 +16,25 @@ namespace IPFIX {
     IETemplateIter OffsetCache::end() {
         return wt_->end();
     }
+    
+    bool OffsetCache::advance() {
+        if (!reclen_valid_) {
+            recacheOffsets();
+            if (!reclen_valid_) {
+                throw CursorError("attempt to advance without valid record length");
+            }
+        }
+        
+        if (xc_->advance(reclen_)) {
+            clear();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    size_t OffsetCache::offsetFor(const InfoElement* ie) {
+
+    size_t OffsetCache::offsetOf(const InfoElement* ie) {
         assert(wt_);
     
         size_t off;
@@ -97,7 +114,9 @@ namespace IPFIX {
             } else {
                 vlengths_[ie] = len;
                 reclen_ += len;
+                reclen_valid_ = false;
             }
         }
     }
+    
 }

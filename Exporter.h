@@ -49,7 +49,7 @@
 #include <stdexcept>
 #include "Session.h"
 #include "Transcoder.h"
-#include "ExportCursor.h"
+#include "OffsetCache.h"
 
 namespace IPFIX {
 
@@ -130,7 +130,7 @@ public:
 
    */
   
-   void reserveLength(const InfoElement *ie, size_t len);
+   void reserveVarlen(const InfoElement *ie, size_t len);
   
   /**
    * Put a value at the given Information Element in the current record.
@@ -235,7 +235,7 @@ private:
   // TRUE if there is an active record
   bool                      rec_active_;
   // Export cursor state
-  ExportCursor              ec_;
+  ExporterOffsetCache       oc_;
 };
 
 }

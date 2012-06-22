@@ -26,13 +26,15 @@ namespace IPFIX {
     protected:
 
         const WireTemplate*         wt_;
+        Transcoder*                 xc_;
         IEIndexMap                  vlengths_;
         IEIndexMap                  voffsets_;
         size_t                      reclen_;
         bool                        reclen_valid_;
 
-        OffsetCache(const WireTemplate* wt):
-            wt_(wt)
+        OffsetCache(const WireTemplate* wt, Transcoder* xc):
+            wt_(wt),
+            xc_(xc)
             {}
 
         IETemplateIter begin();
@@ -43,8 +45,12 @@ namespace IPFIX {
 
     public:
 
-        size_t offsetFor(const InfoElement* ie);
+        size_t offsetOf(const InfoElement* ie);
        
+        /**
+         * Step the transcoder to the next record; clears the cache.
+         */
+         bool advance();
         
         /**
          * Clear the offset cache to the next record
@@ -56,13 +62,13 @@ namespace IPFIX {
             reclen_ = wt_->maxFixedOffset();
             reclen_valid_ = false;
         }
+        
+        size_t reclen() {
+            return reclen_valid_ ? reclen_ : 0;
+        }
     };
 
     class CollectorOffsetCache : public OffsetCache {
-
-    private:
-
-        Transcoder* xc_;
 
     protected:
 
@@ -71,44 +77,31 @@ namespace IPFIX {
     public:
 
         CollectorOffsetCache(const WireTemplate* wt, Transcoder* xc):
-            OffsetCache(wt),
-            xc_(xc)
+            OffsetCache(wt, xc)
             {}
-
-
-        /**
-         * Step the transcoder to the next record; clears the cache.
-         */
-        bool advance() {
-            if (!reclen_valid_) {
-                recacheOffsets();
-                assert(reclen_valid_);
-            }
-            
-            if (xc_->advance(reclen_)) {
-                clear();
-                return true;
-            } else {
-                return false;
-            }
-        }
         
     };
     
     class ExporterOffsetCache : public OffsetCache {
 
-        ExporterOffsetCache(const WireTemplate* wt):
-            OffsetCache(wt)
-            {}
+    protected:
 
+        void recacheOffsets();
+
+    public:
+        
+        ExporterOffsetCache(const WireTemplate* wt, Transcoder *xc):
+            OffsetCache(wt, xc)
+            {}
         
         /**
          * Reserve a variable record length in the cache.
          */
         void setIELen(const InfoElement *ie, size_t len);
-
-        void recacheOffsets();
-       
+        
+        bool mightFit() {
+            return xc_->avail() >= reclen_;
+        }
     };
 }
 
