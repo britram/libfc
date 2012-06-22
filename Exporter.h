@@ -152,7 +152,19 @@ public:
    * @return true if the value was put, false if no such IE exists.
    */
   
-  bool putValue(const InfoElement* ie, uint8_t* vp, size_t len);
+    bool putValue(const InfoElement* ie, const void* vp, size_t len);
+  
+    bool putValue(const InfoElement* ie, uint32_t& v) {
+        return putValue(ie, &v, sizeof(v));
+    }
+
+    bool putValue(const InfoElement* ie, uint64_t& v) {
+        return putValue(ie, &v, sizeof(v));
+    }
+  
+    bool putValue(const InfoElement* ie, std::string& v) {
+        return putValue(ie, v.c_str(), v.size());
+    }
   
   /**
    * Flush the current message with the given export time

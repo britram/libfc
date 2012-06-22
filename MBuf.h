@@ -25,6 +25,9 @@ namespace IPFIX {
  * This class is used internally by Collector.
  *
  * FIXME genericize this to handle V9.
+ *
+ * FIXME genericize this to an interface for handling message export too
+ *       (take some message/set framing out of Transcoder and put it here)
  */
 
   class MBuf {
@@ -131,7 +134,6 @@ namespace IPFIX {
      */
     bool consume(std::istream& is, size_t len, size_t off);
 
-    
     /**
      * Given a transcoder positioned after the message header, replace the
      * contents of this buffer's setlist with the sets contained in the message.

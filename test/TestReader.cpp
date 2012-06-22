@@ -40,7 +40,7 @@ public:
     c.registerReceiver(&vst_, this);
   }
   
-  void receive(const Collector* collector, 
+  void receiveSet(const Collector* collector, 
                        Transcoder& setxc, 
                        const WireTemplate* settmpl)  {
     

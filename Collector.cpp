@@ -60,7 +60,7 @@ bool Collector::receiveMessage(MBuf& mbuf) {
     // restrict transcoder to the set content
     xc.focus(sliter->off + kSetHeaderLen, sliter->len - kSetHeaderLen);
     // handle set
-    receiver->receive(this, xc, set_tmpl);
+    receiver->receiveSet(this, xc, set_tmpl);
     // and defocus
     xc.defocus();
   }

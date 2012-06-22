@@ -30,7 +30,7 @@ namespace IPFIX {
    * StructTemplate. Content will be copied to message on encode. Pointer
    * will point inside the a libfc-internal set buffer on decode, 
    * and must be copied before the set is processed (i.e., within
-   * SetReceiver.receive().
+   * SetReceiver.receiveSet().
    */
   
   struct VarlenField {
@@ -47,7 +47,7 @@ namespace IPFIX {
    *
    * Transcoders are used extensively within libfc's internals (Exporter
    * and Collector). They are only exposed to libfc clients through the
-   * SetReceiver interface. See the documentation for SetReceiver.receive()
+   * SetReceiver interface. See the documentation for SetReceiver.receiveSet()
    * for detailed information.
    *
    * FIXME this class is rather cavalier about copyability and constness.
@@ -182,7 +182,7 @@ namespace IPFIX {
      * @return offset from the cursor to the first byte after the 
      *         encoded byte, or 0 if nor enough space available.
      */
-    size_t encodeAt(uint8_t* val, size_t len, size_t off, 
+    size_t encodeAt(const void* val, size_t len, size_t off, 
                      const InfoElement* ie);
 
     /**
@@ -209,7 +209,7 @@ namespace IPFIX {
      * @return true if the encode succeeded, 
      *         false if not enough space available
      */
-    bool encode(uint8_t* val, size_t len, const InfoElement* ie) {
+    bool encode(const void* val, size_t len, const InfoElement* ie) {
       size_t rv = encodeAt(val, len, 0, ie);
       if (rv) {
         cur_ += rv;

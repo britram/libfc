@@ -160,7 +160,7 @@ void Exporter::reserveVarlen(const InfoElement *ie, size_t len) {
     }
 }
 
-bool Exporter::putValue(const InfoElement* ie, uint8_t* vp, size_t len) {
+bool Exporter::putValue(const InfoElement* ie, const void* vp, size_t len) {
     // check for no current record
     if (!rec_active_) {
         throw std::logic_error("cannot put in inactive record");

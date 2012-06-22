@@ -49,7 +49,7 @@ namespace IPFIX {
     /**
      * Receive and process the next message sent to this collector.
      *
-     * Calls the receive() method on any registered receiver matching
+     * Calls the receiveSet() method on any registered receiver matching
      * templates in the received message. Allows the caller to pass in
      * a message buffer by reference; for instance, to save on message
      * buffer reallocation or to implement delayed message processing.
@@ -63,7 +63,7 @@ namespace IPFIX {
     /**
      * Receive and process the next message sent to this collector.
      *
-     * Calls the receive() method on any registered receiver matching
+     * Calls the receiveSet() method on any registered receiver matching
      * templates in the received message. Uses a transient message
      * buffer.
      *

@@ -46,6 +46,10 @@ namespace IPFIX {
     public:
 
         size_t offsetOf(const InfoElement* ie);
+
+        size_t lengthOf(const InfoElement* ie) {
+            return vlengths_[ie];
+        }
        
         /**
          * Step the transcoder to the next record; clears the cache.

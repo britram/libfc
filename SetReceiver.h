@@ -7,11 +7,9 @@
  * Defines the set receiver interface.
  *
  * Once a SetReceiver is registered for a given minimal template
- * (see Collector::registerReceiver()), its receive() method will 
+ * (see Collector::registerReceiver()), its receiveSet() method will 
  * be called for each set for which it is registered in the message.
  */
-
-// FIXME provide a SetReceiver subclass that does record-level transcoding.
 
 #ifndef IPFIX_SETRECEIVER_H // idem
 #define IPFIX_SETRECEIVER_H // hack
@@ -34,7 +32,7 @@ namespace IPFIX {
      *
      * FIXME what else might a receiver require?
      */
-    virtual void receive(const Collector* collector, 
+    virtual void receiveSet(const Collector* collector, 
                          Transcoder& setxc, 
                          const WireTemplate* wt) = 0;
     

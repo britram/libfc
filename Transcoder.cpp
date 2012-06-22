@@ -27,8 +27,8 @@ const InfoElement Transcoder::u32ie("_internal_unsigned32",
 * from a larger field to a smaller field, cuts bytes from the
 * end of the field.
 */
-  static uint8_t *xcode_raw_left(uint8_t *src, size_t s_len, 
-uint8_t *dst, size_t d_len) {
+  static uint8_t *xcode_raw_left(const void *src, size_t s_len, 
+                                       uint8_t *dst, size_t d_len) {
     if (s_len >= d_len) {
         memcpy(dst, src, d_len);
         dst += d_len;
@@ -47,8 +47,8 @@ uint8_t *dst, size_t d_len) {
 * beginning of the field.
 */
 #if defined(BOOST_BIG_ENDIAN)
-static uint8_t *xcode_raw_right(uint8_t *src, size_t s_len, 
-uint8_t *dst, size_t d_len) {
+static uint8_t *xcode_raw_right(const void *src, size_t s_len, 
+                                      uint8_t *dst, size_t d_len) {
     if (s_len >= d_len) {
         memcpy(dst, src + (s_len - d_len), d_len);
         dst += d_len;
@@ -98,7 +98,7 @@ static void xcode_swap(uint8_t *buf, size_t len) {
     }
 }
 
-size_t Transcoder::encodeAt(uint8_t* val, size_t len, size_t off, const InfoElement* ie) {
+size_t Transcoder::encodeAt(const void* val, size_t len, size_t off, const InfoElement* ie) {
 
     size_t ielen = ie->len();
 

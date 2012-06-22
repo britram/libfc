@@ -92,7 +92,7 @@ public:
    * Use this Template to decode a structure described by a template from 
    * a given transcoder. 
    *
-   * Client code should use this call within SetReceiver::receive().
+   * Client code should use this call within SetReceiver::receiveSet().
    *
    * @param encoder transcoder cued to the location of the record to decode
    * @param struct_tmpl template describing the structure in struct_vp

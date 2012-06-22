@@ -28,7 +28,7 @@ private:
 public: 
   CapfixReceiver(pcap_dumper_t* dumper): dumper_(dumper) {}
   
-  void receive(const Collector* collector, 
+  void receiveSet(const Collector* collector, 
                        Transcoder& setxc, 
                        const WireTemplate* wt)  {
     

@@ -59,6 +59,7 @@ namespace IPFIX {
     
         return off;
     }
+    
 
     void CollectorOffsetCache::recacheOffsets() {
         size_t nextoff = wt_->maxFixedOffset();
