@@ -240,7 +240,7 @@ void Transcoder::encodeSetEnd() {
   cur_ = save;
 }
 
-size_t Transcoder::decodeAt(uint8_t* val, size_t len, size_t off, const InfoElement *ie) {
+size_t Transcoder::decodeAt(void* val, size_t len, size_t off, const InfoElement *ie) {
   
   size_t      ielen = ie->len();  
   uint8_t*    dp = cur_ + off;
@@ -261,15 +261,15 @@ size_t Transcoder::decodeAt(uint8_t* val, size_t len, size_t off, const InfoElem
   
   if (ie->ietype()->isEndian()) {
 #if defined(BOOST_BIG_ENDIAN)
-    (void)xcode_raw_right(dp, ielen, val, len);
+    (void)xcode_raw_right(dp, ielen, static_cast<uint8_t*>(val), len);
 #elif defined(BOOST_LITTLE_ENDIAN)
-    (void)xcode_raw_left(dp, ielen, val, len);
-    xcode_swap(val, len);
+    (void)xcode_raw_left(dp, ielen, static_cast<uint8_t*>(val), len);
+    xcode_swap(static_cast<uint8_t*>(val), len);
 #else
 #error libfc does not compile on weird-endian machines.
 #endif
   } else {
-    (void)xcode_raw_left(dp, ielen, val, len);
+    (void)xcode_raw_left(dp, ielen, static_cast<uint8_t*>(val), len);
   }
   
   // return the offset after the decode

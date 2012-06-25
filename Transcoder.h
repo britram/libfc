@@ -319,8 +319,7 @@ namespace IPFIX {
      * @return true if the decode succeeded, 
      *         false if not enough content available
      */
-    size_t decodeAt(uint8_t* val, size_t len, size_t off, const InfoElement *ie);
-
+    size_t decodeAt(void* val, size_t len, size_t off, const InfoElement *ie);
 
     /**
      * Decode the value described by a given information element
@@ -335,7 +334,7 @@ namespace IPFIX {
      * @return true if the decode succeeded, 
      *         false if not enough content available
      */
-    bool decode(uint8_t* val, size_t len, const InfoElement *ie) {
+    bool decode(void* val, size_t len, const InfoElement *ie) {
       size_t rv = decodeAt(val, len, 0, ie);
       if (rv) {
           cur_ += rv;
