@@ -41,7 +41,6 @@ static const uint32_t kSimpleFlowTid = 0xAB34;
 static const uint32_t kCapfixPacketTid = 0xAB35;
 
 static const int kMaxFlows = 100000;
-using namespace IPFIX;
 
 struct SimpleFlow {
     uint64_t flowStartMilliseconds;
@@ -56,7 +55,7 @@ struct SimpleFlow {
 struct CapfixPacket {
     uint64_t observationTimeMilliseconds;
     uint32_t ipTotalLength;
-    VarlenField ipHeaderPacketSection;
+    IPFIX::VarlenField ipHeaderPacketSection;
 };
 
 void install_quit_handler();
@@ -65,8 +64,8 @@ void doQuit(int signum);
 
 uint64_t sys_ms();
 
-void makeSimpleFlowTemplate(StructTemplate& sfstmpl);
-void makeCapfixPacketTemplate(StructTemplate& sfstmpl);
+void makeSimpleFlowTemplate(IPFIX::StructTemplate& sfstmpl);
+void makeCapfixPacketTemplate(IPFIX::StructTemplate& sfstmpl);
 
 void initSimpleFlow(SimpleFlow& sf);
 void incrSimpleFlow(SimpleFlow& sf);

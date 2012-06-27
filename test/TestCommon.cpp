@@ -69,8 +69,8 @@ uint64_t sys_ms() {
     return static_cast<uint64_t>(tv.tv_sec) * 1000 +  
            static_cast<uint64_t>(tv.tv_usec) / 1000;
 }
-void makeSimpleFlowTemplate(StructTemplate& sfstmpl) {
-    InfoModel& model = InfoModel::instance();
+void makeSimpleFlowTemplate(IPFIX::StructTemplate& sfstmpl) {
+    IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
   
     sfstmpl.add(model.lookupIE("flowStartMilliseconds"),    offsetof(SimpleFlow, flowStartMilliseconds));
     sfstmpl.add(model.lookupIE("flowEndMilliseconds"),      offsetof(SimpleFlow, flowEndMilliseconds));
@@ -82,8 +82,8 @@ void makeSimpleFlowTemplate(StructTemplate& sfstmpl) {
     sfstmpl.activate();
 }
 
-void makeCapfixPacketTemplate(StructTemplate& cpstmpl) {
-    InfoModel& model = InfoModel::instance();
+void makeCapfixPacketTemplate(IPFIX::StructTemplate& cpstmpl) {
+    IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
     cpstmpl.add(model.lookupIE("observationTimeMilliseconds"), 
         offsetof(CapfixPacket, observationTimeMilliseconds));
