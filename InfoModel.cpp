@@ -1,6 +1,4 @@
-/* Copyright (c) 2011, NEC Europe Ltd, Consorzio Nazionale 
- * Interuniversitario per le Telecomunicazioni, Institut 
- * Telecom/Telecom Bretagne, ETH Zürich, INVEA-TECH a.s. All rights reserved.
+/* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -9,9 +7,7 @@
  *    * Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of NEC Europe Ltd, Consorzio Nazionale 
- *      Interuniversitario per le Telecomunicazioni, Institut Telecom/Telecom 
- *      Bretagne, ETH Zürich, INVEA-TECH a.s. nor the names of its contributors 
+ *    * Neither the names of ETH Zürich nor the names of other contributors 
  *      may be used to endorse or promote products derived from this software 
  *      without specific prior written permission.
  *
@@ -22,11 +18,10 @@
  * HOLDERBE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
- * PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <climits>
@@ -40,70 +35,181 @@
 
 namespace IPFIX {
 
-const InfoElement InfoModel::parseIESpec(const std::string& iespec) const {
-  char            ignore, nc;
-  std::stringbuf  ignoresb, namesb, sizesb, ietnamesb;
-  std::string     name;
-  unsigned int    number = 0, pen = 0, size = 0;
+static void parseIESpec_NumPen(std::istringstream& iestream, 
+                               unsigned int& number,
+                               unsigned int& pen) {
+    // get the first number
+    iestream >> number;
 
-  // parse IE specifier on delimiters
-  std::istringstream   iestream(iespec);
-
-  while (!iestream.eof()) {
-    if (iestream.peek() == '(') {         // parse number
-      iestream >> ignore;
-      iestream >> number;
-      if (iestream.peek() == '/') {       // number has a pen
+    // see how we're terminated
+    char c = iestream.get();
+    if (c == '/') {
+        // first number was a pen. get the next.
         pen = number;
-        iestream >> ignore;
         iestream >> number;
-      }
-      iestream >> ignore; // eat the trailing )
-    } else if (iestream.peek() == '<') {  // parse typename
-      iestream >> ignore;
-      iestream.get(ietnamesb, '>');
-      iestream >> ignore; // eat the trailing >
-    } else if (iestream.peek() == '[') {  // parse size
-        iestream >> ignore;
-        iestream.get(sizesb, ']');
-        iestream >> ignore; // eat the trailing ]
-        if (sizesb.str()[0] == 'v') {
-          size = kVarlen;
-        } else {
-          // parse size
-          unsigned long my_size;
-          try {
-            my_size = std::stoul(sizesb.str());
-          } catch (std::invalid_argument) {
-            throw IESpecError("bad size " + sizesb.str() + " (invalid format)");
-          } catch (std::out_of_range) {
-            throw IESpecError("bad size " + sizesb.str() + " (out of range)");
-          }
-          if (my_size > UINT_MAX)
-            throw IESpecError("bad size (" + std::to_string(my_size)
-                              + ", which is greater than the allowed maximum "
-                              + std::to_string(UINT_MAX) + ")");
-          // Compiler may warn here (mine doesn't: g++ 4.5.3), but at this
-          // point, 0 <= my_size <= UINT_MAX, so *if* the compiler warns
-          // (usually about losing precision), use a static_cast.
-          size = my_size;
-        }
-    } else if (iestream.peek() == '{') {  // parse (and ignore) context
-      iestream >> ignore;
-      iestream.get(ignoresb, '}');
-      iestream >> ignore;
-    } else { // in name state, add to name
-      nc = iestream.get();
-      if (!iestream.eof()) {
-        namesb.sputc(nc);
-      }
+        c = iestream.get();
+    } else {
+        pen = 0;
     }
-  }
-  
-  const IEType *ietype = lookupIEType(ietnamesb.str());
-  InfoElement ie(namesb.str(), pen, number, ietype, size);
-  return ie;
+
+    // check for proper termination
+    if (c != ')') {
+        throw IESpecError("unterminated IE number / PEN");
+    }
 }
+
+static void parseIESpec_Length(std::istringstream& iestream,
+                               unsigned int& len) {
+
+    std::stringbuf lenbuf;
+    
+    iestream.get(lenbuf, ']');
+    iestream.get();
+    
+    std::cerr << "length " << lenbuf.str() << std::endl;
+    
+    if (lenbuf.str()[0] == 'v') {
+        len = kVarlen;
+    } else {  // parse size
+        unsigned long ullen;
+        try {
+            ullen = std::stoul(lenbuf.str());
+        } catch (std::invalid_argument) {
+            throw IESpecError("bad size " + lenbuf.str() + " (invalid format)");
+        } catch (std::out_of_range) {
+            throw IESpecError("bad size " + lenbuf.str() + " (out of range)");
+        }
+
+        if (ullen != kVarlen &&
+            ullen > kVarlen - kMessageHeaderLen - kSetHeaderLen)
+        {
+            throw IESpecError("bad size " + std::to_string(ullen)
+                    + " (too large)");
+        }
+
+        len = static_cast<unsigned int>(ullen);
+    }
+}
+
+static void parseIESpec_Initial(std::istringstream& iestream, 
+                                std::stringbuf& namebuf,
+                                std::stringbuf& typebuf,
+                                std::stringbuf& scratchbuf,
+                                unsigned int& number,
+                                unsigned int& pen,
+                                unsigned int& len) {
+
+    char c = iestream.get();
+    if (iestream.eof()) return;
+    
+    switch (c) {
+        case '(':
+            parseIESpec_NumPen(iestream, number, pen);
+            break;
+        case '[':
+            parseIESpec_Length(iestream, len);
+            break;
+        case '<':
+            iestream.get(typebuf, '>');
+            iestream.get();
+            break;
+        case '{':
+            iestream.get(scratchbuf, '}');
+            iestream.get();
+            break;
+        default:
+            namebuf.sputc(c);
+            break;
+    }
+}
+
+const InfoElement InfoModel::parseIESpec(const std::string& iespec) const {
+    
+    std::istringstream iestream(iespec);
+    std::stringbuf namebuf, typebuf, scratchbuf;
+    unsigned int number = 0, pen = 0, len = 0;
+    
+    while (!iestream.eof()) {
+        parseIESpec_Initial(iestream, namebuf, typebuf, scratchbuf, 
+                            number, pen, len);
+    }
+    
+    const IEType *ietype = lookupIEType(typebuf.str());
+    InfoElement ie(namebuf.str(), pen, number, ietype, len);
+    return ie;
+}
+
+// 
+// const InfoElement InfoModel::parseIESpec(const std::string& iespec) const {
+//     char            ignore, nc;
+//     std::stringbuf  ignoresb, namesb, sizesb, ietnamesb;
+//     std::string     name;
+//     unsigned int    number = 0, pen = 0, size = 0;
+// 
+//     std::istringstream   iestream(iespec);
+// 
+//     while (!iestream.eof()) {
+// 
+//         if (iestream.peek() == '(') {         // parse number
+//             iestream >> ignore;
+//             iestream >> number;
+// 
+//             if (iestream.peek() == '/') {       // number has a pen
+//                 pen = number;
+//                 iestream >> ignore;
+//                 iestream >> number;
+//             }
+// 
+//             if (iestream.peek() != ')') {       // check for trailing )
+//                 throw IESpecError("unterminated IE number / PEN");
+//             }   
+// 
+//             iestream >> ignore; // eat the trailing )
+// 
+//         } else if (iestream.peek() == '<') {  // parse typename
+//             iestream >> ignore;
+//             iestream.get(ietnamesb, '>');
+//             iestream >> ignore; // eat the trailing >
+//         
+//         } else if (iestream.peek() == '[') {  // parse size
+//             iestream >> ignore;
+//             iestream.get(sizesb, ']');
+//             iestream >> ignore; // eat the trailing ]
+//             if (sizesb.str()[0] == 'v') {
+//                 size = kVarlen;
+//             } else {  // parse size
+//                 unsigned long my_size;
+//                 try {
+//                     my_size = std::stoul(sizesb.str());
+//                 } catch (std::invalid_argument) {
+//                     throw IESpecError("bad size " + sizesb.str() + " (invalid format)");
+//                 } catch (std::out_of_range) {
+//                     throw IESpecError("bad size " + sizesb.str() + " (out of range)");
+//                 }
+// 
+//                 if (my_size != kVarlen && my_size > kVarlen - kMessageHeaderLen - kSetHeaderLen) {
+//                     throw IESpecError("bad size " + std::to_string(my_size)
+//                     + " (too large)");
+//                 }
+// 
+//                 size = my_size;
+//             }
+//         } else if (iestream.peek() == '{') {  // parse (and ignore) context
+//             iestream >> ignore;
+//             iestream.get(ignoresb, '}');
+//             iestream >> ignore;
+//         } else { // in name state, add to name
+//             nc = iestream.get();
+//             if (!iestream.eof()) {
+//                 namesb.sputc(nc);
+//             }
+//         }
+//     }
+// 
+//     const IEType *ietype = lookupIEType(ietnamesb.str());
+//     InfoElement ie(namesb.str(), pen, number, ietype, size);
+//     return ie;
+// }
 
 const InfoElement InfoModel::parseIESpec(const char* iespec) const {
   return parseIESpec(std::string(iespec));
@@ -123,12 +229,12 @@ void InfoModel::add(const InfoElement& ie) {
     name_registry_[ie.name()] = 
       pen_registry_[ie.pen()][ie.number()] = 
       std::shared_ptr<InfoElement>(new InfoElement(ie));
-    //std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
+    std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
   } else {
     name_registry_[ie.name()] = 
       iana_registry_[ie.number()] = 
       std::shared_ptr<InfoElement>(new InfoElement(ie));
-    // std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
+    std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
   }
 }
 
@@ -145,10 +251,10 @@ void InfoModel::add_unknown(uint32_t pen, uint16_t number, uint16_t len) {
   add(ie);
 }
   
-const InfoElement *InfoModel::lookupIE(uint32_t pen, uint16_t number, uint16_t len) const {  
+const InfoElement* InfoModel::lookupIE(uint32_t pen, uint16_t number, uint16_t len) const {  
   std::map<uint16_t, std::shared_ptr<InfoElement> >::const_iterator iter;
 
-  // std::cerr << "lookupIE (" << pen << "/" << number << ")[" << len << "]" << std::endl;
+  //std::cerr << "lookupIE (" << pen << "/" << number << ")[" << len << "]" << std::endl;
   if (pen) {
     std::map<uint32_t, std::map<uint16_t, std::shared_ptr<InfoElement> > >::const_iterator peniter;
 
@@ -179,10 +285,10 @@ const InfoElement *InfoModel::lookupIE(const InfoElement& specie) const {
     // Nothing to look up.
     throw IESpecError("incomplete IESpec for InfoModel lookup.");
   } else {
-    // std::cerr << "lookupIE " << specie.name() << std::endl;
+    std::cerr << "lookupIE " << specie.name() << std::endl;
     std::map<std::string, std::shared_ptr<InfoElement> >::const_iterator iter = name_registry_.find(specie.name());
     if (iter == name_registry_.end()) {
-      // std::cerr << "    not in name registry" << std::endl;
+      std::cerr << "    not in name registry" << std::endl;
       return NULL;
     } else {
       return iter->second->forLen(specie.len());
@@ -192,11 +298,13 @@ const InfoElement *InfoModel::lookupIE(const InfoElement& specie) const {
 
 const InfoElement *InfoModel::lookupIE(const std::string& iespec) const {
   // Parse the Information Element and look it up
+    std::cerr << "lookup " << iespec << " by std::string" << std::endl;
   return lookupIE(parseIESpec(iespec));
 }    
 
 const InfoElement *InfoModel::lookupIE(const char* iespec) const {
   // Parse the Information Element and look it up
+    std::cerr << "lookup " << iespec << " by char*" << std::endl;
   return lookupIE(parseIESpec(iespec));
 }    
 
