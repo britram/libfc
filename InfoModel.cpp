@@ -217,7 +217,7 @@ void InfoModel::registerIEType(const IEType *iet) {
 }
 
 void InfoModel::initTypes() {
-    ietypes_bynum_.resize(IEType::kIETypeCount);
+    ietypes_bynum_.resize(IEType::ieTypeCount());
     registerIEType(IEType::octetArray());
     registerIEType(IEType::unsigned8());
     registerIEType(IEType::unsigned16());

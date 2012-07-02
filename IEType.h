@@ -63,35 +63,10 @@ class IEType {
 
 public:
 
-  /** The number of types known to libfc. This won't change without updating RFC5101 */
-  static const size_t kIETypeCount = 20;
-
-  static const unsigned int kOctetArray = 0;
-  static const unsigned int kUnsigned8 = 1;
-  static const unsigned int kUnsigned16 = 2;
-  static const unsigned int kUnsigned32 = 3;
-  static const unsigned int kUnsigned64 = 4;
-  static const unsigned int kSigned8 = 5;
-  static const unsigned int kSigned16 = 6;
-  static const unsigned int kSigned32 = 7;
-  static const unsigned int kSigned64 = 8;
-  static const unsigned int kFloat32 = 9;
-  static const unsigned int kFloat64 = 10;
-  static const unsigned int kBoolean = 11;
-  static const unsigned int kMacAddress = 12;
-  static const unsigned int kString = 13;
-  static const unsigned int kDateTimeSeconds = 14;
-  static const unsigned int kDateTimeMilliseconds = 15;
-  static const unsigned int kDateTimeMicroseconds = 16;
-  static const unsigned int kDateTimeNanoseconds = 17;
-  static const unsigned int kIpv4Address = 18;
-  static const unsigned int kIpv6Address = 19;
-
-  /** Convenience const for setting the endian flag in IEType constructors */
-  static const bool kEndian = true;
-  
-  /** Convenience const for setting the endian flag in IEType constructors; the opposite of kEndian */
-  static const bool kRaw = false;
+  /**
+   * Get the number of types known to libfc. This won't change without updating RFC5101.
+   */
+  static size_t ieTypeCount();
 
   /** 
    * Get an IEType representing IPFIX octetArrays (see RFC 5101, 5102, 5610)
@@ -253,6 +228,13 @@ public:
   }
 
 protected:
+
+  /** Convenience const for setting the endian flag in IEType constructors */
+  static const bool kEndian = true;
+  
+  /** Convenience const for setting the endian flag in IEType constructors; the opposite of kEndian */
+  static const bool kRaw = false;
+
   IEType(const std::string name, 
          unsigned int number,
          size_t minlen,

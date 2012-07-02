@@ -34,3 +34,6 @@ add_executable(fctest ${UT_OBJ})
 if (Boost_FOUND)
   target_link_libraries(fctest fc ${Boost_LIBRARIES} pcap)
 endif()
+
+add_executable(lookup lookup.cpp)
+target_link_libraries(lookup fc pcap)
