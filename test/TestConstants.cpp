@@ -1,6 +1,4 @@
-/* Copyright (c) 2011, NEC Europe Ltd, Consorzio Nazionale 
- * Interuniversitario per le Telecomunicazioni, Institut 
- * Telecom/Telecom Bretagne, ETH Zürich, INVEA-TECH a.s. All rights reserved.
+/* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:

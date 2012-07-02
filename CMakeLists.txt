@@ -9,7 +9,7 @@ else ($ENV{CLANG})
 endif($ENV{CLANG})
 
 # include boost
-find_package(Boost 1.42 COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost 1.50 COMPONENTS unit_test_framework REQUIRED)
 if (Boost_FOUND)
   include_directories (. ${Boost_INCLUDE_DIRS})
 endif()

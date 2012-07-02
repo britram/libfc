@@ -1,6 +1,4 @@
-/* Copyright (c) 2011, NEC Europe Ltd, Consorzio Nazionale 
- * Interuniversitario per le Telecomunicazioni, Institut 
- * Telecom/Telecom Bretagne, ETH Zürich, INVEA-TECH a.s. All rights reserved.
+/* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -38,7 +36,7 @@
 using namespace IPFIX;
 
 static int
-test_writer(const std::string& protocol, const std::string& outspec) {
+test_struct_writer(const std::string& protocol, const std::string& outspec) {
     // initialize information model for IPFIX, no biflows
     InfoModel::instance().defaultIPFIX();
     
@@ -90,16 +88,13 @@ test_writer(const std::string& protocol, const std::string& outspec) {
     return ret;
 }
 
-// BOOST_AUTO_TEST_SUITE(Writer)
-// 
-// BOOST_AUTO_TEST_CASE(File) {
-//   const char* outspec = "localhost";
-//   const char* protocols[] = {/*"tcp", "udp", */ "test.ipfix" };
-// 
-//   std::for_each(protocols, protocols + sizeof(protocols)/sizeof(protocols[0]),
-//                 [outspec] (const char* proto) { 
-//                   BOOST_CHECK_EQUAL(test_writer(outspec, proto), 0);
-//                 });
-// }
-// 
-// BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE(Writer)
+
+BOOST_AUTO_TEST_CASE(File) {
+  const char* outspec = "test-struct-flow.ipfix";
+  const char* protocol = "rfc5655"; // IPFIX file (default)
+  
+  BOOST_CHECK_EQUAL(test_struct_writer(outspec, protocol), 0);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

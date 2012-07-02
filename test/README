@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(Testcase Name) {
 BOOST_AUTO_TEST_SUITE_END()
 -------- 8< ------- snip ------
 
-The file name must comply with the glob pattern lib/fc/Test*.cpp.
+The file name must comply with the glob pattern lib/fc/test/Test*.cpp.
 
 This file contains just one test case, but you can have many; just
 use more BOOST_AUTO_TEST_CASE(...).  You can also in the same file
