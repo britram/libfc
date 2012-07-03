@@ -59,7 +59,6 @@ public:
    * Client code should use Session::getTemplate() instead, 
    * which automatically creates a new template when necessary.
    *
-   * @param session Session which owns the template
    * @param domain observation domain ID in which the template lives
    * @param tid template identifier
    */
@@ -68,7 +67,8 @@ public:
     domain_(domain),
     tid_(tid),
     trlen_(kTemplateHeaderLen),
-    maxoff_(0),
+    nextoff_(0),
+    max_fixed_offset_(0),
     varlen_count_(0) {}
     
   /**
@@ -141,7 +141,7 @@ public:
    * Return the maximum non-variable offset of an Information Element
    */
   
-  size_t maxFixedOffset() const { return maxoff_; }
+  size_t maxFixedOffset() const { return max_fixed_offset_; }
   
   /**
    * Return the number of variable length IEs
@@ -158,22 +158,16 @@ public:
   virtual void dumpIdent(std::ostream& os) const {
     os << "*** WireTemplate " << domain_ << "/" << tid_ << std::endl;
   }
-  
-  /* a template should be able to provide a transcode plan from another template. */
-  // FIXME add transcode-plan based interface
-  // std::list<IPFIX::TCEntry> planTranscode(const IETemplate &struct_tmpl) const;
-  // bool encode(Transcoder& encoder, const std::list<TCEntry>& plan, uint8_t* struct_cp) const;
-  
+   
   private:
     WireTemplate():
     IETemplate() {}
-  
-    // FIXME make noncopyable
-  
+
     uint32_t                            domain_;
     uint16_t                            tid_;
     size_t                              trlen_;
-    size_t                              maxoff_;
+    size_t                              nextoff_;
+    size_t                              max_fixed_offset_;
     size_t                              varlen_count_;
   
   };

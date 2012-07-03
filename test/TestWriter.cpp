@@ -60,9 +60,11 @@ test_struct_writer(const std::string& protocol, const std::string& outspec) {
     // create templates for our structures
     StructTemplate sfstmpl;
     makeSimpleFlowTemplate(sfstmpl);
+    sfstmpl.dump(std::cerr);
 
     // create (direct) export templates for these
     e->getTemplate(kSimpleFlowTid)->mimic(sfstmpl);
+    e->getTemplate(kSimpleFlowTid)->dump(std::cerr);
 
     // export them
     e->exportTemplatesForDomain();
@@ -102,9 +104,11 @@ test_export(const std::string& protocol, const std::string& outspec) {
     // initialisation code should still work to set up the wire template
     StructTemplate sfstmpl;
     makeSimpleFlowTemplate(sfstmpl);
+    sfstmpl.dump(std::cerr);
 
     // create (direct) export template
     e->getTemplate(kSimpleFlowTid)->mimic(sfstmpl);
+    e->getTemplate(kSimpleFlowTid)->dump(std::cerr);
 
     // export templates
     e->exportTemplatesForDomain();
@@ -116,6 +120,7 @@ test_export(const std::string& protocol, const std::string& outspec) {
 
     int ret = 0;
 
+    // cache information elements
     const InfoElement* flowStartMilliseconds
       = InfoModel::instance().lookupIE("flowStartMilliseconds");
     const InfoElement* flowEndMilliseconds
@@ -135,10 +140,11 @@ test_export(const std::string& protocol, const std::string& outspec) {
     const InfoElement* protocolIdentifier
       = InfoModel::instance().lookupIE("protocolIdentifier");
 
+    e->setTemplate(kSimpleFlowTid);
+
     for (int i = 0; i < kMaxFlows; ++i) {
         incrSimpleFlow(sf);
         try {
-            e->setTemplate(kSimpleFlowTid);
             e->beginRecord();
 
             e->putValue(flowStartMilliseconds, sf.flowStartMilliseconds);

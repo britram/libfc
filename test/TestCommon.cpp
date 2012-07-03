@@ -118,7 +118,7 @@ void incrSimpleFlow(SimpleFlow &sf) {
 
 void matchSimpleFlow(SimpleFlow& expected, SimpleFlow& actual) {
     if (expected.packetDeltaCount != actual.packetDeltaCount) {
-        std::cout << "packet count mismatch expected " <<
+        std::cout << "packet count mismatch, expected " <<
                      expected.packetDeltaCount << " got " <<
                      actual.packetDeltaCount << std::endl;
     }

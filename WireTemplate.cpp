@@ -35,24 +35,14 @@ namespace IPFIX {
     void WireTemplate::add(const InfoElement* ie) {  
         add_inner(ie);
 
-        // calculate offset
-        size_t offset;
-        if (offsets_.empty()) {
-            offset = 0;
-        } else if (offsets_.back() == kVarlen ||
-                  ie->len() == kVarlen) {
-            offset = kVarlen;
-        } else {
-            offset = offsets_.back() + ies_.back()->len();
-        }
-
         // Add offset to offset table
-        offsets_.push_back(offset);
+        offsets_.push_back(nextoff_);
 
-        // Track maximum constant offset
-        if (offset != kVarlen) {
-            maxoff_ = offset;
-        } 
+        // calculate next offset
+        if (nextoff_ != kVarlen) {
+            max_fixed_offset_ = nextoff_;
+            nextoff_ += ie->len();
+        }
 
         // Add the length of the IE to the minimum length
         if (ie->len() == kVarlen) {
@@ -66,22 +56,22 @@ namespace IPFIX {
         trlen_ += ie->pen() ? 8 : 4;
     }
 
-void WireTemplate::clear() {
-  ies_.clear();
-  offsets_.clear();
-  index_map_.clear();
-  minlen_ = 0;
-  trlen_ = 0;
-  active_ = false;
-}
-
-void WireTemplate::mimic(const IETemplate& rhs) {
-    clear();
-    for (IETemplateIter i = rhs.begin(); i != rhs.end(); ++i) {
-        add(*i);
+    void WireTemplate::clear() {
+        ies_.clear();
+        offsets_.clear();
+        index_map_.clear();
+        minlen_ = 0;
+        trlen_ = 0;
+        active_ = false;
     }
-    activate();
-}
+
+    void WireTemplate::mimic(const IETemplate& rhs) {
+        clear();
+        for (IETemplateIter i = rhs.begin(); i != rhs.end(); ++i) {
+            add(*i);
+        }
+        activate();
+    }
 
 bool WireTemplate::encodeStruct(Transcoder& xc, const StructTemplate& struct_tmpl, uint8_t* struct_cp) const
 {  
