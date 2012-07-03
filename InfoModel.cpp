@@ -23,6 +23,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+ 
 #include <cassert>
 #include <climits>
 #include <sstream>
@@ -63,8 +65,6 @@ static void parseIESpec_Length(std::istringstream& iestream,
     std::stringbuf lenbuf;
     
     iestream.get(lenbuf, ']');
-    
-    std::cerr << "length " << lenbuf.str() << std::endl;
     
     if (lenbuf.str()[0] == 'v') {
         len = kVarlen;
@@ -288,12 +288,12 @@ void InfoModel::add(const InfoElement& ie) {
     name_registry_[ie.name()] = 
       pen_registry_[ie.pen()][ie.number()] = 
       std::shared_ptr<InfoElement>(new InfoElement(ie));
-    std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
+    // std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
   } else {
     name_registry_[ie.name()] = 
       iana_registry_[ie.number()] = 
       std::shared_ptr<InfoElement>(new InfoElement(ie));
-    std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
+    // std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
   }
 }
 
@@ -344,10 +344,10 @@ const InfoElement *InfoModel::lookupIE(const InfoElement& specie) const {
     // Nothing to look up.
     throw IESpecError("incomplete IESpec for InfoModel lookup.");
   } else {
-    std::cerr << "lookupIE " << specie.name() << std::endl;
+    // std::cerr << "lookupIE " << specie.name() << std::endl;
     std::map<std::string, std::shared_ptr<InfoElement> >::const_iterator iter = name_registry_.find(specie.name());
     if (iter == name_registry_.end()) {
-      std::cerr << "    not in name registry" << std::endl;
+      // std::cerr << "    not in name registry" << std::endl;
       return NULL;
     } else {
       return iter->second->forLen(specie.len());
@@ -357,13 +357,13 @@ const InfoElement *InfoModel::lookupIE(const InfoElement& specie) const {
 
 const InfoElement *InfoModel::lookupIE(const std::string& iespec) const {
   // Parse the Information Element and look it up
-    std::cerr << "lookup " << iespec << " by std::string" << std::endl;
+  // std::cerr << "lookup " << iespec << " by std::string" << std::endl;
   return lookupIE(parseIESpec(iespec));
 }    
 
 const InfoElement *InfoModel::lookupIE(const char* iespec) const {
   // Parse the Information Element and look it up
-    std::cerr << "lookup " << iespec << " by char*" << std::endl;
+  // std::cerr << "lookup " << iespec << " by char*" << std::endl;
   return lookupIE(parseIESpec(iespec));
 }    
 

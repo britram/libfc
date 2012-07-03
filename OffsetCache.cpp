@@ -1,6 +1,4 @@
-/* Copyright (c) 2011, NEC Europe Ltd, Consorzio Nazionale 
- * Interuniversitario per le Telecomunicazioni, Institut 
- * Telecom/Telecom Bretagne, ETH Zürich, INVEA-TECH a.s. All rights reserved.
+/* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -9,9 +7,7 @@
  *    * Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of NEC Europe Ltd, Consorzio Nazionale 
- *      Interuniversitario per le Telecomunicazioni, Institut Telecom/Telecom 
- *      Bretagne, ETH Zürich, INVEA-TECH a.s. nor the names of its contributors 
+ *    * Neither the names of ETH Zürich nor the names of other contributors 
  *      may be used to endorse or promote products derived from this software 
  *      without specific prior written permission.
  *
@@ -22,12 +18,12 @@
  * HOLDERBE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
- * PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #include "OffsetCache.h"
 namespace IPFIX {
@@ -48,7 +44,7 @@ namespace IPFIX {
         return wt_->end();
     }
     
-    bool OffsetCache::advance() {
+    void OffsetCache::advance() {
         if (!reclen_valid_) {
             recacheOffsets();
             if (!reclen_valid_) {
@@ -57,10 +53,10 @@ namespace IPFIX {
         }
         
         if (xc_->advance(reclen_)) {
+            std::cerr << "advanced " << reclen_ << " octets" << std::endl;
             clear();
-            return true;
         } else {
-            return false;
+            throw CursorError("internal error: record too big");
         }
     }
 
@@ -72,11 +68,13 @@ namespace IPFIX {
     
         // If offset available in template, return it.
         if ((off = wt_->offset(ie)) != kVarlen) {
+            std::cerr << "offset of " << ie->name() << " found in template: " << off << std::endl;
             return off;
         }
     
         // If offset already stored, return it.
         if ((off = voffsets_[ie])) {
+            std::cerr << "offset of " << ie->name() << " found in cache:    " << off << std::endl;
             return off;
         }
     

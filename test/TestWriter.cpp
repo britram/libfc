@@ -36,7 +36,7 @@
 using namespace IPFIX;
 
 static Exporter* make_exporter(const std::string& protocol,
-                               const std::string&outspec) {
+                               const std::string& outspec) {
   Exporter* ret = 0;
 
   if (protocol == "udp") {
@@ -173,17 +173,17 @@ BOOST_AUTO_TEST_CASE(FileStruct) {
   // initialize information model for IPFIX, no biflows
   InfoModel::instance().defaultIPFIX();  
   
-  BOOST_CHECK_EQUAL(test_struct_writer(outspec, protocol), 0);
+  BOOST_CHECK_EQUAL(test_struct_writer(protocol, outspec), 0);
 }
 
 BOOST_AUTO_TEST_CASE(FileExport) {
-  const char* outspec = "test-struct-flow.ipfix";
+  const char* outspec = "test-ra-flow.ipfix";
   const char* protocol = "rfc5655"; // IPFIX file (default)
 
   // initialize information model for IPFIX, no biflows
   InfoModel::instance().defaultIPFIX();  
   
-  BOOST_CHECK_EQUAL(test_export(outspec, protocol), 0);
+  BOOST_CHECK_EQUAL(test_export(protocol, outspec), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,6 +1,4 @@
-/* Copyright (c) 2011, NEC Europe Ltd, Consorzio Nazionale 
- * Interuniversitario per le Telecomunicazioni, Institut 
- * Telecom/Telecom Bretagne, ETH Zürich, INVEA-TECH a.s. All rights reserved.
+/* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -9,9 +7,7 @@
  *    * Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of NEC Europe Ltd, Consorzio Nazionale 
- *      Interuniversitario per le Telecomunicazioni, Institut Telecom/Telecom 
- *      Bretagne, ETH Zürich, INVEA-TECH a.s. nor the names of its contributors 
+ *    * Neither the names of ETH Zürich nor the names of other contributors 
  *      may be used to endorse or promote products derived from this software 
  *      without specific prior written permission.
  *
@@ -22,12 +18,12 @@
  * HOLDERBE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
- * PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 
 #include <cassert>
 
@@ -156,6 +152,8 @@ void Exporter::beginRecord() {
     
     // Create new record state
     rec_active_ = true;
+    
+    std::cerr << "----- begin record" << std::endl;
 }
 
 void Exporter::endRecord(bool do_export) {
@@ -170,6 +168,8 @@ void Exporter::endRecord(bool do_export) {
     
     // Clear record state
     rec_active_ = false;
+
+    std::cerr << "----- end record" << std::endl;
 }
 
 void Exporter::reserveVarlen(const InfoElement *ie, size_t len) {
@@ -199,6 +199,7 @@ bool Exporter::putValue(const InfoElement* ie, const void* vp, size_t len) {
     
     // skip if the current template doesn't contain the value
     if (!tmpl_->contains(ie)) {
+        std::cerr << "template doesn't contain " << ie->name() << "; skipping" << std::endl;
         return false;
     }
     
@@ -210,6 +211,7 @@ bool Exporter::putValue(const InfoElement* ie, const void* vp, size_t len) {
    
     // now encode
     size_t nextoff = xcoder_.encodeAt(vp, len, off, tmpl_->ieFor(ie));
+    std::cerr << "putvalue encoded " << nextoff - off << " octets for " << ie->name() << " at offset " << off << std::endl;
 
     return true;
 }
