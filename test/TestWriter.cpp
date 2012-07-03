@@ -35,23 +35,27 @@
 
 using namespace IPFIX;
 
+static Exporter* make_exporter(const std::string& protocol,
+                               const std::string&outspec) {
+  Exporter* ret = 0;
+
+  if (protocol == "udp") {
+    NetAddress na(outspec,"4739",IPPROTO_UDP);
+    ret = new UDPExporter(na, kTestDomain);
+  } else if (protocol == "tcp") {
+    NetAddress na(outspec,"4739",IPPROTO_TCP);
+    ret = new TCPExporter(na, kTestDomain, true);
+  } else {
+    ret = new FileWriter(outspec, kTestDomain);
+  }
+
+  return ret;
+}
+
 static int
 test_struct_writer(const std::string& protocol, const std::string& outspec) {
-    // initialize information model for IPFIX, no biflows
-    InfoModel::instance().defaultIPFIX();
-    
     // create an exporter
-    Exporter *e;
-    
-    if (protocol == "udp") {
-      NetAddress na(outspec,"4739",IPPROTO_UDP);
-      e = new UDPExporter(na, kTestDomain);
-    } else if (protocol == "tcp") {
-      NetAddress na(outspec,"4739",IPPROTO_TCP);
-      e = new TCPExporter(na, kTestDomain, true);
-    } else {
-      e = new FileWriter(outspec, kTestDomain);
-    }
+    Exporter *e = make_exporter(protocol, outspec);
 
     // create templates for our structures
     StructTemplate sfstmpl;
@@ -88,13 +92,100 @@ test_struct_writer(const std::string& protocol, const std::string& outspec) {
     return ret;
 }
 
+static int
+test_export(const std::string& protocol, const std::string& outspec) {
+    // create an exporter
+    Exporter *e = make_exporter(protocol, outspec);
+
+    // create templates for our structures
+    // Note: even though the struct interface will not be used, the template
+    // initialisation code should still work to set up the wire template
+    StructTemplate sfstmpl;
+    makeSimpleFlowTemplate(sfstmpl);
+
+    // create (direct) export template
+    e->getTemplate(kSimpleFlowTid)->mimic(sfstmpl);
+
+    // export templates
+    e->exportTemplatesForDomain();
+
+    // write a test pattern until we're told to stop
+    SimpleFlow sf;
+    
+    initSimpleFlow(sf);
+
+    int ret = 0;
+
+    const InfoElement* flowStartMilliseconds
+      = InfoModel::instance().lookupIE("flowStartMilliseconds");
+    const InfoElement* flowEndMilliseconds
+      = InfoModel::instance().lookupIE("flowEndMilliseconds");
+    const InfoElement* octetDeltaCount
+      = InfoModel::instance().lookupIE("octetDeltaCount");
+    const InfoElement* packetDeltaCount
+      = InfoModel::instance().lookupIE("packetDeltaCount");
+    const InfoElement* sourceIPv4Address
+      = InfoModel::instance().lookupIE("sourceIPv4Address");
+    const InfoElement* destinationIPv4Address
+      = InfoModel::instance().lookupIE("destinationIPv4Address");
+    const InfoElement* sourceTransportPort
+      = InfoModel::instance().lookupIE("sourceTransportPort");
+    const InfoElement* destinationTransportPort
+      = InfoModel::instance().lookupIE("destinationTransportPort");
+    const InfoElement* protocolIdentifier
+      = InfoModel::instance().lookupIE("protocolIdentifier");
+
+    for (int i = 0; i < kMaxFlows; ++i) {
+        incrSimpleFlow(sf);
+        try {
+            e->setTemplate(kSimpleFlowTid);
+            e->beginRecord();
+
+            e->putValue(flowStartMilliseconds, sf.flowStartMilliseconds);
+            e->putValue(flowEndMilliseconds, sf.flowEndMilliseconds);
+            e->putValue(packetDeltaCount, sf.packetDeltaCount);
+            e->putValue(sourceIPv4Address, sf.sourceIPv4Address);
+            e->putValue(destinationIPv4Address, sf.destinationIPv4Address);
+            // At the moment, there are no methods to putValue() a uint16.
+            // IMHO there should be, no? -- neuhaus
+            //e->putValue(sourceTransportPort, sf.sourceTransportPort);
+            //e->putValue(destinationTransportPort, sf.destinationTransportPort); 
+            
+            e->exportRecord();
+
+        } catch (std::runtime_error const &e) {
+            std::cerr << "I/O error on send: " << e.what() << std::endl;
+            ret = 1;
+            break;
+        }
+    }
+    
+    e->flush();
+
+    delete e;
+    return ret;
+}
+
 BOOST_AUTO_TEST_SUITE(Writer)
 
-BOOST_AUTO_TEST_CASE(File) {
+BOOST_AUTO_TEST_CASE(FileStruct) {
   const char* outspec = "test-struct-flow.ipfix";
   const char* protocol = "rfc5655"; // IPFIX file (default)
+
+  // initialize information model for IPFIX, no biflows
+  InfoModel::instance().defaultIPFIX();  
   
   BOOST_CHECK_EQUAL(test_struct_writer(outspec, protocol), 0);
+}
+
+BOOST_AUTO_TEST_CASE(FileExport) {
+  const char* outspec = "test-struct-flow.ipfix";
+  const char* protocol = "rfc5655"; // IPFIX file (default)
+
+  // initialize information model for IPFIX, no biflows
+  InfoModel::instance().defaultIPFIX();  
+  
+  BOOST_CHECK_EQUAL(test_export(outspec, protocol), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

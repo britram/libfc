@@ -12,10 +12,19 @@ by Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
 There is one big testing executable in lib/fc, called fctest.  You use
 it as follows:
 
-   ./fctest [--show-progress] [--log-level=test_suite|...] [--run_test=test]
+   ./fctest [--show_progress] [--log_level=test_suite|...] [--run_test=test]
 
 If you omit all arguments, the entire set of tests are run.  There are
 more options; inquire about them with --help.
+
+Please note that compound words like log_level or run_test are
+separated with underscores, not hyphens, which might be a surprise for
+GNU-educated people. I know it was a surprise for me! The problem is
+that options that the test engine doesn't recognise are passed on to
+other parts of the program, so misspelling --run_test=... as, say,
+--run-test=... will cause all tests to be run and the user first to
+wonder why his test case specification is ignored and then to curse
+loudly.
 
 Tests are organised as a tree and, like directories and files, suites
 and tests have names.  If you want to run only a specific battery of
@@ -24,16 +33,41 @@ writing, there are these tests:
 
 Basics
   Constants
-  NetAddress
+  IEType
+    OctetArray
+    Unsigned8
+    Unsigned16
+    Unsigned32
+    Unsigned64
+    Signed8
+    Signed16
+    Signed32
+    Signed64
+    Float32
+    Float64
+    Boolean
+    Macaddress
+    String
+    Datetimeseconds
+    Datetimemilliseconds
+    Datetimemicroseconds
+    Datetimenanoseconds
+    Ipv4address
+    Ipv6address    
+  InfoModel
   MBuf
+    MBuf01
+  NetAddress01
+Capfix
+  CapfixTest
 Reader
   Consume
 Writer
   File
 
-So, to run all "Basic" tests, say
+So, to run all "Basics" tests, say
 
-    ./fctest --run_test=Basic
+    ./fctest --run_test=Basics
 
 To run the File test of the Writer test suite, say
 
@@ -154,7 +188,7 @@ Now, in the lib/fc directory, say
 and you will get a fresh fctest executable, where you can run your
 tests like so:
 
-    fctest --run-test=Basics/Foo01
+    ./fctest --run_test=Basics/Foo01
 
 If you want to nest even further, you could do it like this:
 
@@ -173,11 +207,11 @@ You would now have tests Basics/Foo/Foo01 and Basics/Foo/Foo02.  This
 would give you the ability to run all Foo-related Basics tests like
 this:
 
-    fctest --run-test=Basics/Foo
+    ./fctest --run_test=Basics/Foo
 
 and only the Foo02 test like this:
 
-    fctest --run-test=Basics/Foo/Foo02
+    ./fctest --run_test=Basics/Foo/Foo02
 
 I'm not going to describe all the assertions that you can do with
 Boost.Test; for this you really should go and read the fine manual.
