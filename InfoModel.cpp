@@ -103,19 +103,13 @@ static void match(std::istringstream& iestream, char x) {
 }
     
 static void parseIESpec_Initial(std::istringstream& iestream, 
-                                std::stringbuf& namebuf,
-                                bool& name_set,
-                                std::stringbuf& typebuf,
-                                bool& type_set,
-                                std::stringbuf& scratchbuf,
-                                bool& scratch_set,
-                                unsigned int& number,
-                                bool& number_set,
-                                unsigned int& pen,
-                                bool& pen_set,
-                                unsigned int& len,
-                                bool& len_set) {
-
+                                std::stringbuf& namebuf, bool& name_set,
+                                std::stringbuf& typebuf, bool& type_set,
+                                std::stringbuf& ctxbuf,  bool& ctx_set,
+                                unsigned int& number,    bool& number_set,
+                                unsigned int& pen,       bool& pen_set,
+                                unsigned int& len,       bool& len_set)
+{
     char c = iestream.get();
     if (iestream.eof()) return;
     
@@ -145,11 +139,11 @@ static void parseIESpec_Initial(std::istringstream& iestream,
             type_set = true;
             break;
         case '{':
-            if (scratch_set)
-              throw IESpecError("IESpec contains scratch more than once");
-            iestream.get(scratchbuf, '}');
+            if (ctx_set)
+              throw IESpecError("IESpec contains contextf more than once");
+            iestream.get(ctxbuf, '}');
             match(iestream, '}');
-            scratch_set = true;
+            ctx_set = true;
             break;
         default:
             if (name_set)
@@ -168,12 +162,23 @@ static void parseIESpec_Initial(std::istringstream& iestream,
 
 const InfoElement InfoModel::parseIESpec(const std::string& iespec) const {
     
+    // check for name-only IE
+    // WORKAROUND for broken libc++ on Mac OS X Lion
+    if ((iespec.find('(') == std::string::npos) &&
+        (iespec.find('[') == std::string::npos) &&
+        (iespec.find('<') == std::string::npos) &&
+        (iespec.find('{') == std::string::npos))
+    {
+        InfoElement ie(iespec, 0, 0, 0, 0);
+        return ie;
+    }
+    
     std::istringstream iestream(iespec);
-    std::stringbuf namebuf, typebuf, scratchbuf;
+    std::stringbuf namebuf, typebuf, ctxbuf;
     unsigned int number = 0, pen = 0, len = 0;
     bool name_set = false;
     bool type_set = false;
-    bool scratch_set = false;
+    bool ctx_set = false;
     bool number_set = false;
     bool pen_set = false;
     bool len_set = false;
@@ -182,7 +187,7 @@ const InfoElement InfoModel::parseIESpec(const std::string& iespec) const {
       parseIESpec_Initial(iestream, 
                           namebuf, name_set,
                           typebuf, type_set,
-                          scratchbuf, scratch_set,
+                          ctxbuf, ctx_set,
                           number, number_set,
                           pen, pen_set,
                           len, len_set);
