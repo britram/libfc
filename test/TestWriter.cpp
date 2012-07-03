@@ -146,10 +146,8 @@ test_export(const std::string& protocol, const std::string& outspec) {
             e->putValue(packetDeltaCount, sf.packetDeltaCount);
             e->putValue(sourceIPv4Address, sf.sourceIPv4Address);
             e->putValue(destinationIPv4Address, sf.destinationIPv4Address);
-            // At the moment, there are no methods to putValue() a uint16.
-            // IMHO there should be, no? -- neuhaus
-            //e->putValue(sourceTransportPort, sf.sourceTransportPort);
-            //e->putValue(destinationTransportPort, sf.destinationTransportPort); 
+            e->putValue(sourceTransportPort, sf.sourceTransportPort);
+            e->putValue(destinationTransportPort, sf.destinationTransportPort); 
             
             e->exportRecord();
 
