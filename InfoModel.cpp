@@ -23,7 +23,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include <cassert>
 #include <climits>
 #include <sstream>
 #include <string>
@@ -40,6 +40,8 @@ static void parseIESpec_NumPen(std::istringstream& iestream,
                                unsigned int& pen) {
     // get the first number
     iestream >> number;
+    if (iestream.fail())
+        throw IESpecError("badly formatted IE number / PEN");
 
     // see how we're terminated
     char c = iestream.get();
@@ -47,14 +49,11 @@ static void parseIESpec_NumPen(std::istringstream& iestream,
         // first number was a pen. get the next.
         pen = number;
         iestream >> number;
-        c = iestream.get();
+        if (iestream.fail())
+            throw IESpecError("badly formatted IE number");
     } else {
         pen = 0;
-    }
-
-    // check for proper termination
-    if (c != ')') {
-        throw IESpecError("unterminated IE number / PEN");
+        iestream.unget();
     }
 }
 
@@ -64,7 +63,6 @@ static void parseIESpec_Length(std::istringstream& iestream,
     std::stringbuf lenbuf;
     
     iestream.get(lenbuf, ']');
-    iestream.get();
     
     std::cerr << "length " << lenbuf.str() << std::endl;
     
@@ -91,34 +89,79 @@ static void parseIESpec_Length(std::istringstream& iestream,
     }
 }
 
+static void match(std::istringstream& iestream, char x) {
+  char c = iestream.get();
+  if (iestream.fail()) {
+    std::ostringstream b;
+    b << "expected character '" << x << "', but read failed";
+    throw IESpecError(b.str().c_str());
+  } else if (c != x) {
+    std::ostringstream b;
+    b << "expected character '" << x << "', but got '" << c << "'";
+    throw IESpecError(b.str().c_str());
+  }
+}
+    
 static void parseIESpec_Initial(std::istringstream& iestream, 
                                 std::stringbuf& namebuf,
+                                bool& name_set,
                                 std::stringbuf& typebuf,
+                                bool& type_set,
                                 std::stringbuf& scratchbuf,
+                                bool& scratch_set,
                                 unsigned int& number,
+                                bool& number_set,
                                 unsigned int& pen,
-                                unsigned int& len) {
+                                bool& pen_set,
+                                unsigned int& len,
+                                bool& len_set) {
 
     char c = iestream.get();
     if (iestream.eof()) return;
     
     switch (c) {
         case '(':
+            assert(!pen_set || number_set);
+            if (number_set)
+              throw IESpecError("IESpec contains number / pen more than once");
+              
             parseIESpec_NumPen(iestream, number, pen);
+            match(iestream, ')');
+            number_set = true;
+            pen_set = pen != 0;
             break;
         case '[':
+            if (len_set)
+              throw IESpecError("IESpec contains length more than once");
             parseIESpec_Length(iestream, len);
+            match(iestream, ']');
+            len_set = true;
             break;
         case '<':
+            if (type_set)
+              throw IESpecError("IESpec contains type more than once");
             iestream.get(typebuf, '>');
-            iestream.get();
+            match(iestream, '>');
+            type_set = true;
             break;
         case '{':
+            if (scratch_set)
+              throw IESpecError("IESpec contains scratch more than once");
             iestream.get(scratchbuf, '}');
-            iestream.get();
+            match(iestream, '}');
+            scratch_set = true;
             break;
         default:
-            namebuf.sputc(c);
+            if (name_set)
+              throw IESpecError("IESpec contains name more than once");
+            do {
+              namebuf.sputc(c);
+              c = iestream.get();
+            } while (!iestream.eof() 
+                     && c != '(' && c != '{' && c != '<' && c != '[');
+            if (!iestream.eof())
+              iestream.unget();
+            name_set = true;
             break;
     }
 }
@@ -128,10 +171,21 @@ const InfoElement InfoModel::parseIESpec(const std::string& iespec) const {
     std::istringstream iestream(iespec);
     std::stringbuf namebuf, typebuf, scratchbuf;
     unsigned int number = 0, pen = 0, len = 0;
+    bool name_set = false;
+    bool type_set = false;
+    bool scratch_set = false;
+    bool number_set = false;
+    bool pen_set = false;
+    bool len_set = false;
     
     while (!iestream.eof()) {
-        parseIESpec_Initial(iestream, namebuf, typebuf, scratchbuf, 
-                            number, pen, len);
+      parseIESpec_Initial(iestream, 
+                          namebuf, name_set,
+                          typebuf, type_set,
+                          scratchbuf, scratch_set,
+                          number, number_set,
+                          pen, pen_set,
+                          len, len_set);
     }
     
     const IEType *ietype = lookupIEType(typebuf.str());
