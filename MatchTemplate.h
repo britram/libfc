@@ -24,6 +24,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "IETemplate.h"
+#include "InfoElement.h"
+
 /**
  * @file
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
@@ -40,9 +43,6 @@ namespace IPFIX {
 
 class MatchTemplate : public IETemplate {
     
-    MatchTemplate():
-    IETemplate();
-
     void activate() {}
     
     void dumpIdent(std::ostream &os) {
