@@ -184,10 +184,6 @@ public:
         return putValue(ie, &v, sizeof(v));
     }
 
-    bool putValue(const InfoElement* ie, uint8_t& v) {
-        return putValue(ie, &v, sizeof(v));
-    }
-
     bool putValue(const InfoElement* ie, uint16_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
