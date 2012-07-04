@@ -57,6 +57,19 @@ public:
     void add(const InfoElement* ie) {
         add_inner(ie);
     }
+    
+    void clear() {
+        ies_.clear();
+        index_map_.clear();
+    }
+  
+    void mimic(const IETemplate& rhs) {
+        clear();
+        for (IETemplateIter i = rhs.begin(); i != rhs.end(); ++i) {
+            add(*i);
+        }
+    }
+
 };
 
 }

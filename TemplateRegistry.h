@@ -47,7 +47,7 @@ namespace IPFIX {
      *
      * @return the unique template registry instance.
      */
-    TemplateRegistry& instance();
+    static TemplateRegistry& instance();
 
     /** Returns the template ID associated with the template name.
      *

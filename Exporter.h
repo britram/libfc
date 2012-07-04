@@ -180,23 +180,23 @@ public:
   
     bool putValue(const InfoElement* ie, const void* vp, size_t len);
 
-    bool putValue(const InfoElement* ie, uint8_t& v) {
+    bool putValue(const InfoElement* ie, const uint8_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
 
-    bool putValue(const InfoElement* ie, uint16_t& v) {
+    bool putValue(const InfoElement* ie, const uint16_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
 
-    bool putValue(const InfoElement* ie, uint32_t& v) {
+    bool putValue(const InfoElement* ie, const uint32_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
 
-    bool putValue(const InfoElement* ie, uint64_t& v) {
+    bool putValue(const InfoElement* ie, const uint64_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
 
-    bool putValue(const InfoElement* ie, std::string& v) {
+    bool putValue(const InfoElement* ie, const std::string& v) {
         return putValue(ie, v.c_str(), v.size());
     }
 
