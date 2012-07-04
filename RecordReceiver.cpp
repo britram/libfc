@@ -68,6 +68,11 @@ bool RecordReceiver::getValue(const InfoElement* ie, void *vp, size_t len) {
     return true;
 }
 
+  bool RecordReceiver::getValue(const InfoElement* ie, std::string& v) {
+    if (!wt_->contains(ie)) return false;
+    v = "";
+    return true;
+}
 
 
 }

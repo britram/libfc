@@ -82,6 +82,8 @@ namespace IPFIX {
         bool getValue(const InfoElement* ie, uint8_t& val) {
             return getValue(ie, &val, sizeof(val));
         }
+
+        bool getValue(const InfoElement* ie, std::string& val);
         
     public:
         

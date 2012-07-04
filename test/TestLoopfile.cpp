@@ -1,7 +1,11 @@
 #define BOOST_TEST_DYN_LINK
+#include <cassert>
+
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include "MatchTemplate.h"
+#include "MBuf.h"
 #include "RecordReceiver.h"
 
 #include "TestCommon.h"
@@ -117,21 +121,35 @@ public:
         ie_proto = m.lookupIE("protocolIdentifier");
         ie_octets = m.lookupIE("octetDeltaCount[4]");
 
+        assert(ie_stime != 0);
+        assert(ie_etime != 0);
+        assert(ie_sip != 0);
+        assert(ie_dip != 0);
+        assert(ie_sp != 0);
+        assert(ie_dp != 0);
+        assert(ie_proto != 0);
+        assert(ie_octets != 0);
+
         WireTemplate* t = e.getTemplate(kFlowTemplateId);
+        assert(t != 0);
         t->clear();
+  BOOST_TEST_MESSAGE("  1...");
         t->add(ie_stime);
+  BOOST_TEST_MESSAGE("  2...");
         t->add(ie_etime);
+  BOOST_TEST_MESSAGE("  3...");
         t->add(ie_sip);
         t->add(ie_dip);
         t->add(ie_sp);
         t->add(ie_dp);
         t->add(ie_proto);
         t->add(ie_octets);
+  BOOST_TEST_MESSAGE("  4...");
         t->activate();
     }
 
     void do_export(Exporter& e) {
-        e.setTemplate(kObsTemplateId);
+        e.setTemplate(kFlowTemplateId);
         e.beginRecord();
         e.putValue(ie_stime, stime);
         e.putValue(ie_etime, etime);
@@ -199,6 +217,13 @@ public:
         label_(obsLabelFor(0))
         {}
 
+  TestObs(uint64_t otime, 
+          uint64_t value,
+          std::string label) 
+    //    : otime_(otime), value_(value), label_(label) {
+    : otime_(otime), value_(value), label_(obsLabelFor(0)) {
+  }
+
     void incrementPattern() {
         otime_ += kTimeSeqStep;
         value_ += 1;
@@ -206,14 +231,13 @@ public:
     }
 
     bool operator== (const TestObs& rhs) const {
-        if (otime_ == rhs.otime_ &&
-            label_ == rhs.label_ &&
-            value_ == rhs.value_)
-        {
-            return true;
-        } else {
-            return false;
-        }
+       return otime_ == rhs.otime_
+         && label_ == rhs.label_
+         && value_ == rhs.value_;
+    }
+
+    bool operator!=(const TestObs& rhs) const {
+      return !(*this == rhs);
     }
 
     void prepareExport(Exporter& e) {
@@ -259,6 +283,8 @@ private:
     const InfoElement*    ie_proto;
     const InfoElement*    ie_octets;
 
+    MatchTemplate t;
+
 public:
   TestFlowReceiver() 
     : pass_(true), 
@@ -271,6 +297,18 @@ public:
       ie_dp(InfoModel::instance().lookupIE("destinationTransportPort")),
       ie_proto(InfoModel::instance().lookupIE("protocolIdentifier")),
       ie_octets(InfoModel::instance().lookupIE("octetDeltaCount[4]")) {
+    t.add(ie_stime);
+    t.add(ie_etime);
+    t.add(ie_sip);
+    t.add(ie_dip);
+    t.add(ie_sp);
+    t.add(ie_dp);
+    t.add(ie_proto);
+    t.add(ie_octets);
+  }
+
+  IETemplate* get_template() {
+    return &t;
   }
 
   bool is_passing() const { 
@@ -311,17 +349,85 @@ public:
   }
 };
 
+class TestObsReceiver : public RecordReceiver {
+private:
+  TestObs o_;
+  bool pass_;
+  unsigned int rec_count;
+
+  const InfoElement* ie_otime_;
+  const InfoElement* ie_value_;
+  const InfoElement* ie_label_;
+
+  MatchTemplate t;
+
+public:
+  TestObsReceiver()
+    : pass_(true), 
+      rec_count(0),
+      ie_otime_(InfoModel::instance().lookupIE("observationTimeMilliseconds")),
+      ie_value_(InfoModel::instance().lookupIE("observationValue")),
+      ie_label_(InfoModel::instance().lookupIE("observationLabel")) {
+    t.add(ie_otime_);
+    t.add(ie_value_);
+    t.add(ie_label_);
+  }
+
+  IETemplate* get_template() {
+    return &t;
+  }
+
+  bool is_passing() const { 
+    return pass_;
+  }
+
+  unsigned int get_rec_count() const {
+    return rec_count;
+  }
+
+  void receiveRecord()  {
+    rec_count++;
+
+    uint64_t otime;
+    uint64_t value;
+    std::string label;
+
+    if (getValue(ie_otime_, otime)
+        && getValue(ie_value_, value)
+        && getValue(ie_label_, label)) {
+      TestObs o(otime, value, label);
+      if (o_ != o)
+        pass_ = false;
+    } else
+      pass_ = false;
+
+    o_.incrementPattern();
+  }
+  
+};
+
 BOOST_AUTO_TEST_SUITE(ImportExport)
 
 BOOST_AUTO_TEST_CASE(LoopFile) {
+  InfoModel::instance().defaultIPFIX();
+
   TestFlow flow;
   TestObs obs;
-  Exporter *e = new FileWriter("loopfile", kTestDomain);
+  static const std::string filename = "loopfile";
+  Exporter *e = new FileWriter(filename, kTestDomain);
 
+  assert(e != 0);
+
+  BOOST_TEST_MESSAGE("3...");
   flow.prepareExport(*e);
+  BOOST_TEST_MESSAGE("4...");
   obs.prepareExport(*e);
 
+  BOOST_TEST_MESSAGE("Writing...");
+
   for (unsigned int i = 0 ; i < kTestRecordCount; i++) {
+    if ((i % 10) == 0)
+      BOOST_TEST_MESSAGE("i = " << i);
     for (unsigned int k = 0; k < kTestFlowPerSetCount; k++) {
       flow.do_export(*e);
       flow.incrementPattern();
@@ -335,6 +441,22 @@ BOOST_AUTO_TEST_CASE(LoopFile) {
 
   e->flush();
   delete e;
+
+  BOOST_TEST_MESSAGE("Reading back...");
+
+  Collector* c = new FileReader(filename);
+
+  TestFlowReceiver flow_receiver;
+  c->registerReceiver(flow_receiver.get_template(), &flow_receiver);
+
+  TestObsReceiver obs_receiver;
+  c->registerReceiver(obs_receiver.get_template(), &obs_receiver);
+
+  MBuf mbuf;
+  while (c->receiveMessage(mbuf))
+    mbuf.clear();
+
+  delete c;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
