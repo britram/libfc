@@ -418,9 +418,7 @@ BOOST_AUTO_TEST_CASE(LoopFile) {
 
   assert(e != 0);
 
-  BOOST_TEST_MESSAGE("3...");
   flow.prepareExport(*e);
-  BOOST_TEST_MESSAGE("4...");
   obs.prepareExport(*e);
 
   BOOST_TEST_MESSAGE("Writing...");
