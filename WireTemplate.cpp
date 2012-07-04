@@ -96,7 +96,7 @@ bool WireTemplate::encodeStruct(Transcoder& xc, const StructTemplate& struct_tmp
       size_t len = struct_tmpl.length(*iter);
       if (len == kVarlen) {
         VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
-        if (!xc.encode(vf, *iter)) goto err;
+        if (!xc.encode(*vf, *iter)) goto err;
       } else {
         if (!xc.encode(struct_cp + off, len, *iter)) goto err;
       }
@@ -167,7 +167,7 @@ bool WireTemplate::decodeStruct(Transcoder& xc, const StructTemplate &struct_tmp
       size_t len = struct_tmpl.length(*iter);
       if (len == kVarlen) {
         VarlenField *vf = reinterpret_cast<VarlenField *>(struct_cp + off);
-        if (!xc.decode(vf, *iter)) goto err;
+        if (!xc.decode(*vf, *iter)) goto err;
       } else {
         //fprintf(stderr, "dec %-60s at 0x%016lx to [%u:%u] at 0x%016lx\n", 
         //    (*iter)->toIESpec().c_str(), reinterpret_cast<long>(xc.cur()), 

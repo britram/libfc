@@ -339,34 +339,62 @@ size_t Transcoder::decodeAt(void* val, size_t len, size_t off, const InfoElement
 //   cur_ += ielen;
 //   return true;
 // }
-  
-bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
+
+
+size_t Transcoder::decodeAt(VarlenField& vf, size_t off, const InfoElement *ie) {
   const IEType *iet = ie->ietype();
   size_t ielen = ie->len();
-  
-  // Get variable length
-  if (ielen == kVarlen) {
-    cur_ = decode_varlen_length(cur_, ielen);
-  }
 
+  uint8_t*    dp = cur_ + off;
+  
+  // Decode variable length
+  if (ielen == kVarlen) {
+    dp = decode_varlen_length(dp, ielen);
+  }
+  
   // Ensure there are enough bytes available in the buffer
-  if (ielen > avail()) {
-    return false;
+  if (dp + ielen > cur_ + avail()) {
+      return 0;
   }
 
   // Ensure the length is permitted for the IE
   assert(iet->permitsLength(ielen));
   
   // store pointer to content and length in vf
-  vf->cp = cur_;
-  vf->len = ielen;
+  vf.cp = dp;
+  vf.len = ielen;
   
   //std::cerr << "** decoding vf len " << ielen << std::endl;
-  
-  // and skip
-  cur_ += ielen;
-  return true;
+  return dp + ielen - cur_;
 }
+
+// bool Transcoder::decode(VarlenField *vf, const InfoElement *ie) {
+//   const IEType *iet = ie->ietype();
+//   size_t ielen = ie->len();
+//   
+//   // Get variable length
+//   if (ielen == kVarlen) {
+//     cur_ = decode_varlen_length(cur_, ielen);
+//   }
+// 
+//   // Ensure there are enough bytes available in the buffer
+//   if (ielen > avail()) {
+//     return false;
+//   }
+// 
+//   // Ensure the length is permitted for the IE
+//   assert(iet->permitsLength(ielen));
+//   
+//   // store pointer to content and length in vf
+//   vf->cp = cur_;
+//   vf->len = ielen;
+//   
+//   //std::cerr << "** decoding vf len " << ielen << std::endl;
+//   
+//   // and skip
+//   cur_ += ielen;
+//   return true;
+// }
 
 
 bool Transcoder::decodeSkip(const InfoElement *ie) {

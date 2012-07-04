@@ -257,8 +257,8 @@ namespace IPFIX {
      * @return true if the encode succeeded, 
      *         false if not enough space available
      */
-    bool encode(const VarlenField* vf, const InfoElement *ie) {
-      return encode(vf->cp, vf->len, ie);
+    bool encode(const VarlenField& vf, const InfoElement *ie) {
+      return encode(vf.cp, vf.len, ie);
     }
     
     /**
@@ -373,10 +373,12 @@ namespace IPFIX {
     
     /**
      * Decode the value described by a given information element
-     * at the cursor into an unbounded VarlenField
+     * at the given offset into an unbounded VarlenField.
+     * Does not advance the cursor.
      * FIXME what is the ownership contract here
      *
-     * @param vf pointer to VarlenField to fill
+     * @param vf VarlenField to fill
+     * @param off offset from cursor to the value to decode
      * @param ie pointer to IE representing the field to decode;
      *           the length and type of the field to decode
      *           is taken from this IE. 
@@ -384,7 +386,17 @@ namespace IPFIX {
      *         false if not enough content available
      */
 
-    bool decode(VarlenField *vf, const InfoElement *ie);
+     size_t decodeAt(VarlenField& vf, size_t off, const InfoElement *ie);
+
+    bool decode(VarlenField& vf, const InfoElement *ie) {
+        size_t rv = decodeAt(vf, 0, ie);
+      if (rv) {
+          cur_ += rv;
+          return true;
+      } else {
+          return false;
+      }        
+    }
 
     bool decodeSkip(const InfoElement *ie);
 

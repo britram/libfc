@@ -42,10 +42,15 @@
 namespace IPFIX {
 
 class MatchTemplate : public IETemplate {
+
+public:
     
+    MatchTemplate():
+    IETemplate() {}
+
     void activate() {}
     
-    void dumpIdent(std::ostream &os) {
+    void dumpIdent(std::ostream &os) const {
         os << "*** MatchTemplate " << reinterpret_cast<uint64_t> (this) << std::endl;
     }
     

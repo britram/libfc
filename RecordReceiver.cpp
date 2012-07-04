@@ -51,10 +51,23 @@ void RecordReceiver::receiveSet(const Collector* collector,
     }
 }
 
+void *RecordReceiver::getPointer(const InfoElement* ie, size_t& len) {
+    // FIXME come up with a way to do this without reusing varlen fields.
+    VarlenField vf;
+    
+    size_t nextoff = xc_->decodeAt(vf, oc_.offsetOf(ie), wt_->ieFor(ie));
+    if (nextoff < 0) return NULL;
+    len = vf.len;
+    return vf.cp;
+}
+
+
 bool RecordReceiver::getValue(const InfoElement* ie, void *vp, size_t len) {
     if (!wt_->contains(ie)) return false;
     size_t nextoff = xc_->decodeAt(vp, len, oc_.offsetOf(ie), wt_->ieFor(ie));
     return true;
 }
+
+
 
 }
