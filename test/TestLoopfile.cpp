@@ -1,28 +1,29 @@
-using namespace IPFIX;
-
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include "TestCommon.h"
 
-public static uint64_t kTimeSeqStart = 1141344000000UL; // March 3, 2006
-public static uint64_t kTimeSeqStep  = 1000;            // one second
-public static uint32_t kIPSeqStart   = 0x0A000000;      // 10.0.0.1
-public static uint32_t kIPSeqEnd     = 0x0AFFFFFF;      // 10.255.255.255
-public static uint32_t kIPSeqStep    = 1;
-public static uint16_t kPortSeqStart = 1;
-public static uint16_t kPortSeqEnd   = 65535;
-public static uint32_t kPortSeqStep  = 1;
-public static uint64_t kOctetsSeqStart = 44;
-public static uint64_t kOctetsSeqEnd   = 1000000000;
-public static uint64_t kOctetsSeqStep  = 44;
+using namespace IPFIX;
 
-public static uint16_t kFlowTemplateId = 256;
-public static uint16_t kObsTemplateId = 257;
+static uint64_t kTimeSeqStart = 1141344000000UL; // March 3, 2006
+static uint64_t kTimeSeqStep  = 1000;            // one second
+static uint32_t kIPSeqStart   = 0x0A000000;      // 10.0.0.1
+static uint32_t kIPSeqEnd     = 0x0AFFFFFF;      // 10.255.255.255
+static uint32_t kIPSeqStep    = 1;
+static uint16_t kPortSeqStart = 1;
+static uint16_t kPortSeqEnd   = 65535;
+static uint32_t kPortSeqStep  = 1;
+static uint64_t kOctetsSeqStart = 44;
+static uint64_t kOctetsSeqEnd   = 1000000000;
+static uint64_t kOctetsSeqStep  = 44;
 
-public static int kTestRecordCount = 100000;
-public static int kTestFlowPerSetCount = 22;
-public static int kTestObsPerSetCount = 11;
+static uint16_t kFlowTemplateId = 256;
+static uint16_t kObsTemplateId = 257;
+
+static int kTestRecordCount = 100000;
+static int kTestFlowPerSetCount = 22;
+static int kTestObsPerSetCount = 11;
 
 class TestFlow {
     
@@ -37,11 +38,20 @@ private:
     uint8_t         proto;
     uint64_t        octets;
 
+    const InfoElement*    ie_stime;
+    const InfoElement*    ie_etime;
+    const InfoElement*    ie_sip;
+    const InfoElement*    ie_dip;
+    const InfoElement*    ie_sp;
+    const InfoElement*    ie_dp;
+    const InfoElement*    ie_proto;
+    const InfoElement*    ie_octets;
+
 public:
     
     TestFlow():
         stime(kTimeSeqStart),
-        etime(kTimeSeqStart + kFlowDuration),
+        etime(kTimeSeqStart + kTimeSeqStep),
         sip(kIPSeqStart),
         dip(kIPSeqEnd),
         sp(kPortSeqStart),
@@ -58,61 +68,57 @@ public:
         dp -= kPortSeqStep; if (sp < kPortSeqStart) sp = kPortSeqEnd;
         octets += kOctetsSeqStep; 
         if (octets > kOctetsSeqEnd) octets = kOctetsSeqStart;
-    }    
+    }
     
     bool operator== (const TestFlow& rhs) const {
-        if (stime == rhs.stime &&
-            etime == rhs.etime &&
-            sip == rhs.sip &&
-            dip == rhs.dip &&
-            sp == rhs.sp &&
-            dp == rhs.dp && 
-            proto == rhs.proto &&
-            octets == rhs.octets)
-        {
-            return true;
-        } else {
-            return false;
-        }
+        return stime == rhs.stime &&
+          etime == rhs.etime &&
+          sip == rhs.sip &&
+          dip == rhs.dip &&
+          sp == rhs.sp &&
+          dp == rhs.dp && 
+          proto == rhs.proto &&
+          octets == rhs.octets;
     }
 
     void prepareExport(Exporter& e) {
-        InfoModel* m = InfoModel::instance();
+        InfoModel& m = InfoModel::instance();
 
-        ie_stime_ = m->lookupIE("flowStartMilliseconds");
-        ie_etime_ = m->lookupIE("flowEndMilliseconds");
-        ie_sip_ = m->lookupIE("sourceIPv4Address");
-        ie_dip_ = m->lookupIE("destinationIPv4Address");
-        ie_sp_ = m->lookupIE("sourceTransportPort");
-        ie_dp_ = m->lookupIE("destinationTransportPort");
-        ie_proto_ = m->lookupIE("protocolIdentifier");
-        ie_octets_ = m->lookupIE("octetDeltaCount[4]");
+        ie_stime = m.lookupIE("flowStartMilliseconds");
+        ie_etime = m.lookupIE("flowEndMilliseconds");
+        ie_sip = m.lookupIE("sourceIPv4Address");
+        ie_dip = m.lookupIE("destinationIPv4Address");
+        ie_sp = m.lookupIE("sourceTransportPort");
+        ie_dp = m.lookupIE("destinationTransportPort");
+        ie_proto = m.lookupIE("protocolIdentifier");
+        ie_octets = m.lookupIE("octetDeltaCount[4]");
 
         WireTemplate* t = e.getTemplate(kFlowTemplateId);
         t->clear();
-        t->add(ie_stime_);
-        t->add(ie_etime_);
-        t->add(ie_sip_);
-        t->add(ie_dip_);
-        t->add(ie_sp_);
-        t->add(ie_dp_);
-        t->add(ie_proto_);
-        t->add(ie_octets_);
+        t->add(ie_stime);
+        t->add(ie_etime);
+        t->add(ie_sip);
+        t->add(ie_dip);
+        t->add(ie_sp);
+        t->add(ie_dp);
+        t->add(ie_proto);
+        t->add(ie_octets);
         t->activate();
     }
 
-    void export(Exporter& e) {
+    void do_export(Exporter& e) {
         e.setTemplate(kObsTemplateId);
         e.beginRecord();
-        e.putValue(ie_stime_, stime_);
-        e.putValue(ie_etime_, etime_);
-        e.putValue(ie_sip_, sip_);
-        e.putValue(ie_dip_, dip_);
-        e.putValue(ie_sp_, sp_);
-        e.putValue(ie_dp_, dp_);
-        e.putValue(ie_proto_, proto_);
-        e.putValue(ie_octets_, octets_);
+        e.putValue(ie_stime, stime);
+        e.putValue(ie_etime, etime);
+        e.putValue(ie_sip, sip);
+        e.putValue(ie_dip, dip);
+        e.putValue(ie_sp, sp);
+        e.putValue(ie_dp, dp);
+        e.putValue(ie_proto, proto);
+        e.putValue(ie_octets, octets);
         e.exportRecord();
+    }
 
 };
 
@@ -187,14 +193,14 @@ public:
     }
 
     void prepareExport(Exporter& e) {
-        InfoModel* m = InfoModel::instance();
+        InfoModel& m = InfoModel::instance();
 
-        m->add("observationValue(35566/804)<unsigned64>[8]");
-        m->add("observationLabel(35566/805)<string>[v]");
+        m.add("observationValue(35566/804)<unsigned64>[8]");
+        m.add("observationLabel(35566/805)<string>[v]");
         
-        ie_otime_ = m->lookupIE("observationTimeMilliseconds");
-        ie_value_ = m->lookupIE("observationValue");
-        ie_label_ = m->lookupIE("observationLabel");
+        ie_otime_ = m.lookupIE("observationTimeMilliseconds");
+        ie_value_ = m.lookupIE("observationValue");
+        ie_label_ = m.lookupIE("observationLabel");
         
         WireTemplate* t = e.getTemplate(kObsTemplateId);
         t->clear();
@@ -204,7 +210,7 @@ public:
         t->activate();
     }
 
-    void export(Exporter& e) {
+    void do_export(Exporter& e) {
         e.setTemplate(kObsTemplateId);
         e.beginRecord();
         e.putValue(ie_otime_, otime_);
@@ -214,3 +220,30 @@ public:
     }
 };
 
+BOOST_AUTO_TEST_SUITE(ImportExport)
+
+BOOST_AUTO_TEST_CASE(LoopFile) {
+  TestFlow flow;
+  TestObs obs;
+  Exporter *e = new FileWriter("loopfile", kTestDomain);
+
+  flow.prepareExport(*e);
+  obs.prepareExport(*e);
+
+  for (unsigned int i = 0 ; i < kTestRecordCount; i++) {
+    for (unsigned int k = 0; k < kTestFlowPerSetCount; k++) {
+      flow.do_export(*e);
+      flow.incrementPattern();
+    }
+
+    for (unsigned int k = 0 ; k < kTestObsPerSetCount; k++) {
+      obs.do_export(*e);
+      obs.incrementPattern();
+    }
+  }
+
+  e->flush();
+  delete e;
+}
+
+BOOST_AUTO_TEST_SUITE_END()
