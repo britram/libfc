@@ -2,6 +2,8 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include "RecordReceiver.h"
+
 #include "TestCommon.h"
 
 using namespace IPFIX;
@@ -58,7 +60,25 @@ public:
         dp(kPortSeqEnd),
         proto(6),
         octets(kOctetsSeqStart) {}
-    
+
+  TestFlow(uint64_t stime,
+           uint64_t etime,
+           uint32_t sip,
+           uint32_t dip,
+           uint16_t sp,
+           uint16_t dp,
+           uint8_t  proto,
+           uint64_t octets)
+    : stime(stime),
+      etime(etime),
+      sip(sip),
+      dip(dip),
+      sp(sp),
+      dp(dp),
+      proto(proto),
+      octets(octets) {
+  }
+
     void incrementPattern() {
         stime += kTimeSeqStep;
         etime += kTimeSeqStep;
@@ -70,7 +90,7 @@ public:
         if (octets > kOctetsSeqEnd) octets = kOctetsSeqStart;
     }
     
-    bool operator== (const TestFlow& rhs) const {
+    bool operator==(const TestFlow& rhs) const {
         return stime == rhs.stime &&
           etime == rhs.etime &&
           sip == rhs.sip &&
@@ -79,6 +99,10 @@ public:
           dp == rhs.dp && 
           proto == rhs.proto &&
           octets == rhs.octets;
+    }
+
+    bool operator!=(const TestFlow& rhs) const {
+      return !(*this == rhs);
     }
 
     void prepareExport(Exporter& e) {
@@ -218,6 +242,73 @@ public:
         e.putValue(ie_label_, label_);
         e.exportRecord();
     }
+};
+
+class TestFlowReceiver : public RecordReceiver {
+private:
+  TestFlow f_;
+  bool pass_;
+  unsigned int rec_count;
+
+    const InfoElement*    ie_stime;
+    const InfoElement*    ie_etime;
+    const InfoElement*    ie_sip;
+    const InfoElement*    ie_dip;
+    const InfoElement*    ie_sp;
+    const InfoElement*    ie_dp;
+    const InfoElement*    ie_proto;
+    const InfoElement*    ie_octets;
+
+public:
+  TestFlowReceiver() 
+    : pass_(true), 
+      rec_count(0),
+      ie_stime(InfoModel::instance().lookupIE("flowStartMilliseconds")),
+      ie_etime(InfoModel::instance().lookupIE("flowEndMilliseconds")),
+      ie_sip(InfoModel::instance().lookupIE("sourceIPv4Address")),
+      ie_dip(InfoModel::instance().lookupIE("destinationIPv4Address")),
+      ie_sp(InfoModel::instance().lookupIE("sourceTransportPort")),
+      ie_dp(InfoModel::instance().lookupIE("destinationTransportPort")),
+      ie_proto(InfoModel::instance().lookupIE("protocolIdentifier")),
+      ie_octets(InfoModel::instance().lookupIE("octetDeltaCount[4]")) {
+  }
+
+  bool is_passing() const { 
+    return pass_;
+  }
+
+  unsigned int get_rec_count() const {
+    return rec_count;
+  }
+
+  void receiveRecord()  {
+    rec_count++;
+
+    uint64_t stime;
+    uint64_t etime;
+    uint32_t sip;
+    uint32_t dip;
+    uint16_t sp;
+    uint16_t dp;
+    uint8_t  proto;
+    uint64_t octets;
+
+    if (getValue(ie_stime, stime)
+        && getValue(ie_etime, etime)
+        && getValue(ie_sip, sip)
+        && getValue(ie_dip, dip)
+        && getValue(ie_sp, sp)
+        && getValue(ie_dp, dp)
+        && getValue(ie_proto, proto)
+        && getValue(ie_octets, octets)) {
+      TestFlow f(stime, etime, sip, dip, sp, dp, proto, octets);
+      if (f_ != f)
+        pass_ = false;
+    } else
+      pass_ = false;
+
+    f_.incrementPattern();
+  }
 };
 
 BOOST_AUTO_TEST_SUITE(ImportExport)

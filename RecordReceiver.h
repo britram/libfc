@@ -57,8 +57,14 @@ namespace IPFIX {
         Transcoder* xc_;
         CollectorOffsetCache oc_;
 
-        bool getValue(const InfoElement* ie, void *vp, size_t len);
+    protected:
+        RecordReceiver():
+            wt_(NULL),
+            xc_(NULL),
+            oc_(NULL,NULL) {}
         
+        bool getValue(const InfoElement* ie, void *vp, size_t len);
+
         bool getValue(const InfoElement* ie, uint64_t& val) {
             return getValue(ie, &val, sizeof(val));
         }
@@ -74,12 +80,6 @@ namespace IPFIX {
         bool getValue(const InfoElement* ie, uint8_t& val) {
             return getValue(ie, &val, sizeof(val));
         }
-        
-    protected:
-        RecordReceiver():
-            wt_(NULL),
-            xc_(NULL),
-            oc_(NULL,NULL) {}
         
     public:
         
