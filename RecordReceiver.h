@@ -59,6 +59,22 @@ namespace IPFIX {
 
         bool getValue(const InfoElement* ie, void *vp, size_t len);
         
+        bool getValue(const InfoElement* ie, uint64_t& val) {
+            return getValue(ie, &val, sizeof(val));
+        }
+
+        bool getValue(const InfoElement* ie, uint32_t& val) {
+            return getValue(ie, &val, sizeof(val));
+        }
+
+        bool getValue(const InfoElement* ie, uint16_t& val) {
+            return getValue(ie, &val, sizeof(val));
+        }
+        
+        bool getValue(const InfoElement* ie, uint8_t& val) {
+            return getValue(ie, &val, sizeof(val));
+        }
+        
     protected:
         RecordReceiver():
             wt_(NULL),

@@ -24,26 +24,34 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <cassert>
-
-#include "StructTemplate.h"
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ *
+ * @section DESCRIPTION
+ *
+ * This file specifies the interface to MatchTemplate. A MatchTemplate
+ * is an IETemplate which can only be used for minimal template matching
+ * (i.e., it stores no offset information used for encoding or decoding,
+ * and is not bound to a session or ID).
+ */
 
 namespace IPFIX {
-  
-void StructTemplate::add(const InfoElement* ie, size_t offset) {
-  // Add IE to maps
-  add_inner(ie);
 
-  // Check offset monotonity invariant
-  assert(offsets_.empty() || offset >= offsets_.back());
+class MatchTemplate : public IETemplate {
+    
+    MatchTemplate():
+    IETemplate();
 
-  // Add offset to offset table
-  offsets_.push_back(offset);
-  
-  // calculate minlen
-  size_t ielen = ie->len();
-  if (ielen == kVarlen) ielen = sizeof(VarlenField);  
-  if ((offset + ielen) > minlen_) minlen_ = offset + ielen;
-}
+    void activate() {}
+    
+    void dumpIdent(std::ostream &os) {
+        os << "*** MatchTemplate " << reinterpret_cast<uint64_t> (this) << std::endl;
+    }
+    
+    void add(const InfoElement* ie) {
+        add_inner(ie);
+    }
+};
 
 }

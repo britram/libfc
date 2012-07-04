@@ -93,7 +93,6 @@ public:
   void activate() {
     assert(!active_);
 
-    //std::cerr << "activate template (" << domain_ << "," << tid_ << "), " << ies_.size() << " IEs" << std::endl;
     active_ = true;
   }
 
@@ -116,7 +115,7 @@ public:
   /**
    * Determine whether this template contains all the IEs in a given template.
    *
-   * @param rhs template to 
+   * @param rhs template to compare to
    * @return true if this template contains the given IE in any size
    */
   bool containsAll(const IETemplate* rhs) const {
@@ -186,10 +185,9 @@ public:
    * @return end iterator
    */
   IETemplateIter end() const { return ies_.end(); }
-  
-     
+
   virtual void dumpIdent(std::ostream &os) const = 0;
-  
+
   void dump(std::ostream& os) const {
     dumpIdent(os);
     os << "  count " << ies_.size() << " minlen " << minlen_ << std::endl;
