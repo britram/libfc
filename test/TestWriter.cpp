@@ -60,11 +60,9 @@ test_struct_writer(const std::string& protocol, const std::string& outspec) {
     // create templates for our structures
     StructTemplate sfstmpl;
     makeSimpleFlowTemplate(sfstmpl);
-    sfstmpl.dump(std::cerr);
 
     // create (direct) export templates for these
     e->getTemplate(kSimpleFlowTid)->mimic(sfstmpl);
-    e->getTemplate(kSimpleFlowTid)->dump(std::cerr);
 
     // export them
     e->exportTemplatesForDomain();
@@ -104,11 +102,9 @@ test_export(const std::string& protocol, const std::string& outspec) {
     // initialisation code should still work to set up the wire template
     StructTemplate sfstmpl;
     makeSimpleFlowTemplate(sfstmpl);
-    sfstmpl.dump(std::cerr);
 
     // create (direct) export template
     e->getTemplate(kSimpleFlowTid)->mimic(sfstmpl);
-    e->getTemplate(kSimpleFlowTid)->dump(std::cerr);
 
     // export templates
     e->exportTemplatesForDomain();

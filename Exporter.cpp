@@ -153,7 +153,7 @@ void Exporter::beginRecord() {
     // Create new record state
     rec_active_ = true;
     
-    std::cerr << "----- begin record" << std::endl;
+//    std::cerr << "----- begin record" << std::endl;
 }
 
 void Exporter::endRecord(bool do_export) {
@@ -169,7 +169,7 @@ void Exporter::endRecord(bool do_export) {
     // Clear record state
     rec_active_ = false;
 
-    std::cerr << "----- end record" << std::endl;
+//    std::cerr << "----- end record" << std::endl;
 }
 
 void Exporter::reserveVarlen(const InfoElement *ie, size_t len) {
@@ -199,7 +199,7 @@ bool Exporter::putValue(const InfoElement* ie, const void* vp, size_t len) {
     
     // skip if the current template doesn't contain the value
     if (!tmpl_->contains(ie)) {
-        std::cerr << "template doesn't contain " << ie->name() << "; skipping" << std::endl;
+//        std::cerr << "template doesn't contain " << ie->name() << "; skipping" << std::endl;
         return false;
     }
     
@@ -211,7 +211,7 @@ bool Exporter::putValue(const InfoElement* ie, const void* vp, size_t len) {
    
     // now encode
     size_t nextoff = xcoder_.encodeAt(vp, len, off, tmpl_->ieFor(ie));
-    std::cerr << "putvalue encoded " << nextoff - off << " octets for " << ie->name() << " at offset " << off << std::endl;
+//    std::cerr << "putvalue encoded " << nextoff - off << " octets for " << ie->name() << " at offset " << off << std::endl;
 
     return true;
 }
