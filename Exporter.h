@@ -175,7 +175,10 @@ public:
    *           be in host byte order, and of appropriate type for the given
    *           Information Element. No type checks are performed.
    * @param len Length of the value in vp.
-   * @return true if the value was put, false if no such IE exists.
+   * @return true if the value was put, or if the value was ignored because
+   *         the current wire template does not contain the given IE.
+   *         If false, there was not enough room to put the value, 
+   *         and the record was rolled back.
    */
   
     bool putValue(const InfoElement* ie, const void* vp, size_t len);

@@ -182,12 +182,12 @@ void Exporter::reserveVarlen(const InfoElement *ie, size_t len) {
     if (!oc_.mightFit()) {
         rollbackRecord();
         flush();
-        ensureSet();
-
+        beginRecord();
+        
         if (!oc_.mightFit()) {
             // we started over and it still doesn't fit. die.
             throw MTUError("value length reservation");
-        }        
+        }
     }
 }
 
@@ -197,21 +197,25 @@ bool Exporter::putValue(const InfoElement* ie, const void* vp, size_t len) {
         throw std::logic_error("cannot put in inactive record");
     }
     
-    // skip if the current template doesn't contain the value
+    // if the current template doesn't contain the value,
+    // just pretend we put it.
     if (!tmpl_->contains(ie)) {
-//        std::cerr << "template doesn't contain " << ie->name() << "; skipping" << std::endl;
-        return false;
+        return true;
     }
     
     // Figure out where to put the value.
     size_t off = oc_.offsetOf(ie);
-    
+
+    // now encode, catch error (could include overrun)
+    if (!xcoder_.encodeAt(vp, len, off, tmpl_->ieFor(ie))) {
+        rollbackRecord();
+        flush();
+
+        return false;
+    }
+
     // Make sure the length is reserved
     oc_.setIELen(ie, len);
-   
-    // now encode
-    size_t nextoff = xcoder_.encodeAt(vp, len, off, tmpl_->ieFor(ie));
-//    std::cerr << "putvalue encoded " << nextoff - off << " octets for " << ie->name() << " at offset " << off << std::endl;
 
     return true;
 }

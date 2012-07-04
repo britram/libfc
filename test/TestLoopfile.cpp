@@ -151,14 +151,14 @@ public:
     void do_export(Exporter& e) {
         e.setTemplate(kFlowTemplateId);
         e.beginRecord();
-        e.putValue(ie_stime, stime);
-        e.putValue(ie_etime, etime);
-        e.putValue(ie_sip, sip);
-        e.putValue(ie_dip, dip);
-        e.putValue(ie_sp, sp);
-        e.putValue(ie_dp, dp);
-        e.putValue(ie_proto, proto);
-        e.putValue(ie_octets, octets);
+        BOOST_CHECK_EQUAL(true, e.putValue(ie_stime, stime));
+        BOOST_CHECK_EQUAL(true, e.putValue(ie_etime, etime));
+        BOOST_CHECK_EQUAL(true, e.putValue(ie_sip, sip));
+        BOOST_CHECK_EQUAL(true, e.putValue(ie_dip, dip));
+        BOOST_CHECK_EQUAL(true, e.putValue(ie_sp, sp));
+        BOOST_CHECK_EQUAL(true, e.putValue(ie_dp, dp));
+        BOOST_CHECK_EQUAL(true, e.putValue(ie_proto, proto));
+        BOOST_CHECK_EQUAL(true, e.putValue(ie_octets, octets));
         e.exportRecord();
     }
 
@@ -261,10 +261,14 @@ public:
     void do_export(Exporter& e) {
         e.setTemplate(kObsTemplateId);
         e.beginRecord();
-        e.putValue(ie_otime_, otime_);
-        e.putValue(ie_value_, value_);
-        e.putValue(ie_label_, label_);
-        e.exportRecord();
+        e.reserveVarlen(ie_label_, label_.size());
+        if (e.putValue(ie_otime_, otime_) &&
+             e.putValue(ie_value_, value_) &&
+             e.putValue(ie_label_, label_)) 
+        {
+            e.exportRecord();
+        } else {
+        }
     }
 };
 
