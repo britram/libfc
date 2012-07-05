@@ -44,19 +44,23 @@ BOOST_AUTO_TEST_CASE(TranscodeIPv4Address) {
   const IPFIX::InfoElement* ie_sip = m.lookupIE("sourceIPv4Address");
   BOOST_CHECK(ie_sip != 0);
 
-  uint8_t ipbuf[4] = { 127, 0, 0, 1 };
+  uint8_t ipbuf[4] = { 1, 0, 0, 127 };
+  uint8_t trbuf[4];
   IPFIX::Transcoder tc;
 
-  tc.setBase(ipbuf, sizeof(ipbuf));
+  tc.setBase(trbuf, sizeof(trbuf));
   tc.zero();
 
-  BOOST_CHECK_EQUAL(tc.encodeAt(&ipbuf[0], sizeof(ipbuf), 0, ie_sip), 
-                    sizeof(ipbuf));
+  BOOST_CHECK_EQUAL(tc.encode(&ipbuf[0], sizeof(ipbuf), ie_sip), 
+                    true);
 
-  BOOST_CHECK_EQUAL(ipbuf[0], 1);
-  BOOST_CHECK_EQUAL(ipbuf[1], 0);
-  BOOST_CHECK_EQUAL(ipbuf[2], 0);
-  BOOST_CHECK_EQUAL(ipbuf[3], 127);
+  BOOST_CHECK_EQUAL(trbuf[0], 127);
+  BOOST_CHECK_EQUAL(trbuf[1], 0);
+  BOOST_CHECK_EQUAL(trbuf[2], 0);
+  BOOST_CHECK_EQUAL(trbuf[3], 1);
+
+  BOOST_CHECK_EQUAL(tc.avail(), 0);
+  BOOST_CHECK_EQUAL(tc.len(), sizeof(trbuf));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
