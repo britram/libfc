@@ -32,28 +32,34 @@ typedef std::map<const IETemplate*, SetReceiver* >::const_iterator ReceiverListI
 typedef std::map<WireTemplateKey, SetReceiver* >::const_iterator ReceiverCacheIter;    
   
 SetReceiver* Collector::receiverForTemplate(const WireTemplate* wt) {
-  WireTemplateKey wtk = wt->key();
-  
+    WireTemplateKey wtk = wt->key();
+
+    // std::cerr << "looking for receiver for template:" << std::endl;
+    // wt->dump(std::cerr);
+
   // first look in the receiver cache
-  ReceiverCacheIter rciter = receiver_cache_.find(wtk);
-  if (rciter != receiver_cache_.end()) {
-    return rciter->second;
-  }
-  
-  // nope, look in the receiver list
-  for (ReceiverListIter rliter = receivers_.begin();
-                        rliter != receivers_.end();
-                        rliter++) {
-    if (wt->containsAll(rliter->first)) {
-      receiver_cache_[wtk] = rliter->second;
-      return rliter->second;
+    ReceiverCacheIter rciter = receiver_cache_.find(wtk);
+    if (rciter != receiver_cache_.end()) {
+        // std::cerr << "   found in cache." << std::endl;
+        return rciter->second;
     }
-  }
-  
+
+  // nope, look in the receiver list
+    for (ReceiverListIter rliter = receivers_.begin();
+    rliter != receivers_.end();
+    rliter++) {
+        if (wt->containsAll(rliter->first)) {
+            receiver_cache_[wtk] = rliter->second;
+            // std::cerr << "   found in reciever list." << std::endl;
+            return rliter->second;
+        }
+    }
+
   // If we're here, we missed completely
-  return NULL;
+    // std::cerr << "    not found" << std::endl;
+    return NULL;
 }
-  
+
 bool Collector::receiveMessage(MBuf& mbuf) {
   std::shared_ptr<Session> session;
   
@@ -97,8 +103,8 @@ bool Collector::receiveMessage(MBuf& mbuf) {
 void Collector::registerReceiver(const IETemplate* mintmpl, 
                                  SetReceiver* receiver) {
   receivers_[mintmpl] = receiver;
-  //std::cerr << "Registered a receiver for template:" << std::endl;
-  //mintmpl->dump(std::cerr);
+  // std::cerr << "Registered receiver " << reinterpret_cast<uint64_t>(receiver) << " for template:" << std::endl;
+  // mintmpl->dump(std::cerr);
 }
 
 } /* namespace IPFIX */
