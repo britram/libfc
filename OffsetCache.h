@@ -119,6 +119,7 @@ namespace IPFIX {
          * Return the length of the record if it is known, otherwise 0.
          */        
         size_t reclen() {
+            if (!reclen_) recacheOffsets();
             return reclen_;
         }
         

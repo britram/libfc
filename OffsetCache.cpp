@@ -56,14 +56,11 @@ namespace IPFIX {
     }
     
     void OffsetCache::advance() {
-        if (!reclen_) {
-            recacheOffsets();
-            if (!reclen_) {
+        if (!reclen()) {
                 throw CursorError("attempt to advance without valid record length");
-            }
         }
         
-        if (xc_->advance(reclen_)) {
+        if (xc_->advance(reclen())) {
 //            std::cerr << "advanced " << reclen_ << " octets" << std::endl;
             clear();
         } else {
@@ -134,6 +131,8 @@ namespace IPFIX {
         size_t nextoff = wt_->maxFixedOffset();
         bool reclen_valid = true;
         
+        std::cerr << "recaching offsets" << std::endl;
+        
         for (IETemplateIter i = varlenBegin(); 
                             i != varlenEnd(); 
                             i++) {
@@ -141,11 +140,13 @@ namespace IPFIX {
             size_t len = (*i)->len();
             if (len == kVarlen) {
                 if (vlengths_.find(*i) == vlengths_.end()) {
+                    std::cerr << "  length of " << (*i)->toIESpec() << " is not available" << std::endl;
                     reclen_valid = false;
                     break;
                 } else {
                     // account for vl encoding in offset calculation
                     len = vlengths_[*i] + (len < 255 ? 1 : 3);
+                    std::cerr << "  length of " << (*i)->toIESpec() << " is " << vlengths_[*i] << "; adding " << len << std::endl;
                 }
             }
             nextoff += len;
