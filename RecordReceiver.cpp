@@ -51,7 +51,7 @@ void RecordReceiver::receiveSet(const Collector* collector,
     }
 }
 
-void *RecordReceiver::getPointer(const InfoElement* ie, size_t& len) {
+const void *RecordReceiver::getPointer(const InfoElement* ie, size_t& len) {
     // FIXME come up with a way to do this without reusing varlen fields.
     VarlenField vf;
     
@@ -68,9 +68,12 @@ bool RecordReceiver::getValue(const InfoElement* ie, void *vp, size_t len) {
     return true;
 }
 
-  bool RecordReceiver::getValue(const InfoElement* ie, std::string& v) {
+bool RecordReceiver::getValue(const InfoElement* ie, std::string& v) {
     if (!wt_->contains(ie)) return false;
-    v = "";
+    
+    size_t len = 0;
+    const char *cp = static_cast<const char *>(getPointer(ie, len));
+    v = std::string(cp, len);
     return true;
 }
 

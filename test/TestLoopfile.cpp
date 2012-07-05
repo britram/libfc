@@ -27,7 +27,7 @@ static uint64_t kOctetsSeqStep  = 44;
 static uint16_t kFlowTemplateId = 256;
 static uint16_t kObsTemplateId = 257;
 
-static int kTestCycleCount = 1000;
+static int kTestCycleCount = 100;
 static int kTestFlowPerSetCount = 22;
 static int kTestObsPerSetCount = 11;
 

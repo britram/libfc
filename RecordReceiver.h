@@ -63,7 +63,7 @@ namespace IPFIX {
             xc_(NULL),
             oc_(NULL,NULL) {}
             
-        void *getPointer(const InfoElement* ie, size_t& len);
+        const void *getPointer(const InfoElement* ie, size_t& len);
         
         bool getValue(const InfoElement* ie, void *vp, size_t len);
 
