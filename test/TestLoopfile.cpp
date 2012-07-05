@@ -27,7 +27,7 @@ static uint64_t kOctetsSeqStep  = 44;
 static uint16_t kFlowTemplateId = 256;
 static uint16_t kObsTemplateId = 257;
 
-static int kTestCycleCount = 1000;
+static int kTestCycleCount = 10;
 static int kTestFlowPerSetCount = 22;
 static int kTestObsPerSetCount = 0;
 
@@ -96,14 +96,14 @@ public:
     }
     
     bool operator==(const TestFlow& rhs) const {
-        bool ret = stime == rhs.stime &&
-          etime == rhs.etime &&
-          sip == rhs.sip &&
-          dip == rhs.dip &&
-          sp == rhs.sp &&
-          dp == rhs.dp && 
-          proto == rhs.proto &&
-          octets == rhs.octets;
+        bool ret = stime == rhs.stime
+          && etime == rhs.etime
+          && sip == rhs.sip
+          && dip == rhs.dip
+          && sp == rhs.sp
+          && dp == rhs.dp 
+          && proto == rhs.proto
+          && octets == rhs.octets;
         if (!ret) {
           if (stime != rhs.stime)
             std::cout << "this stime = " << stime 
@@ -127,8 +127,8 @@ public:
             std::cout << "this proto = " << proto 
                       << ", rhs.proto = " << rhs.proto << std::endl;
           if (octets != rhs.octets)
-            std::cout << "this octets = " << octets 
-                      << ", rhs.octets = " << rhs.octets << std::endl;
+            std::cout << "this octets = " << std::hex << octets
+                      << ", rhs.octets = " << std::hex << rhs.octets << std::endl;
         }
         return ret;
     }
@@ -271,9 +271,21 @@ public:
     }
 
     bool operator== (const TestObs& rhs) const {
-       return otime_ == rhs.otime_
+      bool ret = otime_ == rhs.otime_
          && label_ == rhs.label_
          && value_ == rhs.value_;
+      if (!ret) {
+        if (otime_ != rhs.otime_)
+          std::cerr << "this otime = " << otime_ 
+                    << ", rhs.otime = " << rhs.otime_ << std::endl;
+        if (label_ != rhs.label_)
+          std::cerr << "this label = " << label_
+                    << ", rhs.label = " << rhs.label_ << std::endl;
+        if (value_ != rhs.value_)
+          std::cerr << "this value = " << value_
+                    << ", rhs.value = " << rhs.value_ << std::endl;
+      }
+      return ret;
     }
 
     bool operator!=(const TestObs& rhs) const {
