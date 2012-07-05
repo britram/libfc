@@ -27,9 +27,9 @@ static uint64_t kOctetsSeqStep  = 44;
 static uint16_t kFlowTemplateId = 256;
 static uint16_t kObsTemplateId = 257;
 
-static int kTestCycleCount = 10;
+static int kTestCycleCount = 1000;
 static int kTestFlowPerSetCount = 22;
-static int kTestObsPerSetCount = 0;
+static int kTestObsPerSetCount = 11;
 
 class TestFlow {
     friend std::ostream& operator<<(std::ostream& out, const TestFlow& f);
@@ -149,14 +149,14 @@ public:
         ie_proto = m.lookupIE("protocolIdentifier");
         ie_octets = m.lookupIE("octetDeltaCount[4]");
 
-        assert(ie_stime != 0);
-        assert(ie_etime != 0);
-        assert(ie_sip != 0);
-        assert(ie_dip != 0);
-        assert(ie_sp != 0);
-        assert(ie_dp != 0);
-        assert(ie_proto != 0);
-        assert(ie_octets != 0);
+        BOOST_CHECK(ie_stime != 0);
+        BOOST_CHECK(ie_etime != 0);
+        BOOST_CHECK(ie_sip != 0);
+        BOOST_CHECK(ie_dip != 0);
+        BOOST_CHECK(ie_sp != 0);
+        BOOST_CHECK(ie_dp != 0);
+        BOOST_CHECK(ie_proto != 0);
+        BOOST_CHECK(ie_octets != 0);
 
         WireTemplate* t = e.getTemplate(kFlowTemplateId);
         assert(t != 0);
@@ -260,8 +260,7 @@ public:
   TestObs(uint64_t otime, 
           uint64_t value,
           std::string label) 
-    //    : otime_(otime), value_(value), label_(label) {
-    : otime_(otime), value_(value), label_(obsLabelFor(0)) {
+    : otime_(otime), value_(value), label_(label) {
   }
 
     void incrementPattern() {
@@ -302,6 +301,10 @@ public:
         ie_value_ = m.lookupIE("observationValue");
         ie_label_ = m.lookupIE("observationLabel");
         
+        BOOST_CHECK(ie_otime_ != 0);
+        BOOST_CHECK(ie_value_ != 0);
+        BOOST_CHECK(ie_label_ != 0);
+
         WireTemplate* t = e.getTemplate(kObsTemplateId);
         t->clear();
         t->add(ie_otime_);
@@ -360,6 +363,15 @@ public:
       ie_dp(InfoModel::instance().lookupIE("destinationTransportPort")),
       ie_proto(InfoModel::instance().lookupIE("protocolIdentifier")),
       ie_octets(InfoModel::instance().lookupIE("octetDeltaCount[4]")) {
+    BOOST_CHECK(ie_stime != 0);
+    BOOST_CHECK(ie_etime != 0);
+    BOOST_CHECK(ie_sip != 0);
+    BOOST_CHECK(ie_dip != 0);
+    BOOST_CHECK(ie_sp != 0);
+    BOOST_CHECK(ie_dp != 0);
+    BOOST_CHECK(ie_proto != 0);
+    BOOST_CHECK(ie_octets != 0);
+    
     t.add(ie_stime);
     t.add(ie_etime);
     t.add(ie_sip);
@@ -433,6 +445,10 @@ public:
       ie_otime_(InfoModel::instance().lookupIE("observationTimeMilliseconds")),
       ie_value_(InfoModel::instance().lookupIE("observationValue")),
       ie_label_(InfoModel::instance().lookupIE("observationLabel")) {
+    BOOST_CHECK(ie_otime_ != 0);
+    BOOST_CHECK(ie_value_ != 0);
+    BOOST_CHECK(ie_label_ != 0);
+    
     t.add(ie_otime_);
     t.add(ie_value_);
     t.add(ie_label_);

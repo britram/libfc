@@ -60,10 +60,8 @@ namespace IPFIX {
    */
   
   struct VarlenField {
-    // length of content
-    size_t    len;
-    // content pointer
-    uint8_t*  cp;
+    size_t    len;              /** Length of content. */
+    uint8_t*  cp;               /** Content pointer. */
   };
   
   /**
@@ -71,13 +69,13 @@ namespace IPFIX {
    * and endianness issues. Each transcoder wraps an external buffer,
    * owned by the client.
    *
-   * Transcoders are used extensively within libfc's internals (Exporter
-   * and Collector). They are only exposed to libfc clients through the
-   * SetReceiver interface. See the documentation for SetReceiver.receiveSet()
-   * for detailed information.
+   * Transcoders are used extensively within libfc's internals
+   * (Exporter and Collector). They are only exposed to libfc clients
+   * through the SetReceiver interface. See the documentation for
+   * SetReceiver.receiveSet() for detailed information.
    *
-   * FIXME this class is rather cavalier about copyability and constness.
-   *       fix this.
+   * FIXME this class is rather cavalier about copyability and
+   * constness.  fix this.
    */
   
   class Transcoder {
@@ -89,15 +87,15 @@ namespace IPFIX {
     
   public:
     
-    Transcoder():
-    base_(NULL),
-    cur_(NULL),
-    check_(NULL),
-    max_(NULL),
-    savemax_(NULL),
-    msg_base_(NULL),
-    set_base_(NULL)
-    {}
+    Transcoder() 
+      : base_(NULL),
+        cur_(NULL),
+        check_(NULL),
+        max_(NULL),
+        savemax_(NULL),
+        msg_base_(NULL),
+        set_base_(NULL) {
+    }
     
     /**
      * Zero the buffer managed by the transcoder
