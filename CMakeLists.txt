@@ -9,7 +9,7 @@ else ($ENV{CLANG})
 endif($ENV{CLANG})
 
 # include boost
-find_package(Boost 1.48 COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost 1.42 COMPONENTS unit_test_framework REQUIRED)
 if (Boost_FOUND)
   include_directories (. ${Boost_INCLUDE_DIRS})
 endif()
@@ -34,6 +34,3 @@ add_executable(fctest ${UT_OBJ})
 if (Boost_FOUND)
   target_link_libraries(fctest fc ${Boost_LIBRARIES} pcap)
 endif()
-
-add_executable(lookup lookup.cpp)
-target_link_libraries(lookup fc pcap)
