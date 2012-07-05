@@ -32,7 +32,8 @@ static int kTestFlowPerSetCount = 22;
 static int kTestObsPerSetCount = 11;
 
 class TestFlow {
-    
+    friend std::ostream& operator<<(std::ostream& out, const TestFlow& f);
+
 private:
     
     uint64_t        stime;
@@ -160,6 +161,20 @@ public:
 
 };
 
+std::ostream& operator<<(std::ostream& out, const TestFlow& f) {
+  out << "("
+      << "stime=" << f.stime
+      << ",etime=" << f.stime
+      << ",sip=" << f.stime
+      << ",dip=" << f.stime
+      << ",sp=" << f.stime
+      << ",dp=" << f.stime
+      << ",proto=" << f.stime
+      << ",octets=" << f.stime
+      << ")";
+  return out;
+}
+
 std::string& obsLabelFor(uint64_t value) {
     
     static std::vector<std::string> labels;
@@ -194,7 +209,9 @@ std::string& obsLabelFor(uint64_t value) {
     return labels[value % labels.size()];
 }
 
+
 class TestObs {
+    friend std::ostream& operator<<(std::ostream& out, const TestObs& o);
 
 private:
     
@@ -265,6 +282,15 @@ public:
         e.exportRecord();
     }
 };
+
+std::ostream& operator<<(std::ostream& out, const TestObs& o) {
+  out << "("
+      << "otime=" << o.otime_
+      << ",value=" << o.value_
+      << ",label=\"" << o.label_ << "\""
+      << ")";
+  return out;
+}
 
 class TestFlowReceiver : public RecordReceiver {
 private:
@@ -339,11 +365,14 @@ public:
         && getValue(ie_proto, proto)
         && getValue(ie_octets, octets)) {
       TestFlow f(stime, etime, sip, dip, sp, dp, proto, octets);
-      if (f_ != f)
+      if (f_ != f) {
+        std::cerr << "expected " << f_ << ", got " << f << std::endl;
         pass_ = false;
-    } else
+      }
+    } else {
+      std::cerr << "some getValue() returned false" << std::endl;
       pass_ = false;
-
+    }
     f_.incrementPattern();
   }
 };
@@ -422,6 +451,8 @@ BOOST_AUTO_TEST_CASE(LoopFile) {
   obs.prepareExport(*e);
 
   BOOST_TEST_MESSAGE("Writing...");
+
+  e->exportTemplatesForDomain();
 
   for (unsigned int i = 0 ; i < kTestCycleCount; i++) {
     for (unsigned int k = 0; k < kTestFlowPerSetCount; k++) {
