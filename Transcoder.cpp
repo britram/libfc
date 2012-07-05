@@ -46,15 +46,16 @@ const InfoElement Transcoder::u32ie("_internal_unsigned32",
                                     0, 0, IEType::unsigned32(),
                                     sizeof(uint32_t));
 
-  
+
 /* 
 * Transcode left-justified. When copying from a smaller field to
 * a larger field, zero pads the end of the field. When copying
 * from a larger field to a smaller field, cuts bytes from the
 * end of the field.
 */
-  static uint8_t *xcode_raw_left(const void *src, size_t s_len, 
-                                       uint8_t *dst, size_t d_len) {
+static uint8_t *xcode_raw_left(const void *src, size_t s_len, 
+                                    uint8_t *dst, size_t d_len) 
+{
     if (s_len >= d_len) {
         memcpy(dst, src, d_len);
         dst += d_len;
@@ -72,11 +73,11 @@ const InfoElement Transcoder::u32ie("_internal_unsigned32",
 * from a larger field to a smaller field, cuts bytes from the
 * beginning of the field.
 */
-#if defined(BOOST_BIG_ENDIAN)
 static uint8_t *xcode_raw_right(const void *src, size_t s_len, 
-                                      uint8_t *dst, size_t d_len) {
+                                   uint8_t *dst, size_t d_len) 
+{
     if (s_len >= d_len) {
-        memcpy(dst, src + (s_len - d_len), d_len);
+        memcpy(dst, static_cast<const uint8_t *>(src) + (s_len - d_len), d_len);
         dst += d_len;
     } else { // s_len < d_len, need to zero pad on the left
         memset(dst, 0, d_len - s_len);
@@ -85,7 +86,6 @@ static uint8_t *xcode_raw_right(const void *src, size_t s_len,
     }
     return dst;
 }
-#endif
 
 /* 
 * Encode length as a varlen field
@@ -289,7 +289,7 @@ size_t Transcoder::decodeAt(void* val, size_t len, size_t off, const InfoElement
 #if defined(BOOST_BIG_ENDIAN)
     (void)xcode_raw_right(dp, ielen, static_cast<uint8_t*>(val), len);
 #elif defined(BOOST_LITTLE_ENDIAN)
-    (void)xcode_raw_left(dp, ielen, static_cast<uint8_t*>(val), len);
+    (void)xcode_raw_right(dp, ielen, static_cast<uint8_t*>(val), len);
     xcode_swap(static_cast<uint8_t*>(val), len);
 #else
 #error libfc does not compile on weird-endian machines.
