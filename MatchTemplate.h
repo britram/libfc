@@ -56,11 +56,23 @@ public:
     
     void add(const InfoElement* ie) {
         add_inner(ie);
+
+        if (ie->len() == kVarlen) {
+            minlen_ += 1;
+        } else {
+            minlen_ += ie->len();
+        }
+        
+        // we don't care about offsets but
+        // lots of template code assumes they're there...
+        offsets_.push_back(0);
     }
     
     void clear() {
         ies_.clear();
         index_map_.clear();
+        offsets_.clear();
+        minlen_ = 0;
     }
   
     void mimic(const IETemplate& rhs) {
