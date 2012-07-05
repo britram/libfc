@@ -29,7 +29,7 @@ static uint16_t kObsTemplateId = 257;
 
 static int kTestCycleCount = 1000;
 static int kTestFlowPerSetCount = 22;
-static int kTestObsPerSetCount = 11;
+static int kTestObsPerSetCount = 0;
 
 class TestFlow {
     friend std::ostream& operator<<(std::ostream& out, const TestFlow& f);
@@ -96,7 +96,7 @@ public:
     }
     
     bool operator==(const TestFlow& rhs) const {
-        return stime == rhs.stime &&
+        bool ret = stime == rhs.stime &&
           etime == rhs.etime &&
           sip == rhs.sip &&
           dip == rhs.dip &&
@@ -104,6 +104,33 @@ public:
           dp == rhs.dp && 
           proto == rhs.proto &&
           octets == rhs.octets;
+        if (!ret) {
+          if (stime != rhs.stime)
+            std::cout << "this stime = " << stime 
+                      << ", rhs.stime = " << rhs.stime << std::endl;
+          if (etime != rhs.etime)
+            std::cout << "this etime = " << etime 
+                      << ", rhs.etime = " << rhs.etime << std::endl;
+          if (sip != rhs.sip)
+            std::cout << "this sip = " << sip 
+                      << ", rhs.sip = " << rhs.sip << std::endl;
+          if (dip != rhs.dip)
+            std::cout << "this dip = " << dip 
+                      << ", rhs.dip = " << rhs.dip << std::endl;
+          if (sp != rhs.sp)
+            std::cout << "this sp = " << sp 
+                      << ", rhs.sp = " << rhs.sp << std::endl;
+          if (dp != rhs.dp )
+            std::cout << "this dp = " << dp 
+                      << ", rhs.dp = " << rhs.dp << std::endl;
+          if (proto != rhs.proto)
+            std::cout << "this proto = " << proto 
+                      << ", rhs.proto = " << rhs.proto << std::endl;
+          if (octets != rhs.octets)
+            std::cout << "this octets = " << octets 
+                      << ", rhs.octets = " << rhs.octets << std::endl;
+        }
+        return ret;
     }
 
     bool operator!=(const TestFlow& rhs) const {
@@ -365,10 +392,8 @@ public:
         && getValue(ie_proto, proto)
         && getValue(ie_octets, octets)) {
       TestFlow f(stime, etime, sip, dip, sp, dp, proto, octets);
-      if (f_ != f) {
-        std::cerr << "expected " << f_ << ", got " << f << std::endl;
+      if (f_ != f)
         pass_ = false;
-      }
     } else {
       std::cerr << "some getValue() returned false" << std::endl;
       pass_ = false;
