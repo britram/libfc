@@ -27,13 +27,23 @@
 /**
  * @file
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
- *
- * @section DESCRIPTION
  * 
  * Defines the abstract exporter interface.
- *
- * 
- * This interface provides two ways of exporting data in IPFIX messages.
+ */
+
+#ifndef IPFIX_EXPORTER_H // idem
+#define IPFIX_EXPORTER_H // hack
+
+#include <ctime>
+#include <stdexcept>
+#include "Session.h"
+#include "Transcoder.h"
+#include "OffsetCache.h"
+
+namespace IPFIX {
+
+/**
+ * This abstract class provides two ways of exporting data in IPFIX messages.
  * The first (and lower-level) interface is based on C-structure 
  * transcoding. To use it, client code should place the data to be exported 
  * in a C structure, create a StructTemplate describing that structure, 
@@ -68,18 +78,6 @@
  * create a new template for export if it doesn't exist yet) and
  * exportTemplatesForDomain().
  */
-
-#ifndef IPFIX_EXPORTER_H // idem
-#define IPFIX_EXPORTER_H // hack
-
-#include <ctime>
-#include <stdexcept>
-#include "Session.h"
-#include "Transcoder.h"
-#include "OffsetCache.h"
-
-namespace IPFIX {
-
 class Exporter {
   
 public:
@@ -101,7 +99,9 @@ public:
   /**
    * Get the WireTemplate for a given template ID in the current 
    * observation domain. Creates a new inactive template if no
-   * template has yet been created for this ID.
+   * template has yet been created for this ID. Template ID assignment
+   * may be done statically by the application, or dynamically using
+   * the TemplateRegistry class.
    *
    * @param tid template ID to get
    * @return pointer to template for given ID
@@ -154,10 +154,15 @@ public:
    *
    * @param ie information element to reserve length for
    * @param len length to reserve
-
    */
   
    void reserveVarlen(const InfoElement *ie, size_t len);
+  
+  /**
+   * FIXME document this if it works
+   */
+  
+   void commitVarlen();
   
   /**
    * Put a value at the given Information Element in the current record.
@@ -165,11 +170,12 @@ public:
    * in the current wire template. Overwrites previously put values for
    * Information Elements which are fixed length in the current wire template.
    *
-   * If space has not been reserved for variable-length Information
-   * Elements using reserveValueLength(), these must be put in the order 
-   * in which, cannot be overwritten, and may throw if they would overrun the
-   * message buffer. Client code is therefore strongly encouraged to use
-   * reserveValueLength() directly after beginRecord(), if possible. 
+   * Information Elements must be put into the record in the order in
+   * which they appear in the WireTemplate. (The present implementation 
+   * will not fail on out-of-order puts, but future implementations may.)
+   *
+   * For variable-length IEs, client code is therefore strongly encouraged 
+   * to use reserveValueLength() directly after beginRecord(), if possible. 
    * 
    * @param ie pointer to Information Element describing the value.
    * @param vp pointer to the value to copy into the message. This value must
@@ -184,21 +190,49 @@ public:
   
     bool putValue(const InfoElement* ie, const void* vp, size_t len);
 
+  /**
+   * Put an unsigned 8-bit integer at the given Information Element 
+   * in the current record.
+   */
+   
     bool putValue(const InfoElement* ie, const uint8_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
+
+  /**
+   * Put an unsigned 16-bit integer at the given Information Element 
+   * in the current record.
+   */
 
     bool putValue(const InfoElement* ie, const uint16_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
 
+  /**
+   * Put an unsigned 32-bit integer at the given Information Element 
+   * in the current record.
+   */
+
     bool putValue(const InfoElement* ie, const uint32_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
 
+  /**
+   * Put an unsigned 64-bit integer at the given Information Element 
+   * in the current record.
+   */
+
     bool putValue(const InfoElement* ie, const uint64_t& v) {
         return putValue(ie, &v, sizeof(v));
     }
+
+  /**
+   * Put a string at the given Information Element 
+   * in the current record. The string will be exported with its
+   * natural length if the corresponding IE in the current wire
+   * template is variable length; otherwise, it will be right-truncated
+   * or right-padded.
+   */
 
     bool putValue(const InfoElement* ie, const std::string& v) {
         return putValue(ie, v.c_str(), v.size());
@@ -209,6 +243,7 @@ public:
    *
    * @param export time export time in epoch seconds
    */
+
   void flush(time_t export_time);
 
   /**
@@ -216,15 +251,19 @@ public:
    *
    * @param export time export time in epoch seconds
    */  
+
   void flush() { flush(time(NULL)); }
   
   // FIXME fix signed/unsigned issues in export time throughout libfc
+
   // FIXME add a way to withdraw a template
 
   /**
    * Exporter virtual destructor
    */
+
   virtual ~Exporter();
+
 protected:
   /**
    * Create a new Exporter.
@@ -253,6 +292,8 @@ private:
   Exporter();
   Exporter(Exporter& rhs);
   Exporter& operator=(Exporter& rhs);
+
+  void checkRecordOverflow(size_t reclen);
 
   void endSet() { xcoder_.encodeSetEnd(); set_active_ = false; }
   void ensureSet();
@@ -284,6 +325,8 @@ private:
 
   // TRUE if there is an active record
   bool                      rec_active_;
+  // TRUE if record length reserved
+  bool                      rec_will_fit_;
   // Export cursor state
   ExporterOffsetCache       oc_;
 };

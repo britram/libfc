@@ -28,26 +28,37 @@
 #include "OffsetCache.h"
 namespace IPFIX {
 
-    IETemplateIter OffsetCache::begin() {
-         if (!viter_cached_) {
-            IETemplateIter i;
-            for (i = wt_->begin(); 
-                 i != wt_->end() && (*i)->len() != kVarlen;
-                 i++);
-            viter_ = i;
-            viter_cached_ = true;
+     OffsetCache::OffsetCache(const WireTemplate* wt, Transcoder* xc):
+        wt_(wt),
+        xc_(xc),
+        reclen_(0)
+        {
+            if (wt_) {
+                if (wt_->varlenCount()) {
+                    IETemplateIter i;
+                    for (i = wt_->begin(); 
+                         i != wt_->end() && (*i)->len() != kVarlen;
+                         i++);
+                    viter_ = i;
+                } else {
+                    reclen_ = wt_->minlen();
+                } 
+            }
         }
+
+
+    IETemplateIter OffsetCache::varlenBegin() {
         return viter_;
     }
 
-    IETemplateIter OffsetCache::end() {
+    IETemplateIter OffsetCache::varlenEnd() {
         return wt_->end();
     }
     
     void OffsetCache::advance() {
-        if (!reclen_valid_) {
+        if (!reclen_) {
             recacheOffsets();
-            if (!reclen_valid_) {
+            if (!reclen_) {
                 throw CursorError("attempt to advance without valid record length");
             }
         }
@@ -88,13 +99,25 @@ namespace IPFIX {
     
         return off;
     }
-    
+
+    void OffsetCache::dump(std::ostream& os) {
+        recacheOffsets();
+        wt_->dump(os);
+        os << "  in OffsetCache at " << std::hex << reinterpret_cast<uint64_t>(xc_->cur()) << " with cached offsets:" << std::endl;
+        for (auto voff_iter = voffsets_.begin();
+             voff_iter != voffsets_.end();
+             voff_iter++)
+        {
+            os << "    " << voff_iter->first->toIESpec() << " off " << voff_iter->second << std::endl;
+        }
+    }
+
     void CollectorOffsetCache::recacheOffsets() {
         size_t nextoff = wt_->maxFixedOffset();
         size_t vl;
         
-        for (IETemplateIter i = begin(); 
-                            i != end(); 
+        for (IETemplateIter i = varlenBegin(); 
+                            i != varlenEnd(); 
                             i++) {
             voffsets_[*i] = nextoff;
             if (!(nextoff = xc_->decodeVarlenLengthAt(nextoff, vl))) {
@@ -105,24 +128,20 @@ namespace IPFIX {
         }
         // note that we have a real record length
         reclen_ = nextoff;
-        reclen_valid_ = true;
     }
 
     void ExporterOffsetCache::recacheOffsets() {
-        // note that the record length will be valid unless we
-        // have to break out due to a missing length.
-        reclen_valid_ = true;
-
         size_t nextoff = wt_->maxFixedOffset();
-
-        for (IETemplateIter i = begin(); 
-                            i != end(); 
+        bool reclen_valid = true;
+        
+        for (IETemplateIter i = varlenBegin(); 
+                            i != varlenEnd(); 
                             i++) {
             voffsets_[*i] = nextoff;
             size_t len = (*i)->len();
             if (len == kVarlen) {
                 if (vlengths_.find(*i) == vlengths_.end()) {
-                    reclen_valid_ = false;
+                    reclen_valid = false;
                     break;
                 } else {
                     // account for vl encoding in offset calculation
@@ -131,10 +150,10 @@ namespace IPFIX {
             }
             nextoff += len;
         }
-        reclen_ = nextoff;
+        reclen_ = reclen_valid ? nextoff : 0;
     }
 
-    void ExporterOffsetCache::setIELen(const InfoElement *ie, size_t len) {
+    void ExporterOffsetCache::setLength(const InfoElement *ie, size_t len) {
         assert(wt_);
     
         if (wt_->contains(ie) && wt_->ieFor(ie)->len() == kVarlen) {
@@ -142,10 +161,7 @@ namespace IPFIX {
                 assert(vlengths_[ie] == len);
             } else {
                 vlengths_[ie] = len;
-                reclen_ += len;
-                reclen_valid_ = false;
             }
         }
     }
-    
 }

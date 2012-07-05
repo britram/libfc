@@ -24,10 +24,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/** 
+ * @file
+ *
+ * Defines the OffsetCache interface
+ *
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ */
+
+
 #ifndef IPFIX_OFFSETCACHE_H // idem
 #define IPFIX_OFFSETCACHE_H // hack
 
 #include <cassert>
+#include <iostream>
 
 #include "InfoElement.h"
 #include "WireTemplate.h"
@@ -40,14 +50,13 @@ namespace IPFIX {
      * An OffsetCache wraps a wire template and a transcoder, and gets
      * offsets for specific Information Elements within a specific
      * record. Used by both random access encoding and decoding within
-     * libfc.
+     * libfc. Client code should not use OffsetCache directly.
      */
 
     class OffsetCache {
 
     private:
         IETemplateIter              viter_;
-        bool                        viter_cached_;
 
     protected:
 
@@ -56,29 +65,33 @@ namespace IPFIX {
         IEIndexMap                  vlengths_;
         IEIndexMap                  voffsets_;
         size_t                      reclen_;
-        bool                        reclen_valid_;
 
-        OffsetCache(const WireTemplate* wt, Transcoder* xc):
-            wt_(wt),
-            xc_(xc),
-            reclen_(0),
-            reclen_valid_(false)
-            {
-                if (wt_ && !wt_->varlenCount()) {
-                    reclen_ = wt_->minlen();
-                    reclen_valid_ = true;
-                }
-            }
+        /** 
+         * Create a new offset cache; used by subclasses to access 
+         * template and transcoder.
+         */
 
-        IETemplateIter begin();
+         OffsetCache(const WireTemplate* wt, Transcoder* xc);
+
+        /** 
+         * Begin iterating over Information Elements in the Template with
+         * first variable-length IE.
+         */
+
+        IETemplateIter varlenBegin();
         
-        IETemplateIter end();
+        IETemplateIter varlenEnd();
         
         virtual void recacheOffsets() = 0;
 
     public:
 
         size_t offsetOf(const InfoElement* ie);
+
+        /** 
+         * Return the length of an information element's content
+         * (not including any varlen length encoding)
+         */
 
         size_t lengthOf(const InfoElement* ie) {
             return vlengths_[ie];
@@ -90,25 +103,33 @@ namespace IPFIX {
          void advance();
         
         /**
-         * Clear the offset cache to the next record
+         * Clear the offset cache to prepare for the next record.
          */
-        
         void clear() {
             vlengths_.clear();
             voffsets_.clear();
             if (!wt_->varlenCount()) {
                 reclen_ = wt_->minlen();
-                reclen_valid_ = true;
             } else {
-                reclen_ = wt_->maxFixedOffset();
-                reclen_valid_ = false;
+                reclen_ = 0;
             }
         }
-        
+
+        /**
+         * Return the length of the record if it is known, otherwise 0.
+         */        
         size_t reclen() {
-            return reclen_valid_ ? reclen_ : 0;
+            return reclen_;
         }
+        
+        void dump (std::ostream& os);
     };
+
+    /** 
+     * A CollectorOffsetCache wraps a wire template and a transcoder, 
+     * and gets offsets for specific Information Elements within a
+     * specific record from the record contents in the received message.
+     */
 
     class CollectorOffsetCache : public OffsetCache {
 
@@ -124,6 +145,12 @@ namespace IPFIX {
         
     };
     
+    /** 
+     * An ExporterOffsetCache wraps a wire template and a transcoder, 
+     * and gets offsets for specific Information Elements within a
+     * specific record from the 
+     */
+
     class ExporterOffsetCache : public OffsetCache {
 
     protected:
@@ -137,13 +164,11 @@ namespace IPFIX {
             {}
         
         /**
-         * Reserve a variable record length in the cache.
+         * Reserve a length for a variable length information element
+         * in the cache. len is the content length (not including varlen 
+         * length encoding).
          */
-        void setIELen(const InfoElement *ie, size_t len);
-        
-        bool mightFit() {
-            return xc_->avail() >= reclen_;
-        }
+        void setLength(const InfoElement *ie, size_t len);
     };
 }
 

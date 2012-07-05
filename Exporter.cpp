@@ -44,6 +44,7 @@ Exporter::Exporter(uint32_t domain, size_t mtu):
   set_active_(false),
   tmpl_(NULL),
   rec_active_(false),
+  rec_will_fit_(false),
   oc_(NULL, &xcoder_)
  {
 
@@ -130,6 +131,16 @@ void Exporter::exportStruct(const StructTemplate& struct_tmpl, uint8_t* struct_c
   msg_empty_ = false;
 }
 
+void Exporter::checkRecordOverflow(size_t reclen) {
+    if (xcoder_.avail() < reclen) {
+        flush();
+        ensureSet();
+        if (xcoder_.avail() < reclen) {
+            throw MTUError("record");
+        }
+    }
+}
+
 void Exporter::beginRecord() {
     assert(!rec_active_);
     
@@ -138,14 +149,8 @@ void Exporter::beginRecord() {
     
     // Start a new message if we don't have at least enough 
     // space for a record.
-    if (xcoder_.avail() < tmpl_->minlen()) {
-        flush();
-        ensureSet();
-        // Check again in case the MTU is simply too small
-        if (xcoder_.avail() < tmpl_->minlen()) {
-            throw MTUError("record");
-        }
-    }
+    checkRecordOverflow(tmpl_->minlen());
+    if (!tmpl_->varlenCount()) rec_will_fit_ = true;
     
     // Zero record
     xcoder_.encodeZeroAt(tmpl_->minlen(), 0);
@@ -168,7 +173,8 @@ void Exporter::endRecord(bool do_export) {
     
     // Clear record state
     rec_active_ = false;
-
+    rec_will_fit_ = false;
+    
 //    std::cerr << "----- end record" << std::endl;
 }
 
@@ -176,46 +182,36 @@ void Exporter::reserveVarlen(const InfoElement *ie, size_t len) {
     assert(rec_active_);
     
     // reserve in the present cursor
-    oc_.setIELen(ie, len);
-    
-    // check for fit, start over if not
-    if (!oc_.mightFit()) {
-        rollbackRecord();
-        flush();
-        beginRecord();
-        
-        if (!oc_.mightFit()) {
-            // we started over and it still doesn't fit. die.
-            throw MTUError("value length reservation");
-        }
-    }
+    oc_.setLength(ie, len);
+}
+
+void Exporter::commitVarlen() {
+    assert(rec_active_);
+    assert(oc_.reclen());
+    checkRecordOverflow(oc_.reclen());
+    rec_will_fit_ = true;
 }
 
 bool Exporter::putValue(const InfoElement* ie, const void* vp, size_t len) {
     // check for no current record
-    if (!rec_active_) {
-        throw std::logic_error("cannot put in inactive record");
-    }
+    assert(rec_will_fit_);
     
     // if the current template doesn't contain the value,
     // just pretend we put it.
     if (!tmpl_->contains(ie)) {
         return true;
     }
-    
+
     // Figure out where to put the value.
     size_t off = oc_.offsetOf(ie);
 
-    // now encode, catch error (could include overrun)
+    // now encode, catch error
     if (!xcoder_.encodeAt(vp, len, off, tmpl_->ieFor(ie))) {
-        rollbackRecord();
-        flush();
-
         return false;
     }
 
     // Make sure the length is reserved
-    oc_.setIELen(ie, len);
+    oc_.setLength(ie, len);
 
     return true;
 }
