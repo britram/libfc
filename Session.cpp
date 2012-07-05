@@ -112,6 +112,7 @@ bool Session::decodeTemplateRecord(Transcoder &xc, uint32_t domain) {
     if (!xc.decode(ienum)) return false;
     if (!xc.decode(ielen)) return false;
     if (ienum & kEnterpriseBit) {
+        ienum &= ~kEnterpriseBit;
       if (!xc.decode(iepen)) return false;
     } else {
       iepen = 0;
