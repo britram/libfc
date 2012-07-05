@@ -59,7 +59,8 @@
  * To send IPFIX Messages, client code should create an instance
  * of an Exporter subclass for the necessary transport, set the
  * observation domain via setDomain() and the export template via
- * setTemplate(), and call exportStruct() to send each record.
+ * setTemplate(), and call exportStruct() or beginRecord()/exportRecord()
+ * to export each record.
  *
  * flush() can be called to explicitly end a message.
  *
