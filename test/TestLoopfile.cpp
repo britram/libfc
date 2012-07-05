@@ -164,13 +164,13 @@ public:
 std::ostream& operator<<(std::ostream& out, const TestFlow& f) {
   out << "("
       << "stime=" << f.stime
-      << ",etime=" << f.stime
-      << ",sip=" << f.stime
-      << ",dip=" << f.stime
-      << ",sp=" << f.stime
-      << ",dp=" << f.stime
-      << ",proto=" << f.stime
-      << ",octets=" << f.stime
+      << ",etime=" << f.etime
+      << ",sip=" << f.sip
+      << ",dip=" << f.dip
+      << ",sp=" << f.sp
+      << ",dp=" << f.dp
+      << ",proto=" << f.proto
+      << ",octets=" << f.octets
       << ")";
   return out;
 }
