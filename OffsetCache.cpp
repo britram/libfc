@@ -131,7 +131,7 @@ namespace IPFIX {
         size_t nextoff = wt_->maxFixedOffset();
         bool reclen_valid = true;
         
-        std::cerr << "recaching offsets" << std::endl;
+        //std::cerr << "recaching offsets" << std::endl;
         
         for (IETemplateIter i = varlenBegin(); 
                             i != varlenEnd(); 
@@ -140,13 +140,13 @@ namespace IPFIX {
             size_t len = (*i)->len();
             if (len == kVarlen) {
                 if (vlengths_.find(*i) == vlengths_.end()) {
-                    std::cerr << "  length of " << (*i)->toIESpec() << " is not available" << std::endl;
+                    //std::cerr << "  length of " << (*i)->toIESpec() << " is not available" << std::endl;
                     reclen_valid = false;
                     break;
                 } else {
                     // account for vl encoding in offset calculation
-                    len = vlengths_[*i] + (len < 255 ? 1 : 3);
-                    std::cerr << "  length of " << (*i)->toIESpec() << " is " << vlengths_[*i] << "; adding " << len << std::endl;
+                    len = vlengths_[*i] + ( vlengths_[*i] < 254 ? 1 : 3);
+                    //std::cerr << "  length of " << (*i)->toIESpec() << " is " << vlengths_[*i] << "; adding " << len << std::endl;
                 }
             }
             nextoff += len;
