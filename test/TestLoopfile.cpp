@@ -27,9 +27,9 @@ static uint64_t kOctetsSeqStep  = 44;
 static uint16_t kFlowTemplateId = 256;
 static uint16_t kObsTemplateId = 257;
 
-static int kTestRecordCount = 100000;
+static int kTestRecordCount = 1000;
 static int kTestFlowPerSetCount = 22;
-static int kTestObsPerSetCount = 11;
+static int kTestObsPerSetCount = 0;
 
 class TestFlow {
     
@@ -133,18 +133,14 @@ public:
         WireTemplate* t = e.getTemplate(kFlowTemplateId);
         assert(t != 0);
         t->clear();
-  BOOST_TEST_MESSAGE("  1...");
         t->add(ie_stime);
-  BOOST_TEST_MESSAGE("  2...");
         t->add(ie_etime);
-  BOOST_TEST_MESSAGE("  3...");
         t->add(ie_sip);
         t->add(ie_dip);
         t->add(ie_sp);
         t->add(ie_dp);
         t->add(ie_proto);
         t->add(ie_octets);
-  BOOST_TEST_MESSAGE("  4...");
         t->activate();
     }
 
@@ -309,6 +305,7 @@ public:
     t.add(ie_dp);
     t.add(ie_proto);
     t.add(ie_octets);
+    t.activate();
   }
 
   IETemplate* get_template() {
@@ -375,6 +372,7 @@ public:
     t.add(ie_otime_);
     t.add(ie_value_);
     t.add(ie_label_);
+    t.activate();
   }
 
   IETemplate* get_template() {
@@ -428,8 +426,6 @@ BOOST_AUTO_TEST_CASE(LoopFile) {
   BOOST_TEST_MESSAGE("Writing...");
 
   for (unsigned int i = 0 ; i < kTestRecordCount; i++) {
-    if ((i % 10) == 0)
-      BOOST_TEST_MESSAGE("i = " << i);
     for (unsigned int k = 0; k < kTestFlowPerSetCount; k++) {
       flow.do_export(*e);
       flow.incrementPattern();
@@ -459,6 +455,13 @@ BOOST_AUTO_TEST_CASE(LoopFile) {
     mbuf.clear();
 
   delete c;
+
+  BOOST_CHECK_EQUAL(flow_receiver.get_rec_count(),
+                    kTestRecordCount*kTestFlowPerSetCount);
+  BOOST_CHECK_EQUAL(obs_receiver.get_rec_count(),
+                    kTestRecordCount*kTestObsPerSetCount);
+  BOOST_CHECK_EQUAL(flow_receiver.is_passing(), true);
+  BOOST_CHECK_EQUAL(obs_receiver.is_passing(), true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
