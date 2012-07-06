@@ -37,4 +37,4 @@ if (Boost_FOUND)
   target_link_libraries(fctest fc ${Boost_LIBRARIES} pcap)
 endif()
 
-setup_target_for_coverage(fccov-transcoder fctest fccov --run_test;Transcoder)
+setup_target_for_coverage(fccov-transcoder fctest fccov --run_test=Transcoder)
