@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)  
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
+
 # debuggery
 if ($ENV{CLANG}) 
   add_definitions(-g -O0 --std=c++0x --stdlib=libc++)
@@ -34,3 +36,5 @@ add_executable(fctest ${UT_OBJ})
 if (Boost_FOUND)
   target_link_libraries(fctest fc ${Boost_LIBRARIES} pcap)
 endif()
+
+setup_target_for_coverage(fccov-transcoder fctest fccov --run_test;Transcoder)
