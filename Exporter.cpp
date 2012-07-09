@@ -88,7 +88,7 @@ void Exporter::setTemplate(uint16_t tid)
   assert (new_tmpl->isActive());
   
   // Finalize existing set if necessary
-  if (set_id_) endSet();
+  if (set_id_ && set_active_) endSet();
 
   // Set new template and set ID
   tmpl_ = new_tmpl;
@@ -260,6 +260,10 @@ void Exporter::ensureTemplateSet() {
 
 void Exporter::flush(time_t export_time) {
   //std::cerr << "flush(" << export_time << ")" << std::endl;
+  
+  if (msg_empty_) {
+      return;
+  }
   
   if (set_active_) {
     endSet();
