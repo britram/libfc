@@ -452,7 +452,6 @@ public:
     t.add(ie_otime_);
     t.add(ie_value_);
     t.add(ie_label_);
-    t.activate();
   }
 
   IETemplate* get_template() {
