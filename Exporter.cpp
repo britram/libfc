@@ -38,6 +38,7 @@ Exporter::Exporter(uint32_t domain, size_t mtu):
   buf_(NULL),
   mtu_(mtu),
   //  session_(),
+  fast_flush_(false),
   domain_(domain),
   set_id_(0),
   msg_empty_(true),
@@ -113,22 +114,25 @@ void Exporter::exportTemplatesForDomain() {
   }
   
   msg_empty_ = false;
+  if (fast_flush_) flush();
 }
 
 void Exporter::exportStruct(const StructTemplate& struct_tmpl, uint8_t* struct_cp) {
-  ensureSet();
-  
-  if (!tmpl_->encodeStruct(xcoder_, struct_tmpl, struct_cp)) {
-    // Not enough room to encode this record. Flush and try again.
-    flush();
     ensureSet();
+
     if (!tmpl_->encodeStruct(xcoder_, struct_tmpl, struct_cp)) {
-      // If it doesn't work now, it never will. Throw.
-      throw MTUError("record");
+        // Not enough room to encode this record. Flush and try again.
+        flush();
+        ensureSet();
+        if (!tmpl_->encodeStruct(xcoder_, struct_tmpl, struct_cp)) {
+            // If it doesn't work now, it never will. Throw.
+            throw MTUError("record");
+        }
     }
-  }
-  
-  msg_empty_ = false;
+
+    msg_empty_ = false;
+    if (fast_flush_) flush();
+
 }
 
 void Exporter::checkRecordOverflow(size_t reclen) {
@@ -174,7 +178,12 @@ void Exporter::endRecord(bool do_export) {
     // Clear record state
     rec_active_ = false;
     rec_will_fit_ = false;
-    
+
+    if (do_export) {
+        msg_empty_ = false;
+        if (fast_flush_) flush();
+    }
+
 //    std::cerr << "----- end record" << std::endl;
 }
 
@@ -193,7 +202,7 @@ void Exporter::commitVarlen() {
 }
 
 bool Exporter::putValue(const InfoElement* ie, const void* vp, size_t len) {
-    // check for no current record
+    // make sure the record's size is known and correct
     assert(rec_will_fit_);
     
     // if the current template doesn't contain the value,

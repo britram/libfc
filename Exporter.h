@@ -258,6 +258,14 @@ public:
 
   // FIXME add a way to withdraw a template
 
+
+  /**
+   * Call to put this Exporter into fast-flush mode. In fast flush mode,
+   * each record will go into its own IPFIX message. Use to avoid buffering
+   * latency, or to debug client code that cannot flush on shutdown properly.
+   */
+   void setFastFlush() { fast_flush_ = true; }
+
   /**
    * Exporter virtual destructor
    */
@@ -308,6 +316,8 @@ private:
   Transcoder                xcoder_;
   // Maximum message size
   size_t                    mtu_;
+  // Fast flush mode flag
+  bool                      fast_flush_;
   
   // Message export state
   // Session for storing IPFIX state

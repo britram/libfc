@@ -24,6 +24,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <iostream>
 #include "Constants.h"
 #include "TemplateRegistry.h"
 
@@ -40,10 +41,14 @@ namespace IPFIX {
     auto i = registry.find(template_name);
     if (i == registry.end()) {
       registry[template_name] = ++last_id;
+      // std::cerr << "registered Template ID " << i->second << " for " 
+      //     << template_name << "." << std::endl;
       return last_id;
-    }
-    else
+    } else {
+      // std::cerr << "found Template ID " << i->second << " for " 
+      //     << template_name << " in registry." << std::endl;
       return i->second;
+     }
   }
 
   TemplateRegistry::TemplateRegistry() : last_id(kMinSetID) {
