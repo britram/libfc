@@ -39,6 +39,9 @@
  * and is not bound to a session or ID).
  */
 
+#ifndef IPFIX_MATCHTEMPLATE_H // idem
+#define IPFIX_MATCHTEMPLATE_H // hack
+
 namespace IPFIX {
 
 class MatchTemplate : public IETemplate {
@@ -85,3 +88,5 @@ public:
 };
 
 }
+
+#endif
