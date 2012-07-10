@@ -57,10 +57,18 @@ class Session {
 public:
   Session() {}
 
-  uint32_t nextSequence(uint32_t domain) { return next_seq_[domain]; }
+  uint32_t nextSequence(uint32_t domain, uint32_t stream) { 
+      // FIXME stream ignored until we do SCTP
+      return next_seq_[domain]; 
+  }
 
-  uint32_t incrementSequence(uint32_t domain, uint32_t increment);
-  uint32_t checkSequence(uint32_t domain, uint32_t sequence);
+  uint32_t incrementSequence(uint32_t domain, uint32_t stream, uint32_t increment) {
+      // FIXME stream ignored until we do SCTP
+       next_seq_[domain] += increment;
+       return next_seq_[domain];
+  }
+
+  uint32_t checkSequence(uint32_t domain, uint32_t stream, uint32_t sequence);
 
   WireTemplate *getTemplate(uint32_t domain, uint16_t tid);
   void deleteTemplate(uint32_t domain, uint16_t tid);
@@ -75,7 +83,7 @@ public:
   }
 
 private:
-  std::map<uint32_t, uint32_t>                                    next_seq_;
+  std::map<uint32_t, uint32_t >                 next_seq_;
   std::map<WireTemplateKey, std::shared_ptr<WireTemplate> >  tib_;
 };
 

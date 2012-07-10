@@ -102,7 +102,7 @@ namespace IPFIX {
     }
     
     virtual void restart() {
-      // FIXME support collecting process restart
+        throw std::logic_error("Collector restart not supported.");
     }
     
   protected:

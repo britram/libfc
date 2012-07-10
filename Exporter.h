@@ -307,7 +307,8 @@ private:
   void ensureSet();
   void ensureTemplateSet();
   void startMessage();
-  void endMessage(time_t export_time);
+  
+  bool msgEmpty() { return !(drec_count_ || trec_count_); }
   
   // Low-level storage
   // storage for message buffer
@@ -326,12 +327,15 @@ private:
   uint32_t                  domain_;
   // current Set ID for export
   uint16_t                  set_id_;
-  // TRUE if message has no content
-  bool                      msg_empty_;
   // TRUE if there is an active set
   bool                      set_active_;
   // Wire template describing the set
   WireTemplate*             tmpl_;
+
+  // number of data records written since flush
+  unsigned int              drec_count_;
+  // number of template records written since flush
+  unsigned int              trec_count_;
 
   // TRUE if there is an active record
   bool                      rec_active_;

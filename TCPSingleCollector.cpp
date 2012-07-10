@@ -97,7 +97,6 @@ TCPSingleCollector::~TCPSingleCollector() {
     close(lsock_);
     lsock_ = -1;
   }
-
 }
 
 }

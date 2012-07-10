@@ -41,9 +41,10 @@ Exporter::Exporter(uint32_t domain, size_t mtu):
   fast_flush_(false),
   domain_(domain),
   set_id_(0),
-  msg_empty_(true),
   set_active_(false),
   tmpl_(NULL),
+  drec_count_(0),
+  trec_count_(0),  
   rec_active_(false),
   rec_will_fit_(false),
   oc_(NULL, &xcoder_)
@@ -66,7 +67,7 @@ Exporter::~Exporter() {
 void Exporter::setDomain(uint32_t domain)
 {
   // Flush message if necessary
-  if (domain_ != domain && !msg_empty_) {
+  if (domain_ != domain && !msgEmpty()) {
     flush();
   }
   
@@ -103,17 +104,20 @@ void Exporter::exportTemplatesForDomain() {
 
   std::list<const WireTemplate *> tmpl_list = session_.activeTemplates(domain_);  
   for (auto iter = tmpl_list.begin(); iter != tmpl_list.end(); iter++) {
-    if (!(*iter)->encodeTemplateRecord(xcoder_)) {
+    if ((*iter)->encodeTemplateRecord(xcoder_)) {
+        ++trec_count_;
+    } else {
       flush();
       ensureSet();
-      if (!(*iter)->encodeTemplateRecord(xcoder_)) {
+      if ((*iter)->encodeTemplateRecord(xcoder_)) {
+          ++trec_count_;
+      } else {
         // If it doesn't work now, it never will. Throw.
         throw MTUError("template record");
       }
     }
   }
   
-  msg_empty_ = false;
   if (fast_flush_) flush();
 }
 
@@ -130,7 +134,7 @@ void Exporter::exportStruct(const StructTemplate& struct_tmpl, uint8_t* struct_c
         }
     }
 
-    msg_empty_ = false;
+    ++drec_count_;
     if (fast_flush_) flush();
 
 }
@@ -180,7 +184,7 @@ void Exporter::endRecord(bool do_export) {
     rec_will_fit_ = false;
 
     if (do_export) {
-        msg_empty_ = false;
+        ++drec_count_;
         if (fast_flush_) flush();
     }
 
@@ -231,7 +235,8 @@ void Exporter::startMessage() {
   if (!xcoder_.encodeMessageStart()) {
     throw MTUError("message");
   }
-  msg_empty_ = true;
+  drec_count_ = 0;
+  trec_count_ = 0;
 }
 
 void Exporter::ensureSet() {
@@ -261,7 +266,7 @@ void Exporter::ensureTemplateSet() {
 void Exporter::flush(time_t export_time) {
   //std::cerr << "flush(" << export_time << ")" << std::endl;
   
-  if (msg_empty_) {
+  if (msgEmpty()) {
       return;
   }
   
@@ -270,7 +275,7 @@ void Exporter::flush(time_t export_time) {
   }
   
   if (xcoder_.len() > kMessageHeaderLen) {
-    xcoder_.encodeMessageEnd(export_time, 0, domain_);
+    xcoder_.encodeMessageEnd(export_time, session_.incrementSequence(domain_, 0, drec_count_), domain_);
     _sendMessage(buf_, xcoder_.len());
     startMessage();
   }
