@@ -43,34 +43,33 @@
 namespace IPFIX {
 
 /**
+ * To send IPFIX Messages, client code should create an instance
+ * of an Exporter subclass for the necessary transport, define Templates
+ * by calling getTemplate(), using add() to add InfoElements to templates,
+ * followed by activate() to activate each template for export, then use one
+ * of the two data export interfaces below.
+ *
  * This abstract class provides two ways of exporting data in IPFIX messages.
- * The first (and lower-level) interface is based on C-structure 
+ * The main interface uses a record cursor and directly addresses InfoElements
+ * within the export template. This interface provides for flexible encoding 
+ * of data values. To use it, open a new record with beginRecord(), 
+ * then write individual record values with one of the putValue() methods, 
+ * and finish the record with exportRecord(). nformation 
+ * Elements in the wire template not given values by putValue() will be 
+ * exported as zeroes. Any variable-length Information Elements 
+ * must have their lengths  reserved before any call to putValue() for a 
+ * record: use reserveVarlen() for each infomation element followed by 
+ * commitVarlen() to calculate the record length.
+ *
+ * The second interface is designed for speed and based on C-structure 
  * transcoding. To use it, client code should place the data to be exported 
  * in a C structure, create a StructTemplate describing that structure, 
  * then use exportStruct() to export the record according to the 
- * current wire template. The current wire template can be set via 
- * setTemplate(), and the current observation domain via setDomain().
- *
- * Structures to be exported via this interface must contain only
- * fixed-length primitive data members or variable-length data members 
- * represented by an IPFIX::VarlenField structure. Information Elements in 
- * the wire template not represented in the structure will be exported 
- * as zeroes. No additional encoding (e.g., of NTP timestamps for 
- * dateTimeMicroseconds typed InfoElements) is done for export.
- *
- * The second interface uses a record cursor and directly addresses 
- * InfoElements within the export template. It is generally slower but more
- * flexible, and provides for flexible encoding of data values. To use it, 
- * open a new record with beginRecord(), then write individual record values
- * with one of the putValue() methods, and finish the record with 
- * exportRecord(). Information Elements in the current wire template which 
- * are not written to by a putValue() call will be exported as zeroes.
- *
- * To send IPFIX Messages, client code should create an instance
- * of an Exporter subclass for the necessary transport, set the
- * observation domain via setDomain() and the export template via
- * setTemplate(), and call exportStruct() or beginRecord()/exportRecord()
- * to export each record.
+ * current wire template. Structures to be exported via this interface 
+ * must contain only fixed-length primitive data members or variable-length 
+ * data members represented by an IPFIX::VarlenField structure. Information 
+ * Elements in the wire template not represented in the structure will be 
+ * exported as zeroes. 
  *
  * flush() can be called to explicitly end a message.
  *
@@ -147,10 +146,11 @@ public:
   
   /**
    * Reserve space in the current record for a variable-length Information 
-   * Element; a subsequent call to putRecord() for this Information Element 
-   * must have the same size. Reservations of lengths for fixed-length 
-   * Information Elements are no-ops. May cause export of a message if 
-   * the reservation would require more space than available.
+   * Element; a subsequent call to putValue() within the same record for 
+   * this Information Element must have the same size. Reservations of 
+   * lengths for fixed-length Information Elements are no-ops. After
+   * reserving lengths, commitVarlen() must be called to calculate the
+   * total record length.
    *
    * @param ie information element to reserve length for
    * @param len length to reserve
@@ -159,7 +159,11 @@ public:
    void reserveVarlen(const InfoElement *ie, size_t len);
   
   /**
-   * FIXME document this if it works
+   * Commit previous reservations of variable-length Information Elements
+   * and caculate the record. Call after all reserveVarlen() calls and
+   * before any putValue calls().
+   * May cause export of a message if there is not space for the new record
+   * in the current message.
    */
   
    void commitVarlen();
