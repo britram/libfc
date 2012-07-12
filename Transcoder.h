@@ -1,3 +1,5 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
+
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,7 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Hi Emacs, please use -*- mode: C++; -*- */
 /**
  * @file
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
@@ -73,9 +74,6 @@ namespace IPFIX {
    * (Exporter and Collector). They are only exposed to libfc clients
    * through the SetReceiver interface. See the documentation for
    * SetReceiver.receiveSet() for detailed information.
-   *
-   * FIXME this class is rather cavalier about copyability and
-   * constness.  fix this.
    */
   
   class Transcoder {
@@ -86,7 +84,9 @@ namespace IPFIX {
     static const InfoElement u32ie;
     
   public:
-    
+    Transcoder(const Transcoder&) = delete;
+    Transcoder& operator=(const Transcoder&) = delete;
+
     Transcoder() 
       : base_(NULL),
         cur_(NULL),

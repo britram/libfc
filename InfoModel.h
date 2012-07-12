@@ -1,3 +1,5 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
+
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -56,7 +58,9 @@ namespace IPFIX {
 class InfoModel {
   
 public:
-  
+  InfoModel(const InfoModel&) = delete;
+  InfoModel& operator=(const InfoModel&) = delete;
+
   /**
    * InfoModel instance accessor.
    *
@@ -231,7 +235,6 @@ private:
     initTypes();
   }
   
-  // FIXME make InfoModel uncopyable
   
   // Type initialization; internal
   void registerIEType(const IEType* iet);

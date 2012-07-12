@@ -50,7 +50,7 @@ static const unsigned int n_ipv4_transcode_tests = 1000;
 BOOST_AUTO_TEST_SUITE(Transcoder)
 
 BOOST_AUTO_TEST_CASE(TranscodeIPv4Address) {
-  IPFIX::InfoModel m = IPFIX::InfoModel::instance();
+  IPFIX::InfoModel& m = IPFIX::InfoModel::instance();
   m.defaultIPFIX();
   const IPFIX::InfoElement* ie_sip = m.lookupIE("sourceIPv4Address");
   BOOST_CHECK(ie_sip != 0);
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(TranscodeIPv4Address) {
 static const unsigned int n_ipv6_transcode_tests = 1000;
 
 BOOST_AUTO_TEST_CASE(TranscodeIPv6Address) {
-  IPFIX::InfoModel m = IPFIX::InfoModel::instance();
+  IPFIX::InfoModel& m = IPFIX::InfoModel::instance();
   m.defaultIPFIX();
   const IPFIX::InfoElement* ie_sip = m.lookupIE("sourceIPv6Address");
   BOOST_CHECK(ie_sip != 0);
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(FocusAndTranscodeOddAddress) {
   tc.zero();
 
   tc.focus(offset, buf_size - offset);
-  IPFIX::InfoModel m = IPFIX::InfoModel::instance();
+  IPFIX::InfoModel& m = IPFIX::InfoModel::instance();
   m.defaultIPFIX();
   const IPFIX::InfoElement* ie_sip = m.lookupIE("sourceIPv4Address");
   BOOST_CHECK(ie_sip != 0);
