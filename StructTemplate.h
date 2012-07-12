@@ -69,6 +69,4 @@ public:
 
 } // namespace IPFIX
 
-// FIXME someone, somewhere, should check minlen in a struct template.
-
 #endif /* idem */

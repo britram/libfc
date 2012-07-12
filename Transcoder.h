@@ -371,9 +371,10 @@ namespace IPFIX {
     
     /**
      * Decode the value described by a given information element
-     * at the given offset into an unbounded VarlenField.
-     * Does not advance the cursor.
-     * FIXME what is the ownership contract here
+     * at the given offset into a VarlenField. Does no transcoding/endian
+     * conversion. Does not advance the cursor. The pointer returned points
+     * directly into the transcoder's buffer, and will only be
+     * valid as long as the underlying buffer is.
      *
      * @param vf VarlenField to fill
      * @param off offset from cursor to the value to decode
@@ -384,7 +385,7 @@ namespace IPFIX {
      *         false if not enough content available
      */
 
-     size_t decodeAt(VarlenField& vf, size_t off, const InfoElement *ie);
+    size_t decodeAt(VarlenField& vf, size_t off, const InfoElement *ie);
 
     bool decode(VarlenField& vf, const InfoElement *ie) {
         size_t rv = decodeAt(vf, 0, ie);

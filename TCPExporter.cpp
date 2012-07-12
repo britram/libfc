@@ -60,7 +60,6 @@ namespace IPFIX {
                 ts.tv_sec = retry_delay_;
                 ts.tv_nsec = 0;
 
-                // FIXME check return, add max count, all that friendly stuff
                 if (nanosleep(&ts, NULL) < 0) {
                     throw IOError("TCPExporter killed while retrying.");
                 }

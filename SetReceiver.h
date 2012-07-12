@@ -55,8 +55,6 @@ namespace IPFIX {
      * @param collector the collector on which this set was received
      * @param setxc a Transcoder, focused on the content of the set
      * @param wt the wire template describing the records in the set
-     *
-     * FIXME what else might a receiver require?
      */
     virtual void receiveSet(const Collector* collector, 
                          Transcoder& setxc, 
