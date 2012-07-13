@@ -101,10 +101,6 @@ namespace IPFIX {
       return this->receiveMessage(transient_mbuf);
     }
     
-    virtual void restart() {
-        throw std::logic_error("Collector restart not supported.");
-    }
-    
   protected:
     
     /**
