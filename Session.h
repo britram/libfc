@@ -68,7 +68,7 @@ public:
        return next_seq_[domain];
   }
 
-  uint32_t checkSequence(uint32_t domain, uint32_t stream, uint32_t sequence);
+  bool checkSequence(uint32_t domain, uint32_t stream, uint32_t sequence);
 
   WireTemplate *getTemplate(uint32_t domain, uint16_t tid);
   void deleteTemplate(uint32_t domain, uint16_t tid);

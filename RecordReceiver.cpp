@@ -56,7 +56,7 @@ const void *RecordReceiver::getPointer(const InfoElement* ie, size_t& len) {
     VarlenField vf;
     
     size_t nextoff = xc_->decodeAt(vf, oc_.offsetOf(ie), wt_->ieFor(ie));
-    if (nextoff < 0) return NULL;
+    if (nextoff == 0) return NULL;
     len = vf.len;
     return vf.cp;
 }

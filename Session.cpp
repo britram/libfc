@@ -32,12 +32,15 @@
 
 namespace IPFIX {
 
-uint32_t Session::checkSequence(uint32_t domain, uint32_t stream, uint32_t sequence) {
+bool Session::checkSequence(uint32_t domain, uint32_t stream, uint32_t sequence) {
     // FIXME stream is ignored until we actually do SCTP
     uint32_t expected = next_seq_[domain];
-    if (expected != sequence) {
+    if (expected == sequence) {
+        return true;
+    } else {
         std::cerr << "message out of sequence, got " << sequence << " expected " << expected << std::endl;
         next_seq_[domain] = sequence;
+        return false;
     }
 }
 
