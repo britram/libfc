@@ -60,6 +60,11 @@ bool MBuf::consume(int fd, size_t len, size_t off) {
   }
 }
   
+  bool MBuf::consume(const uint8_t* buf, size_t len, size_t off) {
+    memcpy(buf_ + off, buf, len);
+    return true;
+  }
+
 bool MBuf::consume(FILE *fp, size_t len, size_t off) {
 
   size_t rc = fread(buf_ + off, len, 1, fp);

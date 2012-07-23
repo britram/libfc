@@ -295,7 +295,7 @@ public:
                  unsigned int number,
                  size_t minlen,
                  size_t maxlen) :
-    IEType(name, number, minlen, maxlen, IEType::kRaw) {};
+    IEType(name, number, minlen, maxlen, IEType::kEndian) {};
 };
 
 /**
@@ -307,7 +307,7 @@ public:
                  unsigned int number,
                  size_t minlen,
                  size_t maxlen) :
-    IEType(name, number, minlen, maxlen, IEType::kRaw) {};
+    IEType(name, number, minlen, maxlen, IEType::kEndian) {};
 };
 
 /**
