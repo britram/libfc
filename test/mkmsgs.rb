@@ -825,15 +825,17 @@ make_test_case([ RecordElement.new('mplsLabelStackSection10',
 #                                   <macAddress>[6])
 #               ])
 
-#make_test_case([ RecordElement.new('interfaceName',
-#                                   :interfaceName,
-#                                   <string>[65535])
-#               ])
+make_test_case([ RecordElement.new('interfaceName',
+                                   :interfaceName,
+                                   "eth0",
+                                   'Varlen', 'Varlen(4, "eth0")')
+               ])
 
-#make_test_case([ RecordElement.new('interfaceDescription',
-#                                   :interfaceDescription,
-#                                   <string>[65535])
-#               ])
+make_test_case([ RecordElement.new('interfaceDescription',
+                                   :interfaceDescription,
+                                   "First ethernet interface",
+                                   'Varlen', 'Varlen(24, "First ethernet interface")')
+               ])
 
 make_test_case([ RecordElement.new('octetTotalCount',
                                    :octetTotalCount,
@@ -986,10 +988,11 @@ make_test_case([ RecordElement.new('wlanChannelId',
                                    'uint8_t', '0x96')
                ])
 
-#make_test_case([ RecordElement.new('wlanSSID',
-#                                   :wlanSSID,
-#                                   (147)<string>[32])
-#               ])
+make_test_case([ RecordElement.new('wlanSSID',
+                                   :wlanSSID,
+                                   "Fritz!Box 1234",
+                                   'Varlen', 'Varlen(14, "Fritz!Box 1234")')
+               ])
 
 make_test_case([ RecordElement.new('flowId',
                                    :flowId,
@@ -1522,10 +1525,11 @@ make_test_case([ RecordElement.new('egressVRFID',
                                    'uint32_t', '0x10203040')
                ])
 
-#make_test_case([ RecordElement.new('VRFname',
-#                                   :VRFname,
-#                                   (236)<string>[65535])
-#               ])
+make_test_case([ RecordElement.new('VRFname',
+                                   :VRFname,
+                                   "Hi-Ho",
+                                   'Varlen', 'Varlen(5, "Hi-Ho")')
+               ])
 
 make_test_case([ RecordElement.new('postMplsTopLabelExp',
                                    :postMplsTopLabelExp,
@@ -1587,10 +1591,11 @@ make_test_case([ RecordElement.new('dot1qCustomerPriority',
                                    'uint8_t', '0x96')
                ])
 
-#make_test_case([ RecordElement.new('metroEvcId',
-#                                   :metroEvcId,
-#                                   (247)<string>[100])
-#               ])
+make_test_case([ RecordElement.new('metroEvcId',
+                                   :metroEvcId,
+                                   "No Idea",
+                                   'Varlen', 'Varlen(7, "No Idea")')
+               ])
 
 make_test_case([ RecordElement.new('metroEvcType',
                                    :metroEvcType,
@@ -1844,10 +1849,11 @@ make_test_case([ RecordElement.new('hashInitialiserValue',
                                    'uint64_t', '0x1020304050607080ULL')
                ])
 
-#make_test_case([ RecordElement.new('selectorName',
-#                                   :selectorName,
-#                                   (335)<string>[65535])
-#               ])
+make_test_case([ RecordElement.new('selectorName',
+                                   :selectorName,
+                                   "No Idea",
+                                   'Varlen', 'Varlen(7, "No Idea")')
+               ])
 
 make_test_case([ RecordElement.new('upperCILimit',
                                    :upperCILimit,
@@ -1873,15 +1879,17 @@ make_test_case([ RecordElement.new('informationElementDataType',
                                    'uint8_t', '0x96')
                ])
 
-#make_test_case([ RecordElement.new('informationElementDescription',
-#                                   :informationElementDescription,
-#                                   (340)<string>[65535])
-#               ])
+make_test_case([ RecordElement.new('informationElementDescription',
+                                   :informationElementDescription,
+                                   "My very own IE!",
+                                   'Varlen', 'Varlen(15, "My very own IE!")')
+               ])
 
-#make_test_case([ RecordElement.new('informationElementName',
-#                                   :informationElementName,
-#                                   (341)<string>[65535])
-#               ])
+make_test_case([ RecordElement.new('informationElementName',
+                                   :informationElementName,
+                                   "myOwnIE",
+                                   'Varlen', 'Varlen(7, "myOwnIE")')
+               ])
 
 make_test_case([ RecordElement.new('informationElementRangeBegin',
                                    :informationElementRangeBegin,
