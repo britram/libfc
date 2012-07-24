@@ -25,6 +25,7 @@
  */
 
 #include <cassert>
+#include <sstream>
 
 #include "Constants.h" 
 #include "IETemplate.h" 
@@ -496,7 +497,10 @@ bool Transcoder::decodeSetHeader(uint16_t& sid, uint16_t& len) {
       sid != kTemplateSetID && 
       sid != kOptionTemplateSetID)
   {
-    throw FormatError("nonsensical set ID; trying to decode non-IPFIX data?");
+    std::ostringstream os;
+
+    os << "nonsensical set ID " << sid << "; trying to decode non-IPFIX data?";
+    throw FormatError(os.str().c_str());
   }
   
   if (!decode(len)) {

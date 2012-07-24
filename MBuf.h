@@ -162,6 +162,12 @@ namespace IPFIX {
     bool consume(std::istream& is, size_t len, size_t off);
 
     /**
+     * Low-level interface to consume bytes from a source into the buffer
+     * into a specified offset in the buffer; works with buffers.
+     */
+    bool consume(const uint8_t* buf, size_t len, size_t off);
+
+    /**
      * Given a transcoder positioned after the message header, replace the
      * contents of this buffer's setlist with the sets contained in the message.
      */
