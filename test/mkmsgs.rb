@@ -76,6 +76,7 @@ print <<EOF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  */
 
+#include <cstdarg>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -99,6 +100,9 @@ print <<EOF
  *
  * Change at your own risk.
  */
+
+class MyIp6Address;
+static std::ostream& operator<<(std::ostream& os, const MyIp6Address& obj);
 
 class MyIp6Address {
 public:
@@ -128,7 +132,7 @@ private:
   unsigned short buf[8];
 };
 
-std::ostream& operator<<(std::ostream& os, const MyIp6Address& obj) 
+static std::ostream& operator<<(std::ostream& os, const MyIp6Address& obj) 
 { 
   for (unsigned int i = 0; i < sizeof(obj.buf)/sizeof(obj.buf[0]); i++) {
     if (i > 0)
@@ -142,6 +146,42 @@ struct Fixture {
   Fixture() { IPFIX::InfoModel::instance().defaultIPFIX(); }
 };
 
+class Varlen;
+static std::ostream& operator<<(std::ostream& os, const Varlen& obj);
+
+class Varlen {
+public:
+  Varlen(size_t size, const char* s) : size(size), buf(new unsigned char[size]) {
+    if (s != 0)
+      memcpy(buf, s, size);
+  }
+  ~Varlen() { delete[] buf; }
+
+  bool operator==(const Varlen& rhs) const {
+    return size == rhs.size
+      && memcmp(buf, rhs.buf, size) == 0;
+  }
+
+  void* ptr() {
+    return buf;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const Varlen& obj);
+
+private:
+  size_t size;
+  unsigned char* buf;
+};
+
+static std::ostream& operator<<(std::ostream& os, const Varlen& obj) 
+{ 
+  for (unsigned int i = 0; i < obj.size; i++) {
+    if (i > 0)
+      os << ',';
+    os << std::hex << obj.buf[i];
+  }
+  return os;
+} 
 
 static void
 prepare_test_case(const unsigned char* msg, size_t len, 
@@ -219,14 +259,28 @@ EOF
 
   i = 0;
   res.each { |re| 
+    size = ''
+    len = ''
+    address = ''
+
+    case re.cpptype
+    when 'Varlen'
+      size = re.value.length
+      len = "(#{size}, 0)"
+      address = 'value.ptr()'
+    else
+      size = 'sizeof value'
+      address = '&value'
+    end
+
     print <<EOF
     {
-      #{re.cpptype} value;
+      #{re.cpptype} value#{len};
       const IPFIX::InfoElement* ie 
         = IPFIX::InfoModel::instance().lookupIE(\"#{re.iespec}\");
 
       BOOST_REQUIRE(wt->contains(ie));
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      xc.decodeAt(#{address}, #{size}, oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, #{re.cppvalue});
     }
 EOF
@@ -701,55 +755,65 @@ make_test_case([ RecordElement.new('ipv6ExtensionHeaders',
                                    'uint32_t', '0x11223344')
                ])
 
-#make_test_case([ RecordElement.new('mplsTopLabelStackSection',
-#                                   :mplsTopLabelStackSection,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsTopLabelStackSection',
+                                   :mplsTopLabelStackSection,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection2',
-#                                   :mplsLabelStackSection2,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection2',
+                                   :mplsLabelStackSection2,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection3',
-#                                   :mplsLabelStackSection3,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection3',
+                                   :mplsLabelStackSection3,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection4',
-#                                   :mplsLabelStackSection4,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection4',
+                                   :mplsLabelStackSection4,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection5',
-#                                   :mplsLabelStackSection5,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection5',
+                                   :mplsLabelStackSection5,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection6',
-#                                   :mplsLabelStackSection6,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection6',
+                                   :mplsLabelStackSection6,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection7',
-#                                   :mplsLabelStackSection7,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection7',
+                                   :mplsLabelStackSection7,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection8',
-#                                   :mplsLabelStackSection8,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection8',
+                                   :mplsLabelStackSection8,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection9',
-#                                   :mplsLabelStackSection9,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection9',
+                                   :mplsLabelStackSection9,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection10',
-#                                   :mplsLabelStackSection10,
-#                                   <octetArray>[3])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection10',
+                                   :mplsLabelStackSection10,
+                                   [ 0x12, 0x34, 0x56 ],
+                                   'Varlen', 'Varlen(3, "\x12\x34\x56")')
+               ])
 
 #make_test_case([ RecordElement.new('destinationMacAddress',
 #                                   :destinationMacAddress,
@@ -789,10 +853,11 @@ make_test_case([ RecordElement.new('fragmentOffset',
                                    'uint16_t', '0xa55a')
                ])
 
-#make_test_case([ RecordElement.new('mplsVpnRouteDistinguisher',
-#                                   :mplsVpnRouteDistinguisher,
-#                                   <octetArray>[8])
-#               ])
+make_test_case([ RecordElement.new('mplsVpnRouteDistinguisher',
+                                   :mplsVpnRouteDistinguisher,
+                                   [ 0x12, 0x34, 0x56, 0x78, 0x13, 0x24, 0x35, 0x46 ],
+                                   'Varlen', 'Varlen(8, "\x12\x34\x56\x78\x13\x24\x35\x46")')
+               ])
 
 make_test_case([ RecordElement.new('mplsTopLabelPrefixLength',
                                    :mplsTopLabelPrefixLength,
@@ -1300,10 +1365,11 @@ make_test_case([ RecordElement.new('tcpOptions',
                                    'uint64_t', '0x1020304050607080ULL')
                ])
 
-#make_test_case([ RecordElement.new('paddingOctets',
-#                                   :paddingOctets,
-#                                   (210)<octetArray>[1])
-#               ])
+make_test_case([ RecordElement.new('paddingOctets',
+                                   :paddingOctets,
+                                   [ 0x12 ],
+                                   'Varlen', 'Varlen(1, "\x12")')
+               ])
 
 make_test_case([ RecordElement.new('collectorIPv4Address',
                                    :collectorIPv4Address,
@@ -1652,25 +1718,29 @@ make_test_case([ RecordElement.new('samplingProbability',
                                    'double', '0x0.fP0')
                ])
 
-#make_test_case([ RecordElement.new('ipHeaderPacketSection',
-#                                   :ipHeaderPacketSection,
-#                                   (313)<octetArray>[65535])
-#               ])
+make_test_case([ RecordElement.new('ipHeaderPacketSection',
+                                   :ipHeaderPacketSection,
+                                   [ 0x12, 0x34, 0x56, 0x78, 0x9a ],
+                                   'Varlen', 'Varlen(5, "\x12\x34\x56\x78\x9a")')
+               ])
 
-#make_test_case([ RecordElement.new('ipPayloadPacketSection',
-#                                   :ipPayloadPacketSection,
-#                                   (314)<octetArray>[65535])
-#               ])
+make_test_case([ RecordElement.new('ipPayloadPacketSection',
+                                   :ipPayloadPacketSection,
+                                   [ 0x12, 0x34, 0x56, 0x78, 0x9a ],
+                                   'Varlen', 'Varlen(5, "\x12\x34\x56\x78\x9a")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsLabelStackSection',
-#                                   :mplsLabelStackSection,
-#                                   (316)<octetArray>[65535])
-#               ])
+make_test_case([ RecordElement.new('mplsLabelStackSection',
+                                   :mplsLabelStackSection,
+                                   [ 0x12, 0x34, 0x56, 0x78, 0x9a ],
+                                   'Varlen', 'Varlen(5, "\x12\x34\x56\x78\x9a")')
+               ])
 
-#make_test_case([ RecordElement.new('mplsPayloadPacketSection',
-#                                   :mplsPayloadPacketSection,
-#                                   (317)<octetArray>[65535])
-#               ])
+make_test_case([ RecordElement.new('mplsPayloadPacketSection',
+                                   :mplsPayloadPacketSection,
+                                   [ 0x12, 0x34, 0x56, 0x78, 0x9a ],
+                                   'Varlen', 'Varlen(5, "\x12\x34\x56\x78\x9a")')
+               ])
 
 make_test_case([ RecordElement.new('selectorIdTotalPktsObserved',
                                    :selectorIdTotalPktsObserved,
