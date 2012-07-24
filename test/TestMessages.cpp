@@ -93,265 +93,537 @@ struct Fixture {
   Fixture() { IPFIX::InfoModel::instance().defaultIPFIX(); }
 };
 
+
+static void
+prepare_test_case(const unsigned char* msg, size_t len, 
+                  IPFIX::MBuf& mbuf, IPFIX::Session& session,
+                  IPFIX::Transcoder& xc) {
+  std::istringstream s(std::string(reinterpret_cast<const char*>(msg), len));
+
+  BOOST_CHECK(mbuf.deframe(s, session));
+
+  mbuf.transcodeBy(xc);
+
+  unsigned int n_set_lists = 0;
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i)
+    n_set_lists++;
+
+  BOOST_REQUIRE(n_set_lists == 1);
+}
+
 BOOST_AUTO_TEST_SUITE(Messages)
 
 BOOST_FIXTURE_TEST_SUITE(IETypes, Fixture)
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message001) {
-  static const unsigned char msg_001[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("protocolIdentifier"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_001), sizeof msg_001));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x00);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message002) {
-  static const unsigned char msg_002[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("protocolIdentifier"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_002), sizeof msg_002));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x01);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message003) {
-  static const unsigned char msg_003[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xfe  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("protocolIdentifier"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xfe  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_003), sizeof msg_003));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0xfe);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message004) {
-  static const unsigned char msg_004[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xff  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("protocolIdentifier"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xff  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_004), sizeof msg_004));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0xff);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message005) {
-  static const unsigned char msg_005[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("protocolIdentifier"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_005), sizeof msg_005));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message006) {
-  static const unsigned char msg_006[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("protocolIdentifier"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_006), sizeof msg_006));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x5a);
     }
     xc.defocus();
   }
+}
 
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message007) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x00  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0000);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message008) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x01  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0001);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message009) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xff,0xfe  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xfffe);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message010) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xff,0xff  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xffff);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message011) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x10  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0010);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message012) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x00,0x00,0x00,0x00  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x00000000);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message013) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x00,0x00,0x00,0x01  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x00000001);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message014) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0xff,0xff,0xff,0xfe  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xfffffffe);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message015) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0xff,0xff,0xff,0xff  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xffffffff);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message016) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x5a,0xa5,0x69,0x96  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x5aa56996);
+    }
+    xc.defocus();
+  }
 }
 
 
@@ -360,9462 +632,7042 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_FIXTURE_TEST_SUITE(InformationElements, Fixture)
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message007) {
-  static const unsigned char msg_007[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x01,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("octetDeltaCount"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_007), sizeof msg_007));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message008) {
-  static const unsigned char msg_008[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x02,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("packetDeltaCount"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_008), sizeof msg_008));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message009) {
-  static const unsigned char msg_009[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("protocolIdentifier"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_009), sizeof msg_009));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message010) {
-  static const unsigned char msg_010[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x05,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipClassOfService"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_010), sizeof msg_010));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message011) {
-  static const unsigned char msg_011[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x06,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpControlBits"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_011), sizeof msg_011));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message012) {
-  static const unsigned char msg_012[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("sourceTransportPort"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_012), sizeof msg_012));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa55a);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message013) {
-  static const unsigned char msg_013[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x08,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("sourceIPv4Address"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_013), sizeof msg_013));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message014) {
-  static const unsigned char msg_014[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x09,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("sourceIPv4PrefixLength"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_014), sizeof msg_014));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message015) {
-  static const unsigned char msg_015[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ingressInterface"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_015), sizeof msg_015));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x11223344);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message016) {
-  static const unsigned char msg_016[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0b,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("destinationTransportPort"),
-  };
-
-  IPFIX::MBuf mbuf;
-  IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_016), sizeof msg_016));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
-  IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
-
-  unsigned int n_set_lists = 0;
-  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
-
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
-
-    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
-    {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa55a);
-    }
-    xc.defocus();
-  }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
-}
-
-
-/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message017) {
-  static const unsigned char msg_017[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0c,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("destinationIPv4Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x01,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_017), sizeof msg_017));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("octetDeltaCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message018) {
-  static const unsigned char msg_018[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("destinationIPv4PrefixLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x02,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_018), sizeof msg_018));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("packetDeltaCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message019) {
-  static const unsigned char msg_019[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0e,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("egressInterface"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_019), sizeof msg_019));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x11223344);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message020) {
-  static const unsigned char msg_020[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0f,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipNextHopIPv4Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x05,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_020), sizeof msg_020));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipClassOfService");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message021) {
-  static const unsigned char msg_021[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x10,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("bgpSourceAsNumber"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x06,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_021), sizeof msg_021));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x11223344);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpControlBits");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message022) {
-  static const unsigned char msg_022[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x11,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("bgpDestinationAsNumber"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_022), sizeof msg_022));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x11223344);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa55a);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message023) {
-  static const unsigned char msg_023[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x12,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("bgpNextHopIPv4Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x08,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_023), sizeof msg_023));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message024) {
-  static const unsigned char msg_024[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x13,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postMCastPacketDeltaCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x09,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_024), sizeof msg_024));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceIPv4PrefixLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message025) {
-  static const unsigned char msg_025[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x14,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postMCastOctetDeltaCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_025), sizeof msg_025));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message026) {
-  static const unsigned char msg_026[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x15,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowEndSysUpTime"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0b,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_026), sizeof msg_026));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x11223344);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("destinationTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa55a);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message027) {
-  static const unsigned char msg_027[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x16,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowStartSysUpTime"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0c,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_027), sizeof msg_027));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x11223344);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("destinationIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message028) {
-  static const unsigned char msg_028[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x17,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postOctetDeltaCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_028), sizeof msg_028));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("destinationIPv4PrefixLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message029) {
-  static const unsigned char msg_029[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x18,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postPacketDeltaCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0e,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_029), sizeof msg_029));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("egressInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message030) {
-  static const unsigned char msg_030[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x19,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("minimumIpTotalLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0f,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_030), sizeof msg_030));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipNextHopIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message031) {
-  static const unsigned char msg_031[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("maximumIpTotalLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x10,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_031), sizeof msg_031));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("bgpSourceAsNumber");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message032) {
-  static const unsigned char msg_032[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1b,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("sourceIPv6Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x11,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_032), sizeof msg_032));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("bgpDestinationAsNumber");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message033) {
-  static const unsigned char msg_033[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1c,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("destinationIPv6Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x12,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_033), sizeof msg_033));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("bgpNextHopIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message034) {
-  static const unsigned char msg_034[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("sourceIPv6PrefixLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x13,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_034), sizeof msg_034));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postMCastPacketDeltaCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message035) {
-  static const unsigned char msg_035[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1e,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("destinationIPv6PrefixLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x14,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_035), sizeof msg_035));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postMCastOctetDeltaCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message036) {
-  static const unsigned char msg_036[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1f,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowLabelIPv6"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x15,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_036), sizeof msg_036));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowEndSysUpTime");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message037) {
-  static const unsigned char msg_037[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x20,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("icmpTypeCodeIPv4"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x16,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_037), sizeof msg_037));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa55a);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowStartSysUpTime");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message038) {
-  static const unsigned char msg_038[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x21,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("igmpType"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x17,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_038), sizeof msg_038));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postOctetDeltaCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message039) {
-  static const unsigned char msg_039[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x24,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowActiveTimeout"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x18,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_039), sizeof msg_039));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa55a);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postPacketDeltaCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message040) {
-  static const unsigned char msg_040[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x25,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowIdleTimeout"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x19,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_040), sizeof msg_040));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa55a);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("minimumIpTotalLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message041) {
-  static const unsigned char msg_041[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x28,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exportedOctetTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_041), sizeof msg_041));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("maximumIpTotalLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message042) {
-  static const unsigned char msg_042[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x29,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exportedMessageTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1b,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_042), sizeof msg_042));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      MyIp6Address value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceIPv6Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message043) {
-  static const unsigned char msg_043[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exportedFlowRecordTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1c,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_043), sizeof msg_043));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      MyIp6Address value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("destinationIPv6Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message044) {
-  static const unsigned char msg_044[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2c,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("sourceIPv4Prefix"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_044), sizeof msg_044));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceIPv6PrefixLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message045) {
-  static const unsigned char msg_045[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2d,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("destinationIPv4Prefix"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1e,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_045), sizeof msg_045));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("destinationIPv6PrefixLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message046) {
-  static const unsigned char msg_046[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2e,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsTopLabelType"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1f,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_046), sizeof msg_046));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowLabelIPv6");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message047) {
-  static const unsigned char msg_047[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2f,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsTopLabelIPv4Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x20,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_047), sizeof msg_047));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("icmpTypeCodeIPv4");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa55a);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message048) {
-  static const unsigned char msg_048[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x34,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("minimumTTL"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x21,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_048), sizeof msg_048));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("igmpType");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message049) {
-  static const unsigned char msg_049[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x35,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("maximumTTL"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x24,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_049), sizeof msg_049));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowActiveTimeout");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa55a);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message050) {
-  static const unsigned char msg_050[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x36,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("fragmentIdentification"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x25,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_050), sizeof msg_050));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x11223344);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowIdleTimeout");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa55a);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message051) {
-  static const unsigned char msg_051[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x37,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postIpClassOfService"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x28,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_051), sizeof msg_051));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exportedOctetTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message052) {
-  static const unsigned char msg_052[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3a,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("vlanId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x29,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_052), sizeof msg_052));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa55a);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exportedMessageTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message053) {
-  static const unsigned char msg_053[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3b,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postVlanId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_053), sizeof msg_053));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa55a);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exportedFlowRecordTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message054) {
-  static const unsigned char msg_054[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3c,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipVersion"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2c,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_054), sizeof msg_054));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceIPv4Prefix");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message055) {
-  static const unsigned char msg_055[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowDirection"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2d,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_055), sizeof msg_055));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("destinationIPv4Prefix");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message056) {
-  static const unsigned char msg_056[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3e,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipNextHopIPv6Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2e,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_056), sizeof msg_056));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelType");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message057) {
-  static const unsigned char msg_057[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3f,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("bgpNextHopIPv6Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2f,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_057), sizeof msg_057));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message058) {
-  static const unsigned char msg_058[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x40,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipv6ExtensionHeaders"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x34,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_058), sizeof msg_058));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x11223344);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("minimumTTL");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message059) {
-  static const unsigned char msg_059[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x55,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("octetTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x35,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_059), sizeof msg_059));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("maximumTTL");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message060) {
-  static const unsigned char msg_060[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x56,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("packetTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x36,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_060), sizeof msg_060));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("fragmentIdentification");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message061) {
-  static const unsigned char msg_061[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x58,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("fragmentOffset"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x37,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_061), sizeof msg_061));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa55a);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postIpClassOfService");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message062) {
-  static const unsigned char msg_062[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x5b,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsTopLabelPrefixLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3a,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_062), sizeof msg_062));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("vlanId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa55a);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message063) {
-  static const unsigned char msg_063[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x62,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postIpDiffServCodePoint"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3b,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_063), sizeof msg_063));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0xa5);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postVlanId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa55a);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message064) {
-  static const unsigned char msg_064[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x80,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("bgpNextAdjacentAsNumber"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3c,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_064), sizeof msg_064));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipVersion");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message065) {
-  static const unsigned char msg_065[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x81,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("bgpPrevAdjacentAsNumber"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_065), sizeof msg_065));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowDirection");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message066) {
-  static const unsigned char msg_066[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x82,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exporterIPv4Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3e,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_066), sizeof msg_066));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      MyIp6Address value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipNextHopIPv6Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message067) {
-  static const unsigned char msg_067[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x83,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exporterIPv6Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3f,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_067), sizeof msg_067));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("bgpNextHopIPv6Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message068) {
-  static const unsigned char msg_068[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x84,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("droppedOctetDeltaCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x40,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_068), sizeof msg_068));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipv6ExtensionHeaders");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x11223344);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message069) {
-  static const unsigned char msg_069[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x85,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("droppedPacketDeltaCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x55,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_069), sizeof msg_069));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("octetTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message070) {
-  static const unsigned char msg_070[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x86,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("droppedOctetTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x56,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_070), sizeof msg_070));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("packetTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message071) {
-  static const unsigned char msg_071[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x87,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("droppedPacketTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x58,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_071), sizeof msg_071));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("fragmentOffset");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa55a);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message072) {
-  static const unsigned char msg_072[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x88,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowEndReason"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x5b,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_072), sizeof msg_072));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelPrefixLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message073) {
-  static const unsigned char msg_073[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x89,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("commonPropertiesId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x62,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_073), sizeof msg_073));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postIpDiffServCodePoint");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0xa5);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message074) {
-  static const unsigned char msg_074[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8a,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("observationPointId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x80,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_074), sizeof msg_074));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("bgpNextAdjacentAsNumber");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message075) {
-  static const unsigned char msg_075[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8b,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("icmpTypeCodeIPv6"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x81,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_075), sizeof msg_075));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("bgpPrevAdjacentAsNumber");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message076) {
-  static const unsigned char msg_076[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8c,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsTopLabelIPv6Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x82,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_076), sizeof msg_076));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exporterIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message077) {
-  static const unsigned char msg_077[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8d,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("lineCardId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x83,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_077), sizeof msg_077));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      MyIp6Address value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exporterIPv6Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message078) {
-  static const unsigned char msg_078[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8e,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("portId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x84,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_078), sizeof msg_078));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("droppedOctetDeltaCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message079) {
-  static const unsigned char msg_079[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8f,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("meteringProcessId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x85,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_079), sizeof msg_079));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("droppedPacketDeltaCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message080) {
-  static const unsigned char msg_080[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x90,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exportingProcessId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x86,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_080), sizeof msg_080));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("droppedOctetTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message081) {
-  static const unsigned char msg_081[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x91,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("templateId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x87,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_081), sizeof msg_081));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("droppedPacketTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message082) {
-  static const unsigned char msg_082[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x92,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("wlanChannelId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x88,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_082), sizeof msg_082));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowEndReason");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message083) {
-  static const unsigned char msg_083[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x94,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x89,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_083), sizeof msg_083));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("commonPropertiesId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message084) {
-  static const unsigned char msg_084[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x95,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("observationDomainId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8a,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_084), sizeof msg_084));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("observationPointId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message085) {
-  static const unsigned char msg_085[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x96,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowStartSeconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8b,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_085), sizeof msg_085));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x12345678);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("icmpTypeCodeIPv6");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message086) {
-  static const unsigned char msg_086[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x97,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowEndSeconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8c,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_086), sizeof msg_086));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x12345678);
+      MyIp6Address value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelIPv6Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message087) {
-  static const unsigned char msg_087[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x98,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x1f,0x7c  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowStartMilliseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8d,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_087), sizeof msg_087));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x00000138b4671f7cULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("lineCardId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message088) {
-  static const unsigned char msg_088[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x99,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x20,0x76  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowEndMilliseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8e,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_088), sizeof msg_088));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x00000138b4672076ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("portId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message089) {
-  static const unsigned char msg_089[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0x7f,0xff,0xff,0xff  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowStartMicroseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8f,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_089), sizeof msg_089));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x500d6a457fffffffULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("meteringProcessId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message090) {
-  static const unsigned char msg_090[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9b,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowEndMicroseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x90,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_090), sizeof msg_090));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x500d6a45c00003ffULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exportingProcessId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message091) {
-  static const unsigned char msg_091[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9c,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0x7f,0xff,0xff,0xff  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowStartNanoseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x91,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_091), sizeof msg_091));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x500d6a457fffffffULL);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("templateId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message092) {
-  static const unsigned char msg_092[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9d,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowEndNanoseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x92,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_092), sizeof msg_092));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x500d6a45c00003ffULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("wlanChannelId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message093) {
-  static const unsigned char msg_093[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9e,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowStartDeltaMicroseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x94,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_093), sizeof msg_093));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message094) {
-  static const unsigned char msg_094[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9f,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowEndDeltaMicroseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x95,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_094), sizeof msg_094));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("observationDomainId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message095) {
-  static const unsigned char msg_095[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa0,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x20,0x76  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("systemInitTimeMilliseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x96,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_095), sizeof msg_095));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x00000138b4672076ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowStartSeconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x12345678);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message096) {
-  static const unsigned char msg_096[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa1,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowDurationMilliseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x97,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_096), sizeof msg_096));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowEndSeconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x12345678);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message097) {
-  static const unsigned char msg_097[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa2,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowDurationMicroseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x98,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x1f,0x7c  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_097), sizeof msg_097));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowStartMilliseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x00000138b4671f7cULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message098) {
-  static const unsigned char msg_098[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa3,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("observedFlowTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x99,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x20,0x76  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_098), sizeof msg_098));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowEndMilliseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x00000138b4672076ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message099) {
-  static const unsigned char msg_099[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa4,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ignoredPacketTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0x7f,0xff,0xff,0xff  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_099), sizeof msg_099));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowStartMicroseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x500d6a457fffffffULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message100) {
-  static const unsigned char msg_100[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa5,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ignoredOctetTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9b,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_100), sizeof msg_100));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowEndMicroseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x500d6a45c00003ffULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message101) {
-  static const unsigned char msg_101[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa6,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("notSentFlowTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9c,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0x7f,0xff,0xff,0xff  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_101), sizeof msg_101));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowStartNanoseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x500d6a457fffffffULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message102) {
-  static const unsigned char msg_102[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("notSentPacketTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9d,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_102), sizeof msg_102));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowEndNanoseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x500d6a45c00003ffULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message103) {
-  static const unsigned char msg_103[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa8,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("notSentOctetTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9e,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_103), sizeof msg_103));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowStartDeltaMicroseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message104) {
-  static const unsigned char msg_104[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa9,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("destinationIPv6Prefix"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9f,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_104), sizeof msg_104));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowEndDeltaMicroseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message105) {
-  static const unsigned char msg_105[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xaa,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("sourceIPv6Prefix"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa0,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x20,0x76  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_105), sizeof msg_105));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("systemInitTimeMilliseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x00000138b4672076ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message106) {
-  static const unsigned char msg_106[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xab,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postOctetTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa1,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_106), sizeof msg_106));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowDurationMilliseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message107) {
-  static const unsigned char msg_107[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xac,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postPacketTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa2,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_107), sizeof msg_107));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowDurationMicroseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message108) {
-  static const unsigned char msg_108[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xad,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("flowKeyIndicator"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa3,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_108), sizeof msg_108));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("observedFlowTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message109) {
-  static const unsigned char msg_109[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xae,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postMCastPacketTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa4,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_109), sizeof msg_109));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ignoredPacketTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message110) {
-  static const unsigned char msg_110[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xaf,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postMCastOctetTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa5,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_110), sizeof msg_110));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ignoredOctetTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message111) {
-  static const unsigned char msg_111[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("icmpTypeIPv4"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa6,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_111), sizeof msg_111));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("notSentFlowTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message112) {
-  static const unsigned char msg_112[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb1,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("icmpCodeIPv4"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_112), sizeof msg_112));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("notSentPacketTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message113) {
-  static const unsigned char msg_113[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb2,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("icmpTypeIPv6"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa8,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_113), sizeof msg_113));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("notSentOctetTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message114) {
-  static const unsigned char msg_114[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb3,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("icmpCodeIPv6"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa9,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_114), sizeof msg_114));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      MyIp6Address value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("destinationIPv6Prefix");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message115) {
-  static const unsigned char msg_115[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb4,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("udpSourcePort"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xaa,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_115), sizeof msg_115));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      MyIp6Address value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceIPv6Prefix");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message116) {
-  static const unsigned char msg_116[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb5,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("udpDestinationPort"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xab,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_116), sizeof msg_116));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postOctetTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message117) {
-  static const unsigned char msg_117[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb6,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpSourcePort"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xac,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_117), sizeof msg_117));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postPacketTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message118) {
-  static const unsigned char msg_118[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb7,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpDestinationPort"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xad,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_118), sizeof msg_118));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("flowKeyIndicator");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message119) {
-  static const unsigned char msg_119[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb8,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpSequenceNumber"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xae,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_119), sizeof msg_119));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postMCastPacketTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message120) {
-  static const unsigned char msg_120[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpAcknowledgementNumber"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xaf,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_120), sizeof msg_120));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postMCastOctetTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message121) {
-  static const unsigned char msg_121[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xba,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpWindowSize"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_121), sizeof msg_121));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("icmpTypeIPv4");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message122) {
-  static const unsigned char msg_122[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbb,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpUrgentPointer"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb1,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_122), sizeof msg_122));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("icmpCodeIPv4");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message123) {
-  static const unsigned char msg_123[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbc,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpHeaderLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb2,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_123), sizeof msg_123));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("icmpTypeIPv6");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message124) {
-  static const unsigned char msg_124[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbd,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipHeaderLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb3,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_124), sizeof msg_124));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("icmpCodeIPv6");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message125) {
-  static const unsigned char msg_125[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbe,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("totalLengthIPv4"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb4,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_125), sizeof msg_125));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("udpSourcePort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message126) {
-  static const unsigned char msg_126[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbf,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("payloadLengthIPv6"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb5,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_126), sizeof msg_126));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("udpDestinationPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message127) {
-  static const unsigned char msg_127[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipTTL"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb6,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_127), sizeof msg_127));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpSourcePort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message128) {
-  static const unsigned char msg_128[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc1,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("nextHeaderIPv6"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb7,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_128), sizeof msg_128));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpDestinationPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message129) {
-  static const unsigned char msg_129[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc2,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsPayloadLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb8,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_129), sizeof msg_129));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpSequenceNumber");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message130) {
-  static const unsigned char msg_130[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc3,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipDiffServCodePoint"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_130), sizeof msg_130));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpAcknowledgementNumber");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message131) {
-  static const unsigned char msg_131[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc4,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipPrecedence"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xba,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_131), sizeof msg_131));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpWindowSize");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message132) {
-  static const unsigned char msg_132[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc5,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("fragmentFlags"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbb,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_132), sizeof msg_132));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpUrgentPointer");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message133) {
-  static const unsigned char msg_133[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc6,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("octetDeltaSumOfSquares"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbc,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_133), sizeof msg_133));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpHeaderLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message134) {
-  static const unsigned char msg_134[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("octetTotalSumOfSquares"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbd,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_134), sizeof msg_134));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipHeaderLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message135) {
-  static const unsigned char msg_135[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc8,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsTopLabelTTL"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbe,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_135), sizeof msg_135));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("totalLengthIPv4");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message136) {
-  static const unsigned char msg_136[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsLabelStackLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbf,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_136), sizeof msg_136));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("payloadLengthIPv6");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message137) {
-  static const unsigned char msg_137[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xca,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsLabelStackDepth"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_137), sizeof msg_137));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipTTL");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message138) {
-  static const unsigned char msg_138[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcb,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("mplsTopLabelExp"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc1,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_138), sizeof msg_138));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("nextHeaderIPv6");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message139) {
-  static const unsigned char msg_139[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcc,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipPayloadLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc2,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_139), sizeof msg_139));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsPayloadLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message140) {
-  static const unsigned char msg_140[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcd,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("udpMessageLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc3,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_140), sizeof msg_140));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipDiffServCodePoint");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message141) {
-  static const unsigned char msg_141[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xce,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("isMulticast"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc4,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_141), sizeof msg_141));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipPrecedence");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message142) {
-  static const unsigned char msg_142[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcf,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipv4IHL"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc5,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_142), sizeof msg_142));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("fragmentFlags");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message143) {
-  static const unsigned char msg_143[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd0,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipv4Options"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc6,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_143), sizeof msg_143));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("octetDeltaSumOfSquares");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message144) {
-  static const unsigned char msg_144[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd1,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpOptions"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_144), sizeof msg_144));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("octetTotalSumOfSquares");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message145) {
-  static const unsigned char msg_145[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd3,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("collectorIPv4Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc8,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_145), sizeof msg_145));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelTTL");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message146) {
-  static const unsigned char msg_146[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd4,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("collectorIPv6Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_146), sizeof msg_146));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      MyIp6Address value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message147) {
-  static const unsigned char msg_147[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd5,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exportInterface"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xca,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_147), sizeof msg_147));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackDepth");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message148) {
-  static const unsigned char msg_148[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exportProtocolVersion"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcb,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_148), sizeof msg_148));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelExp");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message149) {
-  static const unsigned char msg_149[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd7,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exportTransportProtocol"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcc,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_149), sizeof msg_149));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipPayloadLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message150) {
-  static const unsigned char msg_150[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd8,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("collectorTransportPort"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcd,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_150), sizeof msg_150));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("udpMessageLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message151) {
-  static const unsigned char msg_151[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd9,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("exporterTransportPort"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xce,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_151), sizeof msg_151));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("isMulticast");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message152) {
-  static const unsigned char msg_152[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xda,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpSynTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcf,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_152), sizeof msg_152));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipv4IHL");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message153) {
-  static const unsigned char msg_153[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdb,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpFinTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd0,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_153), sizeof msg_153));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipv4Options");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message154) {
-  static const unsigned char msg_154[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdc,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpRstTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd1,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_154), sizeof msg_154));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpOptions");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message155) {
-  static const unsigned char msg_155[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdd,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpPshTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd3,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_155), sizeof msg_155));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("collectorIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message156) {
-  static const unsigned char msg_156[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xde,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpAckTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd4,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_156), sizeof msg_156));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      MyIp6Address value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("collectorIPv6Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800));
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message157) {
-  static const unsigned char msg_157[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdf,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpUrgTotalCount"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd5,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_157), sizeof msg_157));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exportInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message158) {
-  static const unsigned char msg_158[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe0,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ipTotalLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_158), sizeof msg_158));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exportProtocolVersion");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message159) {
-  static const unsigned char msg_159[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe1,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postNATSourceIPv4Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd7,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_159), sizeof msg_159));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exportTransportProtocol");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message160) {
-  static const unsigned char msg_160[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe2,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postNATDestinationIPv4Address"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd8,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_160), sizeof msg_160));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x7f000001);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("collectorTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message161) {
-  static const unsigned char msg_161[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe3,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postNAPTSourceTransportPort"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd9,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_161), sizeof msg_161));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("exporterTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message162) {
-  static const unsigned char msg_162[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe4,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postNAPTDestinationTransportPort"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xda,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_162), sizeof msg_162));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpSynTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message163) {
-  static const unsigned char msg_163[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe5,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("natOriginatingAddressRealm"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdb,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_163), sizeof msg_163));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpFinTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message164) {
-  static const unsigned char msg_164[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("natEvent"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdc,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_164), sizeof msg_164));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpRstTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message165) {
-  static const unsigned char msg_165[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("initiatorOctets"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdd,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_165), sizeof msg_165));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpPshTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message166) {
-  static const unsigned char msg_166[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe8,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("responderOctets"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xde,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_166), sizeof msg_166));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpAckTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message167) {
-  static const unsigned char msg_167[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe9,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("firewallEvent"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdf,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_167), sizeof msg_167));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpUrgTotalCount");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message168) {
-  static const unsigned char msg_168[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xea,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ingressVRFID"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe0,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_168), sizeof msg_168));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ipTotalLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message169) {
-  static const unsigned char msg_169[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xeb,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("egressVRFID"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe1,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_169), sizeof msg_169));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postNATSourceIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message170) {
-  static const unsigned char msg_170[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xed,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postMplsTopLabelExp"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe2,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_170), sizeof msg_170));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postNATDestinationIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message171) {
-  static const unsigned char msg_171[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xee,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("tcpWindowScale"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe3,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_171), sizeof msg_171));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postNAPTSourceTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message172) {
-  static const unsigned char msg_172[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xef,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("biflowDirection"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe4,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_172), sizeof msg_172));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postNAPTDestinationTransportPort");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message173) {
-  static const unsigned char msg_173[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ethernetHeaderLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe5,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_173), sizeof msg_173));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("natOriginatingAddressRealm");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message174) {
-  static const unsigned char msg_174[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf1,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ethernetPayloadLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_174), sizeof msg_174));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("natEvent");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message175) {
-  static const unsigned char msg_175[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf2,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ethernetTotalLength"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_175), sizeof msg_175));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("initiatorOctets");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message176) {
-  static const unsigned char msg_176[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf3,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("dot1qVlanId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe8,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_176), sizeof msg_176));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("responderOctets");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message177) {
-  static const unsigned char msg_177[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf4,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("dot1qPriority"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe9,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_177), sizeof msg_177));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("firewallEvent");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message178) {
-  static const unsigned char msg_178[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf5,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("dot1qCustomerVlanId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xea,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_178), sizeof msg_178));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ingressVRFID");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message179) {
-  static const unsigned char msg_179[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("dot1qCustomerPriority"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xeb,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_179), sizeof msg_179));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("egressVRFID");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message180) {
-  static const unsigned char msg_180[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf8,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("metroEvcType"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xed,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_180), sizeof msg_180));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postMplsTopLabelExp");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message181) {
-  static const unsigned char msg_181[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("pseudoWireId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xee,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_181), sizeof msg_181));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("tcpWindowScale");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message182) {
-  static const unsigned char msg_182[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfa,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("pseudoWireType"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xef,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_182), sizeof msg_182));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("biflowDirection");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message183) {
-  static const unsigned char msg_183[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfb,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("pseudoWireControlWord"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_183), sizeof msg_183));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ethernetHeaderLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message184) {
-  static const unsigned char msg_184[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfc,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ingressPhysicalInterface"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf1,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_184), sizeof msg_184));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ethernetPayloadLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message185) {
-  static const unsigned char msg_185[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfd,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("egressPhysicalInterface"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf2,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_185), sizeof msg_185));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ethernetTotalLength");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message186) {
-  static const unsigned char msg_186[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfe,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postDot1qVlanId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf3,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_186), sizeof msg_186));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("dot1qVlanId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message187) {
-  static const unsigned char msg_187[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xff,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postDot1qCustomerVlanId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf4,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_187), sizeof msg_187));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("dot1qPriority");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message188) {
-  static const unsigned char msg_188[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x00,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("ethernetType"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf5,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_188), sizeof msg_188));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("dot1qCustomerVlanId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message189) {
-  static const unsigned char msg_189[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x01,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("postIpPrecedence"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_189), sizeof msg_189));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("dot1qCustomerPriority");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message190) {
-  static const unsigned char msg_190[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2d,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("selectionSequenceId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf8,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_190), sizeof msg_190));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("metroEvcType");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message191) {
-  static const unsigned char msg_191[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2e,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("selectorId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_191), sizeof msg_191));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("pseudoWireId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message192) {
-  static const unsigned char msg_192[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2f,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("informationElementId"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfa,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_192), sizeof msg_192));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("pseudoWireType");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message193) {
-  static const unsigned char msg_193[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x30,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("selectorAlgorithm"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfb,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_193), sizeof msg_193));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("pseudoWireControlWord");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message194) {
-  static const unsigned char msg_194[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x31,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("samplingPacketInterval"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfc,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_194), sizeof msg_194));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ingressPhysicalInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message195) {
-  static const unsigned char msg_195[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x32,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("samplingPacketSpace"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfd,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_195), sizeof msg_195));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("egressPhysicalInterface");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message196) {
-  static const unsigned char msg_196[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x33,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("samplingTimeInterval"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfe,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_196), sizeof msg_196));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postDot1qVlanId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message197) {
-  static const unsigned char msg_197[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x34,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("samplingTimeSpace"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xff,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_197), sizeof msg_197));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postDot1qCustomerVlanId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message198) {
-  static const unsigned char msg_198[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x35,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("samplingSize"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x00,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_198), sizeof msg_198));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("ethernetType");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message199) {
-  static const unsigned char msg_199[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x36,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("samplingPopulation"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x01,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_199), sizeof msg_199));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x10203040);
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("postIpPrecedence");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message200) {
-  static const unsigned char msg_200[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x37,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("samplingProbability"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2d,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_200), sizeof msg_200));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      double value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("selectionSequenceId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message201) {
-  static const unsigned char msg_201[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3e,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("selectorIdTotalPktsObserved"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2e,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_201), sizeof msg_201));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("selectorId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message202) {
-  static const unsigned char msg_202[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3f,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("selectorIdTotalPktsSelected"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2f,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_202), sizeof msg_202));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("informationElementId");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message203) {
-  static const unsigned char msg_203[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x40,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("absoluteError"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x30,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_203), sizeof msg_203));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      double value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("selectorAlgorithm");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message204) {
-  static const unsigned char msg_204[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x41,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("relativeError"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x31,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_204), sizeof msg_204));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      double value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingPacketInterval");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message205) {
-  static const unsigned char msg_205[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x42,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("observationTimeSeconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x32,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_205), sizeof msg_205));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x12345678);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingPacketSpace");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message206) {
-  static const unsigned char msg_206[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x43,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x1f,0x7c  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("observationTimeMilliseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x33,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_206), sizeof msg_206));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x00000138b4671f7cULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingTimeInterval");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message207) {
-  static const unsigned char msg_207[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x44,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("observationTimeMicroseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x34,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_207), sizeof msg_207));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x500d6a45c00003ffULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingTimeSpace");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message208) {
-  static const unsigned char msg_208[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x45,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("observationTimeNanoseconds"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x35,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_208), sizeof msg_208));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x500d6a45c00003ffULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingSize");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message209) {
-  static const unsigned char msg_209[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x46,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("digestHashValue"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x36,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_209), sizeof msg_209));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingPopulation");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message210) {
-  static const unsigned char msg_210[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x47,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("hashIPPayloadOffset"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x37,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_210), sizeof msg_210));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      double value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingProbability");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0.fP0);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message211) {
-  static const unsigned char msg_211[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x48,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("hashIPPayloadSize"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3e,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_211), sizeof msg_211));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("selectorIdTotalPktsObserved");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message212) {
-  static const unsigned char msg_212[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x49,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("hashOutputRangeMin"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3f,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_212), sizeof msg_212));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("selectorIdTotalPktsSelected");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message213) {
-  static const unsigned char msg_213[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("hashOutputRangeMax"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x40,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_213), sizeof msg_213));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      double value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("absoluteError");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0.fP0);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message214) {
-  static const unsigned char msg_214[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4b,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("hashSelectedRangeMin"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x41,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_214), sizeof msg_214));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      double value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("relativeError");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0.fP0);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message215) {
-  static const unsigned char msg_215[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4c,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("hashSelectedRangeMax"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x42,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_215), sizeof msg_215));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      uint32_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("observationTimeSeconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x12345678);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message216) {
-  static const unsigned char msg_216[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4d,0x00,0x01,0x03,0xe9,0x00,0x05,0x01  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("hashDigestOutput"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x43,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x1f,0x7c  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_216), sizeof msg_216));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("observationTimeMilliseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x00000138b4671f7cULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message217) {
-  static const unsigned char msg_217[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4e,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("hashInitialiserValue"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x44,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_217), sizeof msg_217));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("observationTimeMicroseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x500d6a45c00003ffULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message218) {
-  static const unsigned char msg_218[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x50,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("upperCILimit"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x45,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_218), sizeof msg_218));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      double value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("observationTimeNanoseconds");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x500d6a45c00003ffULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message219) {
-  static const unsigned char msg_219[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x51,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("lowerCILimit"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x46,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_219), sizeof msg_219));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      double value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("digestHashValue");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message220) {
-  static const unsigned char msg_220[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x52,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("confidenceLevel"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x47,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_220), sizeof msg_220));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      double value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("hashIPPayloadOffset");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message221) {
-  static const unsigned char msg_221[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x53,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("informationElementDataType"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x48,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_221), sizeof msg_221));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("hashIPPayloadSize");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message222) {
-  static const unsigned char msg_222[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x56,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("informationElementRangeBegin"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x49,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_222), sizeof msg_222));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("hashOutputRangeMin");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message223) {
-  static const unsigned char msg_223[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x57,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("informationElementRangeEnd"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_223), sizeof msg_223));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint64_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("hashOutputRangeMax");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message224) {
-  static const unsigned char msg_224[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x58,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("informationElementSemantics"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4b,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_224), sizeof msg_224));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint8_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x96);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("hashSelectedRangeMin");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message225) {
-  static const unsigned char msg_225[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x59,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("informationElementUnits"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4c,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_225), sizeof msg_225));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
-      uint16_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
-      BOOST_CHECK_EQUAL(value, 0x9669);
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("hashSelectedRangeMax");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message226) {
-  static const unsigned char msg_226[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x5a,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("privateEnterpriseNumber"),
-  };
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4d,0x00,0x01,0x03,0xe9,0x00,0x05,0x01  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_226), sizeof msg_226));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
+    {
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("hashDigestOutput");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message227) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4e,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("hashInitialiserValue");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message228) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x50,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      double value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("upperCILimit");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message229) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x51,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      double value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("lowerCILimit");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message230) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x52,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      double value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("confidenceLevel");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x0.fP0);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message231) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x53,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("informationElementDataType");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message232) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x56,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("informationElementRangeBegin");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message233) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x28,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x57,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint64_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("informationElementRangeEnd");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x1020304050607080ULL);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message234) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x58,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint8_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("informationElementSemantics");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x96);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message235) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x22,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x59,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
+    {
+      uint16_t value;
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("informationElementUnits");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
+      BOOST_CHECK_EQUAL(value, 0x9669);
+    }
+    xc.defocus();
+  }
+}
+
+
+/* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
+BOOST_AUTO_TEST_CASE(Message236) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x24,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x5a,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+
+  IPFIX::MBuf mbuf;
+  IPFIX::Session session;
+  IPFIX::Transcoder xc;
+
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
+  for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
+
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
+
+    xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("privateEnterpriseNumber");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
@@ -9824,104 +7676,84 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_FIXTURE_TEST_SUITE(Compound, Fixture)
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message227) {
-  static const unsigned char msg_227[] = {
-    0x00,0x0a,0x00,0x2c,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x10,0x03,0xe9,0x00,0x02,0x00,0x08,0x00,0x04,0x00,0x0c,0x00,0x04,0x03,0xe9,0x00,0x0c,0x7f,0x00,0x00,0x01,0x7f,0x00,0x00,0x02  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("sourceIPv4Address"),
-    IPFIX::InfoModel::instance().lookupIE("destinationIPv4Address"),
-  };
+BOOST_AUTO_TEST_CASE(Message237) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x2c,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x10,0x03,0xe9,0x00,0x02,0x00,0x08,0x00,0x04,0x00,0x0c,0x00,0x04,0x03,0xe9,0x00,0x0c,0x7f,0x00,0x00,0x01,0x7f,0x00,0x00,0x02  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_227), sizeof msg_227));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("sourceIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x7f000001);
     }
-    BOOST_REQUIRE(set_tmpl->contains(ies[1]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[1]),
-                  set_tmpl->ieFor(ies[1]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("destinationIPv4Address");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x7f000002);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
-BOOST_AUTO_TEST_CASE(Message228) {
-  static const unsigned char msg_228[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x0e,0x60,0x54,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x10,0x03,0xe9,0x00,0x02,0x01,0x36,0x00,0x04,0x01,0x37,0x00,0x08,0x03,0xe9,0x00,0x10,0x10,0x20,0x30,0x40,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
-
-  std::vector<const IPFIX::InfoElement*> ies = {
-    IPFIX::InfoModel::instance().lookupIE("samplingPopulation"),
-    IPFIX::InfoModel::instance().lookupIE("samplingProbability"),
-  };
+BOOST_AUTO_TEST_CASE(Message238) {
+  static const unsigned char msg[] = {
+    0x00,0x0a,0x00,0x30,0x50,0x0e,0x95,0x5d,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x10,0x03,0xe9,0x00,0x02,0x01,0x36,0x00,0x04,0x01,0x37,0x00,0x08,0x03,0xe9,0x00,0x10,0x10,0x20,0x30,0x40,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
   IPFIX::Session session;
-  std::istringstream s(std::string(reinterpret_cast<const char*>(msg_228), sizeof msg_228));
-
-  BOOST_CHECK(mbuf.deframe(s, session));
-
   IPFIX::Transcoder xc;
-  mbuf.transcodeBy(xc);
 
-  unsigned int n_set_lists = 0;
+  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    n_set_lists++;
-    const IPFIX::WireTemplate* set_tmpl = 
-          session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    BOOST_REQUIRE(wt->isActive());
 
-    BOOST_REQUIRE(set_tmpl->isActive());
-
-    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(set_tmpl, &xc);
+    IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
 
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
-    BOOST_REQUIRE(set_tmpl->contains(ies[0]));
     {
       uint32_t value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[0]),
-                  set_tmpl->ieFor(ies[0]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingPopulation");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x10203040);
     }
-    BOOST_REQUIRE(set_tmpl->contains(ies[1]));
     {
       double value;
-      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ies[1]),
-                  set_tmpl->ieFor(ies[1]));
+      const IPFIX::InfoElement* ie 
+        = IPFIX::InfoModel::instance().lookupIE("samplingProbability");
+
+      BOOST_REQUIRE(wt->contains(ie));
+      xc.decodeAt(&value, sizeof(value), oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, 0x0.fP0);
     }
     xc.defocus();
   }
-
-  BOOST_CHECK_EQUAL(n_set_lists, 1);
 }
 
 

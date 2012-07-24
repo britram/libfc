@@ -42,4 +42,13 @@ BOOST_AUTO_TEST_CASE(MBuf01) {
   BOOST_CHECK_EQUAL(buf.export_time(), 0);
 }
 
+BOOST_AUTO_TEST_CASE(MBuf02) {
+  IPFIX::MBuf buf;
+  buf.clear();
+
+  BOOST_CHECK_EQUAL(buf.domain(), 0);
+  BOOST_CHECK_EQUAL(buf.sequence(), 0);
+  BOOST_CHECK_EQUAL(buf.export_time(), 0);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

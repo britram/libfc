@@ -51,4 +51,15 @@ BOOST_AUTO_TEST_CASE(InfoModel) {
     BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
 }
 
+BOOST_AUTO_TEST_CASE(InfoElement01) {
+  IPFIX::InfoModel& m = IPFIX::InfoModel::instance();
+
+  m.defaultIPFIX();
+    
+  const IPFIX::InfoElement* e = m.lookupIE("octetDeltaCount");
+  BOOST_REQUIRE(e != 0);
+
+  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

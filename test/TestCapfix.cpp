@@ -230,15 +230,17 @@ static int test_capfix (const std::string& filename) {
   return 1;
 }
 
-// BOOST_AUTO_TEST_SUITE(Capfix)
-// 
-// BOOST_AUTO_TEST_CASE(CapfixTest) {
-//   const char* filenames[] = {"test01.ipfix", "test01.pcap"};
-// 
-//   std::for_each(filenames, filenames + sizeof(filenames)/sizeof(filenames[0]),
-//                 [] (const char* filename) {
-//                   BOOST_CHECK_EQUAL(test_capfix(filename), 0);
-//                 });
-// }
-// 
-// BOOST_AUTO_TEST_SUITE_END()
+#if 0
+BOOST_AUTO_TEST_SUITE(Capfix)
+
+BOOST_AUTO_TEST_CASE(CapfixTest) {
+  const char* filenames[] = {"test01.ipfix", "test01.pcap"};
+
+  std::for_each(filenames, filenames + sizeof(filenames)/sizeof(filenames[0]),
+                [] (const char* filename) {
+                  BOOST_CHECK_EQUAL(test_capfix(filename), 0);
+                });
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+#endif
