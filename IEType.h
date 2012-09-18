@@ -45,8 +45,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/any.hpp>
-
 #include "Constants.h"
 
 namespace IPFIX {
