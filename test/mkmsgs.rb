@@ -1949,6 +1949,24 @@ make_test_case([ RecordElement.new('samplingPopulation',
                                    'double', '0x0.fP0')
                ])
 
+make_test_case([ RecordElement.new('samplingPopulation',
+                                   :samplingPopulation,
+                                   0x10203040,
+                                   'uint32_t', '0x10203040'),
+                 RecordElement.new('interfaceDescription',
+                                   :interfaceDescription,
+                                   "First ethernet interface",
+                                   'Varlen', 'Varlen(24, "First ethernet interface")'),
+                 RecordElement.new('samplingProbability',
+                                   :samplingProbability,
+                                   0.9375,
+                                   'double', '0x0.fP0'),
+                 RecordElement.new('interfaceDescription',
+                                   :interfaceDescription,
+                                   "First ethernet interface",
+                                   'Varlen', 'Varlen(25, "Second ethernet interface")')
+               ])
+
 end_test_suite()
 
 end_file()
