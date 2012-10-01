@@ -159,16 +159,17 @@ BOOST_FIXTURE_TEST_SUITE(IETypes, Fixture)
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message001) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x00  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -176,8 +177,7 @@ BOOST_AUTO_TEST_CASE(Message001) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+      const IPFIX::InfoElement* ie = model.lookupIE("protocolIdentifier");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -187,22 +187,35 @@ BOOST_AUTO_TEST_CASE(Message001) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("protocolIdentifier"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("protocolIdentifier"), static_cast<uint8_t>(0x00));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message002) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x01  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -210,8 +223,7 @@ BOOST_AUTO_TEST_CASE(Message002) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+      const IPFIX::InfoElement* ie = model.lookupIE("protocolIdentifier");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -221,22 +233,35 @@ BOOST_AUTO_TEST_CASE(Message002) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("protocolIdentifier"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("protocolIdentifier"), static_cast<uint8_t>(0x01));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message003) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xfe  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xfe  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -244,8 +269,7 @@ BOOST_AUTO_TEST_CASE(Message003) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+      const IPFIX::InfoElement* ie = model.lookupIE("protocolIdentifier");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -255,22 +279,35 @@ BOOST_AUTO_TEST_CASE(Message003) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("protocolIdentifier"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("protocolIdentifier"), static_cast<uint8_t>(0xfe));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message004) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xff  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -278,8 +315,7 @@ BOOST_AUTO_TEST_CASE(Message004) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+      const IPFIX::InfoElement* ie = model.lookupIE("protocolIdentifier");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -289,22 +325,35 @@ BOOST_AUTO_TEST_CASE(Message004) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("protocolIdentifier"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("protocolIdentifier"), static_cast<uint8_t>(0xff));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message005) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -312,8 +361,7 @@ BOOST_AUTO_TEST_CASE(Message005) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+      const IPFIX::InfoElement* ie = model.lookupIE("protocolIdentifier");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -323,22 +371,35 @@ BOOST_AUTO_TEST_CASE(Message005) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("protocolIdentifier"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("protocolIdentifier"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message006) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x5a  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -346,8 +407,7 @@ BOOST_AUTO_TEST_CASE(Message006) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+      const IPFIX::InfoElement* ie = model.lookupIE("protocolIdentifier");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -357,22 +417,35 @@ BOOST_AUTO_TEST_CASE(Message006) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("protocolIdentifier"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("protocolIdentifier"), static_cast<uint8_t>(0x5a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message007) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x00  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -380,8 +453,7 @@ BOOST_AUTO_TEST_CASE(Message007) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -391,22 +463,35 @@ BOOST_AUTO_TEST_CASE(Message007) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceTransportPort"), static_cast<uint16_t>(0x0000));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message008) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x01  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -414,8 +499,7 @@ BOOST_AUTO_TEST_CASE(Message008) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -425,22 +509,35 @@ BOOST_AUTO_TEST_CASE(Message008) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceTransportPort"), static_cast<uint16_t>(0x0001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message009) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xff,0xfe  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xff,0xfe  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -448,8 +545,7 @@ BOOST_AUTO_TEST_CASE(Message009) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -459,22 +555,35 @@ BOOST_AUTO_TEST_CASE(Message009) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceTransportPort"), static_cast<uint16_t>(0xfffe));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message010) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xff,0xff  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xff,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -482,8 +591,7 @@ BOOST_AUTO_TEST_CASE(Message010) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -493,22 +601,35 @@ BOOST_AUTO_TEST_CASE(Message010) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceTransportPort"), static_cast<uint16_t>(0xffff));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message011) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x10  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0x00,0x10  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -516,8 +637,7 @@ BOOST_AUTO_TEST_CASE(Message011) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -527,22 +647,35 @@ BOOST_AUTO_TEST_CASE(Message011) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceTransportPort"), static_cast<uint16_t>(0x0010));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message012) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -550,8 +683,7 @@ BOOST_AUTO_TEST_CASE(Message012) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("ingressInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -561,22 +693,35 @@ BOOST_AUTO_TEST_CASE(Message012) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ingressInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ingressInterface"), static_cast<uint32_t>(0x00000000));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message013) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x00,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x00,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -584,8 +729,7 @@ BOOST_AUTO_TEST_CASE(Message013) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("ingressInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -595,22 +739,35 @@ BOOST_AUTO_TEST_CASE(Message013) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ingressInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ingressInterface"), static_cast<uint32_t>(0x00000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message014) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0xff,0xff,0xff,0xfe  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0xff,0xff,0xff,0xfe  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -618,8 +775,7 @@ BOOST_AUTO_TEST_CASE(Message014) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("ingressInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -629,22 +785,35 @@ BOOST_AUTO_TEST_CASE(Message014) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ingressInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ingressInterface"), static_cast<uint32_t>(0xfffffffe));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message015) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0xff,0xff,0xff,0xff  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0xff,0xff,0xff,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -652,8 +821,7 @@ BOOST_AUTO_TEST_CASE(Message015) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("ingressInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -663,22 +831,35 @@ BOOST_AUTO_TEST_CASE(Message015) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ingressInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ingressInterface"), static_cast<uint32_t>(0xffffffff));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message016) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x5a,0xa5,0x69,0x96  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x5a,0xa5,0x69,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -686,8 +867,7 @@ BOOST_AUTO_TEST_CASE(Message016) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("ingressInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -697,8 +877,20 @@ BOOST_AUTO_TEST_CASE(Message016) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ingressInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ingressInterface"), static_cast<uint32_t>(0x5aa56996));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -707,16 +899,17 @@ BOOST_FIXTURE_TEST_SUITE(InformationElements, Fixture)
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message017) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x01,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x01,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -724,8 +917,7 @@ BOOST_AUTO_TEST_CASE(Message017) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("octetDeltaCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("octetDeltaCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -735,22 +927,35 @@ BOOST_AUTO_TEST_CASE(Message017) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("octetDeltaCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("octetDeltaCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message018) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x02,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x02,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -758,8 +963,7 @@ BOOST_AUTO_TEST_CASE(Message018) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("packetDeltaCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("packetDeltaCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -769,22 +973,35 @@ BOOST_AUTO_TEST_CASE(Message018) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("packetDeltaCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("packetDeltaCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message019) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -792,8 +1009,7 @@ BOOST_AUTO_TEST_CASE(Message019) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("protocolIdentifier");
+      const IPFIX::InfoElement* ie = model.lookupIE("protocolIdentifier");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -803,22 +1019,35 @@ BOOST_AUTO_TEST_CASE(Message019) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("protocolIdentifier"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("protocolIdentifier"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message020) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x05,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x05,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -826,8 +1055,7 @@ BOOST_AUTO_TEST_CASE(Message020) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipClassOfService");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipClassOfService");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -837,22 +1065,35 @@ BOOST_AUTO_TEST_CASE(Message020) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipClassOfService"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipClassOfService"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message021) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x06,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x06,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -860,8 +1101,7 @@ BOOST_AUTO_TEST_CASE(Message021) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpControlBits");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpControlBits");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -871,22 +1111,35 @@ BOOST_AUTO_TEST_CASE(Message021) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpControlBits"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpControlBits"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message022) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x07,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -894,8 +1147,7 @@ BOOST_AUTO_TEST_CASE(Message022) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -905,22 +1157,35 @@ BOOST_AUTO_TEST_CASE(Message022) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceTransportPort"), static_cast<uint16_t>(0xa55a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message023) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x08,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x08,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -928,8 +1193,7 @@ BOOST_AUTO_TEST_CASE(Message023) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -939,22 +1203,35 @@ BOOST_AUTO_TEST_CASE(Message023) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message024) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x09,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x09,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -962,8 +1239,7 @@ BOOST_AUTO_TEST_CASE(Message024) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceIPv4PrefixLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceIPv4PrefixLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -973,22 +1249,35 @@ BOOST_AUTO_TEST_CASE(Message024) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceIPv4PrefixLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceIPv4PrefixLength"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message025) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0a,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -996,8 +1285,7 @@ BOOST_AUTO_TEST_CASE(Message025) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ingressInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("ingressInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1007,22 +1295,35 @@ BOOST_AUTO_TEST_CASE(Message025) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ingressInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ingressInterface"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message026) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0b,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0b,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1030,8 +1331,7 @@ BOOST_AUTO_TEST_CASE(Message026) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("destinationTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("destinationTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1041,22 +1341,35 @@ BOOST_AUTO_TEST_CASE(Message026) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("destinationTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("destinationTransportPort"), static_cast<uint16_t>(0xa55a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message027) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0c,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0c,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1064,8 +1377,7 @@ BOOST_AUTO_TEST_CASE(Message027) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("destinationIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("destinationIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1075,22 +1387,35 @@ BOOST_AUTO_TEST_CASE(Message027) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("destinationIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("destinationIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message028) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1098,8 +1423,7 @@ BOOST_AUTO_TEST_CASE(Message028) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("destinationIPv4PrefixLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("destinationIPv4PrefixLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1109,22 +1433,35 @@ BOOST_AUTO_TEST_CASE(Message028) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("destinationIPv4PrefixLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("destinationIPv4PrefixLength"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message029) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0e,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0e,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1132,8 +1469,7 @@ BOOST_AUTO_TEST_CASE(Message029) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("egressInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("egressInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1143,22 +1479,35 @@ BOOST_AUTO_TEST_CASE(Message029) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("egressInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("egressInterface"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message030) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0f,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x0f,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1166,8 +1515,7 @@ BOOST_AUTO_TEST_CASE(Message030) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipNextHopIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipNextHopIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1177,22 +1525,35 @@ BOOST_AUTO_TEST_CASE(Message030) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipNextHopIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipNextHopIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message031) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x10,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x10,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1200,8 +1561,7 @@ BOOST_AUTO_TEST_CASE(Message031) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("bgpSourceAsNumber");
+      const IPFIX::InfoElement* ie = model.lookupIE("bgpSourceAsNumber");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1211,22 +1571,35 @@ BOOST_AUTO_TEST_CASE(Message031) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("bgpSourceAsNumber"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("bgpSourceAsNumber"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message032) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x11,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x11,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1234,8 +1607,7 @@ BOOST_AUTO_TEST_CASE(Message032) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("bgpDestinationAsNumber");
+      const IPFIX::InfoElement* ie = model.lookupIE("bgpDestinationAsNumber");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1245,22 +1617,35 @@ BOOST_AUTO_TEST_CASE(Message032) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("bgpDestinationAsNumber"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("bgpDestinationAsNumber"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message033) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x12,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x12,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1268,8 +1653,7 @@ BOOST_AUTO_TEST_CASE(Message033) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("bgpNextHopIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("bgpNextHopIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1279,22 +1663,35 @@ BOOST_AUTO_TEST_CASE(Message033) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("bgpNextHopIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("bgpNextHopIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message034) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x13,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x13,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1302,8 +1699,7 @@ BOOST_AUTO_TEST_CASE(Message034) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postMCastPacketDeltaCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("postMCastPacketDeltaCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1313,22 +1709,35 @@ BOOST_AUTO_TEST_CASE(Message034) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postMCastPacketDeltaCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postMCastPacketDeltaCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message035) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x14,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x14,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1336,8 +1745,7 @@ BOOST_AUTO_TEST_CASE(Message035) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postMCastOctetDeltaCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("postMCastOctetDeltaCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1347,22 +1755,35 @@ BOOST_AUTO_TEST_CASE(Message035) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postMCastOctetDeltaCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postMCastOctetDeltaCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message036) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x15,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x15,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1370,8 +1791,7 @@ BOOST_AUTO_TEST_CASE(Message036) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowEndSysUpTime");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowEndSysUpTime");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1381,22 +1801,35 @@ BOOST_AUTO_TEST_CASE(Message036) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowEndSysUpTime"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowEndSysUpTime"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message037) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x16,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x16,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1404,8 +1837,7 @@ BOOST_AUTO_TEST_CASE(Message037) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowStartSysUpTime");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowStartSysUpTime");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1415,22 +1847,35 @@ BOOST_AUTO_TEST_CASE(Message037) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowStartSysUpTime"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowStartSysUpTime"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message038) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x17,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x17,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1438,8 +1883,7 @@ BOOST_AUTO_TEST_CASE(Message038) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postOctetDeltaCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("postOctetDeltaCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1449,22 +1893,35 @@ BOOST_AUTO_TEST_CASE(Message038) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postOctetDeltaCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postOctetDeltaCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message039) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x18,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x18,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1472,8 +1929,7 @@ BOOST_AUTO_TEST_CASE(Message039) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postPacketDeltaCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("postPacketDeltaCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1483,22 +1939,35 @@ BOOST_AUTO_TEST_CASE(Message039) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postPacketDeltaCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postPacketDeltaCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message040) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x19,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x19,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1506,8 +1975,7 @@ BOOST_AUTO_TEST_CASE(Message040) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("minimumIpTotalLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("minimumIpTotalLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1517,22 +1985,35 @@ BOOST_AUTO_TEST_CASE(Message040) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("minimumIpTotalLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("minimumIpTotalLength"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message041) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1540,8 +2021,7 @@ BOOST_AUTO_TEST_CASE(Message041) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("maximumIpTotalLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("maximumIpTotalLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1551,22 +2031,35 @@ BOOST_AUTO_TEST_CASE(Message041) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("maximumIpTotalLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("maximumIpTotalLength"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message042) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1b,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1b,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1574,8 +2067,7 @@ BOOST_AUTO_TEST_CASE(Message042) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceIPv6Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceIPv6Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1585,22 +2077,38 @@ BOOST_AUTO_TEST_CASE(Message042) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceIPv6Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("sourceIPv6Address"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message043) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1c,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1c,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1608,8 +2116,7 @@ BOOST_AUTO_TEST_CASE(Message043) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("destinationIPv6Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("destinationIPv6Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1619,22 +2126,38 @@ BOOST_AUTO_TEST_CASE(Message043) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("destinationIPv6Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("destinationIPv6Address"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message044) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1642,8 +2165,7 @@ BOOST_AUTO_TEST_CASE(Message044) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceIPv6PrefixLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceIPv6PrefixLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1653,22 +2175,35 @@ BOOST_AUTO_TEST_CASE(Message044) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceIPv6PrefixLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceIPv6PrefixLength"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message045) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1e,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1e,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1676,8 +2211,7 @@ BOOST_AUTO_TEST_CASE(Message045) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("destinationIPv6PrefixLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("destinationIPv6PrefixLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1687,22 +2221,35 @@ BOOST_AUTO_TEST_CASE(Message045) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("destinationIPv6PrefixLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("destinationIPv6PrefixLength"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message046) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1f,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x1f,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1710,8 +2257,7 @@ BOOST_AUTO_TEST_CASE(Message046) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowLabelIPv6");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowLabelIPv6");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1721,22 +2267,35 @@ BOOST_AUTO_TEST_CASE(Message046) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowLabelIPv6"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowLabelIPv6"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message047) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x20,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x20,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1744,8 +2303,7 @@ BOOST_AUTO_TEST_CASE(Message047) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("icmpTypeCodeIPv4");
+      const IPFIX::InfoElement* ie = model.lookupIE("icmpTypeCodeIPv4");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1755,22 +2313,35 @@ BOOST_AUTO_TEST_CASE(Message047) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("icmpTypeCodeIPv4"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("icmpTypeCodeIPv4"), static_cast<uint16_t>(0xa55a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message048) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x21,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x21,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1778,8 +2349,7 @@ BOOST_AUTO_TEST_CASE(Message048) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("igmpType");
+      const IPFIX::InfoElement* ie = model.lookupIE("igmpType");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1789,22 +2359,35 @@ BOOST_AUTO_TEST_CASE(Message048) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("igmpType"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("igmpType"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message049) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x24,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x24,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1812,8 +2395,7 @@ BOOST_AUTO_TEST_CASE(Message049) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowActiveTimeout");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowActiveTimeout");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1823,22 +2405,35 @@ BOOST_AUTO_TEST_CASE(Message049) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowActiveTimeout"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowActiveTimeout"), static_cast<uint16_t>(0xa55a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message050) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x25,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x25,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1846,8 +2441,7 @@ BOOST_AUTO_TEST_CASE(Message050) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowIdleTimeout");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowIdleTimeout");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1857,22 +2451,35 @@ BOOST_AUTO_TEST_CASE(Message050) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowIdleTimeout"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowIdleTimeout"), static_cast<uint16_t>(0xa55a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message051) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x28,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x28,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1880,8 +2487,7 @@ BOOST_AUTO_TEST_CASE(Message051) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exportedOctetTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("exportedOctetTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1891,22 +2497,35 @@ BOOST_AUTO_TEST_CASE(Message051) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exportedOctetTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exportedOctetTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message052) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x29,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x29,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1914,8 +2533,7 @@ BOOST_AUTO_TEST_CASE(Message052) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exportedMessageTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("exportedMessageTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1925,22 +2543,35 @@ BOOST_AUTO_TEST_CASE(Message052) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exportedMessageTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exportedMessageTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message053) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1948,8 +2579,7 @@ BOOST_AUTO_TEST_CASE(Message053) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exportedFlowRecordTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("exportedFlowRecordTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1959,22 +2589,35 @@ BOOST_AUTO_TEST_CASE(Message053) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exportedFlowRecordTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exportedFlowRecordTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message054) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2c,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2c,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -1982,8 +2625,7 @@ BOOST_AUTO_TEST_CASE(Message054) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceIPv4Prefix");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceIPv4Prefix");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -1993,22 +2635,35 @@ BOOST_AUTO_TEST_CASE(Message054) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceIPv4Prefix"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceIPv4Prefix"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message055) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2d,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2d,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2016,8 +2671,7 @@ BOOST_AUTO_TEST_CASE(Message055) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("destinationIPv4Prefix");
+      const IPFIX::InfoElement* ie = model.lookupIE("destinationIPv4Prefix");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2027,22 +2681,35 @@ BOOST_AUTO_TEST_CASE(Message055) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("destinationIPv4Prefix"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("destinationIPv4Prefix"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message056) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2e,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2e,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2050,8 +2717,7 @@ BOOST_AUTO_TEST_CASE(Message056) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelType");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsTopLabelType");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2061,22 +2727,35 @@ BOOST_AUTO_TEST_CASE(Message056) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsTopLabelType"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsTopLabelType"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message057) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2f,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x2f,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2084,8 +2763,7 @@ BOOST_AUTO_TEST_CASE(Message057) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsTopLabelIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2095,22 +2773,35 @@ BOOST_AUTO_TEST_CASE(Message057) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsTopLabelIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsTopLabelIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message058) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x34,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x34,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2118,8 +2809,7 @@ BOOST_AUTO_TEST_CASE(Message058) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("minimumTTL");
+      const IPFIX::InfoElement* ie = model.lookupIE("minimumTTL");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2129,22 +2819,35 @@ BOOST_AUTO_TEST_CASE(Message058) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("minimumTTL"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("minimumTTL"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message059) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x35,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x35,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2152,8 +2855,7 @@ BOOST_AUTO_TEST_CASE(Message059) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("maximumTTL");
+      const IPFIX::InfoElement* ie = model.lookupIE("maximumTTL");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2163,22 +2865,35 @@ BOOST_AUTO_TEST_CASE(Message059) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("maximumTTL"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("maximumTTL"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message060) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x36,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x36,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2186,8 +2901,7 @@ BOOST_AUTO_TEST_CASE(Message060) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("fragmentIdentification");
+      const IPFIX::InfoElement* ie = model.lookupIE("fragmentIdentification");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2197,22 +2911,35 @@ BOOST_AUTO_TEST_CASE(Message060) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("fragmentIdentification"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("fragmentIdentification"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message061) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x37,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x37,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2220,8 +2947,7 @@ BOOST_AUTO_TEST_CASE(Message061) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postIpClassOfService");
+      const IPFIX::InfoElement* ie = model.lookupIE("postIpClassOfService");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2231,22 +2957,35 @@ BOOST_AUTO_TEST_CASE(Message061) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postIpClassOfService"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postIpClassOfService"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message062) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3a,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3a,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2254,8 +2993,7 @@ BOOST_AUTO_TEST_CASE(Message062) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("vlanId");
+      const IPFIX::InfoElement* ie = model.lookupIE("vlanId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2265,22 +3003,35 @@ BOOST_AUTO_TEST_CASE(Message062) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("vlanId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("vlanId"), static_cast<uint16_t>(0xa55a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message063) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3b,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3b,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2288,8 +3039,7 @@ BOOST_AUTO_TEST_CASE(Message063) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postVlanId");
+      const IPFIX::InfoElement* ie = model.lookupIE("postVlanId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2299,22 +3049,35 @@ BOOST_AUTO_TEST_CASE(Message063) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postVlanId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postVlanId"), static_cast<uint16_t>(0xa55a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message064) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3c,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3c,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2322,8 +3085,7 @@ BOOST_AUTO_TEST_CASE(Message064) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipVersion");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipVersion");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2333,22 +3095,35 @@ BOOST_AUTO_TEST_CASE(Message064) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipVersion"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipVersion"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message065) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3d,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2356,8 +3131,7 @@ BOOST_AUTO_TEST_CASE(Message065) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowDirection");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowDirection");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2367,22 +3141,35 @@ BOOST_AUTO_TEST_CASE(Message065) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowDirection"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowDirection"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message066) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3e,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3e,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2390,8 +3177,7 @@ BOOST_AUTO_TEST_CASE(Message066) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipNextHopIPv6Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipNextHopIPv6Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2401,22 +3187,38 @@ BOOST_AUTO_TEST_CASE(Message066) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipNextHopIPv6Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("ipNextHopIPv6Address"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message067) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3f,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x3f,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2424,8 +3226,7 @@ BOOST_AUTO_TEST_CASE(Message067) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("bgpNextHopIPv6Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("bgpNextHopIPv6Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2435,22 +3236,38 @@ BOOST_AUTO_TEST_CASE(Message067) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("bgpNextHopIPv6Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("bgpNextHopIPv6Address"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message068) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x40,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x40,0x00,0x04,0x03,0xe9,0x00,0x08,0x11,0x22,0x33,0x44  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2458,8 +3275,7 @@ BOOST_AUTO_TEST_CASE(Message068) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipv6ExtensionHeaders");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipv6ExtensionHeaders");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2469,22 +3285,35 @@ BOOST_AUTO_TEST_CASE(Message068) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipv6ExtensionHeaders"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipv6ExtensionHeaders"), static_cast<uint32_t>(0x11223344));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message069) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x46,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x46,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2492,8 +3321,7 @@ BOOST_AUTO_TEST_CASE(Message069) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelStackSection");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsTopLabelStackSection");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2503,22 +3331,37 @@ BOOST_AUTO_TEST_CASE(Message069) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsTopLabelStackSection"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsTopLabelStackSection"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsTopLabelStackSection"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message070) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x47,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x47,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2526,8 +3369,7 @@ BOOST_AUTO_TEST_CASE(Message070) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection2");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection2");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2537,22 +3379,37 @@ BOOST_AUTO_TEST_CASE(Message070) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection2"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection2"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection2"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message071) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x48,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x48,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2560,8 +3417,7 @@ BOOST_AUTO_TEST_CASE(Message071) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection3");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection3");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2571,22 +3427,37 @@ BOOST_AUTO_TEST_CASE(Message071) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection3"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection3"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection3"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message072) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x49,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x49,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2594,8 +3465,7 @@ BOOST_AUTO_TEST_CASE(Message072) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection4");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection4");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2605,22 +3475,37 @@ BOOST_AUTO_TEST_CASE(Message072) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection4"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection4"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection4"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message073) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4a,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4a,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2628,8 +3513,7 @@ BOOST_AUTO_TEST_CASE(Message073) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection5");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection5");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2639,22 +3523,37 @@ BOOST_AUTO_TEST_CASE(Message073) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection5"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection5"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection5"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message074) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4b,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4b,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2662,8 +3561,7 @@ BOOST_AUTO_TEST_CASE(Message074) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection6");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection6");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2673,22 +3571,37 @@ BOOST_AUTO_TEST_CASE(Message074) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection6"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection6"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection6"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message075) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4c,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4c,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2696,8 +3609,7 @@ BOOST_AUTO_TEST_CASE(Message075) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection7");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection7");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2707,22 +3619,37 @@ BOOST_AUTO_TEST_CASE(Message075) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection7"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection7"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection7"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message076) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4d,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4d,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2730,8 +3657,7 @@ BOOST_AUTO_TEST_CASE(Message076) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection8");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection8");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2741,22 +3667,37 @@ BOOST_AUTO_TEST_CASE(Message076) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection8"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection8"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection8"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message077) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4e,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4e,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2764,8 +3705,7 @@ BOOST_AUTO_TEST_CASE(Message077) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection9");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection9");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2775,22 +3715,37 @@ BOOST_AUTO_TEST_CASE(Message077) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection9"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection9"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection9"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message078) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x23,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4f,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
+    0x00,0x0a,0x00,0x23,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x4f,0x00,0x03,0x03,0xe9,0x00,0x07,0x12,0x34,0x56  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2798,8 +3753,7 @@ BOOST_AUTO_TEST_CASE(Message078) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(3, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection10");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection10");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 3, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2809,22 +3763,37 @@ BOOST_AUTO_TEST_CASE(Message078) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection10"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection10"), 3);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection10"), "[18, 52, 86]", 3);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message079) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x25,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x52,0xff,0xff,0x03,0xe9,0x00,0x09,0x04,0x65,0x74,0x68,0x30  };
+    0x00,0x0a,0x00,0x25,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x52,0xff,0xff,0x03,0xe9,0x00,0x09,0x04,0x65,0x74,0x68,0x30  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2832,8 +3801,7 @@ BOOST_AUTO_TEST_CASE(Message079) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(4, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("interfaceName");
+      const IPFIX::InfoElement* ie = model.lookupIE("interfaceName");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 4, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2843,22 +3811,37 @@ BOOST_AUTO_TEST_CASE(Message079) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("interfaceName"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("interfaceName"), 4);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("interfaceName"), "eth0", 4);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message080) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x39,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x1d,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65  };
+    0x00,0x0a,0x00,0x39,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x1d,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2866,8 +3849,7 @@ BOOST_AUTO_TEST_CASE(Message080) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(24, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("interfaceDescription");
+      const IPFIX::InfoElement* ie = model.lookupIE("interfaceDescription");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 24, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2877,22 +3859,37 @@ BOOST_AUTO_TEST_CASE(Message080) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("interfaceDescription"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("interfaceDescription"), 24);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("interfaceDescription"), "First ethernet interface", 24);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message081) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x55,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x55,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2900,8 +3897,7 @@ BOOST_AUTO_TEST_CASE(Message081) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("octetTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("octetTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2911,22 +3907,35 @@ BOOST_AUTO_TEST_CASE(Message081) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("octetTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("octetTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message082) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x56,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x56,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2934,8 +3943,7 @@ BOOST_AUTO_TEST_CASE(Message082) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("packetTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("packetTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2945,22 +3953,35 @@ BOOST_AUTO_TEST_CASE(Message082) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("packetTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("packetTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message083) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x58,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x58,0x00,0x02,0x03,0xe9,0x00,0x06,0xa5,0x5a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -2968,8 +3989,7 @@ BOOST_AUTO_TEST_CASE(Message083) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("fragmentOffset");
+      const IPFIX::InfoElement* ie = model.lookupIE("fragmentOffset");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -2979,22 +3999,35 @@ BOOST_AUTO_TEST_CASE(Message083) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("fragmentOffset"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("fragmentOffset"), static_cast<uint16_t>(0xa55a));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message084) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x5a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x12,0x34,0x56,0x78,0x13,0x24,0x35,0x46  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x5a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x12,0x34,0x56,0x78,0x13,0x24,0x35,0x46  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3002,8 +4035,7 @@ BOOST_AUTO_TEST_CASE(Message084) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(8, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsVpnRouteDistinguisher");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsVpnRouteDistinguisher");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 8, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3013,22 +4045,37 @@ BOOST_AUTO_TEST_CASE(Message084) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsVpnRouteDistinguisher"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsVpnRouteDistinguisher"), 8);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsVpnRouteDistinguisher"), "[18, 52, 86, 120, 19, 36, 53, 70]", 8);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message085) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x5b,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x5b,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3036,8 +4083,7 @@ BOOST_AUTO_TEST_CASE(Message085) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelPrefixLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsTopLabelPrefixLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3047,22 +4093,35 @@ BOOST_AUTO_TEST_CASE(Message085) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsTopLabelPrefixLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsTopLabelPrefixLength"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message086) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x62,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x62,0x00,0x01,0x03,0xe9,0x00,0x05,0xa5  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3070,8 +4129,7 @@ BOOST_AUTO_TEST_CASE(Message086) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postIpDiffServCodePoint");
+      const IPFIX::InfoElement* ie = model.lookupIE("postIpDiffServCodePoint");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3081,22 +4139,35 @@ BOOST_AUTO_TEST_CASE(Message086) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postIpDiffServCodePoint"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postIpDiffServCodePoint"), static_cast<uint8_t>(0xa5));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message087) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x80,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x80,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3104,8 +4175,7 @@ BOOST_AUTO_TEST_CASE(Message087) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("bgpNextAdjacentAsNumber");
+      const IPFIX::InfoElement* ie = model.lookupIE("bgpNextAdjacentAsNumber");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3115,22 +4185,35 @@ BOOST_AUTO_TEST_CASE(Message087) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("bgpNextAdjacentAsNumber"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("bgpNextAdjacentAsNumber"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message088) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x81,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x81,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3138,8 +4221,7 @@ BOOST_AUTO_TEST_CASE(Message088) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("bgpPrevAdjacentAsNumber");
+      const IPFIX::InfoElement* ie = model.lookupIE("bgpPrevAdjacentAsNumber");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3149,22 +4231,35 @@ BOOST_AUTO_TEST_CASE(Message088) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("bgpPrevAdjacentAsNumber"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("bgpPrevAdjacentAsNumber"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message089) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x82,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x82,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3172,8 +4267,7 @@ BOOST_AUTO_TEST_CASE(Message089) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exporterIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("exporterIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3183,22 +4277,35 @@ BOOST_AUTO_TEST_CASE(Message089) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exporterIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exporterIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message090) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x83,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x83,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3206,8 +4313,7 @@ BOOST_AUTO_TEST_CASE(Message090) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exporterIPv6Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("exporterIPv6Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3217,22 +4323,38 @@ BOOST_AUTO_TEST_CASE(Message090) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exporterIPv6Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("exporterIPv6Address"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message091) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x84,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x84,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3240,8 +4362,7 @@ BOOST_AUTO_TEST_CASE(Message091) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("droppedOctetDeltaCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("droppedOctetDeltaCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3251,22 +4372,35 @@ BOOST_AUTO_TEST_CASE(Message091) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("droppedOctetDeltaCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("droppedOctetDeltaCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message092) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x85,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x85,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3274,8 +4408,7 @@ BOOST_AUTO_TEST_CASE(Message092) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("droppedPacketDeltaCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("droppedPacketDeltaCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3285,22 +4418,35 @@ BOOST_AUTO_TEST_CASE(Message092) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("droppedPacketDeltaCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("droppedPacketDeltaCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message093) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x86,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x86,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3308,8 +4454,7 @@ BOOST_AUTO_TEST_CASE(Message093) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("droppedOctetTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("droppedOctetTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3319,22 +4464,35 @@ BOOST_AUTO_TEST_CASE(Message093) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("droppedOctetTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("droppedOctetTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message094) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x87,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x87,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3342,8 +4500,7 @@ BOOST_AUTO_TEST_CASE(Message094) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("droppedPacketTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("droppedPacketTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3353,22 +4510,35 @@ BOOST_AUTO_TEST_CASE(Message094) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("droppedPacketTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("droppedPacketTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message095) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x88,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x88,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3376,8 +4546,7 @@ BOOST_AUTO_TEST_CASE(Message095) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowEndReason");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowEndReason");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3387,22 +4556,35 @@ BOOST_AUTO_TEST_CASE(Message095) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowEndReason"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowEndReason"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message096) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x89,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x89,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3410,8 +4592,7 @@ BOOST_AUTO_TEST_CASE(Message096) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("commonPropertiesId");
+      const IPFIX::InfoElement* ie = model.lookupIE("commonPropertiesId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3421,22 +4602,35 @@ BOOST_AUTO_TEST_CASE(Message096) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("commonPropertiesId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("commonPropertiesId"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message097) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8a,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8a,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3444,8 +4638,7 @@ BOOST_AUTO_TEST_CASE(Message097) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("observationPointId");
+      const IPFIX::InfoElement* ie = model.lookupIE("observationPointId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3455,22 +4648,35 @@ BOOST_AUTO_TEST_CASE(Message097) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("observationPointId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("observationPointId"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message098) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8b,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8b,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3478,8 +4684,7 @@ BOOST_AUTO_TEST_CASE(Message098) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("icmpTypeCodeIPv6");
+      const IPFIX::InfoElement* ie = model.lookupIE("icmpTypeCodeIPv6");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3489,22 +4694,35 @@ BOOST_AUTO_TEST_CASE(Message098) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("icmpTypeCodeIPv6"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("icmpTypeCodeIPv6"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message099) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8c,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8c,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3512,8 +4730,7 @@ BOOST_AUTO_TEST_CASE(Message099) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelIPv6Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsTopLabelIPv6Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3523,22 +4740,38 @@ BOOST_AUTO_TEST_CASE(Message099) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsTopLabelIPv6Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("mplsTopLabelIPv6Address"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message100) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8d,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8d,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3546,8 +4779,7 @@ BOOST_AUTO_TEST_CASE(Message100) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("lineCardId");
+      const IPFIX::InfoElement* ie = model.lookupIE("lineCardId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3557,22 +4789,35 @@ BOOST_AUTO_TEST_CASE(Message100) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("lineCardId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("lineCardId"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message101) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8e,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8e,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3580,8 +4825,7 @@ BOOST_AUTO_TEST_CASE(Message101) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("portId");
+      const IPFIX::InfoElement* ie = model.lookupIE("portId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3591,22 +4835,35 @@ BOOST_AUTO_TEST_CASE(Message101) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("portId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("portId"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message102) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8f,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x8f,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3614,8 +4871,7 @@ BOOST_AUTO_TEST_CASE(Message102) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("meteringProcessId");
+      const IPFIX::InfoElement* ie = model.lookupIE("meteringProcessId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3625,22 +4881,35 @@ BOOST_AUTO_TEST_CASE(Message102) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("meteringProcessId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("meteringProcessId"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message103) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x90,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x90,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3648,8 +4917,7 @@ BOOST_AUTO_TEST_CASE(Message103) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exportingProcessId");
+      const IPFIX::InfoElement* ie = model.lookupIE("exportingProcessId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3659,22 +4927,35 @@ BOOST_AUTO_TEST_CASE(Message103) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exportingProcessId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exportingProcessId"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message104) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x91,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x91,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3682,8 +4963,7 @@ BOOST_AUTO_TEST_CASE(Message104) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("templateId");
+      const IPFIX::InfoElement* ie = model.lookupIE("templateId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3693,22 +4973,35 @@ BOOST_AUTO_TEST_CASE(Message104) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("templateId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("templateId"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message105) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x92,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x92,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3716,8 +5009,7 @@ BOOST_AUTO_TEST_CASE(Message105) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("wlanChannelId");
+      const IPFIX::InfoElement* ie = model.lookupIE("wlanChannelId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3727,22 +5019,35 @@ BOOST_AUTO_TEST_CASE(Message105) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("wlanChannelId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("wlanChannelId"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message106) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x40,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x93,0x00,0x20,0x03,0xe9,0x00,0x24,0x46,0x72,0x69,0x74,0x7a,0x21,0x42,0x6f,0x78,0x20,0x31,0x32,0x33,0x34,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x40,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x93,0x00,0x20,0x03,0xe9,0x00,0x24,0x46,0x72,0x69,0x74,0x7a,0x21,0x42,0x6f,0x78,0x20,0x31,0x32,0x33,0x34,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3750,8 +5055,7 @@ BOOST_AUTO_TEST_CASE(Message106) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(14, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("wlanSSID");
+      const IPFIX::InfoElement* ie = model.lookupIE("wlanSSID");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 14, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3761,22 +5065,37 @@ BOOST_AUTO_TEST_CASE(Message106) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("wlanSSID"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("wlanSSID"), 14);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("wlanSSID"), "Fritz!Box 1234", 14);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message107) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x94,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x94,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3784,8 +5103,7 @@ BOOST_AUTO_TEST_CASE(Message107) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowId");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3795,22 +5113,35 @@ BOOST_AUTO_TEST_CASE(Message107) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowId"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message108) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x95,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x95,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3818,8 +5149,7 @@ BOOST_AUTO_TEST_CASE(Message108) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("observationDomainId");
+      const IPFIX::InfoElement* ie = model.lookupIE("observationDomainId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3829,22 +5159,35 @@ BOOST_AUTO_TEST_CASE(Message108) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("observationDomainId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("observationDomainId"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message109) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x96,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x96,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3852,8 +5195,7 @@ BOOST_AUTO_TEST_CASE(Message109) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowStartSeconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowStartSeconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3863,22 +5205,35 @@ BOOST_AUTO_TEST_CASE(Message109) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowStartSeconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowStartSeconds"), static_cast<uint32_t>(0x12345678));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message110) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x97,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x97,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3886,8 +5241,7 @@ BOOST_AUTO_TEST_CASE(Message110) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowEndSeconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowEndSeconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3897,22 +5251,35 @@ BOOST_AUTO_TEST_CASE(Message110) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowEndSeconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowEndSeconds"), static_cast<uint32_t>(0x12345678));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message111) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x98,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x1f,0x7c  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x98,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x1f,0x7c  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3920,8 +5287,7 @@ BOOST_AUTO_TEST_CASE(Message111) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowStartMilliseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowStartMilliseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3931,22 +5297,35 @@ BOOST_AUTO_TEST_CASE(Message111) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowStartMilliseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowStartMilliseconds"), static_cast<uint64_t>(0x00000138b4671f7cULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message112) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x99,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x20,0x76  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x99,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x20,0x76  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3954,8 +5333,7 @@ BOOST_AUTO_TEST_CASE(Message112) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowEndMilliseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowEndMilliseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3965,22 +5343,35 @@ BOOST_AUTO_TEST_CASE(Message112) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowEndMilliseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowEndMilliseconds"), static_cast<uint64_t>(0x00000138b4672076ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message113) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0x7f,0xff,0xff,0xff  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0x7f,0xff,0xff,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -3988,8 +5379,7 @@ BOOST_AUTO_TEST_CASE(Message113) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowStartMicroseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowStartMicroseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -3999,22 +5389,35 @@ BOOST_AUTO_TEST_CASE(Message113) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowStartMicroseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowStartMicroseconds"), static_cast<uint64_t>(0x500d6a457fffffffULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message114) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9b,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9b,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4022,8 +5425,7 @@ BOOST_AUTO_TEST_CASE(Message114) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowEndMicroseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowEndMicroseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4033,22 +5435,35 @@ BOOST_AUTO_TEST_CASE(Message114) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowEndMicroseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowEndMicroseconds"), static_cast<uint64_t>(0x500d6a45c00003ffULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message115) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9c,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0x7f,0xff,0xff,0xff  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9c,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0x7f,0xff,0xff,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4056,8 +5471,7 @@ BOOST_AUTO_TEST_CASE(Message115) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowStartNanoseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowStartNanoseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4067,22 +5481,35 @@ BOOST_AUTO_TEST_CASE(Message115) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowStartNanoseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowStartNanoseconds"), static_cast<uint64_t>(0x500d6a457fffffffULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message116) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9d,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9d,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4090,8 +5517,7 @@ BOOST_AUTO_TEST_CASE(Message116) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowEndNanoseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowEndNanoseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4101,22 +5527,35 @@ BOOST_AUTO_TEST_CASE(Message116) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowEndNanoseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowEndNanoseconds"), static_cast<uint64_t>(0x500d6a45c00003ffULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message117) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9e,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9e,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4124,8 +5563,7 @@ BOOST_AUTO_TEST_CASE(Message117) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowStartDeltaMicroseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowStartDeltaMicroseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4135,22 +5573,35 @@ BOOST_AUTO_TEST_CASE(Message117) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowStartDeltaMicroseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowStartDeltaMicroseconds"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message118) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9f,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x9f,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4158,8 +5609,7 @@ BOOST_AUTO_TEST_CASE(Message118) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowEndDeltaMicroseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowEndDeltaMicroseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4169,22 +5619,35 @@ BOOST_AUTO_TEST_CASE(Message118) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowEndDeltaMicroseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowEndDeltaMicroseconds"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message119) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa0,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x20,0x76  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa0,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x20,0x76  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4192,8 +5655,7 @@ BOOST_AUTO_TEST_CASE(Message119) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("systemInitTimeMilliseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("systemInitTimeMilliseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4203,22 +5665,35 @@ BOOST_AUTO_TEST_CASE(Message119) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("systemInitTimeMilliseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("systemInitTimeMilliseconds"), static_cast<uint64_t>(0x00000138b4672076ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message120) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa1,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa1,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4226,8 +5701,7 @@ BOOST_AUTO_TEST_CASE(Message120) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowDurationMilliseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowDurationMilliseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4237,22 +5711,35 @@ BOOST_AUTO_TEST_CASE(Message120) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowDurationMilliseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowDurationMilliseconds"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message121) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa2,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa2,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4260,8 +5747,7 @@ BOOST_AUTO_TEST_CASE(Message121) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowDurationMicroseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowDurationMicroseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4271,22 +5757,35 @@ BOOST_AUTO_TEST_CASE(Message121) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowDurationMicroseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowDurationMicroseconds"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message122) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa3,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa3,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4294,8 +5793,7 @@ BOOST_AUTO_TEST_CASE(Message122) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("observedFlowTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("observedFlowTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4305,22 +5803,35 @@ BOOST_AUTO_TEST_CASE(Message122) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("observedFlowTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("observedFlowTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message123) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa4,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa4,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4328,8 +5839,7 @@ BOOST_AUTO_TEST_CASE(Message123) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ignoredPacketTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("ignoredPacketTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4339,22 +5849,35 @@ BOOST_AUTO_TEST_CASE(Message123) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ignoredPacketTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ignoredPacketTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message124) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa5,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa5,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4362,8 +5885,7 @@ BOOST_AUTO_TEST_CASE(Message124) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ignoredOctetTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("ignoredOctetTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4373,22 +5895,35 @@ BOOST_AUTO_TEST_CASE(Message124) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ignoredOctetTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ignoredOctetTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message125) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa6,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa6,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4396,8 +5931,7 @@ BOOST_AUTO_TEST_CASE(Message125) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("notSentFlowTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("notSentFlowTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4407,22 +5941,35 @@ BOOST_AUTO_TEST_CASE(Message125) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("notSentFlowTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("notSentFlowTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message126) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4430,8 +5977,7 @@ BOOST_AUTO_TEST_CASE(Message126) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("notSentPacketTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("notSentPacketTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4441,22 +5987,35 @@ BOOST_AUTO_TEST_CASE(Message126) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("notSentPacketTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("notSentPacketTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message127) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa8,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa8,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4464,8 +6023,7 @@ BOOST_AUTO_TEST_CASE(Message127) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("notSentOctetTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("notSentOctetTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4475,22 +6033,35 @@ BOOST_AUTO_TEST_CASE(Message127) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("notSentOctetTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("notSentOctetTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message128) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa9,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xa9,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4498,8 +6069,7 @@ BOOST_AUTO_TEST_CASE(Message128) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("destinationIPv6Prefix");
+      const IPFIX::InfoElement* ie = model.lookupIE("destinationIPv6Prefix");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4509,22 +6079,38 @@ BOOST_AUTO_TEST_CASE(Message128) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("destinationIPv6Prefix"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("destinationIPv6Prefix"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message129) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xaa,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xaa,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4532,8 +6118,7 @@ BOOST_AUTO_TEST_CASE(Message129) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceIPv6Prefix");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceIPv6Prefix");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4543,22 +6128,38 @@ BOOST_AUTO_TEST_CASE(Message129) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceIPv6Prefix"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("sourceIPv6Prefix"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message130) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xab,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xab,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4566,8 +6167,7 @@ BOOST_AUTO_TEST_CASE(Message130) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postOctetTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("postOctetTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4577,22 +6177,35 @@ BOOST_AUTO_TEST_CASE(Message130) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postOctetTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postOctetTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message131) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xac,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xac,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4600,8 +6213,7 @@ BOOST_AUTO_TEST_CASE(Message131) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postPacketTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("postPacketTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4611,22 +6223,35 @@ BOOST_AUTO_TEST_CASE(Message131) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postPacketTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postPacketTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message132) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xad,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xad,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4634,8 +6259,7 @@ BOOST_AUTO_TEST_CASE(Message132) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("flowKeyIndicator");
+      const IPFIX::InfoElement* ie = model.lookupIE("flowKeyIndicator");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4645,22 +6269,35 @@ BOOST_AUTO_TEST_CASE(Message132) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("flowKeyIndicator"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("flowKeyIndicator"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message133) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xae,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xae,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4668,8 +6305,7 @@ BOOST_AUTO_TEST_CASE(Message133) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postMCastPacketTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("postMCastPacketTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4679,22 +6315,35 @@ BOOST_AUTO_TEST_CASE(Message133) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postMCastPacketTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postMCastPacketTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message134) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xaf,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xaf,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4702,8 +6351,7 @@ BOOST_AUTO_TEST_CASE(Message134) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postMCastOctetTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("postMCastOctetTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4713,22 +6361,35 @@ BOOST_AUTO_TEST_CASE(Message134) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postMCastOctetTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postMCastOctetTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message135) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4736,8 +6397,7 @@ BOOST_AUTO_TEST_CASE(Message135) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("icmpTypeIPv4");
+      const IPFIX::InfoElement* ie = model.lookupIE("icmpTypeIPv4");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4747,22 +6407,35 @@ BOOST_AUTO_TEST_CASE(Message135) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("icmpTypeIPv4"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("icmpTypeIPv4"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message136) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb1,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb1,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4770,8 +6443,7 @@ BOOST_AUTO_TEST_CASE(Message136) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("icmpCodeIPv4");
+      const IPFIX::InfoElement* ie = model.lookupIE("icmpCodeIPv4");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4781,22 +6453,35 @@ BOOST_AUTO_TEST_CASE(Message136) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("icmpCodeIPv4"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("icmpCodeIPv4"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message137) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb2,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb2,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4804,8 +6489,7 @@ BOOST_AUTO_TEST_CASE(Message137) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("icmpTypeIPv6");
+      const IPFIX::InfoElement* ie = model.lookupIE("icmpTypeIPv6");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4815,22 +6499,35 @@ BOOST_AUTO_TEST_CASE(Message137) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("icmpTypeIPv6"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("icmpTypeIPv6"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message138) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb3,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb3,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4838,8 +6535,7 @@ BOOST_AUTO_TEST_CASE(Message138) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("icmpCodeIPv6");
+      const IPFIX::InfoElement* ie = model.lookupIE("icmpCodeIPv6");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4849,22 +6545,35 @@ BOOST_AUTO_TEST_CASE(Message138) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("icmpCodeIPv6"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("icmpCodeIPv6"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message139) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb4,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb4,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4872,8 +6581,7 @@ BOOST_AUTO_TEST_CASE(Message139) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("udpSourcePort");
+      const IPFIX::InfoElement* ie = model.lookupIE("udpSourcePort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4883,22 +6591,35 @@ BOOST_AUTO_TEST_CASE(Message139) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("udpSourcePort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("udpSourcePort"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message140) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb5,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb5,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4906,8 +6627,7 @@ BOOST_AUTO_TEST_CASE(Message140) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("udpDestinationPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("udpDestinationPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4917,22 +6637,35 @@ BOOST_AUTO_TEST_CASE(Message140) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("udpDestinationPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("udpDestinationPort"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message141) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb6,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb6,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4940,8 +6673,7 @@ BOOST_AUTO_TEST_CASE(Message141) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpSourcePort");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpSourcePort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4951,22 +6683,35 @@ BOOST_AUTO_TEST_CASE(Message141) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpSourcePort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpSourcePort"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message142) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb7,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb7,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -4974,8 +6719,7 @@ BOOST_AUTO_TEST_CASE(Message142) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpDestinationPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpDestinationPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -4985,22 +6729,35 @@ BOOST_AUTO_TEST_CASE(Message142) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpDestinationPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpDestinationPort"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message143) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb8,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb8,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5008,8 +6765,7 @@ BOOST_AUTO_TEST_CASE(Message143) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpSequenceNumber");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpSequenceNumber");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5019,22 +6775,35 @@ BOOST_AUTO_TEST_CASE(Message143) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpSequenceNumber"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpSequenceNumber"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message144) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xb9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5042,8 +6811,7 @@ BOOST_AUTO_TEST_CASE(Message144) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpAcknowledgementNumber");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpAcknowledgementNumber");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5053,22 +6821,35 @@ BOOST_AUTO_TEST_CASE(Message144) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpAcknowledgementNumber"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpAcknowledgementNumber"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message145) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xba,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xba,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5076,8 +6857,7 @@ BOOST_AUTO_TEST_CASE(Message145) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpWindowSize");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpWindowSize");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5087,22 +6867,35 @@ BOOST_AUTO_TEST_CASE(Message145) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpWindowSize"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpWindowSize"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message146) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbb,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbb,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5110,8 +6903,7 @@ BOOST_AUTO_TEST_CASE(Message146) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpUrgentPointer");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpUrgentPointer");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5121,22 +6913,35 @@ BOOST_AUTO_TEST_CASE(Message146) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpUrgentPointer"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpUrgentPointer"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message147) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbc,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbc,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5144,8 +6949,7 @@ BOOST_AUTO_TEST_CASE(Message147) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpHeaderLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpHeaderLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5155,22 +6959,35 @@ BOOST_AUTO_TEST_CASE(Message147) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpHeaderLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpHeaderLength"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message148) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbd,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbd,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5178,8 +6995,7 @@ BOOST_AUTO_TEST_CASE(Message148) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipHeaderLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipHeaderLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5189,22 +7005,35 @@ BOOST_AUTO_TEST_CASE(Message148) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipHeaderLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipHeaderLength"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message149) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbe,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbe,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5212,8 +7041,7 @@ BOOST_AUTO_TEST_CASE(Message149) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("totalLengthIPv4");
+      const IPFIX::InfoElement* ie = model.lookupIE("totalLengthIPv4");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5223,22 +7051,35 @@ BOOST_AUTO_TEST_CASE(Message149) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("totalLengthIPv4"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("totalLengthIPv4"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message150) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbf,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xbf,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5246,8 +7087,7 @@ BOOST_AUTO_TEST_CASE(Message150) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("payloadLengthIPv6");
+      const IPFIX::InfoElement* ie = model.lookupIE("payloadLengthIPv6");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5257,22 +7097,35 @@ BOOST_AUTO_TEST_CASE(Message150) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("payloadLengthIPv6"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("payloadLengthIPv6"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message151) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5280,8 +7133,7 @@ BOOST_AUTO_TEST_CASE(Message151) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipTTL");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipTTL");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5291,22 +7143,35 @@ BOOST_AUTO_TEST_CASE(Message151) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipTTL"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipTTL"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message152) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc1,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc1,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5314,8 +7179,7 @@ BOOST_AUTO_TEST_CASE(Message152) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("nextHeaderIPv6");
+      const IPFIX::InfoElement* ie = model.lookupIE("nextHeaderIPv6");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5325,22 +7189,35 @@ BOOST_AUTO_TEST_CASE(Message152) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("nextHeaderIPv6"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("nextHeaderIPv6"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message153) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc2,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc2,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5348,8 +7225,7 @@ BOOST_AUTO_TEST_CASE(Message153) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsPayloadLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsPayloadLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5359,22 +7235,35 @@ BOOST_AUTO_TEST_CASE(Message153) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsPayloadLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsPayloadLength"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message154) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc3,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc3,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5382,8 +7271,7 @@ BOOST_AUTO_TEST_CASE(Message154) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipDiffServCodePoint");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipDiffServCodePoint");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5393,22 +7281,35 @@ BOOST_AUTO_TEST_CASE(Message154) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipDiffServCodePoint"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipDiffServCodePoint"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message155) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc4,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc4,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5416,8 +7317,7 @@ BOOST_AUTO_TEST_CASE(Message155) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipPrecedence");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipPrecedence");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5427,22 +7327,35 @@ BOOST_AUTO_TEST_CASE(Message155) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipPrecedence"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipPrecedence"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message156) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc5,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc5,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5450,8 +7363,7 @@ BOOST_AUTO_TEST_CASE(Message156) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("fragmentFlags");
+      const IPFIX::InfoElement* ie = model.lookupIE("fragmentFlags");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5461,22 +7373,35 @@ BOOST_AUTO_TEST_CASE(Message156) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("fragmentFlags"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("fragmentFlags"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message157) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc6,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc6,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5484,8 +7409,7 @@ BOOST_AUTO_TEST_CASE(Message157) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("octetDeltaSumOfSquares");
+      const IPFIX::InfoElement* ie = model.lookupIE("octetDeltaSumOfSquares");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5495,22 +7419,35 @@ BOOST_AUTO_TEST_CASE(Message157) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("octetDeltaSumOfSquares"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("octetDeltaSumOfSquares"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message158) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5518,8 +7455,7 @@ BOOST_AUTO_TEST_CASE(Message158) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("octetTotalSumOfSquares");
+      const IPFIX::InfoElement* ie = model.lookupIE("octetTotalSumOfSquares");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5529,22 +7465,35 @@ BOOST_AUTO_TEST_CASE(Message158) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("octetTotalSumOfSquares"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("octetTotalSumOfSquares"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message159) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc8,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc8,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5552,8 +7501,7 @@ BOOST_AUTO_TEST_CASE(Message159) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelTTL");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsTopLabelTTL");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5563,22 +7511,35 @@ BOOST_AUTO_TEST_CASE(Message159) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsTopLabelTTL"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsTopLabelTTL"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message160) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xc9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5586,8 +7547,7 @@ BOOST_AUTO_TEST_CASE(Message160) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5597,22 +7557,35 @@ BOOST_AUTO_TEST_CASE(Message160) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackLength"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message161) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xca,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xca,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5620,8 +7593,7 @@ BOOST_AUTO_TEST_CASE(Message161) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackDepth");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackDepth");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5631,22 +7603,35 @@ BOOST_AUTO_TEST_CASE(Message161) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackDepth"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackDepth"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message162) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcb,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcb,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5654,8 +7639,7 @@ BOOST_AUTO_TEST_CASE(Message162) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsTopLabelExp");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsTopLabelExp");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5665,22 +7649,35 @@ BOOST_AUTO_TEST_CASE(Message162) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsTopLabelExp"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsTopLabelExp"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message163) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcc,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcc,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5688,8 +7685,7 @@ BOOST_AUTO_TEST_CASE(Message163) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipPayloadLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipPayloadLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5699,22 +7695,35 @@ BOOST_AUTO_TEST_CASE(Message163) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipPayloadLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipPayloadLength"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message164) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcd,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcd,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5722,8 +7731,7 @@ BOOST_AUTO_TEST_CASE(Message164) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("udpMessageLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("udpMessageLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5733,22 +7741,35 @@ BOOST_AUTO_TEST_CASE(Message164) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("udpMessageLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("udpMessageLength"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message165) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xce,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xce,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5756,8 +7777,7 @@ BOOST_AUTO_TEST_CASE(Message165) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("isMulticast");
+      const IPFIX::InfoElement* ie = model.lookupIE("isMulticast");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5767,22 +7787,35 @@ BOOST_AUTO_TEST_CASE(Message165) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("isMulticast"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("isMulticast"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message166) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcf,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xcf,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5790,8 +7823,7 @@ BOOST_AUTO_TEST_CASE(Message166) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipv4IHL");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipv4IHL");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5801,22 +7833,35 @@ BOOST_AUTO_TEST_CASE(Message166) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipv4IHL"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipv4IHL"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message167) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd0,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd0,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5824,8 +7869,7 @@ BOOST_AUTO_TEST_CASE(Message167) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipv4Options");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipv4Options");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5835,22 +7879,35 @@ BOOST_AUTO_TEST_CASE(Message167) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipv4Options"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipv4Options"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message168) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd1,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd1,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5858,8 +7915,7 @@ BOOST_AUTO_TEST_CASE(Message168) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpOptions");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpOptions");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5869,22 +7925,35 @@ BOOST_AUTO_TEST_CASE(Message168) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpOptions"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpOptions"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message169) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd2,0x00,0x01,0x03,0xe9,0x00,0x05,0x12  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd2,0x00,0x01,0x03,0xe9,0x00,0x05,0x12  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5892,8 +7961,7 @@ BOOST_AUTO_TEST_CASE(Message169) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(1, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("paddingOctets");
+      const IPFIX::InfoElement* ie = model.lookupIE("paddingOctets");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 1, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5903,22 +7971,37 @@ BOOST_AUTO_TEST_CASE(Message169) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("paddingOctets"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("paddingOctets"), 1);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("paddingOctets"), "[18]", 1);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message170) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd3,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd3,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5926,8 +8009,7 @@ BOOST_AUTO_TEST_CASE(Message170) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("collectorIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("collectorIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5937,22 +8019,35 @@ BOOST_AUTO_TEST_CASE(Message170) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("collectorIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("collectorIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message171) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd4,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd4,0x00,0x10,0x03,0xe9,0x00,0x14,0x00,0x01,0x02,0x00,0x00,0x03,0x04,0x00,0x00,0x05,0x06,0x00,0x00,0x07,0x08,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5960,8 +8055,7 @@ BOOST_AUTO_TEST_CASE(Message171) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       MyIp6Address value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("collectorIPv6Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("collectorIPv6Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -5971,22 +8065,38 @@ BOOST_AUTO_TEST_CASE(Message171) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("collectorIPv6Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    MyIp6Address a = MyIp6Address(0x0001, 0x0200, 0x0003, 0x0400, 0x0005, 0x0600, 0x0007, 0x0800);
+    buf_writer.putValue(model.lookupIE("collectorIPv6Address"), &a, sizeof a);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message172) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd5,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd5,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -5994,8 +8104,7 @@ BOOST_AUTO_TEST_CASE(Message172) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exportInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("exportInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6005,22 +8114,35 @@ BOOST_AUTO_TEST_CASE(Message172) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exportInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exportInterface"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message173) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6028,8 +8150,7 @@ BOOST_AUTO_TEST_CASE(Message173) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exportProtocolVersion");
+      const IPFIX::InfoElement* ie = model.lookupIE("exportProtocolVersion");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6039,22 +8160,35 @@ BOOST_AUTO_TEST_CASE(Message173) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exportProtocolVersion"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exportProtocolVersion"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message174) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd7,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd7,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6062,8 +8196,7 @@ BOOST_AUTO_TEST_CASE(Message174) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exportTransportProtocol");
+      const IPFIX::InfoElement* ie = model.lookupIE("exportTransportProtocol");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6073,22 +8206,35 @@ BOOST_AUTO_TEST_CASE(Message174) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exportTransportProtocol"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exportTransportProtocol"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message175) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd8,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd8,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6096,8 +8242,7 @@ BOOST_AUTO_TEST_CASE(Message175) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("collectorTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("collectorTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6107,22 +8252,35 @@ BOOST_AUTO_TEST_CASE(Message175) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("collectorTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("collectorTransportPort"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message176) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd9,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xd9,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6130,8 +8288,7 @@ BOOST_AUTO_TEST_CASE(Message176) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("exporterTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("exporterTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6141,22 +8298,35 @@ BOOST_AUTO_TEST_CASE(Message176) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("exporterTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("exporterTransportPort"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message177) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xda,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xda,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6164,8 +8334,7 @@ BOOST_AUTO_TEST_CASE(Message177) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpSynTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpSynTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6175,22 +8344,35 @@ BOOST_AUTO_TEST_CASE(Message177) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpSynTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpSynTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message178) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdb,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdb,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6198,8 +8380,7 @@ BOOST_AUTO_TEST_CASE(Message178) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpFinTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpFinTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6209,22 +8390,35 @@ BOOST_AUTO_TEST_CASE(Message178) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpFinTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpFinTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message179) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdc,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdc,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6232,8 +8426,7 @@ BOOST_AUTO_TEST_CASE(Message179) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpRstTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpRstTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6243,22 +8436,35 @@ BOOST_AUTO_TEST_CASE(Message179) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpRstTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpRstTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message180) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdd,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdd,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6266,8 +8472,7 @@ BOOST_AUTO_TEST_CASE(Message180) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpPshTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpPshTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6277,22 +8482,35 @@ BOOST_AUTO_TEST_CASE(Message180) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpPshTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpPshTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message181) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xde,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xde,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6300,8 +8518,7 @@ BOOST_AUTO_TEST_CASE(Message181) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpAckTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpAckTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6311,22 +8528,35 @@ BOOST_AUTO_TEST_CASE(Message181) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpAckTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpAckTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message182) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdf,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xdf,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6334,8 +8564,7 @@ BOOST_AUTO_TEST_CASE(Message182) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpUrgTotalCount");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpUrgTotalCount");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6345,22 +8574,35 @@ BOOST_AUTO_TEST_CASE(Message182) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpUrgTotalCount"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpUrgTotalCount"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message183) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe0,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe0,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6368,8 +8610,7 @@ BOOST_AUTO_TEST_CASE(Message183) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipTotalLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipTotalLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6379,22 +8620,35 @@ BOOST_AUTO_TEST_CASE(Message183) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipTotalLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipTotalLength"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message184) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe1,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe1,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6402,8 +8656,7 @@ BOOST_AUTO_TEST_CASE(Message184) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postNATSourceIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("postNATSourceIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6413,22 +8666,35 @@ BOOST_AUTO_TEST_CASE(Message184) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postNATSourceIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postNATSourceIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message185) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe2,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe2,0x00,0x04,0x03,0xe9,0x00,0x08,0x7f,0x00,0x00,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6436,8 +8702,7 @@ BOOST_AUTO_TEST_CASE(Message185) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postNATDestinationIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("postNATDestinationIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6447,22 +8712,35 @@ BOOST_AUTO_TEST_CASE(Message185) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postNATDestinationIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postNATDestinationIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message186) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe3,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe3,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6470,8 +8748,7 @@ BOOST_AUTO_TEST_CASE(Message186) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postNAPTSourceTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("postNAPTSourceTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6481,22 +8758,35 @@ BOOST_AUTO_TEST_CASE(Message186) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postNAPTSourceTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postNAPTSourceTransportPort"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message187) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe4,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe4,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6504,8 +8794,7 @@ BOOST_AUTO_TEST_CASE(Message187) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postNAPTDestinationTransportPort");
+      const IPFIX::InfoElement* ie = model.lookupIE("postNAPTDestinationTransportPort");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6515,22 +8804,35 @@ BOOST_AUTO_TEST_CASE(Message187) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postNAPTDestinationTransportPort"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postNAPTDestinationTransportPort"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message188) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe5,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe5,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6538,8 +8840,7 @@ BOOST_AUTO_TEST_CASE(Message188) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("natOriginatingAddressRealm");
+      const IPFIX::InfoElement* ie = model.lookupIE("natOriginatingAddressRealm");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6549,22 +8850,35 @@ BOOST_AUTO_TEST_CASE(Message188) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("natOriginatingAddressRealm"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("natOriginatingAddressRealm"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message189) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6572,8 +8886,7 @@ BOOST_AUTO_TEST_CASE(Message189) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("natEvent");
+      const IPFIX::InfoElement* ie = model.lookupIE("natEvent");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6583,22 +8896,35 @@ BOOST_AUTO_TEST_CASE(Message189) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("natEvent"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("natEvent"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message190) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe7,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6606,8 +8932,7 @@ BOOST_AUTO_TEST_CASE(Message190) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("initiatorOctets");
+      const IPFIX::InfoElement* ie = model.lookupIE("initiatorOctets");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6617,22 +8942,35 @@ BOOST_AUTO_TEST_CASE(Message190) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("initiatorOctets"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("initiatorOctets"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message191) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe8,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe8,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6640,8 +8978,7 @@ BOOST_AUTO_TEST_CASE(Message191) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("responderOctets");
+      const IPFIX::InfoElement* ie = model.lookupIE("responderOctets");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6651,22 +8988,35 @@ BOOST_AUTO_TEST_CASE(Message191) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("responderOctets"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("responderOctets"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message192) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe9,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xe9,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6674,8 +9024,7 @@ BOOST_AUTO_TEST_CASE(Message192) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("firewallEvent");
+      const IPFIX::InfoElement* ie = model.lookupIE("firewallEvent");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6685,22 +9034,35 @@ BOOST_AUTO_TEST_CASE(Message192) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("firewallEvent"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("firewallEvent"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message193) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xea,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xea,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6708,8 +9070,7 @@ BOOST_AUTO_TEST_CASE(Message193) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ingressVRFID");
+      const IPFIX::InfoElement* ie = model.lookupIE("ingressVRFID");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6719,22 +9080,35 @@ BOOST_AUTO_TEST_CASE(Message193) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ingressVRFID"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ingressVRFID"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message194) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xeb,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xeb,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6742,8 +9116,7 @@ BOOST_AUTO_TEST_CASE(Message194) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("egressVRFID");
+      const IPFIX::InfoElement* ie = model.lookupIE("egressVRFID");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6753,22 +9126,35 @@ BOOST_AUTO_TEST_CASE(Message194) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("egressVRFID"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("egressVRFID"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message195) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x26,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xec,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x48,0x69,0x2d,0x48,0x6f  };
+    0x00,0x0a,0x00,0x26,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xec,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x48,0x69,0x2d,0x48,0x6f  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6776,8 +9162,7 @@ BOOST_AUTO_TEST_CASE(Message195) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(5, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("VRFname");
+      const IPFIX::InfoElement* ie = model.lookupIE("VRFname");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 5, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6787,22 +9172,37 @@ BOOST_AUTO_TEST_CASE(Message195) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("VRFname"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("VRFname"), 5);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("VRFname"), "Hi-Ho", 5);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message196) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xed,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xed,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6810,8 +9210,7 @@ BOOST_AUTO_TEST_CASE(Message196) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postMplsTopLabelExp");
+      const IPFIX::InfoElement* ie = model.lookupIE("postMplsTopLabelExp");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6821,22 +9220,35 @@ BOOST_AUTO_TEST_CASE(Message196) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postMplsTopLabelExp"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postMplsTopLabelExp"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message197) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xee,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xee,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6844,8 +9256,7 @@ BOOST_AUTO_TEST_CASE(Message197) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("tcpWindowScale");
+      const IPFIX::InfoElement* ie = model.lookupIE("tcpWindowScale");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6855,22 +9266,35 @@ BOOST_AUTO_TEST_CASE(Message197) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("tcpWindowScale"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("tcpWindowScale"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message198) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xef,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xef,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6878,8 +9302,7 @@ BOOST_AUTO_TEST_CASE(Message198) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("biflowDirection");
+      const IPFIX::InfoElement* ie = model.lookupIE("biflowDirection");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6889,22 +9312,35 @@ BOOST_AUTO_TEST_CASE(Message198) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("biflowDirection"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("biflowDirection"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message199) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf0,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6912,8 +9348,7 @@ BOOST_AUTO_TEST_CASE(Message199) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ethernetHeaderLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("ethernetHeaderLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6923,22 +9358,35 @@ BOOST_AUTO_TEST_CASE(Message199) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ethernetHeaderLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ethernetHeaderLength"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message200) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf1,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf1,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6946,8 +9394,7 @@ BOOST_AUTO_TEST_CASE(Message200) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ethernetPayloadLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("ethernetPayloadLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6957,22 +9404,35 @@ BOOST_AUTO_TEST_CASE(Message200) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ethernetPayloadLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ethernetPayloadLength"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message201) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf2,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf2,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -6980,8 +9440,7 @@ BOOST_AUTO_TEST_CASE(Message201) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ethernetTotalLength");
+      const IPFIX::InfoElement* ie = model.lookupIE("ethernetTotalLength");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -6991,22 +9450,35 @@ BOOST_AUTO_TEST_CASE(Message201) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ethernetTotalLength"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ethernetTotalLength"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message202) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf3,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf3,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7014,8 +9486,7 @@ BOOST_AUTO_TEST_CASE(Message202) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("dot1qVlanId");
+      const IPFIX::InfoElement* ie = model.lookupIE("dot1qVlanId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7025,22 +9496,35 @@ BOOST_AUTO_TEST_CASE(Message202) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("dot1qVlanId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("dot1qVlanId"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message203) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf4,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf4,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7048,8 +9532,7 @@ BOOST_AUTO_TEST_CASE(Message203) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("dot1qPriority");
+      const IPFIX::InfoElement* ie = model.lookupIE("dot1qPriority");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7059,22 +9542,35 @@ BOOST_AUTO_TEST_CASE(Message203) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("dot1qPriority"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("dot1qPriority"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message204) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf5,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf5,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7082,8 +9578,7 @@ BOOST_AUTO_TEST_CASE(Message204) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("dot1qCustomerVlanId");
+      const IPFIX::InfoElement* ie = model.lookupIE("dot1qCustomerVlanId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7093,22 +9588,35 @@ BOOST_AUTO_TEST_CASE(Message204) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("dot1qCustomerVlanId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("dot1qCustomerVlanId"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message205) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf6,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7116,8 +9624,7 @@ BOOST_AUTO_TEST_CASE(Message205) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("dot1qCustomerPriority");
+      const IPFIX::InfoElement* ie = model.lookupIE("dot1qCustomerPriority");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7127,22 +9634,35 @@ BOOST_AUTO_TEST_CASE(Message205) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("dot1qCustomerPriority"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("dot1qCustomerPriority"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message206) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x84,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf7,0x00,0x64,0x03,0xe9,0x00,0x68,0x4e,0x6f,0x20,0x49,0x64,0x65,0x61,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x84,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf7,0x00,0x64,0x03,0xe9,0x00,0x68,0x4e,0x6f,0x20,0x49,0x64,0x65,0x61,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7150,8 +9670,7 @@ BOOST_AUTO_TEST_CASE(Message206) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(7, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("metroEvcId");
+      const IPFIX::InfoElement* ie = model.lookupIE("metroEvcId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 7, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7161,22 +9680,37 @@ BOOST_AUTO_TEST_CASE(Message206) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("metroEvcId"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("metroEvcId"), 7);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("metroEvcId"), "No Idea", 7);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message207) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf8,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf8,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7184,8 +9718,7 @@ BOOST_AUTO_TEST_CASE(Message207) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("metroEvcType");
+      const IPFIX::InfoElement* ie = model.lookupIE("metroEvcType");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7195,22 +9728,35 @@ BOOST_AUTO_TEST_CASE(Message207) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("metroEvcType"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("metroEvcType"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message208) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xf9,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7218,8 +9764,7 @@ BOOST_AUTO_TEST_CASE(Message208) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("pseudoWireId");
+      const IPFIX::InfoElement* ie = model.lookupIE("pseudoWireId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7229,22 +9774,35 @@ BOOST_AUTO_TEST_CASE(Message208) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("pseudoWireId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("pseudoWireId"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message209) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfa,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfa,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7252,8 +9810,7 @@ BOOST_AUTO_TEST_CASE(Message209) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("pseudoWireType");
+      const IPFIX::InfoElement* ie = model.lookupIE("pseudoWireType");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7263,22 +9820,35 @@ BOOST_AUTO_TEST_CASE(Message209) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("pseudoWireType"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("pseudoWireType"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message210) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfb,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfb,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7286,8 +9856,7 @@ BOOST_AUTO_TEST_CASE(Message210) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("pseudoWireControlWord");
+      const IPFIX::InfoElement* ie = model.lookupIE("pseudoWireControlWord");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7297,22 +9866,35 @@ BOOST_AUTO_TEST_CASE(Message210) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("pseudoWireControlWord"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("pseudoWireControlWord"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message211) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfc,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfc,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7320,8 +9902,7 @@ BOOST_AUTO_TEST_CASE(Message211) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ingressPhysicalInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("ingressPhysicalInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7331,22 +9912,35 @@ BOOST_AUTO_TEST_CASE(Message211) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ingressPhysicalInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ingressPhysicalInterface"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message212) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfd,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfd,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7354,8 +9948,7 @@ BOOST_AUTO_TEST_CASE(Message212) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("egressPhysicalInterface");
+      const IPFIX::InfoElement* ie = model.lookupIE("egressPhysicalInterface");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7365,22 +9958,35 @@ BOOST_AUTO_TEST_CASE(Message212) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("egressPhysicalInterface"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("egressPhysicalInterface"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message213) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfe,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xfe,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7388,8 +9994,7 @@ BOOST_AUTO_TEST_CASE(Message213) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postDot1qVlanId");
+      const IPFIX::InfoElement* ie = model.lookupIE("postDot1qVlanId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7399,22 +10004,35 @@ BOOST_AUTO_TEST_CASE(Message213) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postDot1qVlanId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postDot1qVlanId"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message214) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xff,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0xff,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7422,8 +10040,7 @@ BOOST_AUTO_TEST_CASE(Message214) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postDot1qCustomerVlanId");
+      const IPFIX::InfoElement* ie = model.lookupIE("postDot1qCustomerVlanId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7433,22 +10050,35 @@ BOOST_AUTO_TEST_CASE(Message214) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postDot1qCustomerVlanId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postDot1qCustomerVlanId"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message215) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x00,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x00,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7456,8 +10086,7 @@ BOOST_AUTO_TEST_CASE(Message215) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ethernetType");
+      const IPFIX::InfoElement* ie = model.lookupIE("ethernetType");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7467,22 +10096,35 @@ BOOST_AUTO_TEST_CASE(Message215) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ethernetType"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ethernetType"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message216) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x01,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x01,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7490,8 +10132,7 @@ BOOST_AUTO_TEST_CASE(Message216) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("postIpPrecedence");
+      const IPFIX::InfoElement* ie = model.lookupIE("postIpPrecedence");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7501,22 +10142,35 @@ BOOST_AUTO_TEST_CASE(Message216) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("postIpPrecedence"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("postIpPrecedence"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message217) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2d,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2d,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7524,8 +10178,7 @@ BOOST_AUTO_TEST_CASE(Message217) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("selectionSequenceId");
+      const IPFIX::InfoElement* ie = model.lookupIE("selectionSequenceId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7535,22 +10188,35 @@ BOOST_AUTO_TEST_CASE(Message217) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("selectionSequenceId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("selectionSequenceId"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message218) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2e,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2e,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7558,8 +10224,7 @@ BOOST_AUTO_TEST_CASE(Message218) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("selectorId");
+      const IPFIX::InfoElement* ie = model.lookupIE("selectorId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7569,22 +10234,35 @@ BOOST_AUTO_TEST_CASE(Message218) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("selectorId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("selectorId"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message219) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2f,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x2f,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7592,8 +10270,7 @@ BOOST_AUTO_TEST_CASE(Message219) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("informationElementId");
+      const IPFIX::InfoElement* ie = model.lookupIE("informationElementId");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7603,22 +10280,35 @@ BOOST_AUTO_TEST_CASE(Message219) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("informationElementId"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("informationElementId"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message220) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x30,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x30,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7626,8 +10316,7 @@ BOOST_AUTO_TEST_CASE(Message220) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("selectorAlgorithm");
+      const IPFIX::InfoElement* ie = model.lookupIE("selectorAlgorithm");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7637,22 +10326,35 @@ BOOST_AUTO_TEST_CASE(Message220) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("selectorAlgorithm"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("selectorAlgorithm"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message221) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x31,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x31,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7660,8 +10362,7 @@ BOOST_AUTO_TEST_CASE(Message221) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingPacketInterval");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingPacketInterval");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7671,22 +10372,35 @@ BOOST_AUTO_TEST_CASE(Message221) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingPacketInterval"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("samplingPacketInterval"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message222) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x32,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x32,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7694,8 +10408,7 @@ BOOST_AUTO_TEST_CASE(Message222) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingPacketSpace");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingPacketSpace");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7705,22 +10418,35 @@ BOOST_AUTO_TEST_CASE(Message222) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingPacketSpace"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("samplingPacketSpace"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message223) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x33,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x33,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7728,8 +10454,7 @@ BOOST_AUTO_TEST_CASE(Message223) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingTimeInterval");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingTimeInterval");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7739,22 +10464,35 @@ BOOST_AUTO_TEST_CASE(Message223) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingTimeInterval"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("samplingTimeInterval"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message224) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x34,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x34,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7762,8 +10500,7 @@ BOOST_AUTO_TEST_CASE(Message224) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingTimeSpace");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingTimeSpace");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7773,22 +10510,35 @@ BOOST_AUTO_TEST_CASE(Message224) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingTimeSpace"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("samplingTimeSpace"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message225) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x35,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x35,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7796,8 +10546,7 @@ BOOST_AUTO_TEST_CASE(Message225) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingSize");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingSize");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7807,22 +10556,35 @@ BOOST_AUTO_TEST_CASE(Message225) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingSize"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("samplingSize"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message226) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x36,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x36,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7830,8 +10592,7 @@ BOOST_AUTO_TEST_CASE(Message226) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingPopulation");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingPopulation");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7841,22 +10602,35 @@ BOOST_AUTO_TEST_CASE(Message226) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingPopulation"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("samplingPopulation"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message227) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x37,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x37,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7864,8 +10638,7 @@ BOOST_AUTO_TEST_CASE(Message227) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       double value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingProbability");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingProbability");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7875,22 +10648,38 @@ BOOST_AUTO_TEST_CASE(Message227) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingProbability"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    double d = 0x0.fP0;
+    buf_writer.putValue(model.lookupIE("samplingProbability"), &d, sizeof d);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message228) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x26,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x39,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x12,0x34,0x56,0x78,0x9a  };
+    0x00,0x0a,0x00,0x26,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x39,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x12,0x34,0x56,0x78,0x9a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7898,8 +10687,7 @@ BOOST_AUTO_TEST_CASE(Message228) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(5, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipHeaderPacketSection");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipHeaderPacketSection");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 5, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7909,22 +10697,37 @@ BOOST_AUTO_TEST_CASE(Message228) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipHeaderPacketSection"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("ipHeaderPacketSection"), 5);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipHeaderPacketSection"), "[18, 52, 86, 120, 154]", 5);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message229) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x26,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3a,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x12,0x34,0x56,0x78,0x9a  };
+    0x00,0x0a,0x00,0x26,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3a,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x12,0x34,0x56,0x78,0x9a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7932,8 +10735,7 @@ BOOST_AUTO_TEST_CASE(Message229) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(5, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("ipPayloadPacketSection");
+      const IPFIX::InfoElement* ie = model.lookupIE("ipPayloadPacketSection");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 5, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7943,22 +10745,37 @@ BOOST_AUTO_TEST_CASE(Message229) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("ipPayloadPacketSection"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("ipPayloadPacketSection"), 5);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("ipPayloadPacketSection"), "[18, 52, 86, 120, 154]", 5);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message230) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x26,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3c,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x12,0x34,0x56,0x78,0x9a  };
+    0x00,0x0a,0x00,0x26,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3c,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x12,0x34,0x56,0x78,0x9a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -7966,8 +10783,7 @@ BOOST_AUTO_TEST_CASE(Message230) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(5, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsLabelStackSection");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsLabelStackSection");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 5, oc.offsetOf(ie), wt->ieFor(ie));
@@ -7977,22 +10793,37 @@ BOOST_AUTO_TEST_CASE(Message230) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsLabelStackSection"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsLabelStackSection"), 5);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsLabelStackSection"), "[18, 52, 86, 120, 154]", 5);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message231) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x26,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3d,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x12,0x34,0x56,0x78,0x9a  };
+    0x00,0x0a,0x00,0x26,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3d,0xff,0xff,0x03,0xe9,0x00,0x0a,0x05,0x12,0x34,0x56,0x78,0x9a  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8000,8 +10831,7 @@ BOOST_AUTO_TEST_CASE(Message231) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(5, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("mplsPayloadPacketSection");
+      const IPFIX::InfoElement* ie = model.lookupIE("mplsPayloadPacketSection");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 5, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8011,22 +10841,37 @@ BOOST_AUTO_TEST_CASE(Message231) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("mplsPayloadPacketSection"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("mplsPayloadPacketSection"), 5);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("mplsPayloadPacketSection"), "[18, 52, 86, 120, 154]", 5);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message232) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3e,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3e,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8034,8 +10879,7 @@ BOOST_AUTO_TEST_CASE(Message232) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("selectorIdTotalPktsObserved");
+      const IPFIX::InfoElement* ie = model.lookupIE("selectorIdTotalPktsObserved");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8045,22 +10889,35 @@ BOOST_AUTO_TEST_CASE(Message232) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("selectorIdTotalPktsObserved"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("selectorIdTotalPktsObserved"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message233) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3f,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x3f,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8068,8 +10925,7 @@ BOOST_AUTO_TEST_CASE(Message233) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("selectorIdTotalPktsSelected");
+      const IPFIX::InfoElement* ie = model.lookupIE("selectorIdTotalPktsSelected");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8079,22 +10935,35 @@ BOOST_AUTO_TEST_CASE(Message233) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("selectorIdTotalPktsSelected"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("selectorIdTotalPktsSelected"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message234) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x40,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x40,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8102,8 +10971,7 @@ BOOST_AUTO_TEST_CASE(Message234) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       double value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("absoluteError");
+      const IPFIX::InfoElement* ie = model.lookupIE("absoluteError");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8113,22 +10981,38 @@ BOOST_AUTO_TEST_CASE(Message234) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("absoluteError"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    double d = 0x0.fP0;
+    buf_writer.putValue(model.lookupIE("absoluteError"), &d, sizeof d);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message235) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x41,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x41,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8136,8 +11020,7 @@ BOOST_AUTO_TEST_CASE(Message235) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       double value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("relativeError");
+      const IPFIX::InfoElement* ie = model.lookupIE("relativeError");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8147,22 +11030,38 @@ BOOST_AUTO_TEST_CASE(Message235) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("relativeError"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    double d = 0x0.fP0;
+    buf_writer.putValue(model.lookupIE("relativeError"), &d, sizeof d);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message236) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x42,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x42,0x00,0x04,0x03,0xe9,0x00,0x08,0x12,0x34,0x56,0x78  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8170,8 +11069,7 @@ BOOST_AUTO_TEST_CASE(Message236) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("observationTimeSeconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("observationTimeSeconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8181,22 +11079,35 @@ BOOST_AUTO_TEST_CASE(Message236) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("observationTimeSeconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("observationTimeSeconds"), static_cast<uint32_t>(0x12345678));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message237) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x43,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x1f,0x7c  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x43,0x00,0x08,0x03,0xe9,0x00,0x0c,0x00,0x00,0x01,0x38,0xb4,0x67,0x1f,0x7c  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8204,8 +11115,7 @@ BOOST_AUTO_TEST_CASE(Message237) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("observationTimeMilliseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("observationTimeMilliseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8215,22 +11125,35 @@ BOOST_AUTO_TEST_CASE(Message237) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("observationTimeMilliseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("observationTimeMilliseconds"), static_cast<uint64_t>(0x00000138b4671f7cULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message238) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x44,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x44,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8238,8 +11161,7 @@ BOOST_AUTO_TEST_CASE(Message238) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("observationTimeMicroseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("observationTimeMicroseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8249,22 +11171,35 @@ BOOST_AUTO_TEST_CASE(Message238) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("observationTimeMicroseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("observationTimeMicroseconds"), static_cast<uint64_t>(0x500d6a45c00003ffULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message239) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x45,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x45,0x00,0x08,0x03,0xe9,0x00,0x0c,0x50,0x0d,0x6a,0x45,0xc0,0x00,0x03,0xff  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8272,8 +11207,7 @@ BOOST_AUTO_TEST_CASE(Message239) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("observationTimeNanoseconds");
+      const IPFIX::InfoElement* ie = model.lookupIE("observationTimeNanoseconds");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8283,22 +11217,35 @@ BOOST_AUTO_TEST_CASE(Message239) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("observationTimeNanoseconds"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("observationTimeNanoseconds"), static_cast<uint64_t>(0x500d6a45c00003ffULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message240) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x46,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x46,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8306,8 +11253,7 @@ BOOST_AUTO_TEST_CASE(Message240) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("digestHashValue");
+      const IPFIX::InfoElement* ie = model.lookupIE("digestHashValue");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8317,22 +11263,35 @@ BOOST_AUTO_TEST_CASE(Message240) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("digestHashValue"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("digestHashValue"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message241) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x47,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x47,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8340,8 +11299,7 @@ BOOST_AUTO_TEST_CASE(Message241) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("hashIPPayloadOffset");
+      const IPFIX::InfoElement* ie = model.lookupIE("hashIPPayloadOffset");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8351,22 +11309,35 @@ BOOST_AUTO_TEST_CASE(Message241) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("hashIPPayloadOffset"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("hashIPPayloadOffset"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message242) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x48,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x48,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8374,8 +11345,7 @@ BOOST_AUTO_TEST_CASE(Message242) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("hashIPPayloadSize");
+      const IPFIX::InfoElement* ie = model.lookupIE("hashIPPayloadSize");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8385,22 +11355,35 @@ BOOST_AUTO_TEST_CASE(Message242) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("hashIPPayloadSize"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("hashIPPayloadSize"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message243) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x49,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x49,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8408,8 +11391,7 @@ BOOST_AUTO_TEST_CASE(Message243) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("hashOutputRangeMin");
+      const IPFIX::InfoElement* ie = model.lookupIE("hashOutputRangeMin");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8419,22 +11401,35 @@ BOOST_AUTO_TEST_CASE(Message243) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("hashOutputRangeMin"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("hashOutputRangeMin"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message244) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4a,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8442,8 +11437,7 @@ BOOST_AUTO_TEST_CASE(Message244) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("hashOutputRangeMax");
+      const IPFIX::InfoElement* ie = model.lookupIE("hashOutputRangeMax");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8453,22 +11447,35 @@ BOOST_AUTO_TEST_CASE(Message244) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("hashOutputRangeMax"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("hashOutputRangeMax"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message245) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4b,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4b,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8476,8 +11483,7 @@ BOOST_AUTO_TEST_CASE(Message245) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("hashSelectedRangeMin");
+      const IPFIX::InfoElement* ie = model.lookupIE("hashSelectedRangeMin");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8487,22 +11493,35 @@ BOOST_AUTO_TEST_CASE(Message245) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("hashSelectedRangeMin"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("hashSelectedRangeMin"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message246) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4c,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4c,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8510,8 +11529,7 @@ BOOST_AUTO_TEST_CASE(Message246) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("hashSelectedRangeMax");
+      const IPFIX::InfoElement* ie = model.lookupIE("hashSelectedRangeMax");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8521,22 +11539,35 @@ BOOST_AUTO_TEST_CASE(Message246) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("hashSelectedRangeMax"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("hashSelectedRangeMax"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message247) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4d,0x00,0x01,0x03,0xe9,0x00,0x05,0x01  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4d,0x00,0x01,0x03,0xe9,0x00,0x05,0x01  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8544,8 +11575,7 @@ BOOST_AUTO_TEST_CASE(Message247) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("hashDigestOutput");
+      const IPFIX::InfoElement* ie = model.lookupIE("hashDigestOutput");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8555,22 +11585,35 @@ BOOST_AUTO_TEST_CASE(Message247) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("hashDigestOutput"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("hashDigestOutput"), static_cast<uint8_t>(0x1));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message248) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4e,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4e,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8578,8 +11621,7 @@ BOOST_AUTO_TEST_CASE(Message248) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("hashInitialiserValue");
+      const IPFIX::InfoElement* ie = model.lookupIE("hashInitialiserValue");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8589,22 +11631,35 @@ BOOST_AUTO_TEST_CASE(Message248) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("hashInitialiserValue"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("hashInitialiserValue"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message249) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4f,0xff,0xff,0x03,0xe9,0x00,0x0c,0x07,0x4e,0x6f,0x20,0x49,0x64,0x65,0x61  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x4f,0xff,0xff,0x03,0xe9,0x00,0x0c,0x07,0x4e,0x6f,0x20,0x49,0x64,0x65,0x61  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8612,8 +11667,7 @@ BOOST_AUTO_TEST_CASE(Message249) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(7, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("selectorName");
+      const IPFIX::InfoElement* ie = model.lookupIE("selectorName");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 7, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8623,22 +11677,37 @@ BOOST_AUTO_TEST_CASE(Message249) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("selectorName"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("selectorName"), 7);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("selectorName"), "No Idea", 7);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message250) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x50,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x50,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8646,8 +11715,7 @@ BOOST_AUTO_TEST_CASE(Message250) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       double value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("upperCILimit");
+      const IPFIX::InfoElement* ie = model.lookupIE("upperCILimit");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8657,22 +11725,38 @@ BOOST_AUTO_TEST_CASE(Message250) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("upperCILimit"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    double d = 0x0.fP0;
+    buf_writer.putValue(model.lookupIE("upperCILimit"), &d, sizeof d);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message251) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x51,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x51,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8680,8 +11764,7 @@ BOOST_AUTO_TEST_CASE(Message251) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       double value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("lowerCILimit");
+      const IPFIX::InfoElement* ie = model.lookupIE("lowerCILimit");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8691,22 +11774,38 @@ BOOST_AUTO_TEST_CASE(Message251) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("lowerCILimit"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    double d = 0x0.fP0;
+    buf_writer.putValue(model.lookupIE("lowerCILimit"), &d, sizeof d);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message252) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x52,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x52,0x00,0x08,0x03,0xe9,0x00,0x0c,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8714,8 +11813,7 @@ BOOST_AUTO_TEST_CASE(Message252) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       double value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("confidenceLevel");
+      const IPFIX::InfoElement* ie = model.lookupIE("confidenceLevel");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8725,22 +11823,38 @@ BOOST_AUTO_TEST_CASE(Message252) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("confidenceLevel"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  {
+    double d = 0x0.fP0;
+    buf_writer.putValue(model.lookupIE("confidenceLevel"), &d, sizeof d);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message253) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x53,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x53,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8748,8 +11862,7 @@ BOOST_AUTO_TEST_CASE(Message253) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("informationElementDataType");
+      const IPFIX::InfoElement* ie = model.lookupIE("informationElementDataType");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8759,22 +11872,35 @@ BOOST_AUTO_TEST_CASE(Message253) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("informationElementDataType"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("informationElementDataType"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message254) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x54,0xff,0xff,0x03,0xe9,0x00,0x14,0x0f,0x4d,0x79,0x20,0x76,0x65,0x72,0x79,0x20,0x6f,0x77,0x6e,0x20,0x49,0x45,0x21  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x54,0xff,0xff,0x03,0xe9,0x00,0x14,0x0f,0x4d,0x79,0x20,0x76,0x65,0x72,0x79,0x20,0x6f,0x77,0x6e,0x20,0x49,0x45,0x21  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8782,8 +11908,7 @@ BOOST_AUTO_TEST_CASE(Message254) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(15, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("informationElementDescription");
+      const IPFIX::InfoElement* ie = model.lookupIE("informationElementDescription");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 15, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8793,22 +11918,37 @@ BOOST_AUTO_TEST_CASE(Message254) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("informationElementDescription"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("informationElementDescription"), 15);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("informationElementDescription"), "My very own IE!", 15);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message255) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x55,0xff,0xff,0x03,0xe9,0x00,0x0c,0x07,0x6d,0x79,0x4f,0x77,0x6e,0x49,0x45  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x55,0xff,0xff,0x03,0xe9,0x00,0x0c,0x07,0x6d,0x79,0x4f,0x77,0x6e,0x49,0x45  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8816,8 +11956,7 @@ BOOST_AUTO_TEST_CASE(Message255) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       Varlen value(7, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("informationElementName");
+      const IPFIX::InfoElement* ie = model.lookupIE("informationElementName");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 7, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8827,22 +11966,37 @@ BOOST_AUTO_TEST_CASE(Message255) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("informationElementName"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("informationElementName"), 7);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("informationElementName"), "myOwnIE", 7);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message256) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x56,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x56,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8850,8 +12004,7 @@ BOOST_AUTO_TEST_CASE(Message256) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("informationElementRangeBegin");
+      const IPFIX::InfoElement* ie = model.lookupIE("informationElementRangeBegin");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8861,22 +12014,35 @@ BOOST_AUTO_TEST_CASE(Message256) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("informationElementRangeBegin"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("informationElementRangeBegin"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message257) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x28,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x57,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
+    0x00,0x0a,0x00,0x28,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x57,0x00,0x08,0x03,0xe9,0x00,0x0c,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8884,8 +12050,7 @@ BOOST_AUTO_TEST_CASE(Message257) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint64_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("informationElementRangeEnd");
+      const IPFIX::InfoElement* ie = model.lookupIE("informationElementRangeEnd");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8895,22 +12060,35 @@ BOOST_AUTO_TEST_CASE(Message257) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("informationElementRangeEnd"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("informationElementRangeEnd"), static_cast<uint64_t>(0x1020304050607080ULL));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message258) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x58,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
+    0x00,0x0a,0x00,0x21,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x58,0x00,0x01,0x03,0xe9,0x00,0x05,0x96  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8918,8 +12096,7 @@ BOOST_AUTO_TEST_CASE(Message258) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint8_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("informationElementSemantics");
+      const IPFIX::InfoElement* ie = model.lookupIE("informationElementSemantics");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8929,22 +12106,35 @@ BOOST_AUTO_TEST_CASE(Message258) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("informationElementSemantics"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("informationElementSemantics"), static_cast<uint8_t>(0x96));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message259) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x22,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x59,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
+    0x00,0x0a,0x00,0x22,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x59,0x00,0x02,0x03,0xe9,0x00,0x06,0x96,0x69  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8952,8 +12142,7 @@ BOOST_AUTO_TEST_CASE(Message259) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint16_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("informationElementUnits");
+      const IPFIX::InfoElement* ie = model.lookupIE("informationElementUnits");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8963,22 +12152,35 @@ BOOST_AUTO_TEST_CASE(Message259) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("informationElementUnits"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("informationElementUnits"), static_cast<uint16_t>(0x9669));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message260) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x24,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x5a,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
+    0x00,0x0a,0x00,0x24,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x01,0x5a,0x00,0x04,0x03,0xe9,0x00,0x08,0x10,0x20,0x30,0x40  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -8986,8 +12188,7 @@ BOOST_AUTO_TEST_CASE(Message260) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("privateEnterpriseNumber");
+      const IPFIX::InfoElement* ie = model.lookupIE("privateEnterpriseNumber");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -8997,8 +12198,20 @@ BOOST_AUTO_TEST_CASE(Message260) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("privateEnterpriseNumber"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("privateEnterpriseNumber"), static_cast<uint32_t>(0x10203040));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -9007,16 +12220,17 @@ BOOST_FIXTURE_TEST_SUITE(Compound, Fixture)
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message261) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x2c,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x10,0x03,0xe9,0x00,0x02,0x00,0x08,0x00,0x04,0x00,0x0c,0x00,0x04,0x03,0xe9,0x00,0x0c,0x7f,0x00,0x00,0x01,0x7f,0x00,0x00,0x02  };
+    0x00,0x0a,0x00,0x2c,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x10,0x03,0xe9,0x00,0x02,0x00,0x08,0x00,0x04,0x00,0x0c,0x00,0x04,0x03,0xe9,0x00,0x0c,0x7f,0x00,0x00,0x01,0x7f,0x00,0x00,0x02  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -9024,8 +12238,7 @@ BOOST_AUTO_TEST_CASE(Message261) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("sourceIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("sourceIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -9033,8 +12246,7 @@ BOOST_AUTO_TEST_CASE(Message261) {
     }
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("destinationIPv4Address");
+      const IPFIX::InfoElement* ie = model.lookupIE("destinationIPv4Address");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -9044,22 +12256,37 @@ BOOST_AUTO_TEST_CASE(Message261) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("sourceIPv4Address"));
+  wt->add(model.lookupIE("destinationIPv4Address"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("sourceIPv4Address"), static_cast<uint32_t>(0x7f000001));
+  buf_writer.putValue(model.lookupIE("destinationIPv4Address"), static_cast<uint32_t>(0x7f000002));
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message262) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x30,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x10,0x03,0xe9,0x00,0x02,0x01,0x36,0x00,0x04,0x01,0x37,0x00,0x08,0x03,0xe9,0x00,0x10,0x10,0x20,0x30,0x40,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
+    0x00,0x0a,0x00,0x30,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x10,0x03,0xe9,0x00,0x02,0x01,0x36,0x00,0x04,0x01,0x37,0x00,0x08,0x03,0xe9,0x00,0x10,0x10,0x20,0x30,0x40,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -9067,8 +12294,7 @@ BOOST_AUTO_TEST_CASE(Message262) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingPopulation");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingPopulation");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -9076,8 +12302,7 @@ BOOST_AUTO_TEST_CASE(Message262) {
     }
     {
       double value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingProbability");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingProbability");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -9087,22 +12312,40 @@ BOOST_AUTO_TEST_CASE(Message262) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingPopulation"));
+  wt->add(model.lookupIE("samplingProbability"));
+  wt->activate();
+
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("samplingPopulation"), static_cast<uint32_t>(0x10203040));
+  {
+    double d = 0x0.fP0;
+    buf_writer.putValue(model.lookupIE("samplingProbability"), &d, sizeof d);
+  }
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 /* WARNING: AUTOMATICALLY GENERATED. MANUAL CHANGES ARE FUTILE! */
 BOOST_AUTO_TEST_CASE(Message263) {
   static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x56,0x50,0x69,0xa9,0xbf,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x18,0x03,0xe9,0x00,0x04,0x01,0x36,0x00,0x04,0x00,0x52,0xff,0xff,0x01,0x37,0x00,0x08,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x2e,0x10,0x20,0x30,0x40,0x04,0x65,0x74,0x68,0x30,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65  };
+    0x00,0x0a,0x00,0x56,0x50,0x69,0xc3,0x6a,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x18,0x03,0xe9,0x00,0x04,0x01,0x36,0x00,0x04,0x00,0x52,0xff,0xff,0x01,0x37,0x00,0x08,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x2e,0x10,0x20,0x30,0x40,0x04,0x65,0x74,0x68,0x30,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65  };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -9110,8 +12353,7 @@ BOOST_AUTO_TEST_CASE(Message263) {
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
     {
       uint32_t value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingPopulation");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingPopulation");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -9119,8 +12361,7 @@ BOOST_AUTO_TEST_CASE(Message263) {
     }
     {
       Varlen value(4, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("interfaceName");
+      const IPFIX::InfoElement* ie = model.lookupIE("interfaceName");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 4, oc.offsetOf(ie), wt->ieFor(ie));
@@ -9128,8 +12369,7 @@ BOOST_AUTO_TEST_CASE(Message263) {
     }
     {
       double value;
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("samplingProbability");
+      const IPFIX::InfoElement* ie = model.lookupIE("samplingProbability");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(&value, sizeof value, oc.offsetOf(ie), wt->ieFor(ie));
@@ -9137,8 +12377,7 @@ BOOST_AUTO_TEST_CASE(Message263) {
     }
     {
       Varlen value(24, 0);
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE("interfaceDescription");
+      const IPFIX::InfoElement* ie = model.lookupIE("interfaceDescription");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(value.ptr(), 24, oc.offsetOf(ie), wt->ieFor(ie));
@@ -9148,8 +12387,32 @@ BOOST_AUTO_TEST_CASE(Message263) {
   }
 
   IPFIX::BufWriter buf_writer(123456);
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(1001);
 
+  wt->add(model.lookupIE("samplingPopulation"));
+  wt->add(model.lookupIE("interfaceName"));
+  wt->add(model.lookupIE("samplingProbability"));
+  wt->add(model.lookupIE("interfaceDescription"));
+  wt->activate();
+
+  buf_writer.reserveVarlen(model.lookupIE("interfaceName"), 4);
+  buf_writer.reserveVarlen(model.lookupIE("interfaceDescription"), 24);
+  buf_writer.commitVarlen();
+
+  buf_writer.exportTemplatesForDomain();
+
+  buf_writer.putValue(model.lookupIE("samplingPopulation"), static_cast<uint32_t>(0x10203040));
+  buf_writer.putValue(model.lookupIE("interfaceName"), "eth0", 4);
+  {
+    double d = 0x0.fP0;
+    buf_writer.putValue(model.lookupIE("samplingProbability"), &d, sizeof d);
+  }
+  buf_writer.putValue(model.lookupIE("interfaceDescription"), "First ethernet interface", 24);
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

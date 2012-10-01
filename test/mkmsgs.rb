@@ -232,7 +232,7 @@ end
 $model = InfoModel.new.load_default
 $n = 1
 
-def make_test_case(res, domain = $default_domain)
+def make_test_case(res, domain = $default_domain, tid = $default_tid)
   test_no = "%03d" % $n
   $n = $n + 1
 
@@ -247,13 +247,14 @@ EOF
   };
 
   IPFIX::MBuf mbuf;
-  IPFIX::Session session;
+  IPFIX::Session rsession;
   IPFIX::Transcoder xc;
+  IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
 
-  prepare_test_case(msg, sizeof(msg), mbuf, session, xc);
+  prepare_test_case(msg, sizeof(msg), mbuf, rsession, xc);
 
   for (IPFIX::SetListIter i = mbuf.begin(); i != mbuf.end(); ++i) {
-    const IPFIX::WireTemplate* wt = session.getTemplate(mbuf.domain(), i->id);
+    const IPFIX::WireTemplate* wt = rsession.getTemplate(mbuf.domain(), i->id);
     BOOST_REQUIRE(wt->isActive());
 
     IPFIX::CollectorOffsetCache oc = IPFIX::CollectorOffsetCache(wt, &xc);
@@ -261,7 +262,6 @@ EOF
     xc.focus(i->off + IPFIX::kSetHeaderLen, i->len - IPFIX::kSetHeaderLen);
 EOF
 
-  i = 0;
   res.each { |re| 
     size = ''
     len = ''
@@ -280,15 +280,13 @@ EOF
     print <<EOF
     {
       #{re.cpptype} value#{len};
-      const IPFIX::InfoElement* ie 
-        = IPFIX::InfoModel::instance().lookupIE(\"#{re.iespec}\");
+      const IPFIX::InfoElement* ie = model.lookupIE(\"#{re.iespec}\");
 
       BOOST_REQUIRE(wt->contains(ie));
       xc.decodeAt(#{address}, #{size}, oc.offsetOf(ie), wt->ieFor(ie));
       BOOST_CHECK_EQUAL(value, #{re.cppvalue});
     }
 EOF
-    i = i + 1
   }
  
   print <<EOF
@@ -296,8 +294,78 @@ EOF
   }
 
   IPFIX::BufWriter buf_writer(#{domain});
-}
+  IPFIX::WireTemplate* wt = buf_writer.getTemplate(#{tid});
 
+EOF
+
+  res.each { |re| 
+    print <<EOF
+  wt->add(model.lookupIE(\"#{re.iespec}\"));
+EOF
+  }
+
+  print <<EOF
+  wt->activate();
+
+EOF
+
+  has_varlen = 0
+  res.each { |re| 
+    case re.cpptype
+    when 'Varlen'
+      print <<EOF
+  buf_writer.reserveVarlen(model.lookupIE(\"#{re.iespec}\"), #{re.value.length});
+EOF
+      has_varlen = 1
+    end
+  }
+
+  if has_varlen != 0
+    print <<EOF
+  buf_writer.commitVarlen();
+EOF
+  end
+
+  print <<EOF
+
+  buf_writer.exportTemplatesForDomain();
+
+EOF
+
+  res.each { |re| 
+    case re.cpptype
+    when 'Varlen'
+      print <<EOF
+  buf_writer.putValue(model.lookupIE(\"#{re.iespec}\"), \"#{re.value}\", #{re.value.length});
+EOF
+    when 'double'
+      print <<EOF
+  {
+    double d = #{re.cppvalue};
+    buf_writer.putValue(model.lookupIE(\"#{re.iespec}\"), &d, sizeof d);
+  }
+EOF
+    when 'MyIp6Address'
+      print <<EOF
+  {
+    MyIp6Address a = #{re.cppvalue};
+    buf_writer.putValue(model.lookupIE(\"#{re.iespec}\"), &a, sizeof a);
+  }
+EOF
+    else
+      print <<EOF
+  buf_writer.putValue(model.lookupIE(\"#{re.iespec}\"), static_cast<#{re.cpptype}>(#{re.cppvalue}));
+EOF
+    end
+
+  }
+
+  print <<EOF
+  buf_writer.exportRecord();
+
+  BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+}
 EOF
 
 end
