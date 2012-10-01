@@ -274,6 +274,11 @@ size_t Transcoder::decodeAt(void* val, size_t len, size_t off, const InfoElement
   
   // Decode variable length
   if (ielen == kVarlen) {
+    // need at least one byte to decode varlen
+    // FIXME this doesn't handle the length > 255 corner-case
+    if (dp >= cur_ + avail()) {
+        return 0;
+    }
     dp = decode_varlen_length(dp, ielen);
   }
   
