@@ -76,13 +76,13 @@ namespace IPFIX {
     
         // If offset available in template, return it.
         if ((off = wt_->offset(ie)) != kVarlen) {
-//            std::cerr << "offset of " << ie->name() << " found in template: " << off << std::endl;
+            std::cerr << "offset of " << ie->name() << " found in template: " << off << std::endl;
             return off;
         }
     
         // If offset already stored, return it.
         if ((off = voffsets_[ie])) {
-//            std::cerr << "offset of " << ie->name() << " found in cache:    " << off << std::endl;
+            std::cerr << "offset of " << ie->name() << " found in cache:    " << off << std::endl;
             return off;
         }
     
@@ -113,26 +113,29 @@ namespace IPFIX {
         size_t nextoff = wt_->maxFixedOffset();
         size_t vl;
 
-        // std::cerr << "recaching offsets" << std::endl;
+        std::cerr << "recaching offsets" << std::endl;
         
         for (IETemplateIter i = varlenBegin(); 
                             i != varlenEnd(); 
                             i++) {
             voffsets_[*i] = nextoff;
-            if (!(nextoff = xc_->decodeVarlenLengthAt(nextoff, vl))) {
-                // transcoder signalled unexpected end
-                throw CursorError("end of buffer caching offsets: input data not IPFIX?");
+            vl = (*i)->len();
+            if (vl == kVarlen) {
+                if (!(nextoff = xc_->decodeVarlenLengthAt(nextoff, vl))) {
+                    // transcoder signalled unexpected end
+                    throw CursorError("end of buffer caching offsets: input data not IPFIX?");
+                }
             }
             // advance past record content
             nextoff += vl;
             // store length
             vlengths_[*i] = vl;
 
-            // std::cerr << "  length of " << (*i)->toIESpec() << " is " << vl << "; next offset is " << nextoff << std::endl;
+            std::cerr << "  length of " << (*i)->toIESpec() << " is " << vl << "; next offset is " << nextoff << std::endl;
         }
         // note that we have a real record length
         reclen_ = nextoff;
-        // std::cerr << "  total record length " << reclen_ << std::endl;
+        std::cerr << "  total record length " << reclen_ << std::endl;
 
     }
 

@@ -48,6 +48,7 @@ namespace IPFIX {
         if (ie->len() == kVarlen) {
             minlen_ += 1;
             varlen_count_ += 1;
+            nextoff_ = kVarlen;
         } else {
             minlen_ += ie->len();
         }
