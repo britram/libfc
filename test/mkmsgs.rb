@@ -13,6 +13,9 @@ require 'ipfix/message'
 
 include IPFIX
 
+$default_domain = 123456
+$default_tid = 1001
+
 class RecordElement
   attr_accessor :iespec, :iename, :value, :cpptype, :cppvalue
 
@@ -25,7 +28,7 @@ class RecordElement
   end
 end
 
-def make_message(model, res, domain = 123456, tid = 1001)
+def make_message(model, res, domain = $default_domain, tid = $default_tid)
   session = Session.new(model)
   message = Message.new(session, domain)
 
@@ -87,6 +90,7 @@ print <<EOF
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include "BufWriter.h"
 #include "Constants.h"
 #include "InfoModel.h"
 #include "MBuf.h"
@@ -228,7 +232,7 @@ end
 $model = InfoModel.new.load_default
 $n = 1
 
-def make_test_case(res)
+def make_test_case(res, domain = $default_domain)
   test_no = "%03d" % $n
   $n = $n + 1
 
@@ -290,6 +294,8 @@ EOF
   print <<EOF
     xc.defocus();
   }
+
+  IPFIX::BufWriter buf_writer(#{domain});
 }
 
 EOF
@@ -1964,7 +1970,7 @@ make_test_case([ RecordElement.new('samplingPopulation',
                  RecordElement.new('interfaceDescription',
                                    :interfaceDescription,
                                    "First ethernet interface",
-                                   'Varlen', 'Varlen(25, "Second ethernet interface")')
+                                   'Varlen', 'Varlen(24, "First ethernet interface")')
                ])
 
 end_test_suite()
