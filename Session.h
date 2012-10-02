@@ -63,9 +63,9 @@ public:
   }
 
   uint32_t incrementSequence(uint32_t domain, uint32_t stream, uint32_t increment) {
-      // FIXME stream ignored until we do SCTP
+       uint32_t seq = next_seq_[domain];
        next_seq_[domain] += increment;
-       return next_seq_[domain];
+       return seq;
   }
 
   bool checkSequence(uint32_t domain, uint32_t stream, uint32_t sequence);
