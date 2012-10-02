@@ -166,6 +166,10 @@ public:
       && memcmp(buf, rhs.buf, size) == 0;
   }
 
+  operator const void* () const {
+    return buf;
+  }
+
   void* ptr() {
     return buf;
   }
@@ -202,6 +206,18 @@ prepare_test_case(const unsigned char* msg, size_t len,
     n_set_lists++;
 
   BOOST_REQUIRE(n_set_lists == 1);
+}
+
+static void
+dump_comparison(const unsigned char* buf1, 
+                const unsigned char* buf2, size_t len) {
+  std::cerr << "off\tme\tripfix" << std::endl;
+  for (unsigned int i = 0; i < len; i++) {
+    fprintf(stderr, "%02d\t%02x\t%02x", i, buf1[i], buf2[i]);
+    if (buf1[i] != buf2[i]) 
+      fprintf(stderr, " <-- ");
+    std::cerr << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_SUITE(Messages)
@@ -307,6 +323,11 @@ EOF
   print <<EOF
   wt->activate();
 
+  buf_writer.exportTemplatesForDomain();
+  buf_writer.setTemplate(#{tid});
+
+  buf_writer.beginRecord();
+
 EOF
 
   has_varlen = 0
@@ -326,17 +347,11 @@ EOF
 EOF
   end
 
-  print <<EOF
-
-  buf_writer.exportTemplatesForDomain();
-
-EOF
-
   res.each { |re| 
     case re.cpptype
     when 'Varlen'
       print <<EOF
-  buf_writer.putValue(model.lookupIE(\"#{re.iespec}\"), \"#{re.value}\", #{re.value.length});
+  buf_writer.putValue(model.lookupIE(\"#{re.iespec}\"), #{re.cppvalue}, #{re.value.length});
 EOF
     when 'double'
       print <<EOF
@@ -361,10 +376,19 @@ EOF
   }
 
   print <<EOF
+
   buf_writer.exportRecord();
+  buf_writer.flush();
 
   BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
-  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, sizeof msg), 0);
+  BOOST_REQUIRE(buf_writer.len() == sizeof msg);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, 4), 0);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf() + 12, msg + 12, sizeof msg - 12), 0);
+
+  if (memcmp(buf_writer.buf(), msg, 4) != 0
+      || memcmp(buf_writer.buf() + 12, msg + 12, sizeof msg - 12) != 0) {
+    dump_comparison(buf_writer.buf(), msg, sizeof msg);
+  }
 }
 EOF
 

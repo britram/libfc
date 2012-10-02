@@ -76,13 +76,13 @@ namespace IPFIX {
     
         // If offset available in template, return it.
         if ((off = wt_->offset(ie)) != kVarlen) {
-            std::cerr << "offset of " << ie->name() << " found in template: " << off << std::endl;
+            //std::cerr << "offset of " << ie->name() << " found in template: " << off << std::endl;
             return off;
         }
     
         // If offset already stored, return it.
         if ((off = voffsets_[ie])) {
-            std::cerr << "offset of " << ie->name() << " found in cache:    " << off << std::endl;
+            //std::cerr << "offset of " << ie->name() << " found in cache:    " << off << std::endl;
             return off;
         }
     

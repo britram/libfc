@@ -50,8 +50,10 @@ namespace IPFIX {
   }
 
   void BufWriter::_sendMessage(uint8_t *base, size_t len) {
+    //std::cerr << "BufWriter::_sendMessage: writing " << len << " bytes" << std::endl;
     if (_len + len > _capacity) {
-      size_t new_capacity = std::max(2*len, _len + len);
+      size_t new_capacity = std::max(2*_len, _len + len);
+      //std::cerr << "BufWriter::_sendMessage: allocating " << new_capacity << " bytes" << std::endl;
       unsigned char* new_buf = new unsigned char[new_capacity];
       memcpy(new_buf, _buf, _len);
       delete[] _buf;
@@ -60,9 +62,21 @@ namespace IPFIX {
       _capacity = new_capacity;
     }
     
-    memcpy(_cur, base, _len);
+    memcpy(_cur, base, len);
     _cur += len;
     _len += len;
+
+#if 0
+    std::cerr << std::hex;
+    for (unsigned int i = 0; i < _len; i++) {
+      if ((i % 4) != 0)
+        std::cerr << ',';
+      std::cerr << "0x" << static_cast<unsigned int>(_buf[i]);
+      if (((i + 1) % 4) == 0)
+        std::cerr << std::endl;
+    }
+    std::cerr << std::endl;
+#endif
   }
 
   BufWriter::~BufWriter() {

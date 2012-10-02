@@ -57,7 +57,7 @@ public:
   size_t len() const;
 
 protected:
-  virtual void _sendMessage(uint8_t *base, size_t len);
+  void _sendMessage(uint8_t *base, size_t len);
 
 private:
   unsigned char* _buf;
