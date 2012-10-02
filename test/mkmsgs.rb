@@ -383,10 +383,10 @@ EOF
   BOOST_CHECK_EQUAL(buf_writer.len(), sizeof msg);
   BOOST_REQUIRE(buf_writer.len() == sizeof msg);
   BOOST_CHECK_EQUAL(memcmp(buf_writer.buf(), msg, 4), 0);
-  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf() + 12, msg + 12, sizeof msg - 12), 0);
+  BOOST_CHECK_EQUAL(memcmp(buf_writer.buf() + 8, msg + 8, sizeof msg - 8), 0);
 
   if (memcmp(buf_writer.buf(), msg, 4) != 0
-      || memcmp(buf_writer.buf() + 12, msg + 12, sizeof msg - 12) != 0) {
+      || memcmp(buf_writer.buf() + 8, msg + 8, sizeof msg - 8) != 0) {
     dump_comparison(buf_writer.buf(), msg, sizeof msg);
   }
 }
