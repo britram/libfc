@@ -113,7 +113,7 @@ namespace IPFIX {
         size_t nextoff = wt_->maxFixedOffset();
         size_t vl;
 
-        std::cerr << "recaching offsets" << std::endl;
+        // std::cerr << "recaching offsets" << std::endl;
         
         for (IETemplateIter i = varlenBegin(); 
                             i != varlenEnd(); 
@@ -131,11 +131,11 @@ namespace IPFIX {
             // store length
             vlengths_[*i] = vl;
 
-            std::cerr << "  length of " << (*i)->toIESpec() << " is " << vl << "; next offset is " << nextoff << std::endl;
+            // std::cerr << "  length of " << (*i)->toIESpec() << " is " << vl << "; next offset is " << nextoff << std::endl;
         }
         // note that we have a real record length
         reclen_ = nextoff;
-        std::cerr << "  total record length " << reclen_ << std::endl;
+        // std::cerr << "  total record length " << reclen_ << std::endl;
 
     }
 
