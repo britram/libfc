@@ -1,209 +1,85 @@
-This is a stream-of-consciousness document about how to reorganise
-IPFIX import in lib/fc, by Stephan Neuhaus.
+I must say that even after having worked with the API for some time, I
+still find it confusing.  Transcoders? Sessions? WireTemplates?  What
+I *really* would like to be able to say is this:
 
+"Hi, I'm interested in data sets having template ID 1234.  Whenever
+such a data set comes along, please decode the values in that set as
+follows:
 
+  * a sourceIPv4Address please place at offset 24 (or at this pointer)
+  * a deltaPacketCount please place at offset 28 (or at that pointer),
+    but only the least significant 4 bytes
 
-Requirements:
+After you're done decoding this, please call my callback
+function. Also, here is a mutex that belongs to me and that you should
+down() before you begin writing stuff into my private parts (ahem),
+and that you should up() after calling the callback."
 
-Fast for the AVERAGE CASE.  The average case is the import and export
-of IPv4 and IPv6 flows over TCP.  Import/export over UDP is
-problematic anyway (because of dropped and out-of-order packets) and
-SCTP can be a fig leaf to satisfy the IETF.
+In other words, I'm thinking of an API like this:
 
-A typical IPFIX message looks like this (from
-http://en.wikipedia.org/wiki/IP_Flow_Information_Export)
+class RecordUser {
+public:
+  virtual void decoding_finished() = 0;
+};
 
-Bits 0..15                    | Bits 16..31
-------------------------------+--------------------------
-Version = 0x000a              | Message Length = 64 Bytes
-Export Timestamp = 2005-12-31 23:59:60
-Sequence Number = 0
-Observation Domain ID = 12345678
-Set ID = 2 (Template)         | Set Length = 20 Bytes
-Template ID = 256             | Number of Fields = 3
-Type = sourceIPv4Address      | Field Length = 4 Bytes
-Type = destinationIPv4Address | Field Length = 4 Bytes
-Type = packetDeltaCount       | Field Length = 4 Bytes
-Set ID = 256 (Data Set        |
-using Template 256)           | Set Length = 28 Bytes (= 4 + 2*12)
-Record 1, Field 1 = 192.168.0.201
-Record 1, Field 2 = 192.168.0.1
-Record 1, Field 3 = 235 Packets
-Record 2, Field 1 = 192.168.0.202
-Record 2, Field 2 = 192.168.0.1
-Record 2, Field 3 = 42 Packets
+class RecordUserRegistrar {
+public:
+  void register(uint32_t template_id,
+                RecordUser& user,
+                void* base,
+                std::list<std::pair<const InfoElement*, off_t offset>,
+                mutex& m);
+};
 
-So the AVERAGE case is that a template describes a SEQUENCE of fields
-of FIXED length, and these fields will arrive IN ORDER.
+Classes wanting to use the registrar would then derive from RecordUser
+(cleverly exploiting the new C++ initialisation rules):
 
+class HiThere : public RecordUser {
+public:
+  HiThere() {
+    InfoModel* m = ...;
+    const RecordUserRegistrar* r = ...instance();
 
-Some Questions/Remarks/Criticisms on IPFIX
+    r->register(1234, *this, this,
+          { { m->lookupIE("sourceIPv4Address"), &s) },
+            { m->lookupIE("deltaPacketCount"), &c) },
+          }, m);
+  }
 
-Why does the type sourceIPv4Address not implicitly encode the length
-as well?  Or in other words, when the type implies the length,
-shouldn't the length be ignored?
+  void decoding_finished() {
+    ... Do whatever needs to be done with the information
+  }
 
-I consider it a mistake to have the message length in the header
-because it makes stream processing impossible.  This way, you need to
-have the entire message in memory before you can send it.  Streaming
-is nice because it keeps send buffers limited, is very fast on the
-receiver end for fixed-length info, and you can send templates only
-once.
-
-It is also a mistake to have a length-encoding mechanism that
-optimises away two bytes of length information at the expense of a
-more complicated en/decoding algorithm.  No one cares these days about
-two bytes more or less, even when you have billions of records (that's
-then going to be 2 GiB, big deal).  However, if each en/decoding costs
-just one nanosecond more, processing a billion records will be 1 s
-longer.
-
-Another mistake is to have the set length in bytes (instead of
-records).
-
-
-An Abstract Machine Language fir IPFIX
-
-Let's look again at the template specification:
-
-Template ID = 256             | Number of Fields = 3
-Type = sourceIPv4Address      | Field Length = 4 Bytes
-Type = destinationIPv4Address | Field Length = 4 Bytes
-Type = packetDeltaCount       | Field Length = 4 Bytes
-
-This naturally gives rise to:
-
-class IPv4Flow : public Record {
 private:
-  IPv4Address source;
-  IPv4Address destination;
-  UInt32 count;
+  uint32_t s;
+  uint32_t c;
+  mutex m;
 };
 
-And we want to turn a sequence of records according to template 256
-into a std::list (or something similar) of IPv4Flow-s.
 
-The first step is to translate this into a list of (offset, type)
-pairs.  Here, "offset" is the offset in bytes from the beginning of a
-Record, and "type" is some sort of type identifier that identifies one
-of the basic IPFIX types like IPv4Address or UInt32.
+And there would be some central dispatcher that would do the
+dispatching according to the template id, kinda like this:
 
-When a data set is read, this would cause the offsets to be loaded
-according to the template ID.
+void SomeClass::decode() {
+  uint32_t tid = ...;
 
-This could be translated into the following program:
-
-1: JNMB 8   ; Jump if No More Bytes to location 8
-2: NR       ; Create new Record for the current template
-3: RIP4     ; Read an IPv4 address into the first offset
-4: RIP4     ; Read an IPv4 address into the second offset
-5: RUI32    ; Read an unsigned 32-bit integer into the third offset
-6: ADV      ; Insert current record
-7: JMP 1    ; Read next record
-8: END      ; Done
-
-Basically the idea behind the abstract machine is: if you could invent
-a machine to process IPFIX records, what would its assembly language
-look like?
-
-Instructions:
-
-1. JNMB <loc>
-
-Pops <loc> off the stack.  Conditional jump if no more bytes are available.
-
-2. NR
-
-Create new record fitting the current template.
-
-3. RIP4
-
-Read IPv4 address into current offset, advance offset counter
-
-4. RUI32
-
-Read unsigned 32-bit number into current offset, advance offset
-counter.
-
-5. ADV
-
-Save the current Record, append it to the current Record list.
-
-6. JMP <loc>
-
-Pops <loc> off the stack. Unconditional jump to <loc>.
-
-7. END
-
-Stop processing records in this template, return the Record list.
-
-
-An Instruction would be a class and it would look roughly like this:
-
-class Instruction {
-public:
-  virtual void execute(Environment& e) = 0;
-};
-
-class RIPv4 : public Instruction {
-public:
-  void execute(Environment& e) {
-    reinterpret_cast<IPv4Address>(e.current_address())->read(e);
-    e.advance_offset_counter();
-    e.advance_pc();
+  for (auto i = registered_users.find(tid); i != multimap::end; ++i) {
+    i->mutex.down();
+    for (auto ie = i->ies.begin(); ie != i->ies.end(); ++i)
+      ....decode(ie->iename(), ie->offset(), ie->len());
+    i->user.decoding_finished();
+    i->mutex.up();
   }
-};
+}
 
-class JMP : public Instruction {
-public:
-  void execute(Environment& e) {
-    e.set_pc(e.pop());
-  }
-};
+That should be reasonably compact and fast, and it would solve the
+concurrency problems also by having one central point at which to
+down() and up() the respective mutexes.
 
-class NR : public Instruction {
-public:
-  void execute(Environment& e) {
-    e.new_record();
-};
+I was trying to find a good way to avoid copying items, just working
+with pointers, and I think I can do that.  Of course for unsignedxx,
+copying them is not a big deal, but for the varlen[65535] it might be
+more advisable to work directly with the raw data. The question is,
+would that be useful?
 
-class END : public Instruction {
-public:
-  void execute(Environment& e) {
-    e.stop_executing();
-  }
-};
-
-
-The main loop would be something like this:
-
-class Environment {
-private
-  bool done_executing;
-  unsigned int pc;
-  std::vector<Instruction> instructions;
-
-public:
-  void Environment::execute() {
-    /* Set up environment */
-    // ...
-
-    /* Set up list of instructions */
-    // ...
-
-    done_executing = false;
-    pc = 0;
-
-    while (!done_executing)
-      instructions[pc].execute(*this);
-  }
-};
-
-And that would be it.
-
-Note that a format like this makes it trivially easy to parse much
-more complicated templates, simply by adding more instructions.  You
-have complicated constraints you want to check? No problem, just add a
-few arithmetic instructions (a stack is already there anyway) and
-there you go.
-
+Stephan 
