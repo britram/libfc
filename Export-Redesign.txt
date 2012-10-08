@@ -2,9 +2,117 @@ I must say that even after having worked with the API for some time, I
 still find it confusing.  Transcoders? Sessions? WireTemplates?  What
 I *really* would like to be able to say is this:
 
-"Hi, I'm interested in data sets having template ID 1234.  Whenever
-such a data set comes along, please decode the values in that set as
-follows:
+class IEOnWire {
+  // ...
+private:
+  const InfoElement* ie;
+  size_t record_length;  // Length of this IE on the wire
+  void* p;
+};
+
+For example:
+
+sourceIPv4Address, 4
+destinationIPv4Address, 4
+informationElementName, 0
+informationElementSemantics, 1
+informationElementRangeEnd, 4
+informationElementUnits, 2
+
+Why is the length for informationElementName 0? Because it's a
+Varlen.  Offset computation would then be as follows:
+
+First, set up record offsets for the current record:
+
+  /* Can also reuse an array that's already there, since all values in
+    * the array will be overwritten. */
+  size_t* record_offset = new size_t[n_ies];
+  size_t current_offset = 0;
+
+  for (unsigned int i = 0; i < n_ies; i++) {
+    record_offset[i] = current_offset;
+    if (ie_descriptions[i].record_length == 0)
+      current_offset = 0;
+    else
+      current_offset += ie_descriptions[i].record_length;
+  }
+
+Then update them whenever a Varlen has just been successfully
+decoded:
+
+  if (isVarlen((ie_descriptions[i].ie)) {
+    size_t next_offset = current_offset + ie_length;
+    for (unsigned int j = i + 1; j < n_ies && !isVarlen(ie_descriptions[j].ie); j++) {
+      record_offset[j] += next_offset;
+      next_offset += ie_descriptions[j].record_length;
+    }
+  }
+
+Decoding could be done with an array of functions like this:
+
+static void (or int, for error returns)
+decode_uint32(void* ret, size_t current_offset, size_t wire_length) {
+  *ret = 0;
+
+  assert(current_offset + wire_length <= buf_len);
+
+  if (i'm big endian) // Same endianness in machine and on wire
+    memcpy(*ret, buf + offset, 4);
+  else {
+    uint32_t* r = tatic_cast<uint32_t*>(ret);
+    for (unsigned int i = 0; i < wireLength; i++)
+      *r = (*r << 4) | buf[current_offset + i];
+  }
+}
+
+static void (or int, for error returns)
+decode_double(void* ret, size_t current_offset, size_t wire_length) {
+  assert(current_offset + wire_length <= buf_len);
+
+  /* Only IEEE floats (32 bit) or doubles (64 bit) allowed */
+  assert(wire_length == 4 || wire_length == 8);
+
+  union {
+    float f;
+    double d;
+    uint8_t b[8];
+  } val;
+
+  if (i'm big endian) // Same endianness in machine and in wire
+    memcpy(val.b, buf + current_offset, wire_length);
+  else {
+    for (unsigned int i = 0; i < wire_length; i++)
+      val.b[i] = buf[current_offset + wire_length - i];
+  }
+
+  if (wire_length == 4) // There's a float on the wire
+    *static_cast<double*>(ret) = val.f;  // Implicit conversion to double
+  else // There's a double on the wire
+    *static_cast<double*>(ret) = val.d;
+  }
+
+  current_offset += wire_length;
+}
+
+static void (or int, for error returns)
+decode_varlen(void* ret, size_t current_offset, size_t wire_length) {
+  // ...
+}
+
+The whole decoding could then be described by an array of function
+pointers:
+
+void* ret[];
+void (*decode[])(void* ret, size_t offset, size_t wire_length);
+
+// ...
+
+for (unsigned int i = 0; i < n_ies; i++) 
+  decode[i](ret[i], record_offset[j], ie_descriptions[j].record_length);
+
+CONTENT IS OBSOLETE BEYOND THIS POINT! ARCHIVED ONLY FOR
+POSSIBLE HISTORIC SIGNIFICANCE
+
 
   * a sourceIPv4Address please place at offset 24 (or at this pointer)
   * a deltaPacketCount please place at offset 28 (or at that pointer),
@@ -81,5 +189,3 @@ with pointers, and I think I can do that.  Of course for unsignedxx,
 copying them is not a big deal, but for the varlen[65535] it might be
 more advisable to work directly with the raw data. The question is,
 would that be useful?
-
-Stephan 
