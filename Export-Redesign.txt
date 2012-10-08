@@ -6,7 +6,7 @@ class IEOnWire {
   // ...
 private:
   const InfoElement* ie;
-  size_t record_length;  // Length of this IE on the wire
+  size_t ie_length;  // Length of this IE on the wire
   void* p;
 };
 
@@ -14,27 +14,27 @@ For example:
 
 sourceIPv4Address, 4
 destinationIPv4Address, 4
-informationElementName, 0
+informationElementName, kVarlen
 informationElementSemantics, 1
 informationElementRangeEnd, 4
 informationElementUnits, 2
 
-Why is the length for informationElementName 0? Because it's a
+Why is the length for informationElementName kVarlen? Because it's a
 Varlen.  Offset computation would then be as follows:
 
 First, set up record offsets for the current record:
 
   /* Can also reuse an array that's already there, since all values in
-    * the array will be overwritten. */
+   * the array will be overwritten. */
   size_t* record_offset = new size_t[n_ies];
   size_t current_offset = 0;
 
   for (unsigned int i = 0; i < n_ies; i++) {
     record_offset[i] = current_offset;
-    if (ie_descriptions[i].record_length == 0)
+    if (ie_descriptions[i].ie_length == kVarlen)
       current_offset = 0;
     else
-      current_offset += ie_descriptions[i].record_length;
+      current_offset += ie_descriptions[i].ie_length;
   }
 
 Then update them whenever a Varlen has just been successfully
@@ -42,33 +42,29 @@ decoded:
 
   if (isVarlen((ie_descriptions[i].ie)) {
     size_t next_offset = current_offset + ie_length;
-    for (unsigned int j = i + 1; j < n_ies && !isVarlen(ie_descriptions[j].ie); j++) {
+    for (unsigned int j = i + 1;
+         j < n_ies && !isVarlen(ie_descriptions[j].ie);
+         j++) {
       record_offset[j] += next_offset;
-      next_offset += ie_descriptions[j].record_length;
+      next_offset += ie_descriptions[j].ie_length;
     }
   }
 
 Decoding could be done with an array of functions like this:
 
 static void (or int, for error returns)
-decode_uint32(void* ret, size_t current_offset, size_t wire_length) {
-  *ret = 0;
-
-  assert(current_offset + wire_length <= buf_len);
-
-  if (i'm big endian) // Same endianness in machine and on wire
-    memcpy(*ret, buf + offset, 4);
-  else {
-    uint32_t* r = tatic_cast<uint32_t*>(ret);
-    for (unsigned int i = 0; i < wireLength; i++)
-      *r = (*r << 4) | buf[current_offset + i];
-  }
+decode_uint32(void* ret, const uint8_t** buf, const uint8_t* limit,
+              size_t wire_length) {
+  uint32_t r = 0;
+  for (unsigned int i = 0; i < wireLength; i++)
+    r = (r << 4) | (*buf)[i];
+  *static_cast<uint32_t*>(ret) = r;
+  *buf += wire_length;
 }
 
-static void (or int, for error returns)
-decode_double(void* ret, size_t current_offset, size_t wire_length) {
-  assert(current_offset + wire_length <= buf_len);
-
+static void
+decode_double(void* ret, const uint8_t** buf, const uint8_t* limit,
+              size_t wire_length) {
   /* Only IEEE floats (32 bit) or doubles (64 bit) allowed */
   assert(wire_length == 4 || wire_length == 8);
 
@@ -78,37 +74,63 @@ decode_double(void* ret, size_t current_offset, size_t wire_length) {
     uint8_t b[8];
   } val;
 
-  if (i'm big endian) // Same endianness in machine and in wire
-    memcpy(val.b, buf + current_offset, wire_length);
-  else {
-    for (unsigned int i = 0; i < wire_length; i++)
-      val.b[i] = buf[current_offset + wire_length - i];
-  }
+  // Assume that 0.0F and 0.0 and '\0' are represented as all zeros
+  // (which is not mandated by the C++ standard).
+  memset(val.b, sizeof val, '\0'); // or val.d = 0.0;
+
+  for (unsigned int i = 0; i < wire_length; i++)
+    val.b[i] = (*buf)[i];
 
   if (wire_length == 4) // There's a float on the wire
     *static_cast<double*>(ret) = val.f;  // Implicit conversion to double
   else // There's a double on the wire
     *static_cast<double*>(ret) = val.d;
-  }
 
-  current_offset += wire_length;
+  *buf += wire_length;
 }
 
-static void (or int, for error returns)
-decode_varlen(void* ret, size_t current_offset, size_t wire_length) {
-  // ...
+static void
+decode_varlen(void* ret, const uint8_t** buf, const uint8_t* limit,
+              size_t wire_length) {
+  size_t varlen_length = ...;
+  // decode the varlen
+  *buf += varlen_length;
 }
+
+also, one can skip:
+
+static void
+skip_fixlen(void* ret, const uint8_t** buf, const uint8_t* limit,
+            size_t wire_length) {
+  assert(ret == 0);
+  *buf += wire_length;
+}
+
+static void
+skip_varlen(void* ret, const uint8_t** buf, const uint8_t* limit,
+            size_t wire_length) {
+  assert(ret == 0);
+  size_t varlen_length = ...;
+  *buf += varlen_length;
+  // recompute offsets...
+}
+
 
 The whole decoding could then be described by an array of function
 pointers:
 
 void* ret[];
-void (*decode[])(void* ret, size_t offset, size_t wire_length);
+void (*decode[])(void* ret, const uint8_t** buf, const uint8_t* limit,
+                 size_t wire_length);
 
 // ...
 
-for (unsigned int i = 0; i < n_ies; i++) 
-  decode[i](ret[i], record_offset[j], ie_descriptions[j].record_length);
+uint8_t* buf = ...;
+for (unsigned int i = 0; i < n_ies; i++) {
+  assert (*buf is in range);
+  assert (*buf + ie_descriptions[j].ie_length is in range);
+  decode[i](ret[i], &buf, buf + record_length, ie_descriptions[j].ie_length);
+}
 
 CONTENT IS OBSOLETE BEYOND THIS POINT! ARCHIVED ONLY FOR
 POSSIBLE HISTORIC SIGNIFICANCE
