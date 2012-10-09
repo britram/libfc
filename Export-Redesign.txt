@@ -1,16 +1,119 @@
-I must say that even after having worked with the API for some time, I
-still find it confusing.  Transcoders? Sessions? WireTemplates?  What
-I *really* would like to be able to say is this:
+What I want from a decoding API is the ability to say this:
 
-class IEOnWire {
-  // ...
+"Hi. I'm interested in templates with ID 1234. These contain the
+following IEs:
+
+  * a sourceIPv4Address please place at this pointer: 0x12345678
+  * a deltaPacketCount please place at this offset: 0x3456789a
+
+After you're done decoding this, please call my callback
+function. Also, here is a mutex that belongs to me and that you should
+down() before you begin writing stuff into my private parts (ahem),
+and that you should up() after calling the callback."
+
+In other words:
+
+// This class can be hidden and does not need to appear in any header
+// file.
+class RecordReaderInfo {
+public:
+  RecordReaderInfo();
+  ~RecordReaderInfo();
+
 private:
-  const InfoElement* ie;
-  size_t ie_length;  // Length of this IE on the wire
-  void* p;
+  RecordReader* reader;
+  mutex& mutex;
+  struct Element {
+    const InfoElement* element; // From the wire template
+    void* store;
+  };
+  std::list<Element*> elements;
 };
 
-For example:
+class RecordUserRegistry {
+public:
+  void register(uint32_t template_id,
+                RecordUser& user,
+                mutex& m,
+                std::list<std::pair<const InfoElement*, off_t
+                offset>);
+private:
+  std::multimap<uint32_t tid, RecordReaderInfo> readers;
+};
+
+class RecordReader {
+public:
+  virtual void decoding_finished() = 0;
+};
+
+Classes wanting to use the registrar would then derive from RecordReader
+(cleverly exploiting the new C++ initialisation rules):
+
+class MyRecord : public RecordReader {
+private:
+  uint32_t source_address;
+  uint64_t delta_count;
+  mutex my_mutex;
+
+public:
+  MyRecord() {
+    // ...
+    InfoModel* m = InfoModel::instance();
+    RecordUserRegistry& r = RecordUserRegistry::instance();
+    r.register(1234, this, my_mutex,
+               { { m->lookupIE("sourceIPv4Address"), &source_address) },
+                 { m->lookupIE("deltaPacketCount"), &delta_count) });
+  }
+
+  void decoding_finished() {
+    // At this point, source_address and delta_count contain the
+    // values from the most recent record.
+
+    // Do something with source_address and delta_count. No need to
+    // down() the mutex, that's done below.
+  }
+
+  void f() {
+    my_mutex.down();
+      // Do something with source_address and delta_count. Now one
+      // must down() the mutex first, since it's not guaranteed to be
+      // down before the call to f().
+    my_mutex.up();
+  }
+
+};
+
+
+And there would be some central dispatcher that would do the
+dispatching according to the template id:
+
+void SomeClass::decode_current_record() {
+  uint32_t tid = ...; // Get template ID from current set
+
+  // It might be a good idea to interchange the order of loops here,
+  // because that would allow one to cache decoded IE values.  On the
+  // other hand, (1) this decoding is usually simple and (2) there
+  // will generally be only one user per record (denying the value of
+  // caching through copying twice), so that caching might be more of
+  // a nuisance than an asset. 
+  for (auto i = registered_users.find(tid); i != multimap::end; ++i) {
+    // Set up offsets as above
+
+    i->mutex.down();
+    for (auto ie = i->ies.begin(); ie != i->ies.end(); ++i) {
+      // decode IE; see below
+    }
+    i->user.decoding_finished();
+    i->mutex.up();
+  }
+}
+
+That should be reasonably compact and fast, and it would solve the
+concurrency problems also by having one central point at which to
+down() and up() the respective mutexes.
+
+Let's say that the WireTemplate that we have just decoded contains the
+following IEs with their respective encoded lengths:
 
 sourceIPv4Address, 4
 destinationIPv4Address, 4
@@ -18,6 +121,7 @@ informationElementName, kVarlen
 informationElementSemantics, 1
 informationElementRangeEnd, 4
 informationElementUnits, 2
+deltaPacketCount, 4
 
 Why is the length for informationElementName kVarlen? Because it's a
 Varlen.  Offset computation would then be as follows:
@@ -131,83 +235,3 @@ for (unsigned int i = 0; i < n_ies; i++) {
   assert (*buf + ie_descriptions[j].ie_length is in range);
   decode[i](ret[i], &buf, buf + record_length, ie_descriptions[j].ie_length);
 }
-
-CONTENT IS OBSOLETE BEYOND THIS POINT! ARCHIVED ONLY FOR
-POSSIBLE HISTORIC SIGNIFICANCE
-
-
-  * a sourceIPv4Address please place at offset 24 (or at this pointer)
-  * a deltaPacketCount please place at offset 28 (or at that pointer),
-    but only the least significant 4 bytes
-
-After you're done decoding this, please call my callback
-function. Also, here is a mutex that belongs to me and that you should
-down() before you begin writing stuff into my private parts (ahem),
-and that you should up() after calling the callback."
-
-In other words, I'm thinking of an API like this:
-
-class RecordUser {
-public:
-  virtual void decoding_finished() = 0;
-};
-
-class RecordUserRegistrar {
-public:
-  void register(uint32_t template_id,
-                RecordUser& user,
-                void* base,
-                std::list<std::pair<const InfoElement*, off_t offset>,
-                mutex& m);
-};
-
-Classes wanting to use the registrar would then derive from RecordUser
-(cleverly exploiting the new C++ initialisation rules):
-
-class HiThere : public RecordUser {
-public:
-  HiThere() {
-    InfoModel* m = ...;
-    const RecordUserRegistrar* r = ...instance();
-
-    r->register(1234, *this, this,
-          { { m->lookupIE("sourceIPv4Address"), &s) },
-            { m->lookupIE("deltaPacketCount"), &c) },
-          }, m);
-  }
-
-  void decoding_finished() {
-    ... Do whatever needs to be done with the information
-  }
-
-private:
-  uint32_t s;
-  uint32_t c;
-  mutex m;
-};
-
-
-And there would be some central dispatcher that would do the
-dispatching according to the template id, kinda like this:
-
-void SomeClass::decode() {
-  uint32_t tid = ...;
-
-  for (auto i = registered_users.find(tid); i != multimap::end; ++i) {
-    i->mutex.down();
-    for (auto ie = i->ies.begin(); ie != i->ies.end(); ++i)
-      ....decode(ie->iename(), ie->offset(), ie->len());
-    i->user.decoding_finished();
-    i->mutex.up();
-  }
-}
-
-That should be reasonably compact and fast, and it would solve the
-concurrency problems also by having one central point at which to
-down() and up() the respective mutexes.
-
-I was trying to find a good way to avoid copying items, just working
-with pointers, and I think I can do that.  Of course for unsignedxx,
-copying them is not a big deal, but for the varlen[65535] it might be
-more advisable to work directly with the raw data. The question is,
-would that be useful?
