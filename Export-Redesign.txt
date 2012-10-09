@@ -9,7 +9,7 @@ following IEs:
 After you're done decoding this, please call my callback
 function. Also, here is a mutex that belongs to me and that you should
 down() before you begin writing stuff into my private parts (ahem),
-and that you should up() after calling the callback."
+and that you should unlock() after calling the callback."
 
 In other words:
 
@@ -70,15 +70,15 @@ public:
     // values from the most recent record.
 
     // Do something with source_address and delta_count. No need to
-    // down() the mutex, that's done below.
+    // lock() the mutex, that's done below.
   }
 
   void f() {
-    my_mutex.down();
+    my_mutex.lock();
       // Do something with source_address and delta_count. Now one
-      // must down() the mutex first, since it's not guaranteed to be
+      // must lock() the mutex first, since it's not guaranteed to be
       // down before the call to f().
-    my_mutex.up();
+    my_mutex.unlock();
   }
 
 };
@@ -99,18 +99,18 @@ void SomeClass::decode_current_record() {
   for (auto i = registered_users.find(tid); i != multimap::end; ++i) {
     // Set up offsets as above
 
-    i->mutex.down();
+    i->mutex.lock();
     for (auto ie = i->ies.begin(); ie != i->ies.end(); ++i) {
       // decode IE; see below
     }
     i->user.decoding_finished();
-    i->mutex.up();
+    i->mutex.unlock();
   }
 }
 
 That should be reasonably compact and fast, and it would solve the
 concurrency problems also by having one central point at which to
-down() and up() the respective mutexes.
+lock() and unlock() the respective mutexes.
 
 Let's say that the WireTemplate that we have just decoded contains the
 following IEs with their respective encoded lengths:
@@ -123,8 +123,7 @@ informationElementRangeEnd, 4
 informationElementUnits, 2
 deltaPacketCount, 4
 
-Why is the length for informationElementName kVarlen? Because it's a
-Varlen.  Offset computation would then be as follows:
+Offset computation would then be as follows:
 
 First, set up record offsets for the current record:
 
