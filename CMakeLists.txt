@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
-project(libfc)  
+project(libfc)
+
+set(CMAKE_CXX_FLAGS_PROFILE "-pg")
 
 # debuggery
 if ($ENV{CLANG}) 
   message(STATUS "hey, you're using clang! good luck!")
-  add_definitions(-g -O0 --std=c++0x --stdlib=libc++)
+  add_definitions(-g -O0 -Wall --std=c++0x --stdlib=libc++)
 else ($ENV{CLANG})
-  add_definitions(-g -O0 --std=c++0x)
-  #include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
+  add_definitions(-g -O0 -Wall --std=c++0x)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
 endif($ENV{CLANG})
 
 # include boost
@@ -20,7 +22,7 @@ endif()
 
 # core objects
 file (GLOB FC_OBJ *.cpp)
-file (GLOB EXCEPTIONS_OBJ exceptions/*.cpp)
+file (GLOB EXCEPTIONS_OBJ exceptions/*.cpp) 
 
 add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 if ($ENV{CLANG}) 
@@ -42,8 +44,13 @@ endif()
 if ($ENV{CLANG})
   message(STATUS "skipping coverage tests, because you're using clang.")
 else ($ENV{CLANG})
-  #setup_target_for_coverage(fccov-all fctest fccov)
-  #setup_target_for_coverage(fccov-transcoder fctest fccov --run_test=Transcoder)
-  #setup_target_for_coverage(fccov-loopfile fctest fccov --run_test=ImportExport)
-  #setup_target_for_coverage(fccov-messages fctest fccov --run_test=Messages)
+  setup_target_for_coverage(fccov-all fctest fccov)
+  setup_target_for_coverage(fccov-transcoder fctest fccov --run_test=Transcoder)
+  setup_target_for_coverage(fccov-loopfile fctest fccov --run_test=ImportExport)
+  setup_target_for_coverage(fccov-messages fctest fccov --run_test=Messages)
 endif()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Profile")
+  add_executable(fcprof fcprof.cpp test/TestCommon.cpp)
+  target_link_libraries(fcprof fc ${Boost_LIBRARIES} pcap)
+endif()  

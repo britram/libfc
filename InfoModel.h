@@ -45,11 +45,12 @@
 #include <memory>
 
 #include "IEType.h"
-#include "InfoElement.h"
 
 // FIXME enforce thread safety on changes to the infomodel
 
 namespace IPFIX {
+
+  class InfoElement;
 
 /**
  * Represents an IPFIX Information Model, a collection of canonical 

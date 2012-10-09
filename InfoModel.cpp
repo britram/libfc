@@ -30,6 +30,7 @@
 #include <sstream>
 #include <string>
 
+#include "InfoElement.h"
 #include "InfoModel.h"
 #include "Constants.h"
 

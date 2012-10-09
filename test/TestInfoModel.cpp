@@ -28,6 +28,7 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include "InfoElement.h"
 #include "InfoModel.h"
 
 BOOST_AUTO_TEST_SUITE(Basics)
