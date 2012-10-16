@@ -30,14 +30,16 @@
  */
 
 #include <algorithm>
+#include <cassert>
 
+#include "Constants.h"
 #include "Decoder.h"
 
 namespace IPFIX {
 
-  static std::list<std::pair<const InformationElement*, void*> >::iterator
-  find_ie(std::list<std::pair<const InformationElement*, void*> >& ies,
-          const InformationElement* ie) {
+  static std::list<std::pair<const InfoElement*, void*> >::iterator
+  find_ie(std::list<std::pair<const InfoElement*, void*> >& ies,
+          const InfoElement* ie) {
     // Replace this linear search by something smarter if it turns out
     // to be a performance problem. It shouldn't be, though, since
     // this member function will be called once for every IE that a
@@ -52,21 +54,61 @@ namespace IPFIX {
     return i;
   }
 
-  void Decoder::add_src_ie(const InformationElement* ie) {
+  void Decoder::add_src_ie(const InfoElement* ie) {
     auto i = find_ie(ies, ie);
     assert(i == ies.end());
 
-    ies.push_back(std::make_pair(ie, 0));
+    ies.push_back(std::make_pair(ie, static_cast<void*>(0)));
   }
 
-  void Decoder::add_dst_ie(const InformationElement* ie, void* p) {
+  void Decoder::add_dst_ie(const InfoElement* ie, void* p) {
     auto i = find_ie(ies, ie);
     assert(i != ies.end());
+    assert(i->second == 0);
 
     i->second = p;
   }
 
-  void Decoder::decode(Transcoder& xcoder) const {
+  void Decoder::decode_record(Transcoder& xcoder) const {
+    for (auto ie = ies.begin(); ie != ies.end(); ++ie) {
+      if (ie->second == 0)      /* Skip this IE */
+        xcoder.decodeSkip(ie->first);
+      else {
+        switch (ie->first->ietype()->number()) {
+        case IEType::kUnsigned8:
+        case IEType::kSigned8:
+        case IEType::kBoolean:
+          break;
+        case IEType::kUnsigned16:
+        case IEType::kSigned16:
+          break;
+        case IEType::kUnsigned32:
+        case IEType::kSigned32:
+        case IEType::kFloat32:
+        case IEType::kIpv4Address:
+        case IEType::kDateTimeSeconds:
+          break;
+        case IEType::kUnsigned64:
+        case IEType::kSigned64:
+        case IEType::kFloat64:
+        case IEType::kDateTimeMilliseconds:
+        case IEType::kDateTimeMicroseconds:
+        case IEType::kDateTimeNanoseconds:
+          break;
+        case IEType::kMacAddress:
+          break;
+        case IEType::kIpv6Address:
+          break;
+        case IEType::kOctetArray:
+        case IEType::kString:
+          if (ie->first->len() == kVarlen) { // Varlen string/octet array
+          } else { // Fixlen string/octet array
+          }
+          break;
+        default: break;
+        }
+      }
+    }
   }
 
 } // namespace IPFIX

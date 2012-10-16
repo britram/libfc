@@ -1,5 +1,3 @@
-/* Hi Emacs, please use -*- mode: C++; -*- */
-
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -30,45 +28,40 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef IPFIX_DECODER_H
-#  define IPFIX_DECODER_H
 
-#  include <list>
-#  include <utility>
+#include <cassert>
 
-#  include "InfoElement.h"
-#  include "Transcoder.h"
+#include "BasicOctetArray.h"
 
 namespace IPFIX {
 
-  class Decoder {
-  public:
-    /** Adds information elements as they appear on the wire. 
-     *
-     * Calls to this member function must be made in the order that
-     * IEs appear on the wire.  Usually, this function will be called
-     * repeatedly by WireTemplate::<some function>
-     *
-     * @param ie Information Element that appears on the wire.
-     */
-    void add_src_ie(const InfoElement* ie);
+  BasicOctetArray::BasicOctetArray() 
+    : buf(0), length(0), capacity(0) {
+  }
 
-    /** Adds information elements to be decoded.
-     *
-     * Unlike add_src_ie(), this member function can be called for IEs
-     * in any order.
-     *
-     * @param ie Information Element to be decoded
-     * @param p memory where to decode the Information Element
-     */
-    void add_dst_ie(const InfoElement* ie, void* p);
+  BasicOctetArray::~BasicOctetArray() {
+    delete[] buf;
+  }
 
-    void decode_record(Transcoder& xcoder) const;
+  size_t BasicOctetArray::get_length() const {
+    return length;
+  }
 
-  private:
-    std::list<std::pair<const InfoElement*, void*> > ies;
-  };
+  const uint8_t* BasicOctetArray::get_buf() const {
+    return buf;
+  }
+
+  void BasicOctetArray::copy_content(const uint8_t* new_buf, size_t buf_length) {
+    if (buf_length > capacity) {
+      delete[] buf;
+      capacity = buf_length;
+      buf = new unsigned char[capacity];
+    }
+
+    assert(buf_length <= capacity);
+    memcpy(buf, new_buf, buf_length);
+    length = buf_length;
+  }
+
 
 } // namespace IPFIX
-
-#endif // IPFIX_DECODER_H

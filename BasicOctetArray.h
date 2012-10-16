@@ -30,45 +30,29 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef IPFIX_DECODER_H
-#  define IPFIX_DECODER_H
+#ifndef IPFIX_BASICOCTETARRAY_H
+#  define IPFIX_BASICOCTETARRAY_H
 
-#  include <list>
-#  include <utility>
-
-#  include "InfoElement.h"
-#  include "Transcoder.h"
+#  include <cstdint>
+#  include <cstring>
 
 namespace IPFIX {
 
-  class Decoder {
+  class BasicOctetArray {
   public:
-    /** Adds information elements as they appear on the wire. 
-     *
-     * Calls to this member function must be made in the order that
-     * IEs appear on the wire.  Usually, this function will be called
-     * repeatedly by WireTemplate::<some function>
-     *
-     * @param ie Information Element that appears on the wire.
-     */
-    void add_src_ie(const InfoElement* ie);
+    BasicOctetArray();
+    ~BasicOctetArray();
 
-    /** Adds information elements to be decoded.
-     *
-     * Unlike add_src_ie(), this member function can be called for IEs
-     * in any order.
-     *
-     * @param ie Information Element to be decoded
-     * @param p memory where to decode the Information Element
-     */
-    void add_dst_ie(const InfoElement* ie, void* p);
-
-    void decode_record(Transcoder& xcoder) const;
+    size_t get_length() const;
+    const uint8_t* get_buf() const;
+    void copy_content(const uint8_t* buf, size_t length);
 
   private:
-    std::list<std::pair<const InfoElement*, void*> > ies;
+    uint8_t* buf;
+    size_t length;
+    size_t capacity;
   };
 
 } // namespace IPFIX
 
-#endif // IPFIX_DECODER_H
+#endif // IPFIX_BASICOCTETARRAY_H
