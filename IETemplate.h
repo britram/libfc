@@ -45,10 +45,9 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <map>
 #include <stdint.h>
 #include <vector>
-
-#include <boost/unordered_map.hpp>
 
 #include "InfoElement.h"
 #include "Transcoder.h"
@@ -78,7 +77,8 @@ class IETemplate;
 typedef std::vector<const InfoElement *>::const_iterator 
                                                  IETemplateIter;
   
-typedef boost::unordered_map<const InfoElement *, size_t, InfoElement::ptrIdHash, InfoElement::ptrIdEqual> 
+//typedef std::unordererd_map<const InfoElement *, size_t, InfoElement::ptrIdHash, InfoElement::ptrIdEqual> 
+typedef std::map<const InfoElement *, size_t> 
                                                  IEIndexMap;
 
 class IETemplate {

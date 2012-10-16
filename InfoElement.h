@@ -40,7 +40,9 @@
 #include <string>
 #include <memory>
 #include <stdint.h>
+
 #include "IEType.h"
+#include "InfoModel.h"
 
 namespace IPFIX {
 
@@ -70,7 +72,8 @@ public:
     pen_(0), 
     number_(0), 
     ietype_(IEType::octetArray()),
-    len_(0) {}
+    len_(0),
+    canonical_version_(0) {}
 
   /** Creates a new InfoElement by copying an existing one.
    *
@@ -81,7 +84,8 @@ public:
     pen_(rhs.pen()),
     number_(rhs.number()),
     ietype_(rhs.ietype()),
-    len_(rhs.len()) {}   
+    len_(rhs.len()),
+    canonical_version_(0) {}   
 
   /** Creates a new InfoElement given values for its fields.
    *
@@ -101,7 +105,8 @@ public:
     pen_(pen),
     number_(number),
     ietype_(ietype),
-    len_(len) {}
+    len_(len),
+    canonical_version_(0) {}
     
   /** Creates a new InfoElement by copying an existing one and
    * changing its size.
@@ -114,7 +119,8 @@ public:
     pen_(rhs.pen()),
     number_(rhs.number()),
     ietype_(rhs.ietype()),
-    len_(nlen) {}   
+    len_(nlen),
+    canonical_version_(0) {}   
     
   /** Gets the IE's name
    *
@@ -154,6 +160,20 @@ public:
    */
   const InfoElement* forLen(uint16_t len) const;
 
+  void add_apocryphal(const InfoElement* a, uint16_t len) const {
+    if (len != len_ && !rle_[len]) {
+      rle_[len] = std::shared_ptr<const InfoElement>(a);
+    }
+  }
+
+  const InfoElement* canonical() const {
+    if (canonical_version_ == 0) {
+      canonical_version_ = InfoModel::instance().lookupIE(*this);
+      canonical_version_->add_apocryphal(this, len_);
+    }
+    return canonical_version_;
+  }
+
   /** Determines whether two IE's match each other for purposes of
    * template compatibility, based on number and PEN only.
    *
@@ -187,14 +207,15 @@ public:
       return lhs->matches(*rhs); 
     }  
   };
-  
+
 private:
   std::string   name_;
   uint32_t      pen_;
   uint16_t      number_;
   const IEType* ietype_;
   uint16_t      len_;
-  mutable std::map<uint16_t, std::shared_ptr<InfoElement> > rle_;
+  mutable const InfoElement* canonical_version_;
+  mutable std::map<uint16_t, std::shared_ptr<const InfoElement> > rle_;
 };
 
 }

@@ -1,14 +1,39 @@
-#define BOOST_TEST_DYN_LINK
-#include <cassert>
+/* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * The name of ETH Zürich nor the names of other contributors 
+ *      may be used to endorse or promote products derived from this software 
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT 
+ * HOLDERBE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+ */
 
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include <fstream>
+
+#include <cassert>
 
 #include "MatchTemplate.h"
 #include "MBuf.h"
 #include "RecordReceiver.h"
 
-#include "TestCommon.h"
+#include "test/TestCommon.h"
 
 using namespace IPFIX;
 
@@ -27,9 +52,9 @@ static uint64_t kOctetsSeqStep  = 44;
 static uint16_t kFlowTemplateId = 256;
 static uint16_t kObsTemplateId = 257;
 
-static unsigned int kTestCycleCount = 100;
-static unsigned int kTestFlowPerSetCount = 22;
-static unsigned int kTestObsPerSetCount = 11;
+static unsigned int kTestCycleCount = 10000;
+static unsigned int kTestFlowPerSetCount = 222;
+static unsigned int kTestObsPerSetCount = 111;
 
 class TestFlow {
     friend std::ostream& operator<<(std::ostream& out, const TestFlow& f);
@@ -137,6 +162,9 @@ public:
       return !(*this == rhs);
     }
 
+    static void addIEs() {
+    }
+
     void prepareExport(Exporter& e) {
         InfoModel& m = InfoModel::instance();
 
@@ -148,15 +176,6 @@ public:
         ie_dp = m.lookupIE("destinationTransportPort");
         ie_proto = m.lookupIE("protocolIdentifier");
         ie_octets = m.lookupIE("octetDeltaCount[4]");
-
-        BOOST_CHECK(ie_stime != 0);
-        BOOST_CHECK(ie_etime != 0);
-        BOOST_CHECK(ie_sip != 0);
-        BOOST_CHECK(ie_dip != 0);
-        BOOST_CHECK(ie_sp != 0);
-        BOOST_CHECK(ie_dp != 0);
-        BOOST_CHECK(ie_proto != 0);
-        BOOST_CHECK(ie_octets != 0);
 
         WireTemplate* t = e.getTemplate(kFlowTemplateId);
         assert(t != 0);
@@ -175,14 +194,14 @@ public:
     void do_export(Exporter& e) {
         e.setTemplate(kFlowTemplateId);
         e.beginRecord();
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_stime, stime));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_etime, etime));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_sip, sip));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_dip, dip));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_sp, sp));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_dp, dp));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_proto, proto));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_octets, octets));
+        e.putValue(ie_stime, stime);
+        e.putValue(ie_etime, etime);
+        e.putValue(ie_sip, sip);
+        e.putValue(ie_dip, dip);
+        e.putValue(ie_sp, sp);
+        e.putValue(ie_dp, dp);
+        e.putValue(ie_proto, proto);
+        e.putValue(ie_octets, octets);
         e.exportRecord();
     }
 
@@ -291,20 +310,19 @@ public:
       return !(*this == rhs);
     }
 
-    void prepareExport(Exporter& e) {
+    static void addIEs() {
         InfoModel& m = InfoModel::instance();
-
         m.add("observationValue(35566/804)<unsigned64>[8]");
         m.add("observationLabel(35566/805)<string>[v]");
+    }
+
+    void prepareExport(Exporter& e) {
+        InfoModel& m = InfoModel::instance();
         
         ie_otime_ = m.lookupIE("observationTimeMilliseconds");
         ie_value_ = m.lookupIE("observationValue");
         ie_label_ = m.lookupIE("observationLabel");
         
-        BOOST_CHECK(ie_otime_ != 0);
-        BOOST_CHECK(ie_value_ != 0);
-        BOOST_CHECK(ie_label_ != 0);
-
         WireTemplate* t = e.getTemplate(kObsTemplateId);
         t->clear();
         t->add(ie_otime_);
@@ -318,9 +336,9 @@ public:
         e.beginRecord();
         e.reserveVarlen(ie_label_, label_.size());
         e.commitVarlen();
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_otime_, otime_));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_value_, value_));
-        BOOST_CHECK_EQUAL(true, e.putValue(ie_label_, label_));
+        e.putValue(ie_otime_, otime_);
+        e.putValue(ie_value_, value_);
+        e.putValue(ie_label_, label_);
         e.exportRecord();
     }
 };
@@ -363,15 +381,16 @@ public:
       ie_dp(InfoModel::instance().lookupIE("destinationTransportPort")),
       ie_proto(InfoModel::instance().lookupIE("protocolIdentifier")),
       ie_octets(InfoModel::instance().lookupIE("octetDeltaCount[4]")) {
-    BOOST_CHECK(ie_stime != 0);
-    BOOST_CHECK(ie_etime != 0);
-    BOOST_CHECK(ie_sip != 0);
-    BOOST_CHECK(ie_dip != 0);
-    BOOST_CHECK(ie_sp != 0);
-    BOOST_CHECK(ie_dp != 0);
-    BOOST_CHECK(ie_proto != 0);
-    BOOST_CHECK(ie_octets != 0);
     
+    assert(ie_stime != 0);
+    assert(ie_etime != 0);
+    assert(ie_sip != 0);
+    assert(ie_dip != 0);
+    assert(ie_sp != 0);
+    assert(ie_dp != 0);
+    assert(ie_proto != 0);
+    assert(ie_octets != 0);
+
     t.add(ie_stime);
     t.add(ie_etime);
     t.add(ie_sip);
@@ -445,10 +464,11 @@ public:
       ie_otime_(InfoModel::instance().lookupIE("observationTimeMilliseconds")),
       ie_value_(InfoModel::instance().lookupIE("observationValue")),
       ie_label_(InfoModel::instance().lookupIE("observationLabel")) {
-    BOOST_CHECK(ie_otime_ != 0);
-    BOOST_CHECK(ie_value_ != 0);
-    BOOST_CHECK(ie_label_ != 0);
-    
+
+    assert(ie_otime_ != 0);
+    assert(ie_value_ != 0);
+    assert(ie_label_ != 0);
+
     t.add(ie_otime_);
     t.add(ie_value_);
     t.add(ie_label_);
@@ -487,22 +507,22 @@ public:
   
 };
 
-BOOST_AUTO_TEST_SUITE(ImportExport)
 
-BOOST_AUTO_TEST_CASE(LoopFile) {
-  InfoModel::instance().defaultIPFIX();
+static bool file_exists(const std::string& name) {
+   return std::ifstream(name);
+}
 
+static void write_file(const std::string& filename) {
   TestFlow flow;
   TestObs obs;
-  static const std::string filename = "loopfile";
   Exporter *e = new FileWriter(filename, kTestDomain);
 
   assert(e != 0);
 
+  std::cerr << "Writing" << std::endl;
+
   flow.prepareExport(*e);
   obs.prepareExport(*e);
-
-  BOOST_TEST_MESSAGE("Writing...");
 
   e->exportTemplatesForDomain();
 
@@ -520,10 +540,14 @@ BOOST_AUTO_TEST_CASE(LoopFile) {
 
   e->flush();
   delete e;
+}
 
-  BOOST_TEST_MESSAGE("Reading back...");
-
+static void read_file(const std::string& filename) {
   Collector* c = new FileReader(filename);
+
+  assert(c != 0);
+
+  std::cerr << "Reading" << std::endl;
 
   TestFlowReceiver flow_receiver;
   c->registerReceiver(flow_receiver.get_template(), &flow_receiver);
@@ -536,13 +560,19 @@ BOOST_AUTO_TEST_CASE(LoopFile) {
     mbuf.clear();
 
   delete c;
-
-  BOOST_CHECK_EQUAL(flow_receiver.get_rec_count(),
-                    kTestCycleCount*kTestFlowPerSetCount);
-  BOOST_CHECK_EQUAL(obs_receiver.get_rec_count(),
-                    kTestCycleCount*kTestObsPerSetCount);
-  BOOST_CHECK_EQUAL(flow_receiver.is_passing(), true);
-  BOOST_CHECK_EQUAL(obs_receiver.is_passing(), true);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+int main(void) {
+  InfoModel::instance().defaultIPFIX();
+  TestFlow::addIEs();
+  TestObs::addIEs();
+
+  static const std::string filename = "loopfile";
+
+  if (!file_exists(filename)) {
+    write_file(filename);
+  }
+
+  read_file(filename);
+  return 0;
+}

@@ -1,209 +1,236 @@
-This is a stream-of-consciousness document about how to reorganise
-IPFIX import in lib/fc, by Stephan Neuhaus.
+What I want from a decoding API is the ability to say this:
 
+"Hi. I'm interested in templates with ID 1234. These contain the
+following IEs:
 
+  * a sourceIPv4Address please place at this pointer: 0x12345678
+  * a deltaPacketCount please place at this offset: 0x3456789a
 
-Requirements:
+After you're done decoding this, please call my callback
+function. Also, here is a mutex that belongs to me and that you should
+down() before you begin writing stuff into my private parts (ahem),
+and that you should unlock() after calling the callback."
 
-Fast for the AVERAGE CASE.  The average case is the import and export
-of IPv4 and IPv6 flows over TCP.  Import/export over UDP is
-problematic anyway (because of dropped and out-of-order packets) and
-SCTP can be a fig leaf to satisfy the IETF.
+In other words:
 
-A typical IPFIX message looks like this (from
-http://en.wikipedia.org/wiki/IP_Flow_Information_Export)
+// This class can be hidden and does not need to appear in any header
+// file.
+class RecordReaderInfo {
+public:
+  RecordReaderInfo();
+  ~RecordReaderInfo();
 
-Bits 0..15                    | Bits 16..31
-------------------------------+--------------------------
-Version = 0x000a              | Message Length = 64 Bytes
-Export Timestamp = 2005-12-31 23:59:60
-Sequence Number = 0
-Observation Domain ID = 12345678
-Set ID = 2 (Template)         | Set Length = 20 Bytes
-Template ID = 256             | Number of Fields = 3
-Type = sourceIPv4Address      | Field Length = 4 Bytes
-Type = destinationIPv4Address | Field Length = 4 Bytes
-Type = packetDeltaCount       | Field Length = 4 Bytes
-Set ID = 256 (Data Set        |
-using Template 256)           | Set Length = 28 Bytes (= 4 + 2*12)
-Record 1, Field 1 = 192.168.0.201
-Record 1, Field 2 = 192.168.0.1
-Record 1, Field 3 = 235 Packets
-Record 2, Field 1 = 192.168.0.202
-Record 2, Field 2 = 192.168.0.1
-Record 2, Field 3 = 42 Packets
-
-So the AVERAGE case is that a template describes a SEQUENCE of fields
-of FIXED length, and these fields will arrive IN ORDER.
-
-
-Some Questions/Remarks/Criticisms on IPFIX
-
-Why does the type sourceIPv4Address not implicitly encode the length
-as well?  Or in other words, when the type implies the length,
-shouldn't the length be ignored?
-
-I consider it a mistake to have the message length in the header
-because it makes stream processing impossible.  This way, you need to
-have the entire message in memory before you can send it.  Streaming
-is nice because it keeps send buffers limited, is very fast on the
-receiver end for fixed-length info, and you can send templates only
-once.
-
-It is also a mistake to have a length-encoding mechanism that
-optimises away two bytes of length information at the expense of a
-more complicated en/decoding algorithm.  No one cares these days about
-two bytes more or less, even when you have billions of records (that's
-then going to be 2 GiB, big deal).  However, if each en/decoding costs
-just one nanosecond more, processing a billion records will be 1 s
-longer.
-
-Another mistake is to have the set length in bytes (instead of
-records).
-
-
-An Abstract Machine Language fir IPFIX
-
-Let's look again at the template specification:
-
-Template ID = 256             | Number of Fields = 3
-Type = sourceIPv4Address      | Field Length = 4 Bytes
-Type = destinationIPv4Address | Field Length = 4 Bytes
-Type = packetDeltaCount       | Field Length = 4 Bytes
-
-This naturally gives rise to:
-
-class IPv4Flow : public Record {
 private:
-  IPv4Address source;
-  IPv4Address destination;
-  UInt32 count;
+  RecordReader* reader;
+  mutex& mutex;
+  struct Element {
+    const InfoElement* element; // From the wire template
+    void* store;
+  };
+  std::list<Element*> elements;
 };
 
-And we want to turn a sequence of records according to template 256
-into a std::list (or something similar) of IPv4Flow-s.
-
-The first step is to translate this into a list of (offset, type)
-pairs.  Here, "offset" is the offset in bytes from the beginning of a
-Record, and "type" is some sort of type identifier that identifies one
-of the basic IPFIX types like IPv4Address or UInt32.
-
-When a data set is read, this would cause the offsets to be loaded
-according to the template ID.
-
-This could be translated into the following program:
-
-1: JNMB 8   ; Jump if No More Bytes to location 8
-2: NR       ; Create new Record for the current template
-3: RIP4     ; Read an IPv4 address into the first offset
-4: RIP4     ; Read an IPv4 address into the second offset
-5: RUI32    ; Read an unsigned 32-bit integer into the third offset
-6: ADV      ; Insert current record
-7: JMP 1    ; Read next record
-8: END      ; Done
-
-Basically the idea behind the abstract machine is: if you could invent
-a machine to process IPFIX records, what would its assembly language
-look like?
-
-Instructions:
-
-1. JNMB <loc>
-
-Pops <loc> off the stack.  Conditional jump if no more bytes are available.
-
-2. NR
-
-Create new record fitting the current template.
-
-3. RIP4
-
-Read IPv4 address into current offset, advance offset counter
-
-4. RUI32
-
-Read unsigned 32-bit number into current offset, advance offset
-counter.
-
-5. ADV
-
-Save the current Record, append it to the current Record list.
-
-6. JMP <loc>
-
-Pops <loc> off the stack. Unconditional jump to <loc>.
-
-7. END
-
-Stop processing records in this template, return the Record list.
-
-
-An Instruction would be a class and it would look roughly like this:
-
-class Instruction {
+class RecordUserRegistry {
 public:
-  virtual void execute(Environment& e) = 0;
+  void register(uint32_t template_id,
+                RecordUser& user,
+                mutex& m,
+                std::list<std::pair<const InfoElement*, off_t
+                offset>);
+private:
+  std::multimap<uint32_t tid, RecordReaderInfo> readers;
 };
 
-class RIPv4 : public Instruction {
+class RecordReader {
 public:
-  void execute(Environment& e) {
-    reinterpret_cast<IPv4Address>(e.current_address())->read(e);
-    e.advance_offset_counter();
-    e.advance_pc();
-  }
+  virtual void decoding_finished() = 0;
 };
 
-class JMP : public Instruction {
-public:
-  void execute(Environment& e) {
-    e.set_pc(e.pop());
-  }
-};
+Classes wanting to use the registrar would then derive from RecordReader
+(cleverly exploiting the new C++ initialisation rules):
 
-class NR : public Instruction {
-public:
-  void execute(Environment& e) {
-    e.new_record();
-};
-
-class END : public Instruction {
-public:
-  void execute(Environment& e) {
-    e.stop_executing();
-  }
-};
-
-
-The main loop would be something like this:
-
-class Environment {
-private
-  bool done_executing;
-  unsigned int pc;
-  std::vector<Instruction> instructions;
+class MyRecord : public RecordReader {
+private:
+  uint32_t source_address;
+  uint64_t delta_count;
+  mutex my_mutex;
 
 public:
-  void Environment::execute() {
-    /* Set up environment */
+  MyRecord() {
     // ...
-
-    /* Set up list of instructions */
-    // ...
-
-    done_executing = false;
-    pc = 0;
-
-    while (!done_executing)
-      instructions[pc].execute(*this);
+    InfoModel* m = InfoModel::instance();
+    RecordUserRegistry& r = RecordUserRegistry::instance();
+    r.register(1234, this, my_mutex,
+               { { m->lookupIE("sourceIPv4Address"), &source_address) },
+                 { m->lookupIE("deltaPacketCount"), &delta_count) });
   }
+
+  void decoding_finished() {
+    // At this point, source_address and delta_count contain the
+    // values from the most recent record.
+
+    // Do something with source_address and delta_count. No need to
+    // lock() the mutex, that's done below.
+  }
+
+  void f() {
+    my_mutex.lock();
+      // Do something with source_address and delta_count. Now one
+      // must lock() the mutex first, since it's not guaranteed to be
+      // down before the call to f().
+    my_mutex.unlock();
+  }
+
 };
 
-And that would be it.
 
-Note that a format like this makes it trivially easy to parse much
-more complicated templates, simply by adding more instructions.  You
-have complicated constraints you want to check? No problem, just add a
-few arithmetic instructions (a stack is already there anyway) and
-there you go.
+And there would be some central dispatcher that would do the
+dispatching according to the template id:
 
+void SomeClass::decode_current_record() {
+  uint32_t tid = ...; // Get template ID from current set
+
+  // It might be a good idea to interchange the order of loops here,
+  // because that would allow one to cache decoded IE values.  On the
+  // other hand, (1) this decoding is usually simple and (2) there
+  // will generally be only one user per record (denying the value of
+  // caching through copying twice), so that caching might be more of
+  // a nuisance than an asset. 
+  for (auto i = registered_users.find(tid); i != multimap::end; ++i) {
+    // Set up offsets as above
+
+    i->mutex.lock();
+    for (auto ie = i->ies.begin(); ie != i->ies.end(); ++i) {
+      // decode IE; see below
+    }
+    i->user.decoding_finished();
+    i->mutex.unlock();
+  }
+}
+
+That should be reasonably compact and fast, and it would solve the
+concurrency problems also by having one central point at which to
+lock() and unlock() the respective mutexes.
+
+Let's say that the WireTemplate that we have just decoded contains the
+following IEs with their respective encoded lengths:
+
+sourceIPv4Address, 4
+destinationIPv4Address, 4
+informationElementName, kVarlen
+informationElementSemantics, 1
+informationElementRangeEnd, 4
+informationElementUnits, 2
+deltaPacketCount, 4
+
+Offset computation would then be as follows:
+
+First, set up record offsets for the current record:
+
+  /* Can also reuse an array that's already there, since all values in
+   * the array will be overwritten. */
+  size_t* record_offset = new size_t[n_ies];
+  size_t current_offset = 0;
+
+  for (unsigned int i = 0; i < n_ies; i++) {
+    record_offset[i] = current_offset;
+    if (ie_descriptions[i].ie_length == kVarlen)
+      current_offset = 0;
+    else
+      current_offset += ie_descriptions[i].ie_length;
+  }
+
+Then update them whenever a Varlen has just been successfully
+decoded:
+
+  if (isVarlen((ie_descriptions[i].ie)) {
+    size_t next_offset = current_offset + ie_length;
+    for (unsigned int j = i + 1;
+         j < n_ies && !isVarlen(ie_descriptions[j].ie);
+         j++) {
+      record_offset[j] += next_offset;
+      next_offset += ie_descriptions[j].ie_length;
+    }
+  }
+
+Decoding could be done with an array of functions like this:
+
+static void (or int, for error returns)
+decode_uint32(void* ret, const uint8_t** buf, const uint8_t* limit,
+              size_t wire_length) {
+  uint32_t r = 0;
+  for (unsigned int i = 0; i < wireLength; i++)
+    r = (r << 4) | (*buf)[i];
+  *static_cast<uint32_t*>(ret) = r;
+  *buf += wire_length;
+}
+
+static void
+decode_double(void* ret, const uint8_t** buf, const uint8_t* limit,
+              size_t wire_length) {
+  /* Only IEEE floats (32 bit) or doubles (64 bit) allowed */
+  assert(wire_length == 4 || wire_length == 8);
+
+  union {
+    float f;
+    double d;
+    uint8_t b[8];
+  } val;
+
+  // Assume that 0.0F and 0.0 and '\0' are represented as all zeros
+  // (which is not mandated by the C++ standard).
+  memset(val.b, sizeof val, '\0'); // or val.d = 0.0;
+
+  for (unsigned int i = 0; i < wire_length; i++)
+    val.b[i] = (*buf)[i];
+
+  if (wire_length == 4) // There's a float on the wire
+    *static_cast<double*>(ret) = val.f;  // Implicit conversion to double
+  else // There's a double on the wire
+    *static_cast<double*>(ret) = val.d;
+
+  *buf += wire_length;
+}
+
+static void
+decode_varlen(void* ret, const uint8_t** buf, const uint8_t* limit,
+              size_t wire_length) {
+  size_t varlen_length = ...;
+  // decode the varlen
+  *buf += varlen_length;
+}
+
+also, one can skip:
+
+static void
+skip_fixlen(void* ret, const uint8_t** buf, const uint8_t* limit,
+            size_t wire_length) {
+  assert(ret == 0);
+  *buf += wire_length;
+}
+
+static void
+skip_varlen(void* ret, const uint8_t** buf, const uint8_t* limit,
+            size_t wire_length) {
+  assert(ret == 0);
+  size_t varlen_length = ...;
+  *buf += varlen_length;
+  // recompute offsets...
+}
+
+
+The whole decoding could then be described by an array of function
+pointers:
+
+void* ret[];
+void (*decode[])(void* ret, const uint8_t** buf, const uint8_t* limit,
+                 size_t wire_length);
+
+// ...
+
+uint8_t* buf = ...;
+for (unsigned int i = 0; i < n_ies; i++) {
+  assert (*buf is in range);
+  assert (*buf + ie_descriptions[j].ie_length is in range);
+  decode[i](ret[i], &buf, buf + record_length, ie_descriptions[j].ie_length);
+}
