@@ -195,38 +195,11 @@ public:
     bool putValue(const InfoElement* ie, const void* vp, size_t len);
 
   /**
-   * Put an unsigned 8-bit integer at the given Information Element 
+   * Put a value at the given Information Element 
    * in the current record.
    */
-   
-    bool putValue(const InfoElement* ie, const uint8_t& v) {
-        return putValue(ie, &v, sizeof(v));
-    }
-
-  /**
-   * Put an unsigned 16-bit integer at the given Information Element 
-   * in the current record.
-   */
-
-    bool putValue(const InfoElement* ie, const uint16_t& v) {
-        return putValue(ie, &v, sizeof(v));
-    }
-
-  /**
-   * Put an unsigned 32-bit integer at the given Information Element 
-   * in the current record.
-   */
-
-    bool putValue(const InfoElement* ie, const uint32_t& v) {
-        return putValue(ie, &v, sizeof(v));
-    }
-
-  /**
-   * Put an unsigned 64-bit integer at the given Information Element 
-   * in the current record.
-   */
-
-    bool putValue(const InfoElement* ie, const uint64_t& v) {
+    template <typename T> 
+    bool putValue(const InfoElement* ie, const T& v) {
         return putValue(ie, &v, sizeof(v));
     }
 
