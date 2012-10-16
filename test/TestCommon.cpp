@@ -33,6 +33,8 @@
 #include <sys/time.h>
 #include <cerrno>
 
+#include <stddef.h>
+
 static int quit_counter = 0;
 
 void doQuit(int signum) {
@@ -67,6 +69,7 @@ uint64_t sys_ms() {
     return static_cast<uint64_t>(tv.tv_sec) * 1000 +  
            static_cast<uint64_t>(tv.tv_usec) / 1000;
 }
+
 void makeSimpleFlowTemplate(IPFIX::StructTemplate& sfstmpl) {
     IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
   
