@@ -24,14 +24,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
 
 #ifndef IPFIX_MBUF_H // idem
 #define IPFIX_MBUF_H // hack
 
-#include <stdint.h>
-#include <memory>
+#include <cstdint>
 #include <cstdio>
 #include <list>
+#include <memory>
 
 #include "Session.h"
 
@@ -69,24 +73,38 @@ namespace IPFIX {
     /** Clears this MBuf so it's as good as new. */
     void clear();
 
-    /** Get the domain of the last read message */
+    /** Gets the domain of the last read message.
+     *
+     * @return the domain of the most recent message.
+     */
     const uint32_t domain() const { return domain_; } 
 
-    /** Get the sequence number of the last read message */
+    /** Gets the sequence number of the last read message. 
+     *
+     * @return the sequence number of the most recent message.
+     */
     const uint32_t sequence() const { return sequence_; } 
 
-    /** Get the export time of the last read message */
+    /** Gets the export time of the last read message.
+     *
+     * @return the export time of the most recent message.
+     */
     const uint32_t export_time() const { return export_time_; } 
     
-    /** 
-     * Given a source containing a message and a session for state management,
-     * deframe a message into this message buffer, replacing its previous 
-     * contents.
+    /** Deframes a message into this message buffer, replacing its
+     * previous contents.
      *
-     * @param source source to read from
+     * @param source source to read from. This can be either a file
+     *     descriptor (an int), a file pointer, a std::istream, or a
+     *     buffer (a uint8_t*)
      * @param session session to store state in
+     *
+     * @return true if deframing was successful, false if not.
      */
     // g++ isn't smart enough to link this unless it's in the damn header.
+    // (Not a g++ problem actually -- templates need to be
+    // instantiated and can't be compiled in a straightforward way. --
+    // Stephan) 
     template <typename T> bool deframe(T& source, Session& session) {
       Transcoder xc;
   
@@ -120,20 +138,22 @@ namespace IPFIX {
       return true;
     }
     
-    /**
-     * Return an iterator for the start of the set list
+    /** Returns an iterator for the start of the set list.
+     *
+     * @return an iterator for the beginning set list.
      */
     SetListIter begin() {return setlist_.begin();}
 
-    /**
-     * Return an iterator for the end of the set list
+    /** Return an iterator for the end of the set list.
+     *
+     * @return an iterator for the end of the set list.
      */
     SetListIter end() {return setlist_.end();}
     
-    /**
-     * Use a specified transcoder to transcode this message buffer
+    /** Specifies a transcoder for this message buffer.
+     *
+     * @param xc transcoder for this message buffer.
      */
-    
     void transcodeBy(Transcoder& xc) { xc.setBase(buf_, len_); }
 
   private:
@@ -143,33 +163,59 @@ namespace IPFIX {
 
     void ensure(size_t length);
     
-    /**
-     * Low-level interface to consume bytes from a source into the buffer
-     * into a specified offset in the buffer; works with file descriptors
+    /** Consumes bytes from a source into the buffer at a specific
+     * offset (file descriptor version).
+     *
+     * @param fd the file descriptor from which to read bytes
+     * @param len the number of bytes to read
+     * @param off the offset into this MBuf where to put the read
+     * bytes
+     *
+     * @return true if the read succeeded, false otherwise
      */
     bool consume(int fd, size_t len, size_t off);
 
-    /**
-     * Low-level interface to consume bytes from a source into the buffer
-     * into a specified offset in the buffer; works with file pointers
+    /** Consumes bytes from a source into the buffer at a specific
+     * offset (file pointer version).
+     *
+     * @param fp the file pointer from which to read bytes
+     * @param len the number of bytes to read
+     * @param off the offset into this MBuf where to put the read
+     * bytes
+     *
+     * @return true if the read succeeded, false otherwise
      */
     bool consume(FILE *fp, size_t len, size_t off);
 
-    /**
-     * Low-level interface to consume bytes from a source into the buffer
-     * into a specified offset in the buffer; works with file pointers
+    /** Consumes bytes from a source into the buffer at a specific
+     * offset (istream version).
+     *
+     * @param is the input stream from which to read bytes
+     * @param len the number of bytes to read
+     * @param off the offset into this MBuf where to put the read
+     * bytes
+     *
+     * @return true if the read succeeded, false otherwise
      */
     bool consume(std::istream& is, size_t len, size_t off);
 
-    /**
-     * Low-level interface to consume bytes from a source into the buffer
-     * into a specified offset in the buffer; works with buffers.
+    /** Consumes bytes from a source into the buffer at a specific
+     * offset (buffer version).
+     *
+     * @param buf the buffer from which to read bytes
+     * @param len the number of bytes to read
+     * @param off the offset into this MBuf where to put the read
+     * bytes
+     *
+     * @return true if the read succeeded, false otherwise
      */
     bool consume(const uint8_t* buf, size_t len, size_t off);
 
-    /**
-     * Given a transcoder positioned after the message header, replace the
-     * contents of this buffer's setlist with the sets contained in the message.
+    /** Replaces the contents of this buffer's setlist with the sets
+     * contained in the message.
+     *
+     * @param xc transcoder positioned after the message header
+     * @param session ???
      */
     void populateSetlist(Transcoder& xc, Session& session);
     
