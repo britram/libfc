@@ -166,7 +166,7 @@ namespace IPFIX {
     assert(content_handler != 0);
     assert(error_handler != 0);
 
-    content_handler->start_parse();
+    content_handler->start_session();
 
     if (parse_in_progress) {
       error_handler->fatal(Error::parse_while_parsing, 0);
@@ -209,8 +209,8 @@ namespace IPFIX {
       while (cur + kSetHeaderLen <= message_end) {
         /* Decode set header. */
         uint16_t set_id = decode_uint16(cur + 0);
-        uint16_t set_size = decode_uint16(cur + 2);
-        const uint8_t* set_end = cur + set_size;
+        uint16_t set_length = decode_uint16(cur + 2);
+        const uint8_t* set_end = cur + set_length;
         
         if (set_end > message_end) {
           error_handler->fatal(Error::long_set, 0);
@@ -221,7 +221,7 @@ namespace IPFIX {
         cur += kSetHeaderLen;
 
         if (set_id == kTemplateSetID) {
-          content_handler->start_template_set(set_id, set_size);
+          content_handler->start_template_set(set_id, set_length);
 
           /* Decode template set */
           while (cur + kTemplateHeaderLen <= set_end) {
@@ -242,9 +242,9 @@ namespace IPFIX {
               uint16_t ie_id = decode_uint16(cur + 0);
               uint16_t ie_length = decode_uint16(cur + 2);
               bool enterprise = ie_id & 0x8000;
-              uint32_t enterprise_number = 0;
-
               ie_id &= 0x7fff;
+
+              uint32_t enterprise_number = 0;
               if (enterprise) {
                 if (cur + kFieldSpecifierLen + kEnterpriseLen > set_end) {
                   error_handler->fatal(Error::long_fieldspec, 0);
@@ -266,22 +266,21 @@ namespace IPFIX {
           content_handler->end_template_set();
         } else if (set_id == kOptionTemplateSetID) {
           /* Decode option template set */
-          cur += set_size - kSetHeaderLen;
+          content_handler->start_option_template_set(set_id, set_length);
+          /* FIXME: This is not really implemented yet, so we skip over it. */
+          error_handler->warning(Error::option_templates_ni, 0);
+          cur += set_length - kSetHeaderLen;
+          content_handler->end_option_template_set();
         } else {
           /* Decode data set */
-          content_handler->start_data_set(set_id, set_size, cur);
-          cur += set_size - kSetHeaderLen;
+          content_handler->start_data_set(set_id, set_length, cur);
+          cur += set_length - kSetHeaderLen;
           content_handler->end_data_set();
         }
 
         assert(cur == set_end);
-
         assert(cur <= message_end);
       }
-
-      /* Make sure we've used up all the bytes in this set (skip
-       * padding if present). */
-      cur = const_cast<uint8_t*>(message_end);
 
       content_handler->end_message();
       nbytes = is.read(message, kMessageHeaderLen);
@@ -295,7 +294,7 @@ namespace IPFIX {
     assert(nbytes == 0);
 
     parse_in_progress = false;
-    content_handler->end_parse();
+    content_handler->end_session();
   }
 
 } // namespace IPFIX

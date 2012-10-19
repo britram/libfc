@@ -28,10 +28,10 @@
 
 namespace IPFIX {
 
-  void DefaultHandler::start_parse() {
+  void DefaultHandler::start_session() {
   }
 
-  void DefaultHandler::end_parse() {
+  void DefaultHandler::end_session() {
   }
 
   void DefaultHandler::end_message() {
@@ -55,6 +55,21 @@ namespace IPFIX {
   }
 
   void DefaultHandler::end_template_record() {
+  }
+
+  void DefaultHandler::start_option_template_set(uint16_t set_id,
+                                                 uint16_t set_length) {
+  }
+
+  void DefaultHandler::end_option_template_set() {
+  }
+
+  void DefaultHandler::start_option_template_record(uint16_t template_id,
+                                                    uint16_t field_count,
+                                                    uint16_t scope_field_count) {
+  }
+
+  void DefaultHandler::end_option_template_record() {
   }
 
   void DefaultHandler::field_specifier(bool enterprise,

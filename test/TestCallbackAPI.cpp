@@ -35,18 +35,20 @@
 #include <iostream>
 
 #include "BufferInputSource.h"
-#include "DefaultHandler.h"
+#include "Constants.h"
+#include "ContentHandler.h"
+#include "ErrorHandler.h"
 #include "IPFIXReader.h"
 
 using namespace IPFIX;
 
-class PrintHandler : public DefaultHandler {
-  void start_parse() {
-    std::cerr << "Parsing starts" << std::endl;
+class PrintHandler : public ContentHandler, public ErrorHandler {
+  void start_session() {
+    std::cerr << "Session starts" << std::endl;
   }
 
-  void end_parse() {
-    std::cerr << "Parsing ends" << std::endl;
+  void end_session() {
+    std::cerr << "Session ends" << std::endl;
   }
 
   void start_message(uint16_t version,
@@ -57,7 +59,7 @@ class PrintHandler : public DefaultHandler {
     time_t e = export_time;
     char* e_string = asctime(localtime(&e));
 
-    assert(strlen(e_string) > 0);
+    assert(e_string != 0 && strlen(e_string) > 0);
 
     // Remove terminating \n. Who comes up with these crap APIS?
     e_string[strlen(e_string) - 1] = '\0';
@@ -95,12 +97,41 @@ class PrintHandler : public DefaultHandler {
     std::cerr << "      Template record ends" << std::endl;
   }
 
+  void start_option_template_set(uint16_t set_id,
+                                 uint16_t set_length) {
+    std::cerr << "    Option template set: id=" << set_id
+              << ", length=" << set_length
+              << std::endl;
+  }
+
+  void end_option_template_set() {
+    std::cerr << "    Option template set ends" << std::endl;
+  }
+
+  void start_option_template_record(uint16_t template_id,
+                                    uint16_t field_count,
+                                    uint16_t scope_field_count) {
+    std::cerr << "      Option template record: id=" << template_id
+              << ", fields=" << field_count
+              << ", scope-fields=" << scope_field_count
+              << std::endl;
+  }
+
+  void end_option_template_record() {
+    std::cerr << "      Option template record ends" << std::endl;
+  }
+
   void field_specifier(bool enterprise,
                        uint16_t ie_id,
                        uint16_t ie_length,
                        uint32_t enterprise_number) {
     std::cerr << "        Field specifier: id=" << ie_id
-              << ", length=" << ie_length;
+              << ", length=";
+    if (ie_length == kVarlen) 
+      std::cerr << "Varlen";
+    else
+      std::cerr << ie_length;
+
     if (enterprise)
       std::cerr << ", enterprise=" << enterprise_number;
     else 
@@ -145,16 +176,26 @@ class PrintHandler : public DefaultHandler {
 BOOST_AUTO_TEST_SUITE(CallbackInterface)
 
 BOOST_AUTO_TEST_CASE(BasicCallback) {
-  static const unsigned char msg[] = {
-    0x00,0x0a,0x00,0x21,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x00  };
+  static const unsigned char msg01[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x0 };
+  static const unsigned char msg02[] = {
+    0x00,0x0a,0x00,0x56,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x18,0x03,0xe9,0x00,0x04,0x01,0x36,0x00,0x04,0x00,0x52,0xff,0xff,0x01,0x37,0x00,0x08,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x2e,0x10,0x20,0x30,0x40,0x04,0x65,0x74,0x68,0x30,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65 };
+
   PrintHandler ph;
   IPFIXReader ir;
 
   ir.set_content_handler(&ph);
   ir.set_error_handler(&ph);
 
-  BufferInputSource is(msg, sizeof(msg));
-  ir.parse(is);
+  {
+    BufferInputSource is(msg01, sizeof(msg01));
+    ir.parse(is);
+  }
+  {
+    BufferInputSource is(msg02, sizeof(msg02));
+    ir.parse(is);
+  }
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()

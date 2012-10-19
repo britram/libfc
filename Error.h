@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -53,6 +54,9 @@ namespace IPFIX {
 
       /** Field specification exceeds set. */
       long_fieldspec,
+
+      /** Option templates not implemented yet. */
+      option_templates_ni,
     };
 
     Error(error_t e);

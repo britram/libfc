@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -40,8 +41,8 @@ namespace IPFIX {
   class DefaultHandler : public ContentHandler, public ErrorHandler {
   public:
     /* From ContentHandler */
-    void start_parse();
-    void end_parse();
+    void start_session();
+    void end_session();
     void start_message(uint16_t version,
                        uint16_t length,
                        uint32_t export_time,
@@ -53,6 +54,12 @@ namespace IPFIX {
     void start_template_record(uint16_t template_id,
                                uint16_t field_count);
     void end_template_record();
+    void start_option_template_set(uint16_t set_id, uint16_t set_length);
+    void end_option_template_set();
+    void start_option_template_record(uint16_t template_id,
+                                      uint16_t field_count,
+                                      uint16_t scope_field_count);
+    void end_option_template_record();
     void field_specifier(bool enterprise,
                          uint16_t ie_id,
                          uint16_t ie_length,
@@ -64,7 +71,6 @@ namespace IPFIX {
     void error(Error error, const char* message);
     void fatal(Error error, const char* message);
     void warning(Error error, const char* message);
-
   };
 
 } // namespace IPFIX

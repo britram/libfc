@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -43,22 +44,22 @@ namespace IPFIX {
    */
   class ContentHandler {
   public:
-    /** Receives notification at the start of a parse.
+    /** Receives notification at the start of a session.
      *
      * This method will be invoked only once, before any other
      * callbacks.  It will be invoked even if the first attempt to
      * read from the message source causes an unrecoverable error.
      */
-    virtual void start_parse() = 0;
+    virtual void start_session() = 0;
 
-    /** Receives notification of the end of a parse. 
+    /** Receives notification of the end of a session. 
      *
      * This method will be invoked at most once, and if it is, it will
      * be the last method invoked during the parse.  The method will
      * not be invoked if parsing this message has been abandoned due
      * to a nonrecoverable error. 
      */
-    virtual void end_parse() = 0;
+    virtual void end_session() = 0;
 
     /** Receives notification that a new message has started.
      *
@@ -88,10 +89,7 @@ namespace IPFIX {
 
     /** Receives notification that a new template set begins.
      *
-     * @param set_id set ID as per RFC 5101 (2 = template set), 3 =
-     *     option template set, 4--255 = reserved for future use, >
-     *     255 = data sets, where set ID = template ID of the
-     *     corresponding template record)
+     * @param set_id set ID as per RFC 5101 (should be 2)
      * @param set_length overall set length as per RFC 5101
      */
     virtual void start_template_set(uint16_t set_id, uint16_t set_length) = 0;
@@ -109,6 +107,30 @@ namespace IPFIX {
 
     /** Receives notification that a template record ends. */
     virtual void end_template_record() = 0;
+
+    /** Receives notification that a new option template set begins.
+     *
+     * @param set_id set ID as per RFC 5101 (should be 3)
+     * @param set_length overall set length as per RFC 5101
+     */
+    virtual void start_option_template_set(uint16_t set_id,
+                                           uint16_t set_length) = 0;
+
+    /** Receives notification that an option template set ends. */
+    virtual void end_option_template_set() = 0;
+
+    /** Receives notification that an option template record is starting.
+     *
+     * @param template_id option template ID as per RFC 5101
+     * @param field_count number of fields in this template record
+     * @param scope_field_count number of scope fields as per RFC 5101
+     */
+    virtual void start_option_template_record(uint16_t template_id,
+                                              uint16_t field_count,
+                                              uint16_t scope_field_count) = 0;
+
+    /** Receives notification that an option template record ends. */
+    virtual void end_option_template_record() = 0;
 
     /** Receives notification of a field specifier.
      *

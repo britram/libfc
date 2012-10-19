@@ -39,6 +39,7 @@ namespace IPFIX {
     case short_header: return "short header"; break;
     case long_set: return "set too long (exceeds message size)"; break;
     case long_fieldspec: return "field specification exceeds set"; break;
+    case option_templates_ni: return "option templates not implemented"; break;
     default: return "unknown error"; break;
     }
  }
