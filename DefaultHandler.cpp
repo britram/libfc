@@ -78,7 +78,9 @@ namespace IPFIX {
                                        uint32_t enterprise_number) {
   }
 
-  void DefaultHandler::start_data_set(uint16_t id, uint16_t length, uint8_t* buf) {
+  void DefaultHandler::start_data_set(uint16_t id,
+                                      uint16_t length,
+                                      const uint8_t* buf) {
   }
 
   void DefaultHandler::end_data_set() {

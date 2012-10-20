@@ -156,7 +156,9 @@ namespace IPFIX {
      * @param buf pointer to the beginning of the data records
      *     (excluding the header)
      */
-    virtual void start_data_set(uint16_t id, uint16_t length, uint8_t* buf) = 0;
+    virtual void start_data_set(uint16_t id,
+                                uint16_t length,
+                                const uint8_t* buf) = 0;
 
     /** Receives notification that a data set has ended. */
     virtual void end_data_set() = 0;

@@ -33,6 +33,9 @@
 #ifndef IPFIX_DATASETDECODER_H
 #  define IPFIX_DATASETDECODER_H
 
+#  include <map>
+#  include <vector>
+
 #  include "ContentHandler.h"
 
 namespace IPFIX {

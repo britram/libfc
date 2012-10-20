@@ -64,7 +64,7 @@ namespace IPFIX {
                          uint16_t ie_id,
                          uint16_t ie_length,
                          uint32_t enterprise_number);
-    void start_data_set(uint16_t id, uint16_t length, uint8_t* buf);
+    void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf);
     void end_data_set();
 
     /* From ErrorHandler */

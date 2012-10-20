@@ -205,7 +205,29 @@ namespace IPFIX {
 
       nbytes = is.read(cur, message_size);
 
-      /* Decode sets. */
+      /* Decode sets.
+       *
+       * Note to prospective debuggers of the code below: I am aware
+       * that the various comparisons of pointers to message
+       * boundaries with "<=" instead of "<" looks wrong.  After all,
+       * we all write "while (p < end) p++;". But, gentle reader,
+       * please be assured that these comparisons have all been
+       * meticulously checked and found to be correct.  There are two
+       * reasons for the use of "<=" over "<":
+       *
+       * (1) In one case, I check whether there are still N bytes left
+       * in the buffer. In this case, if "end" points to just beyond
+       * the buffer boundary, "cur + N <= end" is the correct
+       * comparison. (Think about it.)
+       *
+       * (2) In the other case, I check that "cur" hasn't been
+       * incremented to the point where it's already beyond the end of
+       * the buffer, but where it's OK if it's just one byte past
+       * (because that will be checked on the next iteration
+       * anyway). In this case too, "cur <= end" is the correct test.
+       *
+       * -- Stephan Neuhaus
+       */
       while (cur + kSetHeaderLen <= message_end) {
         /* Decode set header. */
         uint16_t set_id = decode_uint16(cur + 0);

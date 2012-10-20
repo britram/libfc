@@ -139,7 +139,7 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
     std::cerr << std::endl;
   }
 
-  void start_data_set(uint16_t id, uint16_t length, uint8_t* buf) {
+  void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf) {
     std::cerr << "    Data set: template-id=" << id
               << ", length=" << length
               << std::endl;
