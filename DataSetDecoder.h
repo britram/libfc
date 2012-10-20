@@ -77,7 +77,7 @@ namespace IPFIX {
      *
      * This map is re-initialised on every message.
      */
-    std::map<uint16_t, std::vector<const InfoElement*>& > wire_templates;
+    std::map<uint16_t, std::vector<const InfoElement*> > wire_templates;
 
     // Data for reading template sets
     /** The current wire template that is being assembled. 

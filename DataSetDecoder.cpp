@@ -104,7 +104,7 @@ private:
     // FIXME Could encode endianness conversion into the decision
     // type, would save an if in the inner loop. Profile this.
     /** The decision type. */
-    enum {
+    enum Type {
       skip_fixlen,              /** Skip a fixed amount. */
       skip_varlen,              /** Skip a variable amount. */
       transfer_fixlen,          /** Transfer a fixed amount */
@@ -142,18 +142,18 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
     assert(cur < buf_end);
 
     switch (i->type) {
-    case skip_fixlen:
+    case Type::skip_fixlen:
       assert (cur + i->length <= buf_end);
       cur += i->length;
       break;
 
-    case skip_varlen:
+    case Type::skip_varlen:
       uint16_t varlen_length = decode_varlen_length(&cur);
       assert(cur + varlen_length <= buf_end);
       cur += varlen_length;
       break;
 
-    case transfer_fixlen:
+    case Type::transfer_fixlen:
       assert(cur + i->length <= buf_end);
       /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
       // FIXME: Check if transferring native data types is faster
@@ -171,7 +171,7 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
       cur += i->length;
       break;
 
-    case transfer_varlen:
+    case Type::transfer_varlen:
       uint16_t varlen_length = decode_varlen_length(&cur);
       assert(cur + varlen_length <= buf_end);
       
