@@ -30,7 +30,6 @@
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
 
-
 /** Decode plans describe how a data record is to be decoded.
  *
  * Decoding a data record means determining, for each data field, 
@@ -79,7 +78,7 @@ public:
    *   template must also appear in the wire template)
    * @param wire_template the wire template for the data set
    */
-  DecodePlan(std::vector<std::pair<const InfoElement*, void*> > minimal_template, std::vector<const InfoElement*> wire_template);
+  DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> > minimal_template, std::vector<const IPFIX::InfoElement*> wire_template);
   ~DecodePlan();
 
   /** Executes the plan.
@@ -104,7 +103,7 @@ private:
     // FIXME Could encode endianness conversion into the decision
     // type, would save an if in the inner loop. Profile this.
     /** The decision type. */
-    enum Type {
+    enum {
       skip_fixlen,              /** Skip a fixed amount. */
       skip_varlen,              /** Skip a variable amount. */
       transfer_fixlen,          /** Transfer a fixed amount */
@@ -128,7 +127,7 @@ private:
      * suitably aligned for the result data type (for fixlen
      * transfers), or that they point to a BasicOctetArray object (for
      * varlen transfers). */
-    void* p;
+    uint8_t* p;
   };
   
   std::vector<Decision> plan;
@@ -142,18 +141,20 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
     assert(cur < buf_end);
 
     switch (i->type) {
-    case Type::skip_fixlen:
+    case Decision::skip_fixlen:
       assert (cur + i->length <= buf_end);
       cur += i->length;
       break;
 
-    case Type::skip_varlen:
-      uint16_t varlen_length = decode_varlen_length(&cur);
-      assert(cur + varlen_length <= buf_end);
-      cur += varlen_length;
+    case Decision::skip_varlen:
+      {
+        uint16_t varlen_length = decode_varlen_length(&cur);
+        assert(cur + varlen_length <= buf_end);
+        cur += varlen_length;
+      }
       break;
 
-    case Type::transfer_fixlen:
+    case Decision::transfer_fixlen:
       assert(cur + i->length <= buf_end);
       /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
       // FIXME: Check if transferring native data types is faster
@@ -171,20 +172,23 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
       cur += i->length;
       break;
 
-    case Type::transfer_varlen:
-      uint16_t varlen_length = decode_varlen_length(&cur);
-      assert(cur + varlen_length <= buf_end);
+    case Decision::transfer_varlen:
+      {
+        uint16_t varlen_length = decode_varlen_length(&cur);
+        assert(cur + varlen_length <= buf_end);
       
-      BasicOctetArray* p = reinterpret_cast<BasicOctetArray*>(i->p);
-      p->copy_content(cur, varlen_length);
+        IPFIX::BasicOctetArray* p
+          = reinterpret_cast<IPFIX::BasicOctetArray*>(i->p);
+        p->copy_content(cur, varlen_length);
 
-      cur += varlen_length;
+        cur += varlen_length;
+      }
       break;
     }
-
-    assert ((cur - buf) <= USHRT_MAX);
-    return static_cast<uint16_t>(cur - buf);
   }
+
+  assert ((cur - buf) <= USHRT_MAX);
+  return static_cast<uint16_t>(cur - buf);
 }
 
 namespace IPFIX {
@@ -224,7 +228,7 @@ namespace IPFIX {
     assert(current_wire_template == 0);
     current_template_id = template_id;
 
-    if (wire_templates contains template_id as key) {
+    if (1 /* wire_templates contains template_id as key */) {
       // Duplicate template id. FIXME: Overwrite?
       report_error();
     }
@@ -237,7 +241,7 @@ namespace IPFIX {
 
   void DataSetDecoder::end_template_record() {
     if (current_wire_template->size() > 0)
-      wire_templates.map(current_template_id, *current_wire_template);
+      wire_templates[current_template_id] = *current_wire_template;
     delete current_wire_template;
     current_wire_template = 0;
   }
@@ -273,13 +277,13 @@ namespace IPFIX {
     const InfoElement* ie
       = lookup_ie(ie_id, ie_length, enterprise, enterprise_number);
     assert (ie != 0);
-    current_wire_template[current_field_count++] = ie;
+    (*current_wire_template)[current_field_count++] = ie;
   }
 
   void DataSetDecoder::start_data_set(uint16_t id,
                                       uint16_t length,
                                       const uint8_t* buf) {
-    if (wire_templates does not contain "id" as key)
+    if (1 /* wire_templates does not contain "id" as key */)
       // No wire template for this data set: skip (but no error)
       return;
 
