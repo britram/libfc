@@ -37,6 +37,7 @@
 #  include <vector>
 
 #  include "ContentHandler.h"
+#  include "InfoElement.h"
 
 namespace IPFIX {
 
