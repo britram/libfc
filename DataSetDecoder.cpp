@@ -34,7 +34,13 @@
  *
  * Decoding a data record means determining, for each data field, 
  *
- *   - if the data's endianness must be converted; and
+ *   - if the data's endianness must be converted;
+ *   - if the data needs to be transformed in any other way (for
+ *     example, boolean values are encoded with 1 meaning true and 2
+ *     meaning false(!!), or reduced-length encoding of floating-point
+ *     values means that doubles are really transferred as floats);
+ *   - for variable-length data, what the length of the encoded value
+ *     is; and
  *   - where the converted data is to be stored.
  *
  * Basically, clients register sets of pairs of <ie, pointer> with the
@@ -92,22 +98,49 @@ public:
    *
    * @param buf the buffer containing the data record (and the
    *     remaining data set)
-   * @param len length of the remaining data set
+   * @param length length of the remaining data set
    *
    * @return number of bytes decoded
    */
-  uint16_t execute(const uint8_t* buf, uint16_t len);
+  uint16_t execute(const uint8_t* buf, uint16_t length);
 
 private:
   struct Decision {
-    // FIXME Could encode endianness conversion into the decision
-    // type, would save an if in the inner loop. Profile this.
     /** The decision type. */
-    enum {
-      skip_fixlen,              /** Skip a fixed amount. */
-      skip_varlen,              /** Skip a variable amount. */
-      transfer_fixlen,          /** Transfer a fixed amount */
-      transfer_varlen,          /** Transfer a variable amount */
+    enum decision_type_t {
+      /** Skip a fixed amount. */
+      skip_fixlen,
+
+      /** Skip a variable amount. */
+      skip_varlen,
+
+      /** Transfer a fixed amount, with no endianness conversion, no
+       * booleans, and no octet string. */
+      transfer_fixlen,
+
+      /** Transfer a boolean. Someone found it amusing in RFC 2579 to
+       * specify boolean values true and false as 1 and 2,
+       * respectively [sic!].  And someone else found it amusing to
+       * standardise this behaviour in RFC 5101 too.  This is of
+       * course wrong, since it disallows entirely sensible operations
+       * like + for "or", * for "and" and "<=" for implication (which
+       * is what you get when you make false less than true). */
+      transfer_boolean,
+
+      /** Transfer a fixed amount, with endianness conversion. */
+      transfer_fixlen_endianness,
+
+      /** Transfer an octet string with fixed length. */
+      transfer_fixlen_octets,
+
+      /** Reduced-length float64, no endianness conversion. */
+      transfer_float_into_double,
+
+      /** Reduced-length float64, with endianness conversion. */
+      transfer_float_into_double_endianness,
+
+      /** Transfer a variable amount. */
+      transfer_varlen,
     } type;
 
     /** How much data is affected in the data set?  This field makes
@@ -115,12 +148,8 @@ private:
     uint16_t length;
 
     /** Destination type size in bytes.  This field makes sense only in
-     * transfer decisions. */
+     * transfer_fixlen decisions. */
     uint16_t destination_size;
-
-    /** Endianness conversion?  This field makes sense only in fixlen
-     * decisions. */
-    bool convert_endianness;
 
     /** Transfer target. This field makes sense only in transfer
      * decisions.  The caller must make sure that these pointers are
@@ -133,7 +162,319 @@ private:
   std::vector<Decision> plan;
 };
 
-uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
+/** Checks whether an IE from a minimal template is a match for an IE
+ * from a wire template.
+ *
+ * Two information elements match if they:
+ *
+ *   - either the same private enterprise number or ar both in the
+ *     IANA registry; and
+ *   - have the same IE number.
+ *
+ * @param minimal IE from a wire template
+ * @param wire IE from a wire template
+ *
+ * @return true if they match, false otherwise
+ */
+static bool
+match_ie(const InfoElement* minimal, const InfoElement* wire) {
+  return minimal->pen() == wire->pen()
+    && minimal->number() == wire->number();
+}
+
+/** Dummy return value used to shut the compiler up.
+ *
+ * The function match() must return something, even when a matching
+ * (ie, pointer) pair has not been found in the minimal template (see
+ * the documentation there). We pre-empt the return statement with an
+ * appropriate assert() so that the return statement is never
+ * executed. However, that presumes that the compiler is smart enough
+ * to figure that out, and not all compilers might be.  So we simply
+ * write a return statement where we return this dummy pair. */
+static std::pair<const IPFIX::InfoElement*, void*> __x(0,0);
+
+/** Finds the matching IE from a minimal template.
+ *
+ * It is a fatal error if there is no such matching IE.
+ *
+ * @param minimal_template a minimal template
+ * @param wt an IE from a wire template
+ *
+ * @return the (ie, pointer) pair from the minimal template whose
+ *     information element matches the IE from the wire template.
+ */
+static const std::pair<const IPFIX::InfoElement*, void*>&
+match(const std::vector<std::pair<const IPFIX::InfoElement*, void*>>& minimal_template
+      const IPFIX::InfoElement* wt) {
+  for (auto i = minimal_template.begin();
+       i != minimal_template.end();
+       i++) {
+    if (match_ie(i->first, wt))
+      return *i;
+  }
+
+  assert(0 == "Internal error: IE not found in supposedly "
+              "matching template");
+  /* NOTREACHED */
+  return __x;                   // Shut compiler up
+}
+
+DecisionPlan::DecisionPlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> > minimal_template, std::vector<const IPFIX::InfoElement*> wire_template) 
+  : plan(wire_template.size()) {
+
+#if defined(BOOST_BIG_ENDIAN)
+  Decision::decision_type_t transfer_fixlen_maybe_endianness
+    = Decision::transfer_fixlen;
+  Decision::decision_type_t transfer_float_into_double_maybe_endianness
+    = Decision::transfer_float_into_double;
+#elif defined(BOOST_LITTLE_ENDIAN)
+  Decision::decision_type_t transfer_fixlen_maybe_endianness
+    = Decision::transfer_fixlen_endiananness;
+  Decision::decision_type_t transfer_float_into_double_maybe_endianness
+    = Decision::transfer_float_into_double_endianness;
+#else
+#  error libfc does not compile on weird-endian machines.
+#endif
+
+  for (auto wt = wire_template.begin(); wt != wire_template.end(); wt++) {
+    if (minimal_template contains *i) { /* Encode transfer decision */
+      Decision d;
+      const std::pair<const IPFIX::InfoElement*, void*>& min_match
+        = match(wire_template, *wt);
+
+      d.p = min_match.second;
+      if (wt->ietype() == 0)
+        report_error("IE has NULL ietype");
+
+      switch (wt->ietype()->number()) {
+      case kOctetArray: 
+        if (wi->len() == IPFIX::kVarlen) {
+          d.type = Decision::transfer_varlen;
+        } else {
+          d.type = Decision::transfer_fixlen_octets;
+          d.length = wt->len();
+        }
+        break;
+
+      case IPFIX::IEType::kUnsigned8:
+        d.type = Decision::transfer_fixlen;
+        d.length = wt->len();
+        d.destination_size = sizeof(uint8_t);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kUnsigned16:
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(uint16_t);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kUnsigned32:
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(uint32_t);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kUnsigned64:
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(uint64_t);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kSigned8:
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(int8_t);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kSigned16:
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(int16_t);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kSigned32:
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(int32_t);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kSigned64:
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(int64_t);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kFloat32:
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(float);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kFloat64:
+        assert(wt->length == sizeof(float)
+               || wt->length() == sizeof(double));
+        d.length = wt->len();
+        if (d.length == sizeof(float))
+          d.type = transfer_float_into_double_maybe_endianness;
+        else
+          d.type = transfer_fixlen_maybe_endianness;
+        d.destination_size = sizeof(double);
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kBoolean:
+        d.type = Decision::transfer_bool;
+        d.length = wt->len();
+        d.destination_size = sizeof(uint8_t); 
+        if (wt->len() > i->destination_size)
+          report_error("IE length greater than native size");
+        break;
+
+      case IPFIX::IEType::kMacAddress:
+        /* RFC 5101 says to treat MAC addresses as 6-byte integers,
+         * but Brian Trammell says that this is wrong and that the
+         * RFC will be changed.  If for some reason this does not
+         * come about, replace "transfer_fixlen" with
+         * "transfer_fixlen_maybe_endianness". */
+        d.type = transfer_fixlen;
+        d.length = wt->len();
+        d.destination_size = 6*sizeof(uint8_t);
+        if (wt->len() != 6)
+          report_error("MAC IE not 6 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
+        break;
+        
+      case IPFIX::IEType::kString:
+        if (wi->len() == IPFIX::kVarlen) {
+          d.type = Decision::transfer_varlen;
+        } else {
+          d.type = Decision::transfer_fixlen_octets;
+          d.length = wt->len();
+        }
+        break;
+
+      case IPFIX::IEType::kDateTimeSeconds: break;
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(uint32_t);
+        break;
+        
+      case IPFIX::IEType::kDateTimeMilliseconds: break;
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(uint64_t);
+        break;
+        
+      case IPFIX::IEType::kDateTimeMicroseconds: break;
+        d.type = transfer_fixlen_maybe_endianness;
+        // RFC 5101, Chapter 6, Verse 2
+        assert(wt->len() == sizeof(uint64_t));
+        d.length = wt->len();
+        d.destination_size = sizeof(uint64_t);
+        break;
+        
+      case IPFIX::IEType::kDateTimeNanoseconds: break;
+        d.type = transfer_fixlen_maybe_endianness;
+        // RFC 5101, Chapter 6, Verse 2
+        assert(wt->len() == sizeof(uint64_t));
+        d.length = wt->len();
+        d.destination_size = sizeof(uint64_t);
+        break;
+        
+      case IPFIX::IEType::kIpv4Address: break;
+        /* RFC 5101 says to treat all addresses as integers. This
+         * would mean endianness conversion for all of these address
+         * types, including MAC addresses and IPv6 addresses. But the
+         * only reasonable address type with endianness conversion is
+         * the IPv4 address.  If for some reason this is not correct
+         * replace "transfer_fixlen_maybe_endianness" with
+         * "transfer_fixlen". */
+        d.type = transfer_fixlen_maybe_endianness;
+        d.length = wt->len();
+        d.destination_size = sizeof(uint32_t);
+        if (wt->len() != 4)
+          report_error("IPv4 Address IE not 4 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
+        break;
+        
+      case IPFIX::IEType::kIpv6Address: break;
+        /* RFC 5101 says to treat IPv6 addresses as 16-byte integers,
+         * but Brian Trammell says that this is wrong and that the
+         * RFC will be changed.  If for some reason this does not
+         * come about, replace "transfer_fixlen" with
+         * "transfer_fixlen_maybe_endianness". */
+        d.type = transfer_fixlen;
+        d.length = wt->len();
+        d.destination_size = 16*sizeof(uint8_t);
+        if (wt->len() != 16)
+          report_error("IPv6 Address IE not 16 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
+        break;
+        
+      default: 
+        report_error("Unknown IE type");
+        break;
+      }
+    } else {                    /* Encode skip decision */
+      if (wi->len() == IPFIX::kVarlen) {
+        d.type = Decision::skip_varlen;
+      } else {
+        d.type = Decision::skip_fixlen;
+        d.length = wt->len();
+      }
+      break;
+    }
+  }
+}
+
+static uint16_t decode_varlen_length(const uint8_t** cur,
+                                     const uint8_t* buf_end) {
+  uint16_t ret = 0;
+
+  if (*cur >= buf_end) 
+    report_error("first octet of varlen length encoding beyond buffer");
+  ret = *cur;
+
+  if (ret < UCHAR_MAX)
+    (*cur)++;
+  else {
+    if (*cur + 3 > buf_end) 
+      report_error("three-byte varlen length encoding beyond buffer");
+    (*cur)++;
+    /* Assume that the two length-carrying octets are in network byte
+     * order */
+    ret = (*cur << 8) + (*cur + 1);
+    *cur += 2;
+
+    /* If it turns out that the three-byte encoding must not be used
+     * for values < 255, then uncomment the following two lines: */
+    //if (ret < UCHAR_MAX)
+    //  report_error("three-byte varlen encoding used for value < 255");
+  }
+
+  if (*cur + ret > buf_end)
+    report_error("varlen IE goes beyond buffer");
+
+  return ret;
+}
+
+uint16_t DecisionPlan::execute(const uint8_t* buf, uint16_t length) {
   const uint8_t* cur = buf;
   const uint8_t* buf_end = buf + length;
 
@@ -148,33 +489,98 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
     case Decision::skip_varlen:
       {
-        uint16_t varlen_length = decode_varlen_length(&cur);
+        uint16_t varlen_length = decode_varlen_length(&cur, buf_end);
         assert(cur + varlen_length <= buf_end);
         cur += varlen_length;
       }
       break;
 
+    case Decision::transfer_boolean:
+      // Undo RFC 2579 madness
+      assert(cur + 1 <= buf_end);
+      if (*cur == 1)
+        *(i->p) = 1;
+      else if (*cur == 2)
+        *(i->p) = 0;
+      else
+        report_error("bool encoding wrong");
+      cur++;
+      break;
+
     case Decision::transfer_fixlen:
-      assert(cur + i->length <= buf_end);
+      if (cur + i->length > buf_end)
+        report_error("IE length beyond buffer");
+
+      if (i->length > i->destination_size)
+        report_error("IE length greater than native size");
+
       /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
       // FIXME: Check if transferring native data types is faster
       // (e.g., short when i->length == 2, long when i->length == 4
       // etc).
       memset(i->p, '\0', i->destination_size);
-      if (i->convert_endianness) {
-        // Intention: left-justify value at cur in field at i->p
-        for (uint16_t k = 0; k < i->length; k++)
-          i->p[k] = cur[i->length - (k + 1)];
-      } else
-        // Intention: right-justify value at cur in field at i->p
-        memcpy(i->p + i->destination_size - i->length, cur, i->length);
+      // Intention: right-justify value at cur in field at i->p
+      memcpy(i->p + i->destination_size - i->length, cur, i->length);
+      cur += i->length;
+      break;
+
+    case Decision::transfer_fixlen_endianness:
+      if (cur + i->length > buf_end)
+        report_error("IE length beyond buffer");
+
+      if (i->length > i->destination_size)
+        report_error("IE length greater than native size");
+
+      /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
+      // FIXME: Check if transferring native data types is faster
+      // (e.g., short when i->length == 2, long when i->length == 4
+      // etc).
+      memset(i->p, '\0', i->destination_size);
+      // Intention: left-justify value at cur in field at i->p
+      for (uint16_t k = 0; k < i->length; k++)
+        i->p[k] = cur[i->length - (k + 1)];
+      cur += i->length;
+      break;
+
+    case transfer_fixlen_octets:
+      assert(cur + i->length <= buf_end);
+      
+      IPFIX::BasicOctetArray* p
+        = reinterpret_cast<IPFIX::BasicOctetArray*>(i->p);
+      p->copy_content(cur, i->length);
 
       cur += i->length;
       break;
 
+    case transfer_float_into_double:
+      assert(cur + sizeof(float) <= buf_end);
+      {
+        float f;
+        memcpy(&f, cur, sizeof(float));
+        *static_cast<double*>(i->p) = f;
+      }
+      cur += sizeof(float);
+      break;
+
+    case transfer_float_into_double_endianness:
+      assert(cur + sizeof(float) <= buf_end);
+      {
+        union {
+          uint8_t b[sizeof(float)];
+          float f;
+        } val;
+        val.b[0] = cur[3];
+        val.b[1] = cur[2];
+        val.b[2] = cur[1];
+        val.b[3] = cur[0];
+        *static_cast<double*>(i->p) = val.f;
+      }
+      cur += sizeof(float);
+      break;
+
     case Decision::transfer_varlen:
       {
-        uint16_t varlen_length = decode_varlen_length(&cur);
+        uint16_t varlen_length = decode_varlen_length(&cur, buf_end);
         assert(cur + varlen_length <= buf_end);
       
         IPFIX::BasicOctetArray* p

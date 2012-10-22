@@ -209,7 +209,7 @@ namespace IPFIX {
        *
        * Note to prospective debuggers of the code below: I am aware
        * that the various comparisons of pointers to message
-       * boundaries with "<=" instead of "<" looks wrong.  After all,
+       * boundaries with "<=" instead of "<" look wrong.  After all,
        * we all write "while (p < end) p++;". But, gentle reader,
        * please be assured that these comparisons have all been
        * meticulously checked and found to be correct.  There are two
