@@ -26,11 +26,13 @@
 
 #include <cassert>
 #include <climits>
+#include <cstdio>
 
 #include <boost/detail/endian.hpp>
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
+#include "exceptions/FormatError.h"
 
 /** Decode plans describe how a data record is to be decoded.
  *
@@ -221,6 +223,27 @@ match(const std::vector<std::pair<const IPFIX::InfoElement*, void*>>& minimal_te
   return __x;                   // Shut compiler up
 }
 
+static void report_error(const char* message, ...) {
+  static const size_t buf_size = 10240;
+  static char buf[buf_size];
+  va_list args;
+  
+  va_start(args, message);
+  int nchars = vsnprintf(buf, buf_size, message, args);
+  va_end(args);
+
+  if (nchars < 0)
+    strcpy(buf, "Error while formatting error message");
+  else if (nchars > buf_size - 1 - 3) {
+    buf[buf_size - 4] = '.';
+    buf[buf_size - 3] = '.';
+    buf[buf_size - 2] = '.';
+    buf[buf_size - 1] = '\0';   // Shouldn't be necessary
+  }
+
+  throw FormatError(buf);
+}
+
 DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> > minimal_template, std::vector<const IPFIX::InfoElement*> wire_template) 
   : plan(wire_template.size()) {
 
@@ -238,9 +261,10 @@ DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> >
 #  error libfc does not compile on weird-endian machines.
 #endif
 
+  unsigned int decision_number = 0;
   for (auto wt = wire_template.begin(); wt != wire_template.end(); wt++) {
+    Decision d;
     if (minimal_template contains *i) { /* Encode transfer decision */
-      Decision d;
       const std::pair<const IPFIX::InfoElement*, void*>& min_match
         = match(wire_template, *wt);
 
@@ -442,6 +466,9 @@ DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> >
       }
       break;
     }
+
+    /* Enter decision into plan */
+    plan[decision_number] = d;
   }
 }
 
@@ -602,6 +629,39 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
 namespace IPFIX {
 
+  class DataSetDecoder::WireTemplate {
+  public:
+    uint16_t min_length();
+
+    uint32_t observation_domain;
+    uint16_t template_id;
+    std::vector<const InfoElement*> information_elements;
+
+  private:
+    bool min_length_cached;
+    uint16_t cached_min_length;
+  };
+
+  uint16_t DataSetDecoder::WireTemplate::min_length() {
+    if (!min_length_cached) {
+      cached_min_length = 0;
+      for (auto i = information_elements.begin();
+           i != information_elements.end();i++) {
+        uint16_t ie_length = (*i)->len();
+        if (ie_length != kVarlen)
+          cached_min_length += ie_length;
+      }
+      min_length_cached = true;
+    }
+
+    return cached_min_length;
+  }
+
+  class DataSetDecoder::MinimalTemplate {
+  public:
+    std::vector<const std::pair<const InfoElement*, void*> > min_template;
+  };
+
   DataSetDecoder::DataSetDecoder()
     : current_wire_template(0) {
   }
@@ -616,11 +676,11 @@ namespace IPFIX {
                                      uint32_t sequence_number,
                                      uint32_t observation_domain) {
     assert(current_wire_template == 0);
-    assert(wire_templates.size() == 0);
+
+    this->observation_domain = observation_domain;
   }
 
   void DataSetDecoder::end_message() {
-    wire_templates.clear();
     assert(current_wire_template == 0);
   }
 
@@ -631,17 +691,19 @@ namespace IPFIX {
   void DataSetDecoder::end_template_set() {
   }
 
+  uint64_t DataSetDecoder::make_template_key(uint16_t tid) {
+    return static_cast<uint64_t>(observation_domain) << 16 + tid;
+  }
+
   void DataSetDecoder::start_template_record(
       uint16_t template_id,
       uint16_t field_count) {
     assert(current_wire_template == 0);
     current_template_id = template_id;
 
-    if (1 /* wire_templates contains template_id as key */) {
-      // Duplicate template id. FIXME: Overwrite?
-      report_error();
-    }
-
+    /* It is not an error if the same template (as given by template
+     * ID and observation domain) is repeated, so we don't check for
+     * that. */
     current_field_count = 0;
     current_field_no = 0;
     current_wire_template 
@@ -697,18 +759,29 @@ namespace IPFIX {
       return;
 
     // Find out who is interested in data from this data set
+    WireTemplate wire_template
+      = lookup_wire_template(wire_templates, id, observation_domain);
+    MinimalTemplate minimal_template
+      = match_minimal_template(minimal_templates, wire_template);
 
-    // Prepare transcoding plan
+    DecodePlan plan(minimal_template.minimal_template,
+                    wire_template.information_elements);
 
     const uint8_t* buf_end = buf + length;
     const uint8_t* cur = buf;
 
-    while (cur < buf_end) {
+    while (cur < buf_end && length >= wire_template.min_length()) {
+      uint16_t consumed = plan.execute(cur, length);
+      cur += consumed;
+      length -= consumed;
     }
 
   }
 
   void DataSetDecoder::end_data_set() {
+  }
+
+  void DataSetDecoder::register_minimal_template(const std::vector<const std::pair<const InfoElement*, void*> >& minimal_template) {
   }
 
 } // namespace IPFIX

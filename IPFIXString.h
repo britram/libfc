@@ -36,8 +36,11 @@
 #  include "BasicOctetArray.h"
 
 namespace IPFIX {
-
-  class String : public BasicOctetArray {
+  // Can't name it String because then this file would have to be
+  // named String.h, which will cause the combination of CMake and
+  // Darwin to think that this is <string.h>, since on Darwin, files
+  // by default are not case-sensitive.
+  class IPFIXString : public BasicOctetArray {
   };
 
 } // namespace IPFIX

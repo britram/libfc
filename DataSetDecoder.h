@@ -69,15 +69,37 @@ namespace IPFIX {
     void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf);
     void end_data_set();
 
+    void register_minimal_template(const std::vector<const std::pair<const InfoElement*, void*> >& minimal_template);
+
   private:
+    class WireTemplate;
+    class MinimalTemplate;
+
+    uint32_t observation_domain;
+
+    /** Makes unique template key from template ID. 
+     *
+     * @param tid template id
+     *
+     * @return unique template id
+     */
+    uint64_t DataSetDecoder::make_template_key(uint16_t tid);
+
     // FIXME: What's the right type for the value type? Pointer?
     // Reference? What about const-ness (once the template is
     // registered, it's read-only).
     /** Wire templates as they're read from template sets.
      *
-     * This map is re-initialised on every message.
+     * This map is kept between messages.
      */
-    std::map<uint16_t, std::vector<const InfoElement*> > wire_templates;
+    std::list<const WireTemplate> wire_templates;
+
+    /** Minimal templates.
+     *
+     * This list is kept between messages, and new templates are added
+     * at the end.
+     */
+    std::list<MinimalTemplate> minimal_templates;
 
     // Data for reading template sets
     /** The current wire template that is being assembled. 
