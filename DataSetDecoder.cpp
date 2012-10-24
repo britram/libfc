@@ -168,7 +168,7 @@ private:
   std::vector<Decision> plan;
 };
 
-/** Checks whether an IE from a minimal template is a match for an IE
+/** Checks whether an IE from a placement template is a match for an IE
  * from a wire template.
  *
  * Two information elements match if they:
@@ -177,53 +177,18 @@ private:
  *     IANA registry; and
  *   - have the same IE number.
  *
- * @param minimal IE from a wire template
+ * @param placement IE from a placement template
  * @param wire IE from a wire template
  *
  * @return true if they match, false otherwise
  */
 static bool
-match_ie(const IPFIX::InfoElement* minimal, const IPFIX::InfoElement* wire) {
-  return minimal->pen() == wire->pen()
-    && minimal->number() == wire->number();
+match_ie(const IPFIX::InfoElement* placement,
+         const IPFIX::InfoElement* wire) {
+  return placement->pen() == wire->pen()
+    && placement->number() == wire->number();
 }
 
-/** Dummy return value used to shut the compiler up.
- *
- * The function match() must return something, even when a matching
- * (ie, pointer) pair has not been found in the minimal template (see
- * the documentation there). We pre-empt the return statement with an
- * appropriate assert() so that the return statement is never
- * executed. However, that presumes that the compiler is smart enough
- * to figure that out, and not all compilers might be.  So we simply
- * write a return statement where we return this dummy pair. */
-static std::pair<const IPFIX::InfoElement*, void*> __x(0,0);
-
-/** Finds the matching IE from a minimal template.
- *
- * It is a fatal error if there is no such matching IE.
- *
- * @param placement_template a minimal template
- * @param wt an IE from a wire template
- *
- * @return the (ie, pointer) pair from the minimal template whose
- *     information element matches the IE from the wire template.
- */
-static const std::pair<const IPFIX::InfoElement*, void*>&
-match(const std::vector<std::pair<const IPFIX::InfoElement*, void*>>& placement_template,
-      const IPFIX::InfoElement* wt) {
-  for (auto i = placement_template.begin();
-       i != placement_template.end();
-       i++) {
-    if (match_ie(i->first, wt))
-      return *i;
-  }
-
-  assert(0 == "Internal error: IE not found in supposedly "
-              "matching template");
-  /* NOTREACHED */
-  return __x;                   // Shut compiler up
-}
 
 static void report_error(const char* message, ...) {
   static const size_t buf_size = 10240;
@@ -267,11 +232,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
   unsigned int decision_number = 0;
   for (auto ie = wire_template->begin(); ie != wire_template->end(); ie++) {
     Decision d;
-    if (1 /* placement_template contains *ie */) { /* Encode transfer decision */
-      const std::pair<const IPFIX::InfoElement*, void*>& min_match
-        = match(placement_template, *ie);
-
-      d.p = min_match.second;
+    d.p = placement_template->lookup_placement(*ie);
+    if (d.p != 0) {   /* IE is present, so encode transfer decision */
       if ((*ie)->ietype() == 0)
         report_error("IE has NULL ietype");
 
@@ -404,27 +366,19 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         }
         break;
 
-      case IPFIX::IEType::kDateTimeSeconds: break;
+      case IPFIX::IEType::kDateTimeSeconds:
         d.type = transfer_fixlen_maybe_endianness;
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint32_t);
         break;
         
-      case IPFIX::IEType::kDateTimeMilliseconds: break;
+      case IPFIX::IEType::kDateTimeMilliseconds:
         d.type = transfer_fixlen_maybe_endianness;
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
         break;
         
-      case IPFIX::IEType::kDateTimeMicroseconds: break;
-        d.type = transfer_fixlen_maybe_endianness;
-        // RFC 5101, Chapter 6, Verse 2
-        assert((*ie)->len() == sizeof(uint64_t));
-        d.length = (*ie)->len();
-        d.destination_size = sizeof(uint64_t);
-        break;
-        
-      case IPFIX::IEType::kDateTimeNanoseconds: break;
+      case IPFIX::IEType::kDateTimeMicroseconds:
         d.type = transfer_fixlen_maybe_endianness;
         // RFC 5101, Chapter 6, Verse 2
         assert((*ie)->len() == sizeof(uint64_t));
@@ -432,7 +386,15 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.destination_size = sizeof(uint64_t);
         break;
         
-      case IPFIX::IEType::kIpv4Address: break;
+      case IPFIX::IEType::kDateTimeNanoseconds:
+        d.type = transfer_fixlen_maybe_endianness;
+        // RFC 5101, Chapter 6, Verse 2
+        assert((*ie)->len() == sizeof(uint64_t));
+        d.length = (*ie)->len();
+        d.destination_size = sizeof(uint64_t);
+        break;
+        
+      case IPFIX::IEType::kIpv4Address:
         /* RFC 5101 says to treat all addresses as integers. This
          * would mean endianness conversion for all of these address
          * types, including MAC addresses and IPv6 addresses. But the
@@ -447,7 +409,7 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
           report_error("IPv4 Address IE not 4 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
         break;
         
-      case IPFIX::IEType::kIpv6Address: break;
+      case IPFIX::IEType::kIpv6Address:
         /* RFC 5101 says to treat IPv6 addresses as 16-byte integers,
          * but Brian Trammell says that this is wrong and that the
          * RFC will be changed.  If for some reason this does not
@@ -672,7 +634,7 @@ namespace IPFIX {
   void DataSetDecoder::end_template_set() {
   }
 
-  uint64_t DataSetDecoder::make_template_key(uint16_t tid) {
+  uint64_t DataSetDecoder::make_template_key(uint16_t tid) const {
     return (static_cast<uint64_t>(observation_domain) << 16) + tid;
   }
 
@@ -688,13 +650,13 @@ namespace IPFIX {
     current_field_count = 0;
     current_field_no = 0;
     current_wire_template 
-      = new MatchTemplate(observation_domain, current_template_id,
-                         current_field_count);
+      = new MatchTemplate(current_field_count);
   }
 
   void DataSetDecoder::end_template_record() {
     if (current_wire_template->size() > 0)
-      wire_templates[make_template_key(observation_domain, current_template_id)] = current_wire_template;
+      wire_templates[make_template_key(current_template_id)]
+        = current_wire_template;
     current_wire_template = 0;
   }
 
@@ -721,36 +683,56 @@ namespace IPFIX {
       uint16_t ie_length,
       uint32_t enterprise_number) {
     if (current_field_no >= current_field_count) {
-      // Template contains more field specifiers than were given in
-      // the header.
-      report_error();
+      // Template contains more
+      report_error("Template contains more field specifiers than were "
+                   "given in the header");
     }
 
     const InfoElement* ie
       = lookup_ie(ie_id, ie_length, enterprise, enterprise_number);
     assert (ie != 0);
-    (*current_wire_template)[current_field_count++] = ie;
+    current_wire_template->add(ie);
+  }
+
+  const MatchTemplate*
+  DataSetDecoder::find_wire_template(uint16_t id) const {
+    std::map<uint64_t, const MatchTemplate*>::const_iterator i
+      = wire_templates.find(make_template_key(id));
+    return i == wire_templates.end() ? 0 : i->second;
+  }
+
+  const PlacementTemplate*
+  DataSetDecoder::match_placement_template(const MatchTemplate* wire_template) const {
+    /* This strategy: return first match. Other strategies are also
+     * possible, such as "return match with most IEs". */
+    for (auto i = placement_templates.begin();
+         i != placement_templates.end();
+         ++i) {
+      if ((*i)->is_match(wire_template))
+        return *i;
+    }
+    return 0;
   }
 
   void DataSetDecoder::start_data_set(uint16_t id,
                                       uint16_t length,
                                       const uint8_t* buf) {
-    if (1 /* wire_templates does not contain "id" as key */)
+    // Find out who is interested in data from this data set
+    const MatchTemplate* wire_template = find_wire_template(id);
+
+    if (wire_template == 0)
       // No wire template for this data set: skip (but no error)
       return;
 
-    // Find out who is interested in data from this data set
-    const MatchTemplate* wire_template
-      = lookup_wire_template(wire_templates, id, observation_domain);
     const PlacementTemplate* placement_template
-      = match_placement_template(placement_templates, wire_template);
+      = match_placement_template(wire_template);
 
     DecodePlan plan(placement_template, wire_template);
 
     const uint8_t* buf_end = buf + length;
     const uint8_t* cur = buf;
 
-    while (cur < buf_end && length >= wire_template.min_length()) {
+    while (cur < buf_end && length >= min_length(wire_template)) {
       uint16_t consumed = plan.execute(cur, length);
       cur += consumed;
       length -= consumed;
@@ -763,6 +745,40 @@ namespace IPFIX {
 
   void DataSetDecoder::register_placement_template(
       const PlacementTemplate* placement_template) {
+    placement_templates.push_back(placement_template);
+  }
+
+  uint16_t DataSetDecoder::min_length(const MatchTemplate* t) {
+    uint16_t min = 0;
+
+    for (auto i = t->begin(); i != t->end(); ++i) {
+      switch ((*i)->ietype()->number()) {
+      case IPFIX::IEType::kOctetArray:  min += 0; break;
+      case IPFIX::IEType::kUnsigned8: min += 1; break;
+      case IPFIX::IEType::kUnsigned16: min += 1; break;
+      case IPFIX::IEType::kUnsigned32: min += 1; break;
+      case IPFIX::IEType::kUnsigned64: min += 1; break;
+      case IPFIX::IEType::kSigned8: min += 1; break;
+      case IPFIX::IEType::kSigned16: min += 1; break;
+      case IPFIX::IEType::kSigned32: min += 1; break;
+      case IPFIX::IEType::kSigned64: min += 1; break;
+      case IPFIX::IEType::kFloat32: min += 4; break;
+      case IPFIX::IEType::kFloat64: min += 4; break;
+      case IPFIX::IEType::kBoolean: min += 1; break;
+      case IPFIX::IEType::kMacAddress: min += 6; break;
+      case IPFIX::IEType::kString: min += 0; break;
+      case IPFIX::IEType::kDateTimeSeconds: min += 1; break;
+      case IPFIX::IEType::kDateTimeMilliseconds: min += 1; break;
+      case IPFIX::IEType::kDateTimeMicroseconds: min += 8; break;
+      case IPFIX::IEType::kDateTimeNanoseconds: min += 8; break;
+      case IPFIX::IEType::kIpv4Address: min += 4; break;
+      case IPFIX::IEType::kIpv6Address: min += 16; break;
+      default: 
+        report_error("Unknown IE type");
+        break;
+      }
+    }
+    return min;
   }
 
 } // namespace IPFIX

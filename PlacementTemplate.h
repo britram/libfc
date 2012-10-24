@@ -33,6 +33,10 @@
 #ifndef IPFIX_PLACEMENTTEMPLATE_H
 #  define IPFIX_PLACEMENTTEMPLATE_H
 
+#  include <map>
+
+#  include "InfoElement.h"
+
 namespace IPFIX {
 
   /** Association between IEs and memory locations.
@@ -54,7 +58,7 @@ namespace IPFIX {
      */
     void register_placement(const InfoElement* ie, void* p);
 
-    /* Retrieves the memory location given an IE.
+    /** Retrieves the memory location given an IE.
      *
      * @param ie the information element to look for
      *
@@ -63,8 +67,17 @@ namespace IPFIX {
      */
     void* lookup_placement(const InfoElement* ie) const;
 
+    /** Tells whether a given template matches this template.
+     *
+     * A template T matches this template iff T's set of IEs is a
+     * subset of this template's set of IEs.
+     *
+     * @return true if the templates match, false otherwise
+     */
+    bool is_match(const MatchTemplate* t) const;
+
   private:
-    std::map<const InformationElement*, void*> placements;
+    std::map<const InfoElement*, void*> placements;
   };
 
 } // namespace IPFIX

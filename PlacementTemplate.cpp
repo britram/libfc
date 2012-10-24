@@ -39,4 +39,14 @@ namespace IPFIX {
     return it == placements.end() ? 0 : it->second;
   }
 
+  bool PlacementTemplate::is_match(const MatchTemplate* t) const {
+    for (auto i = t.begin(); i != t.end(); ++i) {
+      std::map<const InfoElement*, void*>::const_iterator p
+        = placements.find(ie);
+      if (p == placements.end())
+        return false;
+    }
+    return true;
+  }
+
 } // namespace IPFIX
