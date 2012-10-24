@@ -37,7 +37,7 @@
 #  include <map>
 #  include <vector>
 
-#  include "ContentHandler.h"
+#  include "DefaultHandler.h"
 #  include "InfoElement.h"
 #  include "InfoModel.h"
 #  include "MatchTemplate.h"
@@ -45,7 +45,7 @@
 
 namespace IPFIX {
 
-  class DataSetDecoder : public ContentHandler {
+  class DataSetDecoder : public DefaultHandler {
   public:
     DataSetDecoder();
     virtual ~DataSetDecoder();

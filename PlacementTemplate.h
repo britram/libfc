@@ -36,6 +36,7 @@
 #  include <map>
 
 #  include "InfoElement.h"
+#  include "MatchTemplate.h"
 
 namespace IPFIX {
 

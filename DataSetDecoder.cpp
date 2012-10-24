@@ -91,7 +91,6 @@ public:
    */
   DecodePlan(const IPFIX::PlacementTemplate* placement_template,
              const IPFIX::MatchTemplate* wire_template);
-  ~DecodePlan();
 
   /** Executes the plan.
    *
@@ -168,26 +167,6 @@ private:
   std::vector<Decision> plan;
 };
 
-/** Checks whether an IE from a placement template is a match for an IE
- * from a wire template.
- *
- * Two information elements match if they:
- *
- *   - either the same private enterprise number or ar both in the
- *     IANA registry; and
- *   - have the same IE number.
- *
- * @param placement IE from a placement template
- * @param wire IE from a wire template
- *
- * @return true if they match, false otherwise
- */
-static bool
-match_ie(const IPFIX::InfoElement* placement,
-         const IPFIX::InfoElement* wire) {
-  return placement->pen() == wire->pen()
-    && placement->number() == wire->number();
-}
 
 
 static void report_error(const char* message, ...) {

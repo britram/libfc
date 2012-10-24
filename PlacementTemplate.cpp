@@ -40,9 +40,8 @@ namespace IPFIX {
   }
 
   bool PlacementTemplate::is_match(const MatchTemplate* t) const {
-    for (auto i = t.begin(); i != t.end(); ++i) {
-      std::map<const InfoElement*, void*>::const_iterator p
-        = placements.find(ie);
+    for (auto i = t->begin(); i != t->end(); ++i) {
+      auto p = placements.find(*i);
       if (p == placements.end())
         return false;
     }
