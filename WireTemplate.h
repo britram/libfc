@@ -71,6 +71,25 @@ public:
     max_fixed_offset_(0),
     varlen_count_(0) {}
     
+  /** 
+   * Create a new WireTemplate. 
+   *
+   * Client code should use Session::getTemplate() instead, 
+   * which automatically creates a new template when necessary.
+   *
+   * @param domain observation domain ID in which the template lives
+   * @param tid template identifier
+   * @param n_ies number of ies expected to be in this template
+   */
+ WireTemplate(uint32_t domain, uint16_t tid, size_t n_ies):
+    IETemplate(n_ies),
+    domain_(domain),
+    tid_(tid),
+    trlen_(kTemplateHeaderLen),
+    nextoff_(0),
+    max_fixed_offset_(0),
+    varlen_count_(0) {}
+    
   /**
    * Clear and deactivate this WireTemplate.
    *

@@ -32,6 +32,7 @@
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
+
 #include "exceptions/FormatError.h"
 
 /** Decode plans describe how a data record is to be decoded.
@@ -83,12 +84,13 @@ public:
   /** Creates a decoding plan from a minimal template and a wire
    * template.
    *
-   * @param minimal_template a minimal template that must have been
+   * @param placement_template a minimal template that must have been
    *   found to match the wire template (all IEs in the minimal
    *   template must also appear in the wire template)
    * @param wire_template the wire template for the data set
    */
-  DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> > minimal_template, std::vector<const IPFIX::InfoElement*> wire_template);
+  DecodePlan(const IPFIX::PlacementTemplate* placement_template,
+             const IPFIX::MatchTemplate* wire_template);
   ~DecodePlan();
 
   /** Executes the plan.
@@ -160,7 +162,7 @@ private:
      * suitably aligned for the result data type (for fixlen
      * transfers), or that they point to a BasicOctetArray object (for
      * varlen transfers). */
-    uint8_t* p;
+    void* p;
   };
   
   std::vector<Decision> plan;
@@ -201,17 +203,17 @@ static std::pair<const IPFIX::InfoElement*, void*> __x(0,0);
  *
  * It is a fatal error if there is no such matching IE.
  *
- * @param minimal_template a minimal template
+ * @param placement_template a minimal template
  * @param wt an IE from a wire template
  *
  * @return the (ie, pointer) pair from the minimal template whose
  *     information element matches the IE from the wire template.
  */
 static const std::pair<const IPFIX::InfoElement*, void*>&
-match(const std::vector<std::pair<const IPFIX::InfoElement*, void*>>& minimal_template,
+match(const std::vector<std::pair<const IPFIX::InfoElement*, void*>>& placement_template,
       const IPFIX::InfoElement* wt) {
-  for (auto i = minimal_template.begin();
-       i != minimal_template.end();
+  for (auto i = placement_template.begin();
+       i != placement_template.end();
        i++) {
     if (match_ie(i->first, wt))
       return *i;
@@ -234,18 +236,19 @@ static void report_error(const char* message, ...) {
 
   if (nchars < 0)
     strcpy(buf, "Error while formatting error message");
-  else if (nchars > buf_size - 1 - 3) {
+  else if (static_cast<unsigned int>(nchars) > buf_size - 1 - 3) {
     buf[buf_size - 4] = '.';
     buf[buf_size - 3] = '.';
     buf[buf_size - 2] = '.';
     buf[buf_size - 1] = '\0';   // Shouldn't be necessary
   }
 
-  throw FormatError(buf);
+  throw IPFIX::FormatError(buf);
 }
 
-DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> > minimal_template, std::vector<const IPFIX::InfoElement*> wire_template) 
-  : plan(wire_template.size()) {
+DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
+                       const IPFIX::MatchTemplate* wire_template) 
+  : plan(wire_template->size()) {
 
 #if defined(BOOST_BIG_ENDIAN)
   Decision::decision_type_t transfer_fixlen_maybe_endianness
@@ -262,116 +265,120 @@ DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> >
 #endif
 
   unsigned int decision_number = 0;
-  for (auto wt = wire_template.begin(); wt != wire_template.end(); wt++) {
+  for (auto ie = wire_template->begin(); ie != wire_template->end(); ie++) {
     Decision d;
-    if (minimal_template contains *i) { /* Encode transfer decision */
+    if (1 /* placement_template contains *ie */) { /* Encode transfer decision */
       const std::pair<const IPFIX::InfoElement*, void*>& min_match
-        = match(wire_template, *wt);
+        = match(placement_template, *ie);
 
       d.p = min_match.second;
-      if (wt->ietype() == 0)
+      if ((*ie)->ietype() == 0)
         report_error("IE has NULL ietype");
 
-      switch (wt->ietype()->number()) {
+      /* There is some code duplication going on here, but unless
+       * someone can demonstrate to me that this leads to higher
+       * maintenance costs, I'd like to keep each IE type separate,
+       * until this code has been fully debugged. */
+      switch ((*ie)->ietype()->number()) {
       case IPFIX::IEType::kOctetArray: 
-        if (wi->len() == IPFIX::kVarlen) {
+        if ((*ie)->len() == IPFIX::kVarlen) {
           d.type = Decision::transfer_varlen;
         } else {
           d.type = Decision::transfer_fixlen_octets;
-          d.length = (*wt)->len();
+          d.length = (*ie)->len();
         }
         break;
 
       case IPFIX::IEType::kUnsigned8:
         d.type = Decision::transfer_fixlen;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint8_t);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kUnsigned16:
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint16_t);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kUnsigned32:
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint32_t);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kUnsigned64:
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kSigned8:
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(int8_t);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kSigned16:
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(int16_t);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kSigned32:
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(int32_t);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kSigned64:
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(int64_t);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kFloat32:
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(float);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kFloat64:
-        assert((*wt)->len() == sizeof(float)
-               || (*wt)->len() == sizeof(double));
-        d.length = (*wt)->len();
+        assert((*ie)->len() == sizeof(float)
+               || d.length == sizeof(double));
+        d.length = (*ie)->len();
         if (d.length == sizeof(float))
           d.type = transfer_float_into_double_maybe_endianness;
         else
           d.type = transfer_fixlen_maybe_endianness;
         d.destination_size = sizeof(double);
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
       case IPFIX::IEType::kBoolean:
-        d.type = Decision::transfer_bool;
-        d.length = (*wt)->len();
+        d.type = Decision::transfer_boolean;
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint8_t); 
-        if ((*wt)->len() > i->destination_size)
+        if (d.length > d.destination_size)
           report_error("IE length greater than native size");
         break;
 
@@ -381,47 +388,47 @@ DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> >
          * RFC will be changed.  If for some reason this does not
          * come about, replace "transfer_fixlen" with
          * "transfer_fixlen_maybe_endianness". */
-        d.type = transfer_fixlen;
-        d.length = (*wt)->len();
+        d.type = Decision::transfer_fixlen;
+        d.length = (*ie)->len();
         d.destination_size = 6*sizeof(uint8_t);
-        if ((*wt)->len() != 6)
+        if (d.length != 6)
           report_error("MAC IE not 6 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
         break;
         
       case IPFIX::IEType::kString:
-        if (wi->len() == IPFIX::kVarlen) {
+        if ((*ie)->len() == IPFIX::kVarlen) {
           d.type = Decision::transfer_varlen;
         } else {
           d.type = Decision::transfer_fixlen_octets;
-          d.length = (*wt)->len();
+          d.length = (*ie)->len();
         }
         break;
 
       case IPFIX::IEType::kDateTimeSeconds: break;
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint32_t);
         break;
         
       case IPFIX::IEType::kDateTimeMilliseconds: break;
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
         break;
         
       case IPFIX::IEType::kDateTimeMicroseconds: break;
         d.type = transfer_fixlen_maybe_endianness;
         // RFC 5101, Chapter 6, Verse 2
-        assert((*wt)->len() == sizeof(uint64_t));
-        d.length = (*wt)->len();
+        assert((*ie)->len() == sizeof(uint64_t));
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
         break;
         
       case IPFIX::IEType::kDateTimeNanoseconds: break;
         d.type = transfer_fixlen_maybe_endianness;
         // RFC 5101, Chapter 6, Verse 2
-        assert((*wt)->len() == sizeof(uint64_t));
-        d.length = (*wt)->len();
+        assert((*ie)->len() == sizeof(uint64_t));
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
         break;
         
@@ -434,9 +441,9 @@ DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> >
          * replace "transfer_fixlen_maybe_endianness" with
          * "transfer_fixlen". */
         d.type = transfer_fixlen_maybe_endianness;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
         d.destination_size = sizeof(uint32_t);
-        if ((*wt)->len() != 4)
+        if (d.length != 4)
           report_error("IPv4 Address IE not 4 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
         break;
         
@@ -446,10 +453,10 @@ DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> >
          * RFC will be changed.  If for some reason this does not
          * come about, replace "transfer_fixlen" with
          * "transfer_fixlen_maybe_endianness". */
-        d.type = transfer_fixlen;
-        d.length = (*wt)->len();
+        d.type = Decision::transfer_fixlen;
+        d.length = (*ie)->len();
         d.destination_size = 16*sizeof(uint8_t);
-        if ((*wt)->len() != 16)
+        if (d.length != 16)
           report_error("IPv6 Address IE not 16 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
         break;
         
@@ -458,11 +465,11 @@ DecodePlan::DecodePlan(std::vector<std::pair<const IPFIX::InfoElement*, void*> >
         break;
       }
     } else {                    /* Encode skip decision */
-      if (wi->len() == IPFIX::kVarlen) {
+      if ((*ie)->len() == IPFIX::kVarlen) {
         d.type = Decision::skip_varlen;
       } else {
         d.type = Decision::skip_fixlen;
-        d.length = (*wt)->len();
+        d.length = (*ie)->len();
       }
       break;
     }
@@ -478,7 +485,7 @@ static uint16_t decode_varlen_length(const uint8_t** cur,
 
   if (*cur >= buf_end) 
     report_error("first octet of varlen length encoding beyond buffer");
-  ret = *cur;
+  ret = **cur;
 
   if (ret < UCHAR_MAX)
     (*cur)++;
@@ -488,7 +495,7 @@ static uint16_t decode_varlen_length(const uint8_t** cur,
     (*cur)++;
     /* Assume that the two length-carrying octets are in network byte
      * order */
-    ret = (*cur << 8) + (*cur + 1);
+    ret = (*(*cur + 0) << 8) + *(*cur + 1);
     *cur += 2;
 
     /* If it turns out that the three-byte encoding must not be used
@@ -527,12 +534,15 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
     case Decision::transfer_boolean:
       // Undo RFC 2579 madness
       assert(cur + 1 <= buf_end);
-      if (*cur == 1)
-        *(i->p) = 1;
-      else if (*cur == 2)
-        *(i->p) = 0;
-      else
-        report_error("bool encoding wrong");
+      {
+        bool *q = static_cast<bool*>(i->p);
+        if (*cur == 1)
+          *q = 1;
+        else if (*cur == 2)
+          *q = 0;
+        else
+          report_error("bool encoding wrong");
+      }
       cur++;
       break;
 
@@ -540,16 +550,18 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
       if (cur + i->length > buf_end)
         report_error("IE length beyond buffer");
 
-      if (i->length > i->destination_size)
-        report_error("IE length greater than native size");
+      assert(i->length <= i->destination_size);
 
       /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
       // FIXME: Check if transferring native data types is faster
       // (e.g., short when i->length == 2, long when i->length == 4
       // etc).
-      memset(i->p, '\0', i->destination_size);
-      // Intention: right-justify value at cur in field at i->p
-      memcpy(i->p + i->destination_size - i->length, cur, i->length);
+      {
+        uint8_t* q = static_cast<uint8_t*>(i->p);
+        memset(q, '\0', i->destination_size);
+        // Intention: right-justify value at cur in field at i->p
+        memcpy(q + i->destination_size - i->length, cur, i->length);
+      }
       cur += i->length;
       break;
 
@@ -557,17 +569,19 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
       if (cur + i->length > buf_end)
         report_error("IE length beyond buffer");
 
-      if (i->length > i->destination_size)
-        report_error("IE length greater than native size");
+      assert(i->length <= i->destination_size);
 
       /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
       // FIXME: Check if transferring native data types is faster
       // (e.g., short when i->length == 2, long when i->length == 4
       // etc).
-      memset(i->p, '\0', i->destination_size);
-      // Intention: left-justify value at cur in field at i->p
-      for (uint16_t k = 0; k < i->length; k++)
-        i->p[k] = cur[i->length - (k + 1)];
+      {
+        uint8_t* q = static_cast<uint8_t*>(i->p);        
+        memset(q, '\0', i->destination_size);
+        // Intention: left-justify value at cur in field at i->p
+        for (uint16_t k = 0; k < i->length; k++)
+          q[k] = cur[i->length - (k + 1)];
+      }
       cur += i->length;
       break;
 
@@ -629,39 +643,6 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
 namespace IPFIX {
 
-  class DataSetDecoder::WireTemplate {
-  public:
-    uint16_t min_length();
-
-    uint32_t observation_domain;
-    uint16_t template_id;
-    std::vector<const InfoElement*> information_elements;
-
-  private:
-    bool min_length_cached;
-    uint16_t cached_min_length;
-  };
-
-  uint16_t DataSetDecoder::WireTemplate::min_length() {
-    if (!min_length_cached) {
-      cached_min_length = 0;
-      for (auto i = information_elements.begin();
-           i != information_elements.end();i++) {
-        uint16_t ie_length = (*i)->len();
-        if (ie_length != kVarlen)
-          cached_min_length += ie_length;
-      }
-      min_length_cached = true;
-    }
-
-    return cached_min_length;
-  }
-
-  class DataSetDecoder::MinimalTemplate {
-  public:
-    std::vector<const std::pair<const InfoElement*, void*> > min_template;
-  };
-
   DataSetDecoder::DataSetDecoder()
     : current_wire_template(0) {
   }
@@ -692,7 +673,7 @@ namespace IPFIX {
   }
 
   uint64_t DataSetDecoder::make_template_key(uint16_t tid) {
-    return static_cast<uint64_t>(observation_domain) << 16 + tid;
+    return (static_cast<uint64_t>(observation_domain) << 16) + tid;
   }
 
   void DataSetDecoder::start_template_record(
@@ -707,13 +688,13 @@ namespace IPFIX {
     current_field_count = 0;
     current_field_no = 0;
     current_wire_template 
-      = new std::vector<const InfoElement*>(current_field_count);
+      = new MatchTemplate(observation_domain, current_template_id,
+                         current_field_count);
   }
 
   void DataSetDecoder::end_template_record() {
     if (current_wire_template->size() > 0)
-      wire_templates[current_template_id] = *current_wire_template;
-    delete current_wire_template;
+      wire_templates[make_template_key(observation_domain, current_template_id)] = current_wire_template;
     current_wire_template = 0;
   }
 
@@ -759,13 +740,12 @@ namespace IPFIX {
       return;
 
     // Find out who is interested in data from this data set
-    WireTemplate wire_template
+    const MatchTemplate* wire_template
       = lookup_wire_template(wire_templates, id, observation_domain);
-    MinimalTemplate minimal_template
-      = match_minimal_template(minimal_templates, wire_template);
+    const PlacementTemplate* placement_template
+      = match_placement_template(placement_templates, wire_template);
 
-    DecodePlan plan(minimal_template.minimal_template,
-                    wire_template.information_elements);
+    DecodePlan plan(placement_template, wire_template);
 
     const uint8_t* buf_end = buf + length;
     const uint8_t* cur = buf;
@@ -781,7 +761,8 @@ namespace IPFIX {
   void DataSetDecoder::end_data_set() {
   }
 
-  void DataSetDecoder::register_minimal_template(const std::vector<const std::pair<const InfoElement*, void*> >& minimal_template) {
+  void DataSetDecoder::register_placement_template(
+      const PlacementTemplate* placement_template) {
   }
 
 } // namespace IPFIX

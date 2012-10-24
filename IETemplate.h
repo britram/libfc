@@ -186,6 +186,12 @@ public:
    */
   IETemplateIter end() const { return ies_.end(); }
 
+  /** Returns number of IEs in this template.
+   *
+   * @return number of IEs in template
+   */
+  size_t size() const { return ies_.size(); }
+
   virtual void dumpIdent(std::ostream &os) const = 0;
 
   void dump(std::ostream& os) const {
@@ -199,6 +205,11 @@ public:
 protected:
   
   IETemplate() : 
+    minlen_(0),
+    active_(false) {}
+   
+  IETemplate(size_t n_ies) : 
+    ies_(n_ies),
     minlen_(0),
     active_(false) {}
   

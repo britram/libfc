@@ -33,11 +33,14 @@
 #ifndef IPFIX_DATASETDECODER_H
 #  define IPFIX_DATASETDECODER_H
 
+#  include <list>
 #  include <map>
 #  include <vector>
 
 #  include "ContentHandler.h"
 #  include "InfoElement.h"
+#  include "MatchTemplate.h"
+#  include "PlacementTemplate.h"
 
 namespace IPFIX {
 
@@ -69,12 +72,11 @@ namespace IPFIX {
     void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf);
     void end_data_set();
 
-    void register_minimal_template(const std::vector<const std::pair<const InfoElement*, void*> >& minimal_template);
+    void register_placement_template(
+        const PlacementTemplate* placement_template);
 
   private:
-    class WireTemplate;
-    class MinimalTemplate;
-
+    /** Observation domain for this message. */
     uint32_t observation_domain;
 
     /** Makes unique template key from template ID. 
@@ -83,30 +85,27 @@ namespace IPFIX {
      *
      * @return unique template id
      */
-    uint64_t DataSetDecoder::make_template_key(uint16_t tid);
+    uint64_t make_template_key(uint16_t tid);
 
-    // FIXME: What's the right type for the value type? Pointer?
-    // Reference? What about const-ness (once the template is
-    // registered, it's read-only).
     /** Wire templates as they're read from template sets.
      *
      * This map is kept between messages.
      */
-    std::list<const WireTemplate> wire_templates;
+    std::map<uint64_t, const MatchTemplate*> wire_templates;
 
-    /** Minimal templates.
+    /** Placement templates.
      *
      * This list is kept between messages, and new templates are added
      * at the end.
      */
-    std::list<MinimalTemplate> minimal_templates;
+    std::list<const PlacementTemplate*> placement_templates;
 
     // Data for reading template sets
     /** The current wire template that is being assembled. 
      *
      * This pointer is deleted after every template record.
      */
-    std::vector<const InfoElement*>* current_wire_template;
+    MatchTemplate* current_wire_template;
 
     /** Id of current wire template */
     uint16_t current_template_id;
