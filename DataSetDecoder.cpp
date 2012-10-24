@@ -606,7 +606,8 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 namespace IPFIX {
 
   DataSetDecoder::DataSetDecoder()
-    : current_wire_template(0) {
+    : info_model(InfoModel::instance()),
+      current_wire_template(0) {
   }
 
   DataSetDecoder::~DataSetDecoder() {
@@ -689,7 +690,7 @@ namespace IPFIX {
     }
 
     const InfoElement* ie
-      = lookup_ie(ie_id, ie_length, enterprise, enterprise_number);
+      = info_model.lookupIE(enterprise_number, ie_id, ie_length);
     assert (ie != 0);
     current_wire_template->add(ie);
   }

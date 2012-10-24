@@ -39,6 +39,7 @@
 
 #  include "ContentHandler.h"
 #  include "InfoElement.h"
+#  include "InfoModel.h"
 #  include "MatchTemplate.h"
 #  include "PlacementTemplate.h"
 
@@ -78,6 +79,9 @@ namespace IPFIX {
   private:
     /** Observation domain for this message. */
     uint32_t observation_domain;
+
+    /** The cached InfoModel instance. */
+    InfoModel& info_model;
 
     /** Looks up a template in the set of wire templates.
      *

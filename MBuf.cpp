@@ -26,6 +26,10 @@
 
 #include <cstdlib>
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+
 #include "Constants.h"
 #include "MBuf.h"
 #include "Transcoder.h"
@@ -47,7 +51,7 @@ namespace IPFIX {
 
 bool MBuf::consume(int fd, size_t len, size_t off) {
 
-  ssize_t rc = read(fd, buf_ + off, len);
+  ssize_t rc = ::read(fd, buf_ + off, len);
 
   if (rc == 0) {
     return false;
