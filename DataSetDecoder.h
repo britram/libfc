@@ -37,6 +37,8 @@
 #  include <map>
 #  include <vector>
 
+#  include <log4cplus/logger.h>
+
 #  include "DefaultHandler.h"
 #  include "InfoElement.h"
 #  include "InfoModel.h"
@@ -165,8 +167,16 @@ namespace IPFIX {
      */
     uint16_t current_field_no;
 
-    // Data for decoding data sets
-    
+    /** Tells whether the parse is good so far.
+     *
+     * This will be set to false when an unrecoverable parse error has
+     * been detected. Then the destructor can decide *not* to check
+     * assertions (because those assume that the parse has gone
+     * well).
+     */
+    bool parse_is_good;
+
+    log4cplus::Logger logger;
   };
 
 } // namespace IPFIX

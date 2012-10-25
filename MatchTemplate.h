@@ -51,9 +51,6 @@ public:
     MatchTemplate():
     IETemplate() {}
 
-    MatchTemplate(size_t n_ies) 
-      : IETemplate(n_ies) {}
-
     void activate() {}
     
     void dumpIdent(std::ostream &os) const {

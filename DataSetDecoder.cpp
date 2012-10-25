@@ -30,6 +30,9 @@
 
 #include <boost/detail/endian.hpp>
 
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
+
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
 
@@ -586,11 +589,15 @@ namespace IPFIX {
 
   DataSetDecoder::DataSetDecoder()
     : info_model(InfoModel::instance()),
-      current_wire_template(0) {
+      current_wire_template(0),
+      parse_is_good(true),
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
   }
 
   DataSetDecoder::~DataSetDecoder() {
-    assert (current_wire_template == 0);
+    if (parse_is_good) { /* Check assertions only when no exception. */
+      assert (current_wire_template == 0);
+    }
   }
 
   void DataSetDecoder::start_message(uint16_t version,
@@ -621,22 +628,28 @@ namespace IPFIX {
   void DataSetDecoder::start_template_record(
       uint16_t template_id,
       uint16_t field_count) {
+    LOG4CPLUS_DEBUG(logger,
+                    "ENTER start_template_record"
+                    << ", template_id=" << template_id
+                    << ", field_count=" << field_count);
     assert(current_wire_template == 0);
     current_template_id = template_id;
 
     /* It is not an error if the same template (as given by template
      * ID and observation domain) is repeated, so we don't check for
      * that. */
-    current_field_count = 0;
+    current_field_count = field_count;
     current_field_no = 0;
-    current_wire_template 
-      = new MatchTemplate(current_field_count);
+    current_wire_template = new MatchTemplate();
   }
 
   void DataSetDecoder::end_template_record() {
+    LOG4CPLUS_DEBUG(logger, "ENTER end_template_record");
     if (current_wire_template->size() > 0)
       wire_templates[make_template_key(current_template_id)]
         = current_wire_template;
+    LOG4CPLUS_DEBUG(logger,
+                    "  wire template has length " << current_wire_template->size());
     current_wire_template = 0;
   }
 
@@ -662,8 +675,14 @@ namespace IPFIX {
       uint16_t ie_id,
       uint16_t ie_length,
       uint32_t enterprise_number) {
+    LOG4CPLUS_DEBUG(logger,
+                    "ENTER field_specifier"
+                    << ", enterprise=" << enterprise
+                    << ", pen=" << enterprise_number
+                    << ", ie=" << ie_id
+                    << ", length=" << ie_length);
     if (current_field_no >= current_field_count) {
-      // Template contains more
+      parse_is_good = false;
       report_error("Template contains more field specifiers than were "
                    "given in the header");
     }
@@ -697,8 +716,15 @@ namespace IPFIX {
   void DataSetDecoder::start_data_set(uint16_t id,
                                       uint16_t length,
                                       const uint8_t* buf) {
+    LOG4CPLUS_DEBUG(logger,
+                    "ENTER start_data_set"
+                    << ", id=" << id
+                    << ", length=" << length);
+
     // Find out who is interested in data from this data set
     const MatchTemplate* wire_template = find_wire_template(id);
+
+    LOG4CPLUS_DEBUG(logger, "  wire_template=" << wire_template);
 
     if (wire_template == 0)
       // No wire template for this data set: skip (but no error)
@@ -706,6 +732,12 @@ namespace IPFIX {
 
     const PlacementTemplate* placement_template
       = match_placement_template(wire_template);
+
+    LOG4CPLUS_DEBUG(logger, "  placement_template=" << placement_template);
+
+    if (placement_template == 0)
+      // No one is interested in this data set: skip (but no error)
+      return;
 
     DecodePlan plan(placement_template, wire_template);
 
@@ -721,6 +753,7 @@ namespace IPFIX {
   }
 
   void DataSetDecoder::end_data_set() {
+    LOG4CPLUS_DEBUG(logger, "ENTER end_data_set");
   }
 
   void DataSetDecoder::register_placement_template(
