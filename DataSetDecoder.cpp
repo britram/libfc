@@ -605,20 +605,38 @@ namespace IPFIX {
                                      uint32_t export_time,
                                      uint32_t sequence_number,
                                      uint32_t observation_domain) {
+    LOG4CPLUS_DEBUG(logger,
+                    "ENTER start_message"
+                    << ", version=0x" << std::hex << version
+                    << ", length=" << std::dec << length
+                    << ", export_time=" << export_time
+                    << ", sequence_number=" << sequence_number
+                    << ", observation_domain=" << observation_domain);
     assert(current_wire_template == 0);
 
+    if (version != kIpfixVersion) {
+      parse_is_good = false;
+      report_error("Expected message version %04x, got %04x",
+                   kIpfixVersion, version);
+    }
     this->observation_domain = observation_domain;
   }
 
   void DataSetDecoder::end_message() {
+    LOG4CPLUS_DEBUG(logger, "ENTER end_message");
     assert(current_wire_template == 0);
   }
 
   void DataSetDecoder::start_template_set(uint16_t set_id,
                                           uint16_t set_length) {
+    LOG4CPLUS_DEBUG(logger, "ENTER start_template_set"
+                    << ", set_id=" << set_id
+                    << ", set_length=" << set_length);
+    assert(current_wire_template == 0);
   }
 
   void DataSetDecoder::end_template_set() {
+    LOG4CPLUS_DEBUG(logger, "ENTER end_template_set");
   }
 
   uint64_t DataSetDecoder::make_template_key(uint16_t tid) const {
@@ -648,26 +666,47 @@ namespace IPFIX {
     if (current_wire_template->size() > 0)
       wire_templates[make_template_key(current_template_id)]
         = current_wire_template;
+
     LOG4CPLUS_DEBUG(logger,
-                    "  wire template has length " << current_wire_template->size());
+                    "  wire template has "
+                    << current_wire_template->size()
+                    << " entries");
+
+    if (current_field_count != current_field_no) {
+      parse_is_good = false;
+      report_error("Template field mismatch: expected %u fields, got %u",
+                   current_field_count, current_field_no);
+    }
+
     current_wire_template = 0;
   }
 
   void DataSetDecoder::start_option_template_set(
       uint16_t set_id,
       uint16_t set_length) {
+    LOG4CPLUS_DEBUG(logger, "ENTER start_option_template_set"
+                    << ", set_id=" << set_id
+                    << ", set_length=" << set_length);
+    assert(current_wire_template == 0);
   }
 
   void DataSetDecoder::end_option_template_set() {
+    LOG4CPLUS_DEBUG(logger, "ENTER end_option_template_set");
   }
 
   void DataSetDecoder::start_option_template_record(
       uint16_t template_id,
       uint16_t field_count,
       uint16_t scope_field_count) {
+    LOG4CPLUS_DEBUG(logger, "ENTER start_option_template_record"
+                    << ", template_id=" << template_id
+                    << ", field_count=" << field_count
+                    << ", scope_field_count=" << scope_field_count);
+    assert(current_wire_template == 0);
   }
 
   void DataSetDecoder::end_option_template_record() {
+    LOG4CPLUS_DEBUG(logger, "ENTER end_option_template_record");
   }
 
   void DataSetDecoder::field_specifier(
@@ -681,6 +720,7 @@ namespace IPFIX {
                     << ", pen=" << enterprise_number
                     << ", ie=" << ie_id
                     << ", length=" << ie_length);
+    
     if (current_field_no >= current_field_count) {
       parse_is_good = false;
       report_error("Template contains more field specifiers than were "
@@ -689,8 +729,24 @@ namespace IPFIX {
 
     const InfoElement* ie
       = info_model.lookupIE(enterprise_number, ie_id, ie_length);
-    assert (ie != 0);
+    assert(enterprise || enterprise_number == 0);
+    assert ((enterprise && enterprise_number != 0) || ie != 0);
+
+    if (ie == 0) {
+      if (enterprise)
+        LOG4CPLUS_DEBUG(logger,
+                        "  if unknown, enter "
+                        << " (" << enterprise_number
+                        << "/" << ie_id
+                        << ")<sometype>[" << ie_length
+                        << "]");
+
+      ; // FIXME ???
+    }
+
+    assert(ie != 0);
     current_wire_template->add(ie);
+    current_field_no++;
   }
 
   const MatchTemplate*

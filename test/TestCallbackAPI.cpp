@@ -34,7 +34,10 @@
 #include <ctime>
 #include <iostream>
 
+#include <fcntl.h>
+
 #include "BufferInputSource.h"
+#include "FileInputSource.h"
 #include "Constants.h"
 #include "ContentHandler.h"
 #include "ErrorHandler.h"
@@ -196,6 +199,23 @@ BOOST_AUTO_TEST_CASE(BasicCallback) {
     ir.parse(is);
   }
 
+}
+
+BOOST_AUTO_TEST_CASE(FileDataSet) {
+  const char* filename = "dahlem-01.ipfix";
+
+  PrintHandler ph;
+  IPFIXReader ir;
+
+  ir.set_content_handler(&ph);
+  ir.set_error_handler(&ph);
+
+  int fd = open(filename, O_RDONLY);
+  if (fd >= 0) {
+    FileInputSource is(fd);
+    ir.parse(is);
+    (void) close(fd);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -32,6 +33,8 @@
 #ifndef IPFIX_IPFIXREADER_H
 #  define IPFIX_IPFIXREADER_H
 
+#  include <log4cplus/logger.h>
+
 #  include "ContentHandler.h"
 #  include "ErrorHandler.h"
 #  include "InputSource.h"
@@ -54,13 +57,13 @@ namespace IPFIX {
      */
     virtual void parse(InputSource& is);
 
-    /* Sets an error handler for this parse.
+    /** Sets an error handler for this parse.
      *
      * @param handler the error handler
      */
     void set_error_handler(ErrorHandler* handler);
 
-    /* Sets a content handler for this parse.
+    /** Sets a content handler for this parse.
      *
      * @param handler the content handler
      */
@@ -70,6 +73,12 @@ namespace IPFIX {
     bool parse_in_progress;
     ContentHandler* content_handler;
     ErrorHandler* error_handler;
+
+  private:
+    uint8_t message[kMaxMessageLen];
+    uint8_t* cur;
+
+    log4cplus::Logger logger;
   };
 
 } // namespace IPFIX

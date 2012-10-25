@@ -29,6 +29,9 @@
 
 #include <boost/detail/endian.hpp>
 
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
+
 #include "Constants.h"
 #include "IPFIXReader.h"
 
@@ -79,7 +82,8 @@ namespace IPFIX {
   IPFIXReader::IPFIXReader() 
     : parse_in_progress(false),
       content_handler(0),
-      error_handler(0) {
+      error_handler(0),
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
   }
 
   void IPFIXReader::set_error_handler(ErrorHandler* handler) {
@@ -91,6 +95,8 @@ namespace IPFIX {
   }
 
   void IPFIXReader::parse(InputSource& is) {
+    LOG4CPLUS_DEBUG(logger, "ENTER parse()");
+
     assert(content_handler != 0);
     assert(error_handler != 0);
 
@@ -103,11 +109,10 @@ namespace IPFIX {
     }
     parse_in_progress = true;
 
-    uint8_t message[kMaxMessageLen];
 
     ssize_t nbytes = is.read(message, kMessageHeaderLen);
     while (nbytes > 0) {
-      uint8_t* cur = message;
+      cur = message;
 
       /* Decode message header */
       uint16_t message_size;
