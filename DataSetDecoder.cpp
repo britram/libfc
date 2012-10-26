@@ -53,18 +53,18 @@
  *   - where the converted data is to be stored.
  *
  * Basically, clients register sets of pairs of <ie, pointer> with the
- * DataSetDecoder class below.  This is called a Minimal Template.
- * This minimal template will then be used to match incoming data
+ * DataSetDecoder class below.  This is called a Placement Template.
+ * This placement template will then be used to match incoming data
  * records.  The previously used procedure was to nominate the first
- * minimal template whose set of information elements is a subset of
- * the information elements for the data set. in question. We
+ * placement template whose set of information elements is a subset of
+ * the information elements for the data set in question. We
  * implement this here as well, but it might be changed easily.  (For
- * example, we might reasonably select that minimal template that is a
+ * example, we might reasonably select that placement template that is a
  * subset of the data set's template and at the same time matches the
  * most fields.)
  *
  * Now having a template for the data set (called a Wire Template) and
- * a matching minimal template, we create a Decoding Plan.  Basically,
+ * a matching placement template, we create a Decoding Plan.  Basically,
  * a decoding plan is a sequence of decisions, one for each field.
  * There are two types of decisions:
  *
@@ -85,11 +85,11 @@
  */
 class DecodePlan {
 public:
-  /** Creates a decoding plan from a minimal template and a wire
+  /** Creates a decoding plan from a placement template and a wire
    * template.
    *
-   * @param placement_template a minimal template that must have been
-   *   found to match the wire template (all IEs in the minimal
+   * @param placement_template a placement template that must have been
+   *   found to match the wire template (all IEs in the placement
    *   template must also appear in the wire template)
    * @param wire_template the wire template for the data set
    */
@@ -468,6 +468,30 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
     LOG4CPLUS_DEBUG(logger, "  decision " << decision_number
                     << " entered as " << d.to_string());
   }
+
+  /* Coalesce adjacent skip_fixlen decisions. */
+  for (auto decision = plan.begin(); decision != plan.end(); ++decision) {
+    if (decision->type == Decision::skip_fixlen) {
+      auto skips = decision;
+      auto next = decision;
+      uint16_t length = decision->length;
+      
+      ++next;
+      for (++skips;
+           skips != plan.end() && skips->type == Decision::skip_fixlen;
+           ++skips)
+        length += skips->length;
+      plan.erase(next, skips);
+      decision->length = length;
+    }
+  }
+
+  if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
+    LOG4CPLUS_DEBUG(logger, "  plan is: ");
+    for (auto d = plan.begin(); d != plan.end(); ++d)
+      LOG4CPLUS_DEBUG(logger, "    " << d->to_string());
+  }
+
   LOG4CPLUS_DEBUG(logger, "LEAVE DecodePlan::DecodePlan");
 }
 
