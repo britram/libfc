@@ -36,7 +36,8 @@ namespace IPFIX {
     case no_error: return "no error"; break;
     case parse_while_parsing: return "call to parse() while parsing"; break;
     case read_error: return "read error"; break;
-    case short_header: return "short header"; break;
+    case short_header: return "short message header"; break;
+    case short_body: return "short message body"; break;
     case long_set: return "set too long (exceeds message size)"; break;
     case long_fieldspec: return "field specification exceeds set"; break;
     case option_templates_ni: return "option templates not implemented"; break;

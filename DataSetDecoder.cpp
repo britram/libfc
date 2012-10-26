@@ -28,9 +28,10 @@
 #include <climits>
 #include <cstdio>
 
+#include <time.h>
+
 #include <boost/detail/endian.hpp>
 
-#include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
 #include "BasicOctetArray.h"
@@ -165,11 +166,46 @@ private:
      * transfers), or that they point to a BasicOctetArray object (for
      * varlen transfers). */
     void* p;
+
+    std::string to_string() const;
   };
   
   std::vector<Decision> plan;
+
+  log4cplus::Logger logger;
 };
 
+
+std::string DecodePlan::Decision::to_string() const {
+  std::stringstream sstr;
+
+  sstr << "[";
+  switch (type) {
+  case skip_fixlen:
+    sstr << "skip_fixlen " << length; break;
+  case skip_varlen:
+    sstr << "skip_varlen"; break;
+  case transfer_fixlen:
+    sstr << "transfer_fixlen " << length 
+         << "/" << destination_size; break;
+  case transfer_boolean:
+    sstr << "transfer_boolean"; break;
+  case transfer_fixlen_endianness:
+    sstr << "transfer_fixlen_endianness " << length
+         << "/" << destination_size; break;
+  case transfer_fixlen_octets:
+    sstr << "transfer_fixlen_octets " << length; break;
+  case transfer_float_into_double:
+    sstr << "transfer_float_into_double"; break;
+  case transfer_float_into_double_endianness:
+    sstr << "transfer_float_into_double_endianness"; break;
+  case transfer_varlen:
+    sstr << "transfer_varlen"; break;
+  };
+  sstr << "]";
+  
+  return sstr.str();
+}
 
 
 static void report_error(const char* message, ...) {
@@ -195,7 +231,11 @@ static void report_error(const char* message, ...) {
 
 DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
                        const IPFIX::MatchTemplate* wire_template) 
-  : plan(wire_template->size()) {
+  : plan(wire_template->size()),
+    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
+
+  LOG4CPLUS_DEBUG(logger, "ENTER DecodePlan::DecodePlan (wt with "
+                  << wire_template->size() << " entries)");
 
 #if defined(BOOST_BIG_ENDIAN)
   Decision::decision_type_t transfer_fixlen_maybe_endianness
@@ -213,9 +253,15 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
 
   unsigned int decision_number = 0;
   for (auto ie = wire_template->begin(); ie != wire_template->end(); ie++) {
+    assert(*ie != 0);
+    LOG4CPLUS_DEBUG(logger, "  decision " << (decision_number + 1)
+                    << ": looking up placement");// for " << (*ie)->toIESpec());
+
     Decision d;
+
     d.p = placement_template->lookup_placement(*ie);
     if (d.p != 0) {   /* IE is present, so encode transfer decision */
+      LOG4CPLUS_DEBUG(logger, "    found -> transfer");
       if ((*ie)->ietype() == 0)
         report_error("IE has NULL ietype");
 
@@ -409,18 +455,20 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         break;
       }
     } else {                    /* Encode skip decision */
+      LOG4CPLUS_DEBUG(logger, "    not found -> skip");
       if ((*ie)->len() == IPFIX::kVarlen) {
         d.type = Decision::skip_varlen;
       } else {
         d.type = Decision::skip_fixlen;
         d.length = (*ie)->len();
       }
-      break;
     }
 
-    /* Enter decision into plan */
-    plan[decision_number] = d;
+    plan[decision_number++] = d;
+    LOG4CPLUS_DEBUG(logger, "  decision " << decision_number
+                    << " entered as " << d.to_string());
   }
+  LOG4CPLUS_DEBUG(logger, "LEAVE DecodePlan::DecodePlan");
 }
 
 static uint16_t decode_varlen_length(const uint8_t** cur,
@@ -455,6 +503,8 @@ static uint16_t decode_varlen_length(const uint8_t** cur,
 }
 
 uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
+  LOG4CPLUS_DEBUG(logger, "ENTER DecodePlan::execute");
+
   const uint8_t* cur = buf;
   const uint8_t* buf_end = buf + length;
 
@@ -600,6 +650,18 @@ namespace IPFIX {
     }
   }
 
+  static const char* make_time(uint32_t export_time) {
+    struct tm tms;
+    time_t then = export_time;
+    static char gmtime_buf[100];
+
+    gmtime_r(&then, &tms);
+    strftime(gmtime_buf, sizeof gmtime_buf, "%c", &tms);
+    gmtime_buf[sizeof(gmtime_buf) - 1] = '\0';
+
+    return gmtime_buf;
+  }
+
   void DataSetDecoder::start_message(uint16_t version,
                                      uint16_t length,
                                      uint32_t export_time,
@@ -607,9 +669,9 @@ namespace IPFIX {
                                      uint32_t observation_domain) {
     LOG4CPLUS_DEBUG(logger,
                     "ENTER start_message"
-                    << ", version=0x" << std::hex << version
-                    << ", length=" << std::dec << length
-                    << ", export_time=" << export_time
+                    << ", version=" << version
+                    << ", length=" << length
+                    << ", export_time=" << make_time(export_time)
                     << ", sequence_number=" << sequence_number
                     << ", observation_domain=" << observation_domain);
     assert(current_wire_template == 0);
@@ -663,14 +725,22 @@ namespace IPFIX {
 
   void DataSetDecoder::end_template_record() {
     LOG4CPLUS_DEBUG(logger, "ENTER end_template_record");
-    if (current_wire_template->size() > 0)
+    if (current_wire_template->size() > 0) {
       wire_templates[make_template_key(current_template_id)]
         = current_wire_template;
 
-    LOG4CPLUS_DEBUG(logger,
-                    "  wire template has "
-                    << current_wire_template->size()
-                    << " entries");
+      if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
+        LOG4CPLUS_DEBUG(logger,
+                        "  current wire template has "
+                        << current_wire_template->size()
+                        << " entries, there are now "
+                        << wire_templates.size()
+                        << " registered wire templates");
+        unsigned int n = 1;
+        for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
+          LOG4CPLUS_DEBUG(logger, "  " << n++ << " " << (*i)->toIESpec());
+      }
+    }
 
     if (current_field_count != current_field_no) {
       parse_is_good = false;
@@ -727,8 +797,14 @@ namespace IPFIX {
                    "given in the header");
     }
 
+    LOG4CPLUS_DEBUG(logger, "  looking up (" << enterprise_number
+                    << "/" << ie_id
+                    << ")[" << ie_length << "]");
     const InfoElement* ie
       = info_model.lookupIE(enterprise_number, ie_id, ie_length);
+    LOG4CPLUS_DEBUG(logger, "  found " << (current_field_no + 1)
+                    << ": " << ie->toIESpec());
+
     assert(enterprise || enterprise_number == 0);
     assert ((enterprise && enterprise_number != 0) || ie != 0);
 
@@ -741,7 +817,8 @@ namespace IPFIX {
                         << ")<sometype>[" << ie_length
                         << "]");
 
-      ; // FIXME ???
+      // FIXME: Enter IE with unknown type. Can be skipped but not placed. 
+      ;
     }
 
     assert(ie != 0);
@@ -758,6 +835,8 @@ namespace IPFIX {
 
   const PlacementTemplate*
   DataSetDecoder::match_placement_template(const MatchTemplate* wire_template) const {
+    LOG4CPLUS_DEBUG(logger, "ENTER match_placement_template");
+
     /* This strategy: return first match. Other strategies are also
      * possible, such as "return match with most IEs". */
     for (auto i = placement_templates.begin();
@@ -782,26 +861,32 @@ namespace IPFIX {
 
     LOG4CPLUS_DEBUG(logger, "  wire_template=" << wire_template);
 
-    if (wire_template == 0)
-      // No wire template for this data set: skip (but no error)
+    if (wire_template == 0) {
+      LOG4CPLUS_DEBUG(logger, "  no template for this data set; skipping");
       return;
+    }
 
     const PlacementTemplate* placement_template
       = match_placement_template(wire_template);
 
     LOG4CPLUS_DEBUG(logger, "  placement_template=" << placement_template);
 
-    if (placement_template == 0)
-      // No one is interested in this data set: skip (but no error)
+    if (placement_template == 0) {
+      LOG4CPLUS_DEBUG(logger, "  no one interested in this data set; skipping");
       return;
+    }
 
     DecodePlan plan(placement_template, wire_template);
 
     const uint8_t* buf_end = buf + length;
     const uint8_t* cur = buf;
+    auto callback = callbacks.find(placement_template);
+    assert(callback != callbacks.end());
 
     while (cur < buf_end && length >= min_length(wire_template)) {
+      callback->second->start_placement(placement_template);
       uint16_t consumed = plan.execute(cur, length);
+      callback->second->end_placement(placement_template);
       cur += consumed;
       length -= consumed;
     }
@@ -813,8 +898,10 @@ namespace IPFIX {
   }
 
   void DataSetDecoder::register_placement_template(
-      const PlacementTemplate* placement_template) {
+      const PlacementTemplate* placement_template,
+      PlacementCallback* callback) {
     placement_templates.push_back(placement_template);
+    callbacks[placement_template] = callback;
   }
 
   uint16_t DataSetDecoder::min_length(const MatchTemplate* t) {

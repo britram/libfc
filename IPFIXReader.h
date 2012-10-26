@@ -75,9 +75,6 @@ namespace IPFIX {
     ErrorHandler* error_handler;
 
   private:
-    uint8_t message[kMaxMessageLen];
-    uint8_t* cur;
-
     log4cplus::Logger logger;
   };
 

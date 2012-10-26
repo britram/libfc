@@ -46,8 +46,11 @@ namespace IPFIX {
       /** A read error occurred. */
       read_error,
 
-      /** The header is too short. */
+      /** The message header is too short. */
       short_header,
+
+      /** The message body is too short. */
+      short_body,
 
       /** Set size exceeds message size. */
       long_set,

@@ -109,10 +109,11 @@ namespace IPFIX {
     }
     parse_in_progress = true;
 
+    uint8_t message[kMaxMessageLen];
 
     ssize_t nbytes = is.read(message, kMessageHeaderLen);
     while (nbytes > 0) {
-      cur = message;
+      uint8_t* cur = message;
 
       /* Decode message header */
       uint16_t message_size;
@@ -136,8 +137,18 @@ namespace IPFIX {
       cur += nbytes;
       assert (cur <= message_end);
 
-      nbytes = is.read(cur, message_size);
-
+      nbytes = is.read(cur, message_size - kMessageHeaderLen);
+      if (nbytes < 0) {
+        error_handler->fatal(Error::read_error, 0);
+        parse_in_progress = false;
+        return;
+      } else if (static_cast<size_t>(nbytes) 
+                 != message_size - kMessageHeaderLen) {
+        error_handler->fatal(Error::short_body, 0);
+        parse_in_progress = false;
+        return;
+      }
+      
       /* Decode sets.
        *
        * Note to prospective debuggers of the code below: I am aware

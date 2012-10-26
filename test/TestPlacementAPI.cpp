@@ -34,6 +34,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <log4cplus/configurator.h>
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
 
 #include "BufferInputSource.h"
 #include "DataSetDecoder.h"
@@ -70,34 +72,40 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
   log4cplus::BasicConfigurator config;
   config.configure();
 
-  InfoModel& info_model = InfoModel::instance();
-  info_model.defaultIPFIX();
-  info_model.add("dahlem-01-001(29305/1)<unsigned64>[8]");
-  info_model.add("dahlem-01-002(29305/2)<unsigned64>[8]");
-  info_model.add("dahlem-01-003(6871/40)<unsigned16>[2]");
-  info_model.add("dahlem-01-004(6871/16424)<unsigned16>[2]");
-  info_model.add("dahlem-01-005(6871/21)<unsigned32>[4]");
-  info_model.add("dahlem-01-006(29305/184)<unsigned32>[4]");
-  info_model.add("dahlem-01-007(6871/14)<unsigned8>[1]");
-  info_model.add("dahlem-01-008(6871/15)<unsigned8>[1]");
-  info_model.add("dahlem-01-009(6871/16398)<unsigned8>[1]");
-  info_model.add("dahlem-01-010(6871/16399)<unsigned8>[1]");
-  info_model.add("dahlem-01-011(29305/58)<unsigned16>[2]");
-  info_model.add("dahlem-01-012(6871/18)<octetarray>[65535]");
-  info_model.add("dahlem-01-013(6871/16402)<octetarray>[65535]");
+  class MyCallback : public PlacementCallback {
+  public:
+    MyCallback(DataSetDecoder& dsd) :
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
+      PlacementTemplate* my_template = new PlacementTemplate();
 
-  /* These are so far missing from the standard information model;
-   * Brian says that he'll one day add all the missing stuff from
-   * IANA. */
-  info_model.add("basicList(0/291)<octetarray>[65535]");
-  info_model.add("subTemplateList(0/292)<octetarray>[65535]");
-  info_model.add("subTemplateMultiList(0/293)<octetarray>[65535]");
+      const InfoElement* sipv4a
+        = InfoModel::instance().lookupIE("sourceIPv4Address");
+      assert(sipv4a != 0);
+      my_template->register_placement(sipv4a, &source_ipv4_address);
 
-  DataSetDecoder dsr;
+      dsd.register_placement_template(my_template, this);
+    }
+
+    void start_placement(const PlacementTemplate* tmpl) {
+      LOG4CPLUS_DEBUG(logger, "MyCallback: START placement");
+    }
+
+    void end_placement(const PlacementTemplate* tmpl) {
+      LOG4CPLUS_DEBUG(logger, "MyCallback: END placement, address="
+                      << std::hex << source_ipv4_address);
+    }
+
+  private:
+    log4cplus::Logger logger;
+    uint32_t source_ipv4_address;
+  };
+
+  DataSetDecoder dsd;
   IPFIXReader ir;
+  MyCallback cb(dsd);
 
-  ir.set_content_handler(&dsr);
-  ir.set_error_handler(&dsr);
+  ir.set_content_handler(&dsd);
+  ir.set_error_handler(&dsd);
 
   int fd = open(filename, O_RDONLY);
   if (fd >= 0) {
@@ -105,7 +113,7 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
     try {
       ir.parse(is);
     } catch (FormatError e) {
-      BOOST_FAIL("Format error: " << e.msg());
+      BOOST_FAIL("Format error: " << e.what());
     }
     (void) close(fd);
   }
