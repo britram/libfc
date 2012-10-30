@@ -6,17 +6,24 @@ set(CMAKE_CXX_FLAGS_PROFILE "-pg")
 # debuggery
 if ($ENV{CLANG}) 
   message(STATUS "hey, you're using clang! good luck!")
-  add_definitions(-g -O0 -Wall --std=c++0x --stdlib=libc++)
+  add_definitions(-g -Wall --std=c++0x --stdlib=libc++)
 else ($ENV{CLANG})
-  add_definitions(-g -O0 -Wall --std=c++0x)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
+  add_definitions(-g -Wall --std=c++0x)
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
+  endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif($ENV{CLANG})
+include_directories(.)
 
 # include boost
 find_package(Boost 1.42 COMPONENTS unit_test_framework REQUIRED)
 if (Boost_FOUND)
-  include_directories (. ${Boost_INCLUDE_DIRS})
+  include_directories (${Boost_INCLUDE_DIRS})
 endif()
+
+# include log4cplus
+include_directories(${Log4cplus_INCLUDE_DIR})
+link_directories(${Log4cplus_LIBRARY_DIR})
 
 # include pcap
 
@@ -29,6 +36,7 @@ if ($ENV{CLANG})
   target_link_libraries (fc c++)
 else ($ENV{CLANG})
   target_link_libraries (fc)
+#  target_link_libraries (fc log4cplus)
 endif($ENV{CLANG})
 
 if ($ENV{CLANG})
@@ -44,10 +52,12 @@ endif()
 if ($ENV{CLANG})
   message(STATUS "skipping coverage tests, because you're using clang.")
 else ($ENV{CLANG})
-  setup_target_for_coverage(fccov-all fctest fccov)
-  setup_target_for_coverage(fccov-transcoder fctest fccov --run_test=Transcoder)
-  setup_target_for_coverage(fccov-loopfile fctest fccov --run_test=ImportExport)
-  setup_target_for_coverage(fccov-messages fctest fccov --run_test=Messages)
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    setup_target_for_coverage(fccov-all fctest fccov)
+    setup_target_for_coverage(fccov-transcoder fctest fccov --run_test=Transcoder)
+    setup_target_for_coverage(fccov-loopfile fctest fccov --run_test=ImportExport)
+    setup_target_for_coverage(fccov-messages fctest fccov --run_test=Messages)
+  endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Profile")

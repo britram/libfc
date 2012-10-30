@@ -65,6 +65,10 @@ namespace IPFIX {
     static const uint16_t kOptionTemplateSetID = 3;
     /** Minimum Set ID for data sets */
     static const uint16_t kMinSetID = 0x0100;
+    /** Size of field specifier */
+    static const size_t kFieldSpecifierLen = 4;
+    /** Size of enterprose number field */
+    static const size_t kEnterpriseLen = 4;
 
     /** The special IE length value signifying a variable-length IE */
     static const uint16_t kVarlen = 65535;
