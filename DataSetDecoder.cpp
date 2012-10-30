@@ -26,13 +26,19 @@
 
 #include <cassert>
 #include <climits>
+#include <cstdarg>
 #include <cstdio>
+#include <sstream>
 
 #include <time.h>
 
 #include <boost/detail/endian.hpp>
 
-#include <log4cplus/loggingmacros.h>
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_DEBUG(logger, expr)
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
@@ -172,7 +178,9 @@ private:
   
   std::vector<Decision> plan;
 
-  log4cplus::Logger logger;
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 };
 
 
@@ -231,8 +239,12 @@ static void report_error(const char* message, ...) {
 
 DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
                        const IPFIX::MatchTemplate* wire_template) 
-  : plan(wire_template->size()),
-    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
+  : plan(wire_template->size())
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+                               ,
+    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+  {
 
   LOG4CPLUS_DEBUG(logger, "ENTER DecodePlan::DecodePlan (wt with "
                   << wire_template->size() << " entries)");
@@ -486,11 +498,13 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
     }
   }
 
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
   if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
     LOG4CPLUS_DEBUG(logger, "  plan is: ");
     for (auto d = plan.begin(); d != plan.end(); ++d)
       LOG4CPLUS_DEBUG(logger, "    " << d->to_string());
   }
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
   LOG4CPLUS_DEBUG(logger, "LEAVE DecodePlan::DecodePlan");
 }
@@ -664,8 +678,12 @@ namespace IPFIX {
   DataSetDecoder::DataSetDecoder()
     : info_model(InfoModel::instance()),
       current_wire_template(0),
-      parse_is_good(true),
-      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
+      parse_is_good(true)
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+                         ,
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+  {
   }
 
   DataSetDecoder::~DataSetDecoder() {
@@ -674,6 +692,7 @@ namespace IPFIX {
     }
   }
 
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
   static const char* make_time(uint32_t export_time) {
     struct tm tms;
     time_t then = export_time;
@@ -685,6 +704,7 @@ namespace IPFIX {
 
     return gmtime_buf;
   }
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
   void DataSetDecoder::start_message(uint16_t version,
                                      uint16_t length,
@@ -753,6 +773,7 @@ namespace IPFIX {
       wire_templates[make_template_key(current_template_id)]
         = current_wire_template;
 
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
       if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
         LOG4CPLUS_DEBUG(logger,
                         "  current wire template has "
@@ -764,6 +785,7 @@ namespace IPFIX {
         for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
           LOG4CPLUS_DEBUG(logger, "  " << n++ << " " << (*i)->toIESpec());
       }
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
     }
 
     if (current_field_count != current_field_no) {

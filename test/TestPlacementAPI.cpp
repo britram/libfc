@@ -33,8 +33,12 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <log4cplus/logger.h>
-#include <log4cplus/loggingmacros.h>
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  include <log4cplus/logger.h>
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_DEBUG(logger, expr)
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 #include "BufferInputSource.h"
 #include "DataSetDecoder.h"
@@ -68,8 +72,12 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
 
   class MyCallback : public PlacementCallback {
   public:
-    MyCallback(DataSetDecoder& dsd) :
-      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
+    MyCallback(DataSetDecoder& dsd)
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+                                    :
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+    {
       PlacementTemplate* my_template = new PlacementTemplate();
 
       const InfoElement* sipv4a
@@ -90,7 +98,9 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
     }
 
   private:
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
     uint32_t source_ipv4_address;
   };
 

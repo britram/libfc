@@ -24,14 +24,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <log4cplus/loggingmacros.h>
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_DEBUG(logger, expr)
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 #include "PlacementTemplate.h"
 
 namespace IPFIX {
 
   PlacementTemplate::PlacementTemplate() 
-    : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+    : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+  {
   }
 
   void PlacementTemplate::register_placement(const InfoElement* ie,

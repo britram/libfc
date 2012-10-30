@@ -32,7 +32,9 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <log4cplus/configurator.h>
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  include <log4cplus/configurator.h>
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 using namespace IPFIX;
 
@@ -70,9 +72,10 @@ GlobalFixture::GlobalFixture() {
   info_model.add("subTemplateList(292)<octetArray>[65535]");
   info_model.add("subTemplateMultiList(293)<octetArray>[65535]");
 
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
   log4cplus::BasicConfigurator config;
   config.configure();
-
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 }
 
 GlobalFixture::~GlobalFixture() {
