@@ -52,7 +52,7 @@ static uint64_t kOctetsSeqStep  = 44;
 static uint16_t kFlowTemplateId = 256;
 static uint16_t kObsTemplateId = 257;
 
-static unsigned int kTestCycleCount = 10000;
+static unsigned int kTestCycleCount = 100000;
 static unsigned int kTestFlowPerSetCount = 222;
 static unsigned int kTestObsPerSetCount = 111;
 

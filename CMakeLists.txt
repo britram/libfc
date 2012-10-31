@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
-set(CMAKE_CXX_FLAGS_PROFILE "-pg")
+set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
 
 # debuggery
 if ($ENV{CLANG}) 
