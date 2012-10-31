@@ -25,10 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  */
 
+#include <cassert>
 #include <fstream>
 
-#include <cassert>
+#include <fcntl.h>
 
+#include "BasicOctetArray.h"
+#include "DataSetDecoder.h"
+#include "FileInputSource.h"
+#include "IPFIXReader.h"
+#include "InfoModel.h"
 #include "MatchTemplate.h"
 #include "MBuf.h"
 #include "RecordReceiver.h"
@@ -542,7 +548,7 @@ static void write_file(const std::string& filename) {
   delete e;
 }
 
-static void read_file(const std::string& filename) {
+static void read_file_with_record_interface(const std::string& filename) {
   Collector* c = new FileReader(filename);
 
   assert(c != 0);
@@ -562,7 +568,97 @@ static void read_file(const std::string& filename) {
   delete c;
 }
 
-int main(void) {
+static void read_file_with_placement_interface(const std::string& filename) {
+  class MyCallback : public PlacementCallback {
+  public:
+    MyCallback(DataSetDecoder& dsd)
+    {
+      PlacementTemplate* my_flow_template = new PlacementTemplate();
+
+      my_flow_template->register_placement(
+        InfoModel::instance().lookupIE("flowStartMilliseconds"),
+        &flow_start_milliseconds);
+      my_flow_template->register_placement(
+        InfoModel::instance().lookupIE("flowEndMilliseconds"),
+        &flow_end_milliseconds);
+      my_flow_template->register_placement(
+        InfoModel::instance().lookupIE("sourceIPv4Address"),
+        &source_ip_v4_address);
+      my_flow_template->register_placement(
+        InfoModel::instance().lookupIE("destinationIPv4Address"),
+        &destination_ip_v4_address);
+      my_flow_template->register_placement(
+        InfoModel::instance().lookupIE("sourceTransportPort"),
+        &source_transport_port);
+      my_flow_template->register_placement(
+        InfoModel::instance().lookupIE("destinationTransportPort"),
+        &destination_transport_port);
+      my_flow_template->register_placement(
+        InfoModel::instance().lookupIE("protocolIdentifier"),
+        &protocol_identifier);
+      my_flow_template->register_placement(
+        InfoModel::instance().lookupIE("octetDeltaCount[4]"),
+        &octet_delta_count);
+
+      dsd.register_placement_template(my_flow_template, this);
+
+      PlacementTemplate* my_obs_template = new PlacementTemplate();
+
+      my_obs_template->register_placement(
+         InfoModel::instance().lookupIE("observationTimeMilliseconds"),
+         &observation_time_milliseconds);
+      my_obs_template->register_placement(
+         InfoModel::instance().lookupIE("observationValue"),
+         &observation_value);
+      my_obs_template->register_placement(
+         InfoModel::instance().lookupIE("observationLabel"),
+        &observation_label);
+
+      dsd.register_placement_template(my_obs_template, this);
+    }
+
+    void start_placement(const PlacementTemplate* tmpl) {
+    }
+
+    void end_placement(const PlacementTemplate* tmpl) {
+    }
+
+  private:
+    uint64_t flow_start_milliseconds;
+    uint64_t flow_end_milliseconds;
+    uint32_t source_ip_v4_address;
+    uint32_t destination_ip_v4_address;
+    uint16_t source_transport_port;
+    uint16_t destination_transport_port;
+    uint8_t  protocol_identifier;
+    uint64_t octet_delta_count;
+
+    uint64_t observation_time_milliseconds;
+    uint64_t observation_value;
+    BasicOctetArray observation_label;
+  };
+
+  DataSetDecoder dsd;
+  IPFIXReader ir;
+  MyCallback cb(dsd);
+
+  ir.set_content_handler(&dsd);
+  ir.set_error_handler(&dsd);
+
+  int fd = open(filename.c_str(), O_RDONLY);
+  if (fd >= 0) {
+    FileInputSource is(fd);
+    try {
+      ir.parse(is);
+    } catch (FormatError e) {
+      std::cerr << "Format error: " << e.what() << std::endl;
+    }
+    (void) close(fd);
+  }
+
+}
+
+int main(int argc, const char* argv[]) {
   InfoModel::instance().defaultIPFIX();
   TestFlow::addIEs();
   TestObs::addIEs();
@@ -571,8 +667,11 @@ int main(void) {
 
   if (!file_exists(filename)) {
     write_file(filename);
+  } else if (argc > 1) {
+    if (strcmp(argv[1], "--record") == 0)
+      read_file_with_record_interface(filename);
+    else if (strcmp(argv[1], "--placement") == 0)
+      read_file_with_placement_interface(filename);
   }
-
-  read_file(filename);
   return 0;
 }
