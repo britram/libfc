@@ -173,6 +173,10 @@ private:
      * varlen transfers). */
     void* p;
 
+    /** Original wire template IE. This field makes sense only in
+     * transfer decisions. */
+    const IPFIX::InfoElement* wire_ie;
+
     std::string to_string() const;
   };
   
@@ -274,8 +278,10 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
     d.p = placement_template->lookup_placement(*ie);
     if (d.p != 0) {   /* IE is present, so encode transfer decision */
       LOG4CPLUS_DEBUG(logger, "    found -> transfer");
+      d.wire_ie = *ie;
+
       if ((*ie)->ietype() == 0)
-        report_error("IE has NULL ietype");
+        report_error("IE %s has NULL ietype", (*ie)->toIESpec().c_str());
 
       /* There is some code duplication going on here, but unless
        * someone can demonstrate to me that this leads to higher
@@ -296,7 +302,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint8_t);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kUnsigned16:
@@ -304,7 +311,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint16_t);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kUnsigned32:
@@ -312,7 +320,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint32_t);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kUnsigned64:
@@ -320,7 +329,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kSigned8:
@@ -328,7 +338,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(int8_t);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kSigned16:
@@ -336,7 +347,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(int16_t);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kSigned32:
@@ -344,7 +356,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(int32_t);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kSigned64:
@@ -352,7 +365,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(int64_t);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kFloat32:
@@ -360,7 +374,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(float);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kFloat64:
@@ -373,7 +388,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
           d.type = transfer_fixlen_maybe_endianness;
         d.destination_size = sizeof(double);
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kBoolean:
@@ -381,7 +397,8 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint8_t); 
         if (d.length > d.destination_size)
-          report_error("IE length greater than native size");
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
 
       case IPFIX::IEType::kMacAddress:
@@ -410,12 +427,18 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         d.type = transfer_fixlen_maybe_endianness;
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint32_t);
+        if (d.length > d.destination_size)
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
         
       case IPFIX::IEType::kDateTimeMilliseconds:
         d.type = transfer_fixlen_maybe_endianness;
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
+        if (d.length > d.destination_size)
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
         
       case IPFIX::IEType::kDateTimeMicroseconds:
@@ -424,6 +447,9 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         assert((*ie)->len() == sizeof(uint64_t));
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
+        if (d.length > d.destination_size)
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
         
       case IPFIX::IEType::kDateTimeNanoseconds:
@@ -432,6 +458,9 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         assert((*ie)->len() == sizeof(uint64_t));
         d.length = (*ie)->len();
         d.destination_size = sizeof(uint64_t);
+        if (d.length > d.destination_size)
+          report_error("IE %s length %zu greater than native size %zu",
+                       (*ie)->toIESpec().c_str(), d.length, d.destination_size);
         break;
         
       case IPFIX::IEType::kIpv4Address:
@@ -564,8 +593,8 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
       break;
 
     case Decision::transfer_boolean:
-      // Undo RFC 2579 madness
       assert(cur + 1 <= buf_end);
+      // Undo RFC 2579 madness
       {
         bool *q = static_cast<bool*>(i->p);
         if (*cur == 1)
@@ -580,7 +609,8 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
     case Decision::transfer_fixlen:
       if (cur + i->length > buf_end)
-        report_error("IE length beyond buffer");
+        report_error("IE %s length beyond buffer: cur=%p, ielen=%zu, end=%p",
+                     i->wire_ie->toIESpec().c_str(), cur, i->length, buf_end);
 
       assert(i->length <= i->destination_size);
 
@@ -599,7 +629,8 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
     case Decision::transfer_fixlen_endianness:
       if (cur + i->length > buf_end)
-        report_error("IE length beyond buffer");
+        report_error("IE %s length beyond buffer: cur=%p, ielen=%zu, end=%p",
+                     i->wire_ie->toIESpec().c_str(), cur, i->length, buf_end);
 
       assert(i->length <= i->destination_size);
 
@@ -783,7 +814,7 @@ namespace IPFIX {
                         << " registered wire templates");
         unsigned int n = 1;
         for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
-          LOG4CPLUS_DEBUG(logger, "  " << n++ << " " << (*i)->toIESpec());
+          LOG4CPLUS_DEBUG(logger, "  " << n++ << " " << (*i)->toIESpec().c_str());
       }
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
     }
