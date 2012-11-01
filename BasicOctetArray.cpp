@@ -64,4 +64,8 @@ namespace IPFIX {
   }
 
 
+  const std::string BasicOctetArray::to_string() const {
+    return std::string(reinterpret_cast<const char*>(buf), length);
+  }
+
 } // namespace IPFIX

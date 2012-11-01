@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
-set(CMAKE_CXX_FLAGS_PROFILE "-O0 -pg")
+set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
 
 # debuggery
 if ($ENV{CLANG}) 
@@ -27,8 +27,9 @@ link_directories(${Log4cplus_LIBRARY_DIR})
 
 # include pcap
 
-# core objects
-file (GLOB FC_OBJ *.cpp)
+# core objects; library classes begin with a upper-case letter,
+# program files (containing main()) with a lower-case letter
+file (GLOB FC_OBJ [A-Z]*.cpp)
 file (GLOB EXCEPTIONS_OBJ exceptions/*.cpp) 
 
 add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})

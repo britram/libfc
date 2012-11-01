@@ -957,10 +957,12 @@ namespace IPFIX {
 
     const uint8_t* buf_end = buf + length;
     const uint8_t* cur = buf;
+    const uint16_t min_length = wire_template_min_length(wire_template);
+    
     auto callback = callbacks.find(placement_template);
     assert(callback != callbacks.end());
 
-    while (cur < buf_end && length >= min_length(wire_template)) {
+    while (cur < buf_end && length >= min_length) {
       callback->second->start_placement(placement_template);
       uint16_t consumed = plan.execute(cur, length);
       callback->second->end_placement(placement_template);
@@ -981,35 +983,12 @@ namespace IPFIX {
     callbacks[placement_template] = callback;
   }
 
-  uint16_t DataSetDecoder::min_length(const MatchTemplate* t) {
+  uint16_t DataSetDecoder::wire_template_min_length(const MatchTemplate* t) {
     uint16_t min = 0;
 
     for (auto i = t->begin(); i != t->end(); ++i) {
-      switch ((*i)->ietype()->number()) {
-      case IPFIX::IEType::kOctetArray:  min += 0; break;
-      case IPFIX::IEType::kUnsigned8: min += 1; break;
-      case IPFIX::IEType::kUnsigned16: min += 1; break;
-      case IPFIX::IEType::kUnsigned32: min += 1; break;
-      case IPFIX::IEType::kUnsigned64: min += 1; break;
-      case IPFIX::IEType::kSigned8: min += 1; break;
-      case IPFIX::IEType::kSigned16: min += 1; break;
-      case IPFIX::IEType::kSigned32: min += 1; break;
-      case IPFIX::IEType::kSigned64: min += 1; break;
-      case IPFIX::IEType::kFloat32: min += 4; break;
-      case IPFIX::IEType::kFloat64: min += 4; break;
-      case IPFIX::IEType::kBoolean: min += 1; break;
-      case IPFIX::IEType::kMacAddress: min += 6; break;
-      case IPFIX::IEType::kString: min += 0; break;
-      case IPFIX::IEType::kDateTimeSeconds: min += 1; break;
-      case IPFIX::IEType::kDateTimeMilliseconds: min += 1; break;
-      case IPFIX::IEType::kDateTimeMicroseconds: min += 8; break;
-      case IPFIX::IEType::kDateTimeNanoseconds: min += 8; break;
-      case IPFIX::IEType::kIpv4Address: min += 4; break;
-      case IPFIX::IEType::kIpv6Address: min += 16; break;
-      default: 
-        report_error("Unknown IE type");
-        break;
-      }
+      if ((*i)->len() != kVarlen)
+        min += (*i)->len();
     }
     return min;
   }

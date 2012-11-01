@@ -35,6 +35,7 @@
 
 #  include <cstdint>
 #  include <cstring>
+#  include <string>
 
 namespace IPFIX {
 
@@ -46,6 +47,7 @@ namespace IPFIX {
     size_t get_length() const;
     const uint8_t* get_buf() const;
     void copy_content(const uint8_t* buf, size_t length);
+    const std::string to_string() const;
 
   private:
     uint8_t* buf;

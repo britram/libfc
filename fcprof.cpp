@@ -87,17 +87,28 @@ private:
 
 public:
     
-    TestFlow():
-        stime(kTimeSeqStart),
+    TestFlow(InfoModel& model)
+      : stime(kTimeSeqStart),
         etime(kTimeSeqStart + kTimeSeqStep),
         sip(kIPSeqStart),
         dip(kIPSeqEnd),
         sp(kPortSeqStart),
         dp(kPortSeqEnd),
         proto(6),
-        octets(kOctetsSeqStart) {}
+        octets(kOctetsSeqStart),
+        ie_stime(model.lookupIE("flowStartMilliseconds")),
+        ie_etime(model.lookupIE("flowEndMilliseconds")),
+        ie_sip(model.lookupIE("sourceIPv4Address")),
+        ie_dip(model.lookupIE("destinationIPv4Address")),
+        ie_sp(model.lookupIE("sourceTransportPort")),
+        ie_dp(model.lookupIE("destinationTransportPort")),
+        ie_proto(model.lookupIE("protocolIdentifier")),
+        ie_octets(model.lookupIE("octetDeltaCount[4]")) {
+    }
 
-  TestFlow(uint64_t stime,
+
+  TestFlow(InfoModel& model,
+           uint64_t stime,
            uint64_t etime,
            uint32_t sip,
            uint32_t dip,
@@ -112,7 +123,15 @@ public:
       sp(sp),
       dp(dp),
       proto(proto),
-      octets(octets) {
+      octets(octets),
+      ie_stime(model.lookupIE("flowStartMilliseconds")),
+      ie_etime(model.lookupIE("flowEndMilliseconds")),
+      ie_sip(model.lookupIE("sourceIPv4Address")),
+      ie_dip(model.lookupIE("destinationIPv4Address")),
+      ie_sp(model.lookupIE("sourceTransportPort")),
+      ie_dp(model.lookupIE("destinationTransportPort")),
+      ie_proto(model.lookupIE("protocolIdentifier")),
+      ie_octets(model.lookupIE("octetDeltaCount[4]")) {
   }
 
     void incrementPattern() {
@@ -172,17 +191,6 @@ public:
     }
 
     void prepareExport(Exporter& e) {
-        InfoModel& m = InfoModel::instance();
-
-        ie_stime = m.lookupIE("flowStartMilliseconds");
-        ie_etime = m.lookupIE("flowEndMilliseconds");
-        ie_sip = m.lookupIE("sourceIPv4Address");
-        ie_dip = m.lookupIE("destinationIPv4Address");
-        ie_sp = m.lookupIE("sourceTransportPort");
-        ie_dp = m.lookupIE("destinationTransportPort");
-        ie_proto = m.lookupIE("protocolIdentifier");
-        ie_octets = m.lookupIE("octetDeltaCount[4]");
-
         WireTemplate* t = e.getTemplate(kFlowTemplateId);
         assert(t != 0);
         t->clear();
@@ -211,6 +219,19 @@ public:
         e.exportRecord();
     }
 
+  StructTemplate makeStructTemplate() {
+    StructTemplate st;
+
+    st.add(ie_stime, offsetof(TestFlow, stime));
+    st.add(ie_etime, offsetof(TestFlow, etime));
+    st.add(ie_sip, offsetof(TestFlow, sip));
+    st.add(ie_dip, offsetof(TestFlow, dip));
+    st.add(ie_sp, offsetof(TestFlow, sp));
+    st.add(ie_dp, offsetof(TestFlow, dp));
+    st.add(ie_proto, offsetof(TestFlow, proto));
+    st.add(ie_octets, offsetof(TestFlow, octets));
+    return st;
+  }
 };
 
 std::ostream& operator<<(std::ostream& out, const TestFlow& f) {
@@ -377,7 +398,8 @@ private:
 
 public:
   TestFlowReceiver() 
-    : pass_(true), 
+    : f_(InfoModel::instance()),
+      pass_(true), 
       rec_count(0),
       ie_stime(InfoModel::instance().lookupIE("flowStartMilliseconds")),
       ie_etime(InfoModel::instance().lookupIE("flowEndMilliseconds")),
@@ -440,7 +462,8 @@ public:
         && getValue(ie_dp, dp)
         && getValue(ie_proto, proto)
         && getValue(ie_octets, octets)) {
-      TestFlow f(stime, etime, sip, dip, sp, dp, proto, octets);
+      TestFlow f(InfoModel::instance(),
+                 stime, etime, sip, dip, sp, dp, proto, octets);
       if (f_ != f)
         pass_ = false;
     } else {
@@ -519,7 +542,7 @@ static bool file_exists(const std::string& name) {
 }
 
 static void write_file(const std::string& filename) {
-  TestFlow flow;
+  TestFlow flow(InfoModel::instance());
   TestObs obs;
   Exporter *e = new FileWriter(filename, kTestDomain);
 
@@ -566,14 +589,20 @@ static void read_file_with_record_interface(const std::string& filename) {
     mbuf.clear();
 
   delete c;
+
+  std::cout << flow_receiver.get_rec_count() << " flows, "
+            << obs_receiver.get_rec_count() << " observations, "
+            << std::endl;
+
 }
 
 static void read_file_with_placement_interface(const std::string& filename) {
   class MyCallback : public PlacementCallback {
   public:
     MyCallback(DataSetDecoder& dsd)
+      : n_flow_records(0), n_obs_records(0)
     {
-      PlacementTemplate* my_flow_template = new PlacementTemplate();
+      my_flow_template = new PlacementTemplate();
 
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("flowStartMilliseconds"),
@@ -602,7 +631,7 @@ static void read_file_with_placement_interface(const std::string& filename) {
 
       dsd.register_placement_template(my_flow_template, this);
 
-      PlacementTemplate* my_obs_template = new PlacementTemplate();
+      my_obs_template = new PlacementTemplate();
 
       my_obs_template->register_placement(
          InfoModel::instance().lookupIE("observationTimeMilliseconds"),
@@ -621,6 +650,26 @@ static void read_file_with_placement_interface(const std::string& filename) {
     }
 
     void end_placement(const PlacementTemplate* tmpl) {
+      if (tmpl == my_flow_template) {
+        n_flow_records++;
+      } else if (tmpl == my_obs_template) {
+        n_obs_records++;
+        /*
+        std::cout << "observation: ms=" << observation_time_milliseconds
+                  << ", value=" << observation_value
+                  << ", label=" << observation_label.to_string()
+                  << std::endl;
+        */
+      } else
+        throw std::logic_error("Unknown template!");
+    }
+
+    size_t get_n_flow_records() const {
+      return n_flow_records;
+    }
+
+    size_t get_n_obs_records() const {
+      return n_obs_records;
     }
 
   private:
@@ -636,6 +685,12 @@ static void read_file_with_placement_interface(const std::string& filename) {
     uint64_t observation_time_milliseconds;
     uint64_t observation_value;
     BasicOctetArray observation_label;
+
+    PlacementTemplate* my_obs_template;
+    PlacementTemplate* my_flow_template;
+
+    size_t n_flow_records;
+    size_t n_obs_records;
   };
 
   DataSetDecoder dsd;
@@ -656,7 +711,77 @@ static void read_file_with_placement_interface(const std::string& filename) {
     (void) close(fd);
   }
 
+  std::cout << cb.get_n_flow_records() << " flows, "
+            << cb.get_n_obs_records() << " observations, "
+            << std::endl;
 }
+
+static void read_file_with_struct_interface(const std::string& filename) {
+  class TestFlowStructReceiver : public SetReceiver {
+  private:
+    TestFlow vsf_;
+    StructTemplate vst_;
+    std::shared_ptr<TestFlowStructReceiver> thissp_;
+    int set_count;
+    int rec_count;
+    IPFIX::InfoModel& model;
+
+  public:
+    TestFlowStructReceiver() 
+      : vsf_(InfoModel::instance()),
+        vst_(vsf_.makeStructTemplate()),
+        set_count(0), 
+        rec_count(0), 
+        model(IPFIX::InfoModel::instance()) {
+      vst_.activate();
+    }
+    
+    int get_set_count() const {
+      return set_count;
+    }
+    
+    int get_rec_count() const {
+      return rec_count;
+    }
+    
+    const IETemplate *structTemplate() {
+      return &vst_;
+    }
+    
+    void registerWithCollector(Collector& c) {
+      c.registerReceiver(&vst_, this);
+    }
+    
+    void receiveSet(const Collector* collector, 
+                    Transcoder& setxc, 
+                    const WireTemplate* settmpl)  {
+      
+      TestFlow sf(InfoModel::instance());
+      
+      while (settmpl->decodeStruct(setxc, vst_,
+                                   reinterpret_cast<uint8_t*>(&sf))) {
+        rec_count++;
+      }
+      set_count++;
+    }
+  };
+
+  Collector* c = new FileReader(filename);
+  TestFlowStructReceiver sfsrecv;
+  
+  sfsrecv.registerWithCollector(*c);
+  
+  MBuf mbuf;
+  while (c->receiveMessage(mbuf))
+    mbuf.clear();
+  
+  std::cout << "Received " << sfsrecv.get_rec_count() << " records" 
+            << std::endl;
+
+  delete c;
+}
+
+
 
 int main(int argc, const char* argv[]) {
   InfoModel::instance().defaultIPFIX();
@@ -672,6 +797,8 @@ int main(int argc, const char* argv[]) {
       read_file_with_record_interface(filename);
     else if (strcmp(argv[1], "--placement") == 0)
       read_file_with_placement_interface(filename);
+    else if (strcmp(argv[1], "--struct") == 0)
+      read_file_with_struct_interface(filename);
   }
   return 0;
 }

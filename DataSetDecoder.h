@@ -137,7 +137,7 @@ namespace IPFIX {
      *
      * @return the minimum length of the template on the wire
      */
-    uint16_t min_length(const MatchTemplate* t);
+    uint16_t wire_template_min_length(const MatchTemplate* t);
 
     /** Wire templates as they're read from template sets.
      *
