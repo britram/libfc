@@ -37,6 +37,7 @@
 #include "InfoModel.h"
 #include "MatchTemplate.h"
 #include "MBuf.h"
+#include "PlacementCallback.h"
 #include "RecordReceiver.h"
 
 #include "test/TestCommon.h"
@@ -599,7 +600,7 @@ static void read_file_with_record_interface(const std::string& filename) {
 static void read_file_with_placement_interface(const std::string& filename) {
   class MyCallback : public PlacementCallback {
   public:
-    MyCallback(DataSetDecoder& dsd)
+    MyCallback()
       : n_flow_records(0), n_obs_records(0)
     {
       my_flow_template = new PlacementTemplate();
@@ -629,7 +630,7 @@ static void read_file_with_placement_interface(const std::string& filename) {
         InfoModel::instance().lookupIE("octetDeltaCount[4]"),
         &octet_delta_count);
 
-      dsd.register_placement_template(my_flow_template, this);
+      register_placement_template(my_flow_template);
 
       my_obs_template = new PlacementTemplate();
 
@@ -643,7 +644,7 @@ static void read_file_with_placement_interface(const std::string& filename) {
          InfoModel::instance().lookupIE("observationLabel"),
         &observation_label);
 
-      dsd.register_placement_template(my_obs_template, this);
+      register_placement_template(my_obs_template);
     }
 
     void start_placement(const PlacementTemplate* tmpl) {
@@ -693,18 +694,13 @@ static void read_file_with_placement_interface(const std::string& filename) {
     size_t n_obs_records;
   };
 
-  DataSetDecoder dsd;
-  IPFIXReader ir;
-  MyCallback cb(dsd);
-
-  ir.set_content_handler(&dsd);
-  ir.set_error_handler(&dsd);
+  MyCallback cb;
 
   int fd = open(filename.c_str(), O_RDONLY);
   if (fd >= 0) {
     FileInputSource is(fd);
     try {
-      ir.parse(is);
+      cb.parse(is);
     } catch (FormatError e) {
       std::cerr << "Format error: " << e.what() << std::endl;
     }
@@ -742,10 +738,6 @@ static void read_file_with_struct_interface(const std::string& filename) {
     
     int get_rec_count() const {
       return rec_count;
-    }
-    
-    const IETemplate *structTemplate() {
-      return &vst_;
     }
     
     void registerWithCollector(Collector& c) {

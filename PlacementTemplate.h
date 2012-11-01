@@ -46,13 +46,178 @@ namespace IPFIX {
 
   /** Association between IEs and memory locations.
    *
-   * An IPFIX collection process will ultimately need to decide where
-   * an information element as it appears in an IPFIX data record will
-   * have to be stored in memory, just as an IPFIX exporter will have
-   * to decide where an information element that is to be exported
-   * will take its data from. This class provides the association
-   * between a set of information elements and corresponding memory
-   * locations.
+   * IPFIX is sometimes called a <em>self-describing format</em>.  In
+   * order to self-describe, an IPFIX message contains <em>template
+   * records</em> that describe the content of the <em>data
+   * records</em>, which contain the content.  A template record
+   * basically says, "later in this message, there may be data records
+   * having the identifying number 1234.  Here is the structure of the
+   * data records contained in such data sets..." That structure is
+   * then described by giving a sequence of <em>information
+   * elements</em> (and their encoded lengths as they appear on the
+   * wire).  So for example, a simplified version of a flow template
+   * record could look like this:
+   *
+   * <table>
+   *   <tr><th>IE name</th><th>length</th></tr>
+   *   <tr><td>flowStartMilliseconds</td><td>8</td></tr>
+   *   <tr><td>flowEndMilliseconds</td><td>8</td></tr>
+   *   <tr><td>sourceIPv4Address</td><td>4</td></tr>
+   *   <tr><td>destinationIPv4Address</td><td>4</td></tr>
+   *   <tr><td>sourceTransportPort</td><td>2</td></tr>
+   *   <tr><td>destinationTransportPort</td><td>2</td></tr>
+   *   <tr><td>protocolIdentifier</td><td>1</td></tr>
+   *   <tr><td>octetDeltaCount</td><td>4</td></tr>
+   * </table>
+   *
+   * (This is a simplified template record because a real record would
+   * contain not the information element names, but rather some
+   * identifying numbers.)
+   *
+   * Then this means that later data sets with this template ID will
+   * contain the given information elements in this order, with this
+   * length.  Now it would be nice if we could read in a data record
+   * and map it to a struct, simply by casting a pointer to the data
+   * read from the data source.  But that is not possible for a number
+   * of reasons:
+   *
+   *  - The data might need to undergo <em>endianness conversion</em>.
+   *    For example, data will appear on the wire in network byte
+   *    order (big endian), but the native format will be host byte
+   *    order, which might be little endian.  This conversion affects
+   *    some, but not all, information elements.  For example, the
+   *    flowStartMilliseconds and sourceIPv4Address information
+   *    elements are affected, whereas a sourceIPv6Address information
+   *    element would not be affected.
+   *
+   *  - Some information elements have variable length; this is
+   *    known as <em>varlen encoding</em>.  Obviously, varlen-encoded
+   *    information elements cannot be directly mapped to structs.
+   *
+   *  - Some information element types cannot be directly mapped to
+   *    native C++ data types.  Examples would be the
+   *    <tt>octetArray</tt> and <tt>string</tt> data types.
+   *
+   *  - Information elements can be encoded on the wire with a length
+   *    that is less than the length that would be implied by the
+   *    information element's type.  This is called <em>reduced-length
+   *    encoding</em>.  For example, the octetDeltaCount is of type
+   *    <tt>unsigned64</tt>, but if only 32 of those 64 bits would be
+   *    needed in a particular application, then the information
+   *    element may appear on the wire with a length of just four
+   *    octets.
+   *
+   *  - In a data record, the information elements follow one another
+   *    without any <em>padding</em>. This can lead to data that is
+   *    not suitably aligned.  For example, the protocolIdentifier
+   *    information element above is only 1 octet long, causing the
+   *    following octetDeltaCount information element to be aligned on
+   *    an odd address (assuming that the base address was aligned on
+   *    an even address).
+   *
+   *  - A collection process might not be interested in all
+   *    information elements, but only in a <em>selection</em>, so
+   *    forcing it to receive the entire data record would be
+   *    unreasonable.
+   *
+   *  - The collection process might, for its very own reasons, want
+   *    to <em>scatter</em> the information elements in its address
+   *    space, not keeping them together as in a struct.
+   *
+   * An IPFIX collection process will therefore ultimately need to
+   * decide where an information element as it appears in an IPFIX
+   * data record will have to be stored in memory, just as an IPFIX
+   * exporter will have to decide where an information element that is
+   * to be exported will take its data from. This class provides the
+   * association between a set of information elements and
+   * corresponding memory locations.
+   *
+   * Here is how it works.  Let's say you're interested in flow
+   * records like the one shown in the above table, but you're only
+   * interested in the source and destination IP addresses, and not
+   * the other information elements.  We encapsulate this in a data
+   * structure that we call a <em>placement template</em>, and this
+   * code would let you express that interest:
+   *
+   * @code
+   * uint32_t sip;
+   * uint32_t dip;
+   * IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
+   *
+   * PlacementTemplate* my_flow_template = new PlacementTemplate();
+   * 
+   * my_flow_template->register_placement(
+   *    model.lookupIE("sourceIPv4Address"),
+   *    &sip);
+   * my_flow_template->register_placement(
+   *    model.lookupIE("destinationIPv4Address"),
+   *    &dip);
+   * @endcode
+   *
+   * Now what you need are two more things: first, you need to tell
+   * someone that you want this placement template to go into effect,
+   * and second, you need a way for that someone to tell you that it's
+   * just read a record that matched this placement template and that
+   * it has placed the values form the data record into the pointers
+   * that you have provided in that placement template.  All this is
+   * provided by a custom class derived from PlacementCallback
+   * (we will be using the IPFIX namespace for simplicity):
+   *
+   * @code
+   * class MyCallback : public PlacementCallback {
+   * public:
+   *   MyCallback() {
+   *      // Create and fill my_flow_template as above
+   *
+   *      register_placement_template(my_flow_template);
+   *   }
+   *
+   *   void end_placement(const PlacementTemplate* tmpl) {
+   *     // At this point, there are fresh values in this->sip
+   *     // and this->dip
+   *   }
+   *
+   * private:
+   *  uint32_t sip;
+   *  uint32_t dip;
+   * };
+   * 
+   * MyCallback cb;
+   *
+   * int fd = open(filename.c_str(), O_RDONLY);
+   * if (fd >= 0) {
+   *   FileInputSource is(fd);
+   *   try {
+   *     cb.parse(is);
+   *   } catch (FormatError e) {
+   *     std::cerr << "Format error: " << e.what() << std::endl;
+   *   }
+   *   (void) close(fd);
+   * }
+   * @endcode
+   *
+   * And that's all, folks!
+   *
+   * It should be noted that it is possible to register more than one
+   * placement template in the MyCallback constructor:
+   *
+   * @code
+   *   MyCallback() {
+   *     PlacementTemplate* my_flow_template = new PlacementTemplate();
+   *     // Fill my_flow_template as above
+   *      register_placement_template(my_flow_template);
+   *
+   *     PlacementTemplate* my_observation_template = new PlacementTemplate();
+   *     // Fill my_obsrevation_template similarly
+   *      register_placement_template(my_observation_template);
+   *   }
+   * @endcode
+   *
+   * This is the reason why the end_placement() member function has a
+   * PlacementTemplate pointer parameter: so that you can distinguish
+   * which of your templates has just been matched and hence which of
+   * your data members now have fresh content.  Obviously, for this,
+   * the template pointers should be data members of MyCallback.
    */
   class PlacementTemplate {
   public:

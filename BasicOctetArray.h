@@ -39,19 +39,64 @@
 
 namespace IPFIX {
 
+  /** An array of octets, as it may appear in an IPFIX message.
+   *
+   * This class is necessary to encapsulate the IPFIX types octetArray
+   * and string, since they do not map to C++ basic data types.
+   *
+   * This class contains a buffer that will grow as needed, but that
+   * will never shrink.
+   */
   class BasicOctetArray {
   public:
+    /** Creates an octet array. */
     BasicOctetArray();
+
+    /** Destroys this octet array, releasing any storage. */
     ~BasicOctetArray();
 
+    /** Returns the length of this octet array.
+     *
+     * @return the length of this octet array, in octets
+     */
     size_t get_length() const;
+
+    /** Returns the octets in this octet array.
+     *
+     * @return the octets in this octet array
+     */
     const uint8_t* get_buf() const;
+
+    /** Overwrites this octet array.
+     *
+     * This function replaces the previous contents of this octet
+     * array with the octets given in the parameters. If necessary,
+     * the buffer is resized to accomodate the new contents.
+     *
+     * @param buf the new contents
+     * @param length the number of octets in the new content
+     */
     void copy_content(const uint8_t* buf, size_t length);
+
+    /** Converts the contents of this octet array to a string.
+     *
+     * This function makes sense only for debugging purposes and if
+     * the contents of this octet array are in fact interpretable as a
+     * printable string in the native character set.
+     *
+     * @return contents of this octet array, as a string
+     */
     const std::string to_string() const;
 
   private:
+    /** The buffer containing the content. */
     uint8_t* buf;
+
+    /** The number of octets in the content. */
     size_t length;
+
+    /** The capacity of the buffer. This must not be less than the
+     * content's length. */
     size_t capacity;
   };
 

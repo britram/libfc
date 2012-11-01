@@ -42,6 +42,7 @@
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
+#include "PlacementCallback.h"
 
 #include "exceptions/FormatError.h"
 
@@ -916,6 +917,23 @@ namespace IPFIX {
 
     /* This strategy: return first match. Other strategies are also
      * possible, such as "return match with most IEs". */
+#if defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE)
+    std::map<const MatchTemplate*, const PlacementTemplate*>::const_iterator m
+      = matched_templates.find(wire_template);
+
+    if (m == matched_templates.end()) {
+      for (auto i = placement_templates.begin();
+           i != placement_templates.end();
+           ++i) {
+        if ((*i)->is_match(wire_template)) {
+          matched_templates[wire_template] = *i;
+          return *i;
+        }
+      }
+      return 0;
+    } else
+      return m->second;
+#else /* !defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE) */
     for (auto i = placement_templates.begin();
          i != placement_templates.end();
          ++i) {
@@ -923,6 +941,7 @@ namespace IPFIX {
         return *i;
     }
     return 0;
+#endif /* defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE) */
   }
 
   void DataSetDecoder::start_data_set(uint16_t id,

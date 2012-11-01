@@ -44,16 +44,23 @@
 #  include "DefaultHandler.h"
 #  include "InfoElement.h"
 #  include "InfoModel.h"
+#  include "InputSource.h"
 #  include "MatchTemplate.h"
-#  include "PlacementCallback.h"
 #  include "PlacementTemplate.h"
 
 namespace IPFIX {
 
+  class PlacementCallback;
+
+  /** This class decodes data sets, and is the main go-to point when
+   * using the "Placement Interface"-type of IPFIX collection.  For a
+   * more in-depth treatment, see the documentation on
+   * PlacementTemplate.
+   */
   class DataSetDecoder : public DefaultHandler {
   public:
     DataSetDecoder();
-    virtual ~DataSetDecoder();
+    ~DataSetDecoder();
 
     void start_message(uint16_t version,
                        uint16_t length,
@@ -78,6 +85,16 @@ namespace IPFIX {
     void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf);
     void end_data_set();
 
+    /** Registers a placement template.
+     *
+     * Calling this function with a given placement template and a
+     * given callback means that if there is a data record whose
+     * template fits the placement template, you want the callback's
+     * callbacks to be called.
+     *
+     * @param placement_template the placement template
+     * @param callback which functions to call on a matching record.
+     */
     void register_placement_template(
         const PlacementTemplate* placement_template,
         PlacementCallback* callback);
@@ -154,6 +171,24 @@ namespace IPFIX {
 
     /** Association between placement template and callback. */
     std::map<const PlacementTemplate*, PlacementCallback*> callbacks;
+
+#if defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE)
+    /** Association between wire template and placement template.
+     *
+     * We are using the strategy that we choose the @em{first}
+     * placement template that matches as @em{the} matching
+     * template. This means that a match, once found, cannot later be
+     * replaced by a better match.  Therefore, once we've found a
+     * matching template, we record it in this cache and look it up,
+     * potentially saving long matching operations.
+     *
+     * Profiling shows that for simple cases, this caching slows the
+     * collection process down, therefore this member might not be
+     * used.
+     */
+    mutable std::map<const MatchTemplate*, const PlacementTemplate*>
+      matched_templates;
+#endif /* defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE) */
 
     // Data for reading template sets
     /** The current wire template that is being assembled. 

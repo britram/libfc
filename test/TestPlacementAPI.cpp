@@ -45,6 +45,7 @@
 #include "FileInputSource.h"
 #include "IPFIXReader.h"
 #include "InfoModel.h"
+#include "PlacementCallback.h"
 
 #include "exceptions/FormatError.h"
 
@@ -72,7 +73,7 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
 
   class MyCallback : public PlacementCallback {
   public:
-    MyCallback(DataSetDecoder& dsd)
+    MyCallback()
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
                                     :
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
@@ -85,7 +86,7 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
       assert(sipv4a != 0);
       my_template->register_placement(sipv4a, &source_ipv4_address);
 
-      dsd.register_placement_template(my_template, this);
+      register_placement_template(my_template);
     }
 
     void start_placement(const PlacementTemplate* tmpl) {
@@ -104,18 +105,13 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
     uint32_t source_ipv4_address;
   };
 
-  DataSetDecoder dsd;
-  IPFIXReader ir;
-  MyCallback cb(dsd);
-
-  ir.set_content_handler(&dsd);
-  ir.set_error_handler(&dsd);
+  MyCallback cb;
 
   int fd = open(filename, O_RDONLY);
   if (fd >= 0) {
     FileInputSource is(fd);
     try {
-      ir.parse(is);
+      cb.parse(is);
     } catch (FormatError e) {
       BOOST_FAIL("Format error: " << e.what());
     }

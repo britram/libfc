@@ -3,6 +3,15 @@ project(libfc)
 
 set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
 
+# Use matched template cache?
+#
+# This has been shown in experiments to actually slow down the
+# collection process for simple templates, when there are not many
+# possible candidates for matching, so use this with care and make
+# experiments before you commit to this flag.
+#
+# add_definitions(-DLIBFC_USE_MATCHED_TEMPLATE_CACHE)
+
 # debuggery
 if ($ENV{CLANG}) 
   message(STATUS "hey, you're using clang! good luck!")

@@ -33,13 +33,24 @@
 #ifndef IPFIX_PLACEMENTCALLBACK_H
 #  define IPFIX_PLACEMENTCALLBACK_H
 
+#  include "DataSetDecoder.h"
+#  include "IPFIXReader.h"
 #  include "PlacementTemplate.h"
 
 namespace IPFIX {
-  
+
   /** Interface for callback with the placement interface. */
   class PlacementCallback {
   public:
+    /** Creates a callback. */
+    PlacementCallback();
+
+    /** Parses an input stream. 
+     *
+     * @param is the input stream to parse
+     */
+    void parse(InputSource& is);
+
     /** Signals that placement of values will now begin. 
      *
      * @param template placement template for current placements
@@ -51,6 +62,17 @@ namespace IPFIX {
      * @param template placement template for current placements
      */
     virtual void end_placement(const PlacementTemplate* tmpl) = 0;
+
+  protected:
+    /** Registers a placement template.
+     *
+     * @param placement_template the placement template to register
+     */
+    void register_placement_template(const PlacementTemplate*);
+
+  private:
+    DataSetDecoder dsd;
+    IPFIXReader ir;
   };
 
 } // namespace IPFIX
