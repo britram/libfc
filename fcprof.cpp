@@ -701,7 +701,7 @@ static void read_file_with_placement_interface(const std::string& filename) {
   if (fd >= 0) {
     FileInputSource is(fd);
     try {
-      cb.parse(is);
+      cb.collect(is);
     } catch (FormatError e) {
       std::cerr << "Format error: " << e.what() << std::endl;
     }

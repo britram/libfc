@@ -188,7 +188,7 @@ namespace IPFIX {
    * if (fd >= 0) {
    *   FileInputSource is(fd);
    *   try {
-   *     cb.parse(is);
+   *     cb.collect(is);
    *   } catch (FormatError e) {
    *     std::cerr << "Format error: " << e.what() << std::endl;
    *   }

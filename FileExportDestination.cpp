@@ -1,4 +1,3 @@
-/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,37 +23,40 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <unistd.h>
+#include <errno.h>
 
-/**
- * @file
- * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
- */
-
-#ifndef IPFIX_UDPINPUTSOURCE_H
-#  define IPFIX_UDPINPUTSOURCE_H
-
-#  include "InputSource.h"
+#include "FileExportDestination.h"
 
 namespace IPFIX {
 
-  class UDPInputSource : public InputSource {
-  public:
-    /** Creates a UDP input source from a file descriptor.
-     *
-     * @param sa the socket address of the peer from whom we accept messages
-     * @param sa_len the length of the socket address, in bytes
-     * @param fd the file descriptor belonging to a UDP socket
-     */
-    UDPInputSource(const struct sockaddr* sa, size_t sa_len, int fd);
+  FileExportDestination::FileExportDestination(int _fd)
+    : fd(_fd) {
+  }
 
-    ssize_t read(uint8_t* buf, size_t len);
+  ssize_t FileExportDestination::write(uint8_t* buf, size_t len) {
+    errno = 0;
+    ssize_t n_written = ::write(fd, buf, len);
     
-  private:
-    struct sockaddr sa;
-    size_t sa_len;
-    int fd;
-  };
+    if (n_written >= 0 && n_written != len) {
+      ssize_t count = n_written;
+
+      while (n_written >= 0 && count < len) {
+        n_written = ::write(fd, buf + count, len - count);
+        count += n_written;
+      }
+    }
+
+    return n_written < 0 ? -1 : 0;
+  }
+
+  int FileExportDestination::flush() {
+  }
+
+  bool FileExportDestination::is_connection_oriented() const {
+    return true;
+  }
+
+
 
 } // namespace IPFIX
-
-#endif // IPFIX_UDPINPUTSOURCE_H

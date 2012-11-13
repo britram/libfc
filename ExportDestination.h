@@ -30,31 +30,57 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_UDPINPUTSOURCE_H
-#  define IPFIX_UDPINPUTSOURCE_H
+#ifndef IPFIX_EXPORTDESTINATION_H
+#  define IPFIX_EXPORTDESTINATION_H
 
-#  include "InputSource.h"
+#  include <cstdint>
+
+/* For ssize_t and size_t */
+#  include <unistd.h>
 
 namespace IPFIX {
 
-  class UDPInputSource : public InputSource {
+  /** Abstract base class for IPFIX outputs.
+   *
+   * This class defines the interface that all IPFIX outputs
+   * must implement.
+   */
+  class ExportDestination {
   public:
-    /** Creates a UDP input source from a file descriptor.
+    /** Writes a number of bytes from a buffer to the output.
      *
-     * @param sa the socket address of the peer from whom we accept messages
-     * @param sa_len the length of the socket address, in bytes
-     * @param fd the file descriptor belonging to a UDP socket
+     * Bytes might be buffered, to be flushed either when the buffer
+     * is full, the output is closed, ar flush() is called.
+     *
+     * @param buf the buffer in which to put the bytes
+     * @param len the number of bytes to read
+     *
+     * @return 0 on success, or -1 on error
      */
-    UDPInputSource(const struct sockaddr* sa, size_t sa_len, int fd);
+    virtual ssize_t write(uint8_t* buf, size_t len) = 0;
 
-    ssize_t read(uint8_t* buf, size_t len);
-    
-  private:
-    struct sockaddr sa;
-    size_t sa_len;
-    int fd;
+    /** Flushes any bytes not yet written.
+     *
+     * @return 0 on success, or -1 on error
+     */
+    virtual int flush() = 0;
+
+    /** Checks whether this output is connection-oriented or not.
+     *
+     * This information is needed by the exporter: on connectionless
+     * outputs, new messages must contain all the wire templates that
+     * have accumulated in the meantime (or at least all wire
+     * templates that are relevant for the message to come). This is
+     * because it cannot be guaranteed that the receiver receives
+     * messages in order and thus might miss messages containing
+     * important wire templates otherwise.
+     *
+     * @return true if this output is connection-oriented, false if it
+     *     is connectionless
+     */
+    virtual bool is_connection_oriented() const = 0;
   };
 
 } // namespace IPFIX
 
-#endif // IPFIX_UDPINPUTSOURCE_H
+#endif // IPFIX_EXPORTDESTINATION_H

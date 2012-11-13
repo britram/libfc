@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
   if (fd >= 0) {
     FileInputSource is(fd);
     try {
-      cb.parse(is);
+      cb.collect(is);
     } catch (FormatError e) {
       BOOST_FAIL("Format error: " << e.what());
     }

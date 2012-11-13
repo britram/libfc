@@ -30,31 +30,26 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_UDPINPUTSOURCE_H
-#  define IPFIX_UDPINPUTSOURCE_H
+#ifndef IPFIX_FILEEXPORTDESTINATION_H
+#  define IPFIX_FILEEXPORTDESTINATION_H
 
-#  include "InputSource.h"
+#  include "ExportDestination.h"
 
 namespace IPFIX {
 
-  class UDPInputSource : public InputSource {
+  /** IPFIX file outputs. */
+  class FileExportDestination : public ExportDestination {
   public:
-    /** Creates a UDP input source from a file descriptor.
-     *
-     * @param sa the socket address of the peer from whom we accept messages
-     * @param sa_len the length of the socket address, in bytes
-     * @param fd the file descriptor belonging to a UDP socket
-     */
-    UDPInputSource(const struct sockaddr* sa, size_t sa_len, int fd);
+    FileExportDestination(int fd);
 
-    ssize_t read(uint8_t* buf, size_t len);
-    
+    ssize_t write(uint8_t* buf, size_t len);
+    int flush();
+    bool is_connection_oriented() const;
+
   private:
-    struct sockaddr sa;
-    size_t sa_len;
     int fd;
   };
 
 } // namespace IPFIX
 
-#endif // IPFIX_UDPINPUTSOURCE_H
+#endif // IPFIX_FILEEXPORTDESTINATION_H

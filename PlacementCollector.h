@@ -30,31 +30,51 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_UDPINPUTSOURCE_H
-#  define IPFIX_UDPINPUTSOURCE_H
+#ifndef IPFIX_PLACEMENTCALLBACK_H
+#  define IPFIX_PLACEMENTCALLBACK_H
 
-#  include "InputSource.h"
+#  include "DataSetDecoder.h"
+#  include "IPFIXReader.h"
+#  include "PlacementTemplate.h"
 
 namespace IPFIX {
 
-  class UDPInputSource : public InputSource {
+  /** Interface for collector with the placement interface. */
+  class PlacementCollector {
   public:
-    /** Creates a UDP input source from a file descriptor.
-     *
-     * @param sa the socket address of the peer from whom we accept messages
-     * @param sa_len the length of the socket address, in bytes
-     * @param fd the file descriptor belonging to a UDP socket
-     */
-    UDPInputSource(const struct sockaddr* sa, size_t sa_len, int fd);
+    /** Creates a callback. */
+    PlacementCollector();
 
-    ssize_t read(uint8_t* buf, size_t len);
-    
+    /** Collects information elements from an input stream. 
+     *
+     * @param is the input stream to parse
+     */
+    void collect(InputSource& is);
+
+    /** Signals that placement of values will now begin. 
+     *
+     * @param template placement template for current placements
+     */
+    virtual void start_placement(const PlacementTemplate* tmpl) = 0;
+
+    /** Signals that placement of values has ended. 
+     *
+     * @param template placement template for current placements
+     */
+    virtual void end_placement(const PlacementTemplate* tmpl) = 0;
+
+  protected:
+    /** Registers a placement template.
+     *
+     * @param placement_template the placement template to register
+     */
+    void register_placement_template(const PlacementTemplate*);
+
   private:
-    struct sockaddr sa;
-    size_t sa_len;
-    int fd;
+    DataSetDecoder dsd;
+    IPFIXReader ir;
   };
 
 } // namespace IPFIX
 
-#endif // IPFIX_UDPINPUTSOURCE_H
+#endif // IPFIX_PLACEMENTCALLBACK_H

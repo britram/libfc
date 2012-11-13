@@ -35,10 +35,10 @@ include_directories(${Log4cplus_INCLUDE_DIR})
 link_directories(${Log4cplus_LIBRARY_DIR})
 
 # core objects; library classes begin with a upper-case letter,
-# program files (containing main()) with a lower-case
-# letter. Unfortunately, either cmake or a library that's linked with
-# cmake has managed to get the 30-year-old technique of globbing wrong
-# (on the mac). For example,
+# program files (containing main()) with a lower-case letter.
+# Unfortunately, either cmake or a library that's linked with cmake
+# has managed to get the 30-year-old technique of globbing wrong (on
+# the Mac). For example,
 #
 #   file (GLOB FC_OBJ "S*.cpp")
 #
@@ -48,7 +48,8 @@ link_directories(${Log4cplus_LIBRARY_DIR})
 #
 # yields an empty list.  Therefore, the correct glob pattern
 # [A-Z]*.cpp gives the wrong result and we will settle for *.cpp,
-# which includes too much.
+# which includes too much.  It must be said that this works perfectly
+# fine on Linux.
 #
 file (GLOB FC_OBJ "*.cpp")
 file (GLOB EXCEPTIONS_OBJ "exceptions/*.cpp") 

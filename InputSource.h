@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -34,7 +35,6 @@
 
 #  include <cstdint>
 
-/* For ssize_t and size_t */
 #  include <unistd.h>
 
 namespace IPFIX {

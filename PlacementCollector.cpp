@@ -1,4 +1,3 @@
-/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -25,36 +24,22 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @file
- * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
- */
-
-#ifndef IPFIX_UDPINPUTSOURCE_H
-#  define IPFIX_UDPINPUTSOURCE_H
-
-#  include "InputSource.h"
+#include "PlacementCollector.h"
 
 namespace IPFIX {
 
-  class UDPInputSource : public InputSource {
-  public:
-    /** Creates a UDP input source from a file descriptor.
-     *
-     * @param sa the socket address of the peer from whom we accept messages
-     * @param sa_len the length of the socket address, in bytes
-     * @param fd the file descriptor belonging to a UDP socket
-     */
-    UDPInputSource(const struct sockaddr* sa, size_t sa_len, int fd);
+  PlacementCollector::PlacementCollector() {
+    ir.set_content_handler(&dsd);
+    ir.set_error_handler(&dsd);
+  }
 
-    ssize_t read(uint8_t* buf, size_t len);
-    
-  private:
-    struct sockaddr sa;
-    size_t sa_len;
-    int fd;
-  };
+  void PlacementCollector::collect(InputSource& is) {
+    ir.parse(is);
+  }
+
+  void PlacementCollector::register_placement_template(
+      const PlacementTemplate* placement) {
+    dsd.register_placement_template(placement, this);
+  }
 
 } // namespace IPFIX
-
-#endif // IPFIX_UDPINPUTSOURCE_H

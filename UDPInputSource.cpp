@@ -1,4 +1,3 @@
-/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,37 +23,23 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cstring>
 
-/**
- * @file
- * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
- */
+#include <sys/socket.h>
 
-#ifndef IPFIX_UDPINPUTSOURCE_H
-#  define IPFIX_UDPINPUTSOURCE_H
-
-#  include "InputSource.h"
+#include "UDPInputSource.h"
 
 namespace IPFIX {
 
-  class UDPInputSource : public InputSource {
-  public:
-    /** Creates a UDP input source from a file descriptor.
-     *
-     * @param sa the socket address of the peer from whom we accept messages
-     * @param sa_len the length of the socket address, in bytes
-     * @param fd the file descriptor belonging to a UDP socket
-     */
-    UDPInputSource(const struct sockaddr* sa, size_t sa_len, int fd);
+  UDPInputSource::UDPInputSource(const struct sockaddr* _sa, size_t _sa_len,
+                                 int _fd) 
+    : sa_len(_sa_len), fd(_fd) {
+    memcpy(&sa, _sa, _sa_len);
+  }
 
-    ssize_t read(uint8_t* buf, size_t len);
-    
-  private:
-    struct sockaddr sa;
-    size_t sa_len;
-    int fd;
-  };
+  ssize_t UDPInputSource::read(uint8_t* buf, size_t len) {
+    return 0;
+  }
+
 
 } // namespace IPFIX
-
-#endif // IPFIX_UDPINPUTSOURCE_H
