@@ -26,6 +26,7 @@
  */
 
 #include <cassert>
+#include <cstddef>
 #include <fstream>
 
 #include <fcntl.h>
@@ -37,7 +38,7 @@
 #include "InfoModel.h"
 #include "MatchTemplate.h"
 #include "MBuf.h"
-#include "PlacementCallback.h"
+#include "PlacementCollector.h"
 #include "RecordReceiver.h"
 
 #include "test/TestCommon.h"
@@ -598,9 +599,9 @@ static void read_file_with_record_interface(const std::string& filename) {
 }
 
 static void read_file_with_placement_interface(const std::string& filename) {
-  class MyCallback : public PlacementCallback {
+  class MyCollector : public PlacementCollector {
   public:
-    MyCallback()
+    MyCollector()
       : n_flow_records(0), n_obs_records(0)
     {
       my_flow_template = new PlacementTemplate();
@@ -694,7 +695,7 @@ static void read_file_with_placement_interface(const std::string& filename) {
     size_t n_obs_records;
   };
 
-  MyCallback cb;
+  MyCollector cb;
 
   int fd = open(filename.c_str(), O_RDONLY);
   if (fd >= 0) {

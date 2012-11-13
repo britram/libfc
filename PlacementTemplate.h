@@ -160,13 +160,13 @@ namespace IPFIX {
    * just read a record that matched this placement template and that
    * it has placed the values form the data record into the pointers
    * that you have provided in that placement template.  All this is
-   * provided by a custom class derived from PlacementCallback
+   * provided by a custom class derived from PlacementCollector
    * (we will be using the IPFIX namespace for simplicity):
    *
    * @code
-   * class MyCallback : public PlacementCallback {
+   * class MyCollector : public PlacementCollector {
    * public:
-   *   MyCallback() {
+   *   MyCollector() {
    *      // Create and fill my_flow_template as above
    *
    *      register_placement_template(my_flow_template);
@@ -182,7 +182,7 @@ namespace IPFIX {
    *  uint32_t dip;
    * };
    * 
-   * MyCallback cb;
+   * MyCollector cb;
    *
    * int fd = open(filename.c_str(), O_RDONLY);
    * if (fd >= 0) {
@@ -199,10 +199,10 @@ namespace IPFIX {
    * And that's all, folks!
    *
    * It should be noted that it is possible to register more than one
-   * placement template in the MyCallback constructor:
+   * placement template in the MyCollector constructor:
    *
    * @code
-   *   MyCallback() {
+   *   MyCollector() {
    *     PlacementTemplate* my_flow_template = new PlacementTemplate();
    *     // Fill my_flow_template as above
    *      register_placement_template(my_flow_template);
@@ -217,7 +217,7 @@ namespace IPFIX {
    * PlacementTemplate pointer parameter: so that you can distinguish
    * which of your templates has just been matched and hence which of
    * your data members now have fresh content.  Obviously, for this,
-   * the template pointers should be data members of MyCallback.
+   * the template pointers should be data members of MyCollector.
    */
   class PlacementTemplate {
   public:

@@ -34,12 +34,24 @@ endif()
 include_directories(${Log4cplus_INCLUDE_DIR})
 link_directories(${Log4cplus_LIBRARY_DIR})
 
-# include pcap
-
 # core objects; library classes begin with a upper-case letter,
-# program files (containing main()) with a lower-case letter
-file (GLOB FC_OBJ [A-Z]*.cpp)
-file (GLOB EXCEPTIONS_OBJ exceptions/*.cpp) 
+# program files (containing main()) with a lower-case
+# letter. Unfortunately, either cmake or a library that's linked with
+# cmake has managed to get the 30-year-old technique of globbing wrong
+# (on the mac). For example,
+#
+#   file (GLOB FC_OBJ "S*.cpp")
+#
+# yields Session.cpp and StructTemplate.cpp, as expected, whereas
+#
+#   file (GLOB FC_OBJ "[S]*.cpp")
+#
+# yields an empty list.  Therefore, the correct glob pattern
+# [A-Z]*.cpp gives the wrong result and we will settle for *.cpp,
+# which includes too much.
+#
+file (GLOB FC_OBJ "*.cpp")
+file (GLOB EXCEPTIONS_OBJ "exceptions/*.cpp") 
 
 add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 if ($ENV{CLANG}) 
@@ -54,8 +66,9 @@ if ($ENV{CLANG})
 else ($ENV{CLANG})
   file (GLOB UT_OBJ test/Test*.cpp)
   add_executable(fctest ${UT_OBJ})
+  target_link_libraries(fctest pcap)
   if (Boost_FOUND)
-    target_link_libraries(fctest fc ${Boost_LIBRARIES} pcap)
+    target_link_libraries(fctest fc ${Boost_LIBRARIES})
   endif()
 endif()
 

@@ -42,7 +42,7 @@
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
-#include "PlacementCallback.h"
+#include "PlacementCollector.h"
 
 #include "exceptions/FormatError.h"
 
@@ -997,7 +997,7 @@ namespace IPFIX {
 
   void DataSetDecoder::register_placement_template(
       const PlacementTemplate* placement_template,
-      PlacementCallback* callback) {
+      PlacementCollector* callback) {
     placement_templates.push_back(placement_template);
     callbacks[placement_template] = callback;
   }
