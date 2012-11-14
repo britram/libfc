@@ -48,15 +48,16 @@ namespace IPFIX {
    *
    * IPFIX is sometimes called a <em>self-describing format</em>.  In
    * order to self-describe, an IPFIX message contains <em>template
-   * records</em> that describe the content of the <em>data
+   * records</em> that describe the format of the <em>data
    * records</em>, which contain the content.  A template record
-   * basically says, "later in this message, there may be data records
-   * having the identifying number 1234.  Here is the structure of the
-   * data records contained in such data sets..." That structure is
-   * then described by giving a sequence of <em>information
-   * elements</em> (and their encoded lengths as they appear on the
-   * wire).  So for example, a simplified version of a flow template
-   * record could look like this:
+   * basically says, "Hi, I'm a template record with the identifying
+   * number 1234.  Later in this message, there may be data set, also
+   * having the identifying number 1234.  This means that the records
+   * in that data set will have the following structure: [...]" That
+   * structure is then described by giving a sequence of
+   * <em>information elements</em> (and their encoded lengths as they
+   * appear on the wire).  For example, a simplified version of a
+   * flow template record could look like this:
    *
    * <table>
    *   <tr><th>IE name</th><th>length</th></tr>
