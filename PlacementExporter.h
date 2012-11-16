@@ -35,6 +35,8 @@
 
 #  include <cstdint>
 #  include <mutex>
+#  include <map>
+#  include <set>
 
 #  include "Constants.h"
 #  include "ExportDestination.h"
@@ -68,17 +70,29 @@ namespace IPFIX {
      *
      * @param template placement template for current placement
      */
-    virtual void place_values(const PlacementTemplate* tmpl) = 0;
-
-    /** Registers a placement template.
-     *
-     * @param tmpl the placement template to register
-     */
-    void register_placement_template(const PlacementTemplate* tmpl);
+    void place_values(const PlacementTemplate* tmpl);
 
   private:
+
     ExportDestination& os;
-    std::mutex lock;
+    /* The expression of cont-ness for the PlacementTemplates pointed
+     * to by the pointers below is very tricky.  From the point of
+     * view of this object, they are const: we promise never to change
+     * any data member or to call any mutator in the PlacementTemplate
+     * objects. On the other hand, the caller also holds copies of
+     * these pointers, and in fact the caller is *expected* to change
+     * data members, so for the caller the pointer is not const.
+     *
+     * I don't know what kinds of things C++ compilers can
+     * legitimately assume about const pointers.  If they can assume
+     * that data values will not change in objects pointed to by const
+     * pointers, then this could be very bad and the const would have
+     * to be removed throughout.
+     */
+    const PlacementTemplate* current_template;
+    std::set<const PlacementTemplate*> used_templates;
+    std::map<const PlacementTemplate*, uint8_t*> wire_templates;
+    std::set<const PlacementTemplate*> templates_in_this_message;
   };
 
 } // namespace IPFIX

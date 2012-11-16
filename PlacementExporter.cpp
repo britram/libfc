@@ -28,18 +28,32 @@
 
 namespace IPFIX {
   PlacementExporter::PlacementExporter(ExportDestination& _os)
-    : os(_os) {
+    : os(_os), current_template(0) {
   }
 
   PlacementExporter::~PlacementExporter() {
-    lock.lock();
     flush();
-    lock.unlock();
   }
 
   bool PlacementExporter::flush() {
     // Assume that lock is already locked
     return os.flush();
   }
+
+  static uint8_t* make_wire_template(const PlacementTemplate* tmpl) {
+    return 0;
+  }
+
+  void PlacementExporter::place_values(const PlacementTemplate* tmpl) {
+    if (tmpl != current_template) {
+      if (used_templates.find(tmpl) == used_templates.end()) {
+        used_templates.insert(tmpl);
+        wire_templates[tmpl] = make_wire_template(tmpl);
+        templates_in_this_message.insert(tmpl);
+      }
+      current_template = tmpl;
+    }
+  }
+
 
 } // namespace IPFIX
