@@ -43,10 +43,10 @@ BOOST_AUTO_TEST_CASE(NetAddress01) {
 
   IPFIX::NetAddress na(hostname, servname, AF_INET, PF_INET, false);
 
-
   BOOST_CHECK_EQUAL(na.hostname(), std::string(hostname));
   BOOST_CHECK_EQUAL(na.servname(), std::string(servname));
-  BOOST_CHECK_EQUAL((unsigned int)na.protocol(), AF_INET);
+  BOOST_CHECK_EQUAL(static_cast<unsigned int>(na.protocol()), 
+                    static_cast<unsigned int>(AF_INET));
 
   std::ostringstream os;
 

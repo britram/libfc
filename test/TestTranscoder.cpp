@@ -1,3 +1,31 @@
+/* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the names of NEC Europe Ltd, Consorzio Nazionale 
+ *      Interuniversitario per le Telecomunicazioni, Institut Telecom/Telecom 
+ *      Bretagne, ETH Zürich, INVEA-TECH a.s. nor the names of its contributors 
+ *      may be used to endorse or promote products derived from this software 
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT 
+ * HOLDERBE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+ */
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/detail/endian.hpp>
@@ -23,7 +51,7 @@ BOOST_AUTO_TEST_CASE(BufferManagement) {
 
   tc.setBase(buf, buf_size);
 
-  BOOST_CHECK_EQUAL(tc.len(), 0);
+  BOOST_CHECK_EQUAL(tc.len(), 0U);
   BOOST_CHECK_EQUAL(tc.avail(), buf_size);
 
   tc.zero();
@@ -80,7 +108,7 @@ BOOST_AUTO_TEST_CASE(TranscodeIPv4Address) {
     BOOST_CHECK_EQUAL(trbuf[3], ipbuf[3]);
 #endif
 
-    BOOST_CHECK_EQUAL(tc.avail(), 0);
+    BOOST_CHECK_EQUAL(tc.avail(), 0U);
     BOOST_CHECK_EQUAL(tc.len(), sizeof(trbuf));
   }
 }
@@ -125,7 +153,7 @@ BOOST_AUTO_TEST_CASE(TranscodeIPv6Address) {
     BOOST_CHECK_EQUAL(trbuf[14], ipbuf[14]);
     BOOST_CHECK_EQUAL(trbuf[15], ipbuf[15]);
 
-    BOOST_CHECK_EQUAL(tc.avail(), 0);
+    BOOST_CHECK_EQUAL(tc.avail(), 0U);
     BOOST_CHECK_EQUAL(tc.len(), sizeof(trbuf));
   }
 }

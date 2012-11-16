@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(InfoModel) {
 
     // check a few IEs that should be there
     BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0);
+    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
     BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
     
     // check an IE that shouldn't

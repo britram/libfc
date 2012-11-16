@@ -33,46 +33,52 @@
 #ifndef IPFIX_PLACEMENTCALLBACK_H
 #  define IPFIX_PLACEMENTCALLBACK_H
 
-#  include "DataSetDecoder.h"
-#  include "IPFIXReader.h"
+#  include <cstdint>
+#  include <mutex>
+
+#  include "Constants.h"
+#  include "ExportDestination.h"
 #  include "PlacementTemplate.h"
 
 namespace IPFIX {
 
-  /** Interface for collector with the placement interface. */
+  /** Interface for exporter with the placement interface. */
   class PlacementExporter {
   public:
-    /** Creates a callback. */
-    PlacementExporter();
-
-    /** Parses an input stream. 
+    /** Creates an exporter.
      *
-     * @param is the input stream to parse
+     * @param os the output stream to use
      */
-    void parse(InputSource& is);
+    PlacementExporter(ExportDestination& os);
 
-    /** Signals that placement of values will now begin. 
+    /** Destroys an exporter.
      *
-     * @param template placement template for current placements
+     * Will, as a side effect, flush and close the export
+     * destination.
      */
-    virtual void start_placement(const PlacementTemplate* tmpl) = 0;
-
-    /** Signals that placement of values has ended. 
+    ~PlacementExporter();
+    
+    /** Finishes the current message and sends it.
      *
-     * @param template placement template for current placements
+     * @return true if the operation was successful, false otherwise
      */
-    virtual void end_placement(const PlacementTemplate* tmpl) = 0;
+    bool flush();
 
-  protected:
+    /** Place values in a PlacementTemplate into the message. 
+     *
+     * @param template placement template for current placement
+     */
+    virtual void place_values(const PlacementTemplate* tmpl) = 0;
+
     /** Registers a placement template.
      *
-     * @param placement_template the placement template to register
+     * @param tmpl the placement template to register
      */
-    void register_placement_template(const PlacementTemplate*);
+    void register_placement_template(const PlacementTemplate* tmpl);
 
   private:
-    DataSetDecoder dsd;
-    IPFIXReader ir;
+    ExportDestination& os;
+    std::mutex lock;
   };
 
 } // namespace IPFIX
