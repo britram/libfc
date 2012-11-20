@@ -50,8 +50,9 @@ namespace IPFIX {
     /** Creates an exporter.
      *
      * @param os the output stream to use
+     * @param observation_domain the observation domain; see RFC5101
      */
-    PlacementExporter(ExportDestination& os);
+    PlacementExporter(ExportDestination& os, uint32_t observation_domain);
 
     /** Destroys an exporter.
      *
@@ -89,10 +90,30 @@ namespace IPFIX {
      * pointers, then this could be very bad and the const would have
      * to be removed throughout.
      */
+
+    /** The template currently in use. As long as this doesn't
+     * change, we don't need to open another data set. */
     const PlacementTemplate* current_template;
+
+    /** All templates used so far in this session. */
     std::set<const PlacementTemplate*> used_templates;
-    std::map<const PlacementTemplate*, uint8_t*> wire_templates;
+
+    /** The templates so far in this message.  If the underlying
+     * ExportDestination is not connection-oriented (guaranteeing
+     * in-order delivery of messages), all messages need to carry all
+     * templates for all data sets (because the message with the
+     * templates might have become lost or is otherwise undelivered). */
     std::set<const PlacementTemplate*> templates_in_this_message;
+
+    /** Sequence number for messages; see RFC 5101. */
+    uint32_t sequence_number;
+
+    /** Observation domain for messages; see RFC 5101. */
+    uint32_t observation_domain;
+
+    /** Number of octets in this message so far. This includes message
+     * headers, template sets and data sets. */
+    size_t n_message_octets;
   };
 
 } // namespace IPFIX

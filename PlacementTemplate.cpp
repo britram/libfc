@@ -35,10 +35,16 @@
 namespace IPFIX {
 
   PlacementTemplate::PlacementTemplate() 
+    : buf(0), 
+      size(0)
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
-    : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+    , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
   {
+  }
+
+  PlacementTemplate::~PlacementTemplate() {
+    delete[] buf;
   }
 
   void PlacementTemplate::register_placement(const InfoElement* ie,
@@ -67,4 +73,58 @@ namespace IPFIX {
     return true;
   }
 
+  void PlacementTemplate::wire_template(
+      uint16_t template_id,
+      const uint8_t** _buf,
+      size_t* _size) const {
+    if (buf == 0) {
+      /* Templates start with a 2-byte template ID and a 2-byte field
+       * count. */
+      size =  sizeof(uint16_t) + sizeof(uint16_t);
+      uint16_t n_fields = 0;
+
+      for (auto i = placements.begin(); i != placements.end(); ++i) {
+        /* A template record is 2 bytes for the IE id, 2 bytes for
+         * the field length and a potential 4 more bytes for the
+         * private enterprise number, if there is one. */
+        size = size + sizeof(uint16_t) + sizeof(uint16_t)
+          + (i->first->pen() == 0 ? 0 : sizeof(uint32_t));
+        n_fields++;
+      }
+
+      buf = new uint8_t[size];
+
+      uint8_t* p = buf + sizeof(uint16_t);
+
+      n_fields = htons(n_fields);
+      assert(p + sizeof(n_fields) <= buf + size);
+      memcpy(p, &n_fields, sizeof n_fields); p += sizeof n_fields;
+      
+      for (auto i = placements.begin(); i != placements.end(); ++i) {
+        uint32_t ie_pen = htonl(i->first->pen());
+        uint16_t ie_id = htons(i->first->number()
+                               | (ie_pen == 0 ? 0 : (1 << 15)));
+        uint16_t ie_len = htons(i->first->len());
+        assert(p + sizeof(ie_id) <= buf + size);
+        memcpy(p, &ie_id, sizeof ie_id); p += sizeof ie_id;
+        assert(p + sizeof(ie_len) <= buf + size);
+        memcpy(p, &ie_len, sizeof ie_len); p += sizeof ie_len;
+
+        if (ie_pen != 0) {
+          assert(p + sizeof(ie_pen) <= buf + size);
+          memcpy(p, &ie_pen, sizeof ie_pen);
+          p += sizeof ie_pen;
+        }
+      }
+      assert(p <= buf + size);
+    }
+
+    template_id = htons(template_id);
+    assert(buf + sizeof(template_id) <= buf + size);
+    memcpy(buf, &template_id, sizeof template_id);
+
+    if (_buf != 0)
+      *_buf = buf;
+    *_size = size;
+  }
 } // namespace IPFIX

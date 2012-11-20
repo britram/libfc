@@ -24,31 +24,63 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <climits>
+#include <ctime>
+
 #include "PlacementExporter.h"
 
 namespace IPFIX {
-  PlacementExporter::PlacementExporter(ExportDestination& _os)
-    : os(_os), current_template(0) {
+  PlacementExporter::PlacementExporter(ExportDestination& _os,
+                                       uint32_t _observation_domain)
+    : os(_os), current_template(0), sequence_number(0),
+      observation_domain(_observation_domain), 
+      n_message_octets(kMessageHeaderLen) {
   }
 
   PlacementExporter::~PlacementExporter() {
     flush();
   }
 
-  bool PlacementExporter::flush() {
-    // Assume that lock is already locked
-    return os.flush();
+  static void encode16(uint16_t val, uint8_t** buf, const uint8_t* buf_end) {
+    assert(*buf < buf_end);
+    assert(*buf + sizeof(uint16_t) <= buf_end);
+    *(*buf)++ = (val >> 8) & 0xff;
+    *(*buf)++ = (val >> 0) & 0xff;
+    assert(*buf <= buf_end);
   }
 
-  static uint8_t* make_wire_template(const PlacementTemplate* tmpl) {
-    return 0;
+  static void encode32(uint32_t val, uint8_t** buf, const uint8_t* buf_end) {
+    assert(*buf < buf_end);
+    assert(*buf + sizeof(uint32_t) <= buf_end);
+    *(*buf)++ = (val >> 24) & 0xff;
+    *(*buf)++ = (val >> 16) & 0xff;
+    *(*buf)++ = (val >>  8) & 0xff;
+    *(*buf)++ = (val >>  0) & 0xff;
+    assert(*buf <= buf_end);
+  }
+
+  bool PlacementExporter::flush() {
+    uint8_t message_header[kMessageHeaderLen];
+    const uint8_t* message_end = message_header + kMessageHeaderLen;
+    uint8_t* p = message_header;
+
+    time_t now = time(0);
+    if (now == static_cast<time_t>(-1))
+      return false;
+
+    encode16(kIpfixVersion, &p, message_end);
+    encode16(static_cast<uint16_t>(n_message_octets), &p, message_end);
+    encode32(static_cast<uint32_t>(now), &p, message_end);
+    encode32(sequence_number++, &p, message_end);
+    encode32(observation_domain, &p, message_end);
+
+    return os.flush();
   }
 
   void PlacementExporter::place_values(const PlacementTemplate* tmpl) {
     if (tmpl != current_template) {
       if (used_templates.find(tmpl) == used_templates.end()) {
         used_templates.insert(tmpl);
-        wire_templates[tmpl] = make_wire_template(tmpl);
         templates_in_this_message.insert(tmpl);
       }
       current_template = tmpl;
