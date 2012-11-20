@@ -24,12 +24,17 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <array>
+
 #include <climits>
 #include <ctime>
+
+#include <unistd.h>
 
 #include "PlacementExporter.h"
 
 namespace IPFIX {
+
   PlacementExporter::PlacementExporter(ExportDestination& _os,
                                        uint32_t _observation_domain)
     : os(_os), current_template(0), sequence_number(0),
