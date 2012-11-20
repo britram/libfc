@@ -99,31 +99,14 @@ namespace IPFIX {
      * data set or another template set. */
     const PlacementTemplate* current_template;
 
-    /** All templates used so far in this session.
+    /** All templates used so far in this session or message.
      *
-     * In connection-oriented export destinations, it is a design
-     * decision either to collect all templates and issue them in a
-     * single template set in each message, or to issue many template
-     * sets containing just one template record as new templates
-     * appear.  This decision might go either way, and it is not a
-     * priori clear which one is better, if indeed there is a better
-     * one. In connectionless export destinations, the same issue
-     * applies, except that each message must always carry all
-     * templates for all data sets in that message, no matter whether
-     * such templates have already occurred in previous messages. */
+     * In this set, we capture all templates used so far in this
+     * session (for connection-oriented ExportDestination-s) or in
+     * this message (for connectionless ones).  When a data record
+     * comes along that belongs to a hitherto unknown template, that
+     * template is inserted here, and a new template is issued. */
     std::set<const PlacementTemplate*> used_templates;
-
-    /** The templates so far in this message.
-     *
-     * If the underlying ExportDestination is connectionless, all
-     * messages need to carry all templates for all data sets (because
-     * the message with the templates might have become lost or is
-     * otherwise undelivered).  However, even in connectionless export
-     * destination, it is only necessary to issue a template once per
-     * message.  This set makes it possible not to issue superfluous
-     * template sets.  If the underlying ExportDestination is
-     * connection-oriented, then this set may be empty. */
-    std::set<const PlacementTemplate*> templates_in_this_message;
 
     /** Sequence number for messages; see RFC 5101. */
     uint32_t sequence_number;
@@ -135,7 +118,10 @@ namespace IPFIX {
      * and set headers, template sets and data sets. */
     size_t n_message_octets;
 
-    /** The octets in the currently assembled set, including set
+    /** Index for iovec of template set for this message. */
+    int template_set_index;
+
+    /** The octets in the currently assembled data set, including set
      * header. */
     ::iovec current_set;
 

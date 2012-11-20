@@ -34,6 +34,10 @@
 #  define IPFIX_EXPORTDESTINATION_H
 
 #  include <cstdint>
+#  include <vector>
+
+/* For struct iovec */
+#  include <sys/uio.h>
 
 /* For ssize_t and size_t */
 #  include <unistd.h>
@@ -47,23 +51,12 @@ namespace IPFIX {
    */
   class ExportDestination {
   public:
-    /** Writes a number of bytes from a buffer to the output.
+    /** Writes a set of scattered buffers.
      *
-     * Bytes might be buffered, to be flushed either when the buffer
-     * is full, the output is closed, ar flush() is called.
-     *
-     * @param buf the buffer in which to put the bytes
-     * @param len the number of bytes to read
-     *
+     * @param iovecs a vector of struct iovec (see `man writev')
      * @return 0 on success, or -1 on error
      */
-    virtual ssize_t write(uint8_t* buf, size_t len) = 0;
-
-    /** Flushes any bytes not yet written.
-     *
-     * @return 0 on success, or -1 on error
-     */
-    virtual int flush() = 0;
+    virtual int writev(const std::vector< ::iovec>& iovecs) = 0;
 
     /** Checks whether this output is connection-oriented or not.
      *
@@ -75,10 +68,10 @@ namespace IPFIX {
      * messages in order and thus might miss messages containing
      * important wire templates otherwise.
      *
-     * @return true if this output is connection-oriented, false if it
-     *     is connectionless
+     * @return true if this output is connectionless, false if it
+     *     is connection-oriented
      */
-    virtual bool is_connection_oriented() const = 0;
+    virtual bool is_connectionless() const = 0;
   };
 
 } // namespace IPFIX
