@@ -38,8 +38,8 @@ namespace IPFIX {
     errno = 0;
     ssize_t n_written = ::write(fd, buf, len);
     
-    if (n_written >= 0 && n_written != len) {
-      ssize_t count = n_written;
+    if (n_written >= 0 && static_cast<size_t>(n_written) != len) {
+      size_t count = n_written;
 
       while (n_written >= 0 && count < len) {
         n_written = ::write(fd, buf + count, len - count);
@@ -51,6 +51,7 @@ namespace IPFIX {
   }
 
   int FileExportDestination::flush() {
+    return 0;
   }
 
   bool FileExportDestination::is_connection_oriented() const {

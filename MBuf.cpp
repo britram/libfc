@@ -131,13 +131,15 @@ void MBuf::populateSetlist(Transcoder& xc, Session& session) {
       // find end of set and complete this comment FIXME
       const uint8_t* xcend = xc.cur() + (sle.len - kSetHeaderLen);
   
-      while ((xcend - xc.cur()) >= kTemplateHeaderLen) {
+      assert(xcend >= xc.cur());
+      while (static_cast<uint16_t>(xcend - xc.cur()) >= kTemplateHeaderLen) {
         if (!session.decodeTemplateRecord(xc, domain_)) {
           // FIXME this is a little weird, change this to follow
           // consistent error handling on decode, once we know what 
           // consistent means in this context. :)
           throw FormatError("Malformed template");
         }
+        assert(xcend >= xc.cur());
       }
     
     } else if (sle.id >= kMinSetID) {

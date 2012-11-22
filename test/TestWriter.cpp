@@ -121,8 +121,10 @@ test_export(const std::string& protocol, const std::string& outspec) {
       = InfoModel::instance().lookupIE("flowStartMilliseconds");
     const InfoElement* flowEndMilliseconds
       = InfoModel::instance().lookupIE("flowEndMilliseconds");
+    /*
     const InfoElement* octetDeltaCount
       = InfoModel::instance().lookupIE("octetDeltaCount");
+    */
     const InfoElement* packetDeltaCount
       = InfoModel::instance().lookupIE("packetDeltaCount");
     const InfoElement* sourceIPv4Address
@@ -133,8 +135,10 @@ test_export(const std::string& protocol, const std::string& outspec) {
       = InfoModel::instance().lookupIE("sourceTransportPort");
     const InfoElement* destinationTransportPort
       = InfoModel::instance().lookupIE("destinationTransportPort");
+    /*
     const InfoElement* protocolIdentifier
       = InfoModel::instance().lookupIE("protocolIdentifier");
+    */
 
     e->setTemplate(kSimpleFlowTid);
 

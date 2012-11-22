@@ -225,6 +225,8 @@ namespace IPFIX {
     /** Information associated with an InfoElement in a PlacementTemplate. */
     PlacementTemplate();
 
+    ~PlacementTemplate();
+
     /** Registers an association between an IE and a memory location.
      *
      * @param ie the information element
@@ -260,9 +262,25 @@ namespace IPFIX {
      */
     bool is_match(const MatchTemplate* t) const;
 
+    /** Creates a wire template suitable to represent this template
+     * on the wire in a template record.
+     *
+     * @param template_id the template id to use for this set
+     * @param buf pointer to a buffer where the template will be stored
+     * @param size size of buffer
+     */
+    void wire_template(uint16_t template_id, 
+                       const uint8_t** buf,
+                       size_t* size) const;
   private:
     class PlacementInfo;
     std::map<const InfoElement*, PlacementInfo*> placements;
+
+    /** Representation of this template for a message. */
+    mutable uint8_t* buf;
+
+    /** Size of this template's representation for a message. */
+    mutable size_t size;
 
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

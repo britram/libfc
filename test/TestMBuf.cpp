@@ -37,18 +37,18 @@ BOOST_AUTO_TEST_SUITE(Basics)
 
 BOOST_AUTO_TEST_CASE(MBuf01) {
   IPFIX::MBuf buf;
-  BOOST_CHECK_EQUAL(buf.domain(), 0);
-  BOOST_CHECK_EQUAL(buf.sequence(), 0);
-  BOOST_CHECK_EQUAL(buf.export_time(), 0);
+  BOOST_CHECK_EQUAL(buf.domain(), 0U);
+  BOOST_CHECK_EQUAL(buf.sequence(), 0U);
+  BOOST_CHECK_EQUAL(buf.export_time(), 0U);
 }
 
 BOOST_AUTO_TEST_CASE(MBuf02) {
   IPFIX::MBuf buf;
   buf.clear();
 
-  BOOST_CHECK_EQUAL(buf.domain(), 0);
-  BOOST_CHECK_EQUAL(buf.sequence(), 0);
-  BOOST_CHECK_EQUAL(buf.export_time(), 0);
+  BOOST_CHECK_EQUAL(buf.domain(), 0U);
+  BOOST_CHECK_EQUAL(buf.sequence(), 0U);
+  BOOST_CHECK_EQUAL(buf.export_time(), 0U);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
