@@ -24,6 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <arpa/inet.h>
+
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
@@ -34,8 +36,10 @@
 
 namespace IPFIX {
 
-  class PlacementInfo {
+  class PlacementTemplate::PlacementInfo {
   public:
+    PlacementInfo(void* address, size_t size_on_wire);
+
     /** Address where to write/read values from/to. */
     void* address;
     
@@ -43,6 +47,10 @@ namespace IPFIX {
      * exporting. */
     size_t size_on_wire;
   };
+
+  PlacementTemplate::PlacementInfo::PlacementInfo(void* _address, size_t _size_on_wire) 
+    : address(_address), size_on_wire(_size_on_wire) {
+  }
 
   PlacementTemplate::PlacementTemplate() 
     : buf(0), 
@@ -57,15 +65,27 @@ namespace IPFIX {
     delete[] buf;
   }
 
-  void PlacementTemplate::register_placement(const InfoElement* ie,
-                                             void* p) {
-    placements[ie] = p;
+  bool PlacementTemplate::register_placement(const InfoElement* ie,
+                                             void* p, size_t size) {
+    if (size == 0)
+      size = ie->canonical()->len();
+    placements[ie] = new PlacementInfo(p, size);
+    return true;
   }
 
-  void* PlacementTemplate::lookup_placement(const InfoElement* ie) const {
-    std::map<const InfoElement*, void*>::const_iterator it
+  bool PlacementTemplate::lookup_placement(const InfoElement* ie,
+                                           void** p, size_t* size) const {
+    std::map<const InfoElement*, PlacementInfo*>::const_iterator it
       = placements.find(ie);
-    return it == placements.end() ? 0 : it->second;
+    if (it == placements.end()) {
+      *p = 0;
+      return false;
+    } else {
+      *p = it->second->address;
+      if (size != 0)
+        *size = it->second->size_on_wire;
+      return true;
+    }
   }
 
   bool PlacementTemplate::is_match(const MatchTemplate* t) const {

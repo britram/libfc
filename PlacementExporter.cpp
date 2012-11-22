@@ -149,8 +149,8 @@ namespace IPFIX {
         unknown_template = tmpl;
 
         /* Need to add a new template to the template record section */
-        size_t template_bytes;
-        tmpl->wire_template(new_template_id(), 0, &template_bytes);
+        size_t template_bytes = 0;
+        //tmpl->wire_template(new_template_id(), 0, &template_bytes);
         new_bytes += template_bytes;
 
         /* Need to create template set? */

@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
       const InfoElement* sipv4a
         = InfoModel::instance().lookupIE("sourceIPv4Address");
       assert(sipv4a != 0);
-      my_template->register_placement(sipv4a, &source_ipv4_address);
+      my_template->register_placement(sipv4a, &source_ipv4_address, 0);
 
       register_placement_template(my_template);
     }

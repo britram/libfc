@@ -608,28 +608,28 @@ static void read_file_with_placement_interface(const std::string& filename) {
 
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("flowStartMilliseconds"),
-        &flow_start_milliseconds);
+        &flow_start_milliseconds, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("flowEndMilliseconds"),
-        &flow_end_milliseconds);
+        &flow_end_milliseconds, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("sourceIPv4Address"),
-        &source_ip_v4_address);
+        &source_ip_v4_address, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("destinationIPv4Address"),
-        &destination_ip_v4_address);
+        &destination_ip_v4_address, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("sourceTransportPort"),
-        &source_transport_port);
+        &source_transport_port, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("destinationTransportPort"),
-        &destination_transport_port);
+        &destination_transport_port, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("protocolIdentifier"),
-        &protocol_identifier);
+        &protocol_identifier, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("octetDeltaCount[4]"),
-        &octet_delta_count);
+        &octet_delta_count, 0);
 
       register_placement_template(my_flow_template);
 
@@ -637,13 +637,13 @@ static void read_file_with_placement_interface(const std::string& filename) {
 
       my_obs_template->register_placement(
          InfoModel::instance().lookupIE("observationTimeMilliseconds"),
-         &observation_time_milliseconds);
+         &observation_time_milliseconds, 0);
       my_obs_template->register_placement(
          InfoModel::instance().lookupIE("observationValue"),
-         &observation_value);
+         &observation_value, 0);
       my_obs_template->register_placement(
          InfoModel::instance().lookupIE("observationLabel"),
-        &observation_label);
+        &observation_label, 0);
 
       register_placement_template(my_obs_template);
     }

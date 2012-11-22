@@ -276,8 +276,7 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
 
     Decision d;
 
-    d.p = placement_template->lookup_placement(*ie);
-    if (d.p != 0) {   /* IE is present, so encode transfer decision */
+    if (placement_template->lookup_placement(*ie, &d.p, 0)) { /* IE present */
       LOG4CPLUS_DEBUG(logger, "    found -> transfer");
       d.wire_ie = *ie;
 
