@@ -34,6 +34,16 @@
 
 namespace IPFIX {
 
+  class PlacementInfo {
+  public:
+    /** Address where to write/read values from/to. */
+    void* address;
+    
+    /** Size of InfoElement on the wire. This is useful only when
+     * exporting. */
+    size_t size_on_wire;
+  };
+
   PlacementTemplate::PlacementTemplate() 
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
     : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
