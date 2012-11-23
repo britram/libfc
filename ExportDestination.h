@@ -72,6 +72,19 @@ namespace IPFIX {
      *     is connection-oriented
      */
     virtual bool is_connectionless() const = 0;
+
+    /** Returns the preferred message size.
+     * 
+     * Connectionless transports have to fight with fragmentation
+     * problems: a message will not be delivered if even one fragment
+     * is not delivered.  Therefore, this method should return the
+     * preferred maximum message size on connectionless transports,
+     * so that the exporter can optimise message sizes accordingly.
+     *
+     * @return preferred maximum message size for connectionless
+     *     transports, or 0 for connection-oriented transports
+     */
+    virtual size_t preferred_maximum_message_size() const = 0;
   };
 
 } // namespace IPFIX

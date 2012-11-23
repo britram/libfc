@@ -38,7 +38,13 @@ namespace IPFIX {
 
   class PlacementTemplate::PlacementInfo {
   public:
-    PlacementInfo(void* address, size_t size_on_wire);
+    PlacementInfo(const InfoElement* ie, void* address, size_t size_on_wire);
+
+    /** Information element.
+     *
+     * This is used to find out the type of varlen-encoded IEs
+     */
+    const InfoElement* ie;
 
     /** Address where to write/read values from/to. */
     void* address;
@@ -48,13 +54,16 @@ namespace IPFIX {
     size_t size_on_wire;
   };
 
-  PlacementTemplate::PlacementInfo::PlacementInfo(void* _address, size_t _size_on_wire) 
-    : address(_address), size_on_wire(_size_on_wire) {
+  PlacementTemplate::PlacementInfo::PlacementInfo(const InfoElement* _ie,
+                                                  void* _address,
+                                                  size_t _size_on_wire) 
+    : ie(_ie), address(_address), size_on_wire(_size_on_wire) {
   }
 
   PlacementTemplate::PlacementTemplate() 
     : buf(0), 
-      size(0)
+      size(0),
+      fixlen_data_record_size(0)
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
@@ -69,7 +78,8 @@ namespace IPFIX {
                                              void* p, size_t size) {
     if (size == 0)
       size = ie->canonical()->len();
-    placements[ie] = new PlacementInfo(p, size);
+    placements[ie] = new PlacementInfo(ie, p, size);
+    // FIXME: if (ie is varlen encoded) varlen_ies.push_back(placements[ie]);
     return true;
   }
 
@@ -157,4 +167,10 @@ namespace IPFIX {
       *_buf = buf;
     *_size = size;
   }
+
+  size_t PlacementTemplate::data_record_size() const {
+    // FIXME
+    return 0;
+  }
+
 } // namespace IPFIX

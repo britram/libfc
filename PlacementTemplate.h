@@ -33,6 +33,7 @@
 #ifndef IPFIX_PLACEMENTTEMPLATE_H
 #  define IPFIX_PLACEMENTTEMPLATE_H
 
+#  include <list>
 #  include <map>
 
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
@@ -272,15 +273,34 @@ namespace IPFIX {
     void wire_template(uint16_t template_id, 
                        const uint8_t** buf,
                        size_t* size) const;
+
+    /** Computes the size of the current data record.
+     *
+     * This method can only meaningfully be called after all the
+     * memory locations belonging to this template have valid values.
+     * This method then computes the size of a data record given the
+     * current values for the IEs.  This is only an issue for
+     * varlen-encoded IEs, since all others can obviously be computed
+     * without knowing the actual values.
+     *
+     * @return data record size, in octets
+     */
+    size_t data_record_size() const;
   private:
     class PlacementInfo;
     std::map<const InfoElement*, PlacementInfo*> placements;
+
+    /** List of varlen IEs? */
+    std::list<const PlacementInfo*> varlen_ies;
 
     /** Representation of this template for a message. */
     mutable uint8_t* buf;
 
     /** Size of this template's representation for a message. */
     mutable size_t size;
+
+    /** Sum of fixlen data item sizes in the data record representation. */
+    mutable size_t fixlen_data_record_size;
 
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

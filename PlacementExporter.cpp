@@ -132,7 +132,7 @@ namespace IPFIX {
      * it might be as large as that number, plus the size of a new
      * template set containing the wire template for the template
      * used. */
-    size_t new_bytes; // = tmpl.data_record_size();
+    size_t new_bytes = tmpl->data_record_size();
 
     /** Will contain tmpl if this template is hitherto unknown. */
     const PlacementTemplate* unknown_template = 0;
@@ -164,7 +164,7 @@ namespace IPFIX {
       current_template = tmpl;
     }
 
-    if (n_message_octets + new_bytes > kMaxMessageLen) {
+    if (n_message_octets + new_bytes > os.preferred_maximum_message_size()) {
       flush();
       n_message_octets += new_bytes;
       unknown_template = tmpl;
