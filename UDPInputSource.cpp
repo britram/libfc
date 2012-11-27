@@ -1,4 +1,3 @@
-/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,57 +23,23 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cstring>
 
-/**
- * @file
- * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
- */
+#include <sys/socket.h>
 
-#ifndef IPFIX_PLACEMENTCALLBACK_H
-#  define IPFIX_PLACEMENTCALLBACK_H
-
-#  include "DataSetDecoder.h"
-#  include "IPFIXReader.h"
-#  include "PlacementTemplate.h"
+#include "UDPInputSource.h"
 
 namespace IPFIX {
 
-  /** Interface for callback with the placement interface. */
-  class PlacementCallback {
-  public:
-    /** Creates a callback. */
-    PlacementCallback();
+  UDPInputSource::UDPInputSource(const struct sockaddr* _sa, size_t _sa_len,
+                                 int _fd) 
+    : sa_len(_sa_len), fd(_fd) {
+    memcpy(&sa, _sa, _sa_len);
+  }
 
-    /** Parses an input stream. 
-     *
-     * @param is the input stream to parse
-     */
-    void parse(InputSource& is);
+  ssize_t UDPInputSource::read(uint8_t* buf, size_t len) {
+    return 0;
+  }
 
-    /** Signals that placement of values will now begin. 
-     *
-     * @param template placement template for current placements
-     */
-    virtual void start_placement(const PlacementTemplate* tmpl) = 0;
-
-    /** Signals that placement of values has ended. 
-     *
-     * @param template placement template for current placements
-     */
-    virtual void end_placement(const PlacementTemplate* tmpl) = 0;
-
-  protected:
-    /** Registers a placement template.
-     *
-     * @param placement_template the placement template to register
-     */
-    void register_placement_template(const PlacementTemplate*);
-
-  private:
-    DataSetDecoder dsd;
-    IPFIXReader ir;
-  };
 
 } // namespace IPFIX
-
-#endif // IPFIX_PLACEMENTCALLBACK_H

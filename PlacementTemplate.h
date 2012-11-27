@@ -33,6 +33,7 @@
 #ifndef IPFIX_PLACEMENTTEMPLATE_H
 #  define IPFIX_PLACEMENTTEMPLATE_H
 
+#  include <list>
 #  include <map>
 
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
@@ -48,15 +49,16 @@ namespace IPFIX {
    *
    * IPFIX is sometimes called a <em>self-describing format</em>.  In
    * order to self-describe, an IPFIX message contains <em>template
-   * records</em> that describe the content of the <em>data
+   * records</em> that describe the format of the <em>data
    * records</em>, which contain the content.  A template record
-   * basically says, "later in this message, there may be data records
-   * having the identifying number 1234.  Here is the structure of the
-   * data records contained in such data sets..." That structure is
-   * then described by giving a sequence of <em>information
-   * elements</em> (and their encoded lengths as they appear on the
-   * wire).  So for example, a simplified version of a flow template
-   * record could look like this:
+   * basically says, "Hi, I'm a template record with the identifying
+   * number 1234.  Later in this message, there may be data set, also
+   * having the identifying number 1234.  This means that the records
+   * in that data set will have the following structure: [...]" That
+   * structure is then described by giving a sequence of
+   * <em>information elements</em> (and their encoded lengths as they
+   * appear on the wire).  For example, a simplified version of a
+   * flow template record could look like this:
    *
    * <table>
    *   <tr><th>IE name</th><th>length</th></tr>
@@ -160,13 +162,13 @@ namespace IPFIX {
    * just read a record that matched this placement template and that
    * it has placed the values form the data record into the pointers
    * that you have provided in that placement template.  All this is
-   * provided by a custom class derived from PlacementCallback
+   * provided by a custom class derived from PlacementCollector
    * (we will be using the IPFIX namespace for simplicity):
    *
    * @code
-   * class MyCallback : public PlacementCallback {
+   * class MyCollector : public PlacementCollector {
    * public:
-   *   MyCallback() {
+   *   MyCollector() {
    *      // Create and fill my_flow_template as above
    *
    *      register_placement_template(my_flow_template);
@@ -182,13 +184,13 @@ namespace IPFIX {
    *  uint32_t dip;
    * };
    * 
-   * MyCallback cb;
+   * MyCollector cb;
    *
    * int fd = open(filename.c_str(), O_RDONLY);
    * if (fd >= 0) {
    *   FileInputSource is(fd);
    *   try {
-   *     cb.parse(is);
+   *     cb.collect(is);
    *   } catch (FormatError e) {
    *     std::cerr << "Format error: " << e.what() << std::endl;
    *   }
@@ -199,10 +201,10 @@ namespace IPFIX {
    * And that's all, folks!
    *
    * It should be noted that it is possible to register more than one
-   * placement template in the MyCallback constructor:
+   * placement template in the MyCollector constructor:
    *
    * @code
-   *   MyCallback() {
+   *   MyCollector() {
    *     PlacementTemplate* my_flow_template = new PlacementTemplate();
    *     // Fill my_flow_template as above
    *      register_placement_template(my_flow_template);
@@ -217,27 +219,40 @@ namespace IPFIX {
    * PlacementTemplate pointer parameter: so that you can distinguish
    * which of your templates has just been matched and hence which of
    * your data members now have fresh content.  Obviously, for this,
-   * the template pointers should be data members of MyCallback.
+   * the template pointers should be data members of MyCollector.
    */
   class PlacementTemplate {
   public:
+    /** Information associated with an InfoElement in a PlacementTemplate. */
     PlacementTemplate();
+
+    ~PlacementTemplate();
 
     /** Registers an association between an IE and a memory location.
      *
      * @param ie the information element
      * @param p the memory location to be associated with the IE
+     * @param size the size of the information element on the wire, or
+     *     0 for the default size (this can be used, for example, when
+     *     collecting) 
+     *
+     * @return true if the operation was successful, false if the
+     *     given size is not appropriate for the information element.
      */
-    void register_placement(const InfoElement* ie, void* p);
+    bool register_placement(const InfoElement* ie, void* p, size_t size);
 
     /** Retrieves the memory location given an IE.
      *
      * @param ie the information element to look for
+     * @param p pointer to the the memory location associated with
+     *     that information element
+     * @param size pointer to the size of the information element, or
+     *     NULL if the size isn't requested
      *
-     * @return the memory location associated with this IE, or NULL if
-     *     the IE hasn't been registered previously.
+     * @return true if the information element was found, false if
+     *     the information element hasn't been registered previously.
      */
-    void* lookup_placement(const InfoElement* ie) const;
+    bool lookup_placement(const InfoElement* ie, void** p, size_t* size) const;
 
     /** Tells whether a given template matches this template.
      *
@@ -248,8 +263,44 @@ namespace IPFIX {
      */
     bool is_match(const MatchTemplate* t) const;
 
+    /** Creates a wire template suitable to represent this template
+     * on the wire in a template record.
+     *
+     * @param template_id the template id to use for this set
+     * @param buf pointer to a buffer where the template will be stored
+     * @param size size of buffer
+     */
+    void wire_template(uint16_t template_id, 
+                       const uint8_t** buf,
+                       size_t* size) const;
+
+    /** Computes the size of the current data record.
+     *
+     * This method can only meaningfully be called after all the
+     * memory locations belonging to this template have valid values.
+     * This method then computes the size of a data record given the
+     * current values for the IEs.  This is only an issue for
+     * varlen-encoded IEs, since all others can obviously be computed
+     * without knowing the actual values.
+     *
+     * @return data record size, in octets
+     */
+    size_t data_record_size() const;
   private:
-    std::map<const InfoElement*, void*> placements;
+    class PlacementInfo;
+    std::map<const InfoElement*, PlacementInfo*> placements;
+
+    /** List of varlen IEs? */
+    std::list<const PlacementInfo*> varlen_ies;
+
+    /** Representation of this template for a message. */
+    mutable uint8_t* buf;
+
+    /** Size of this template's representation for a message. */
+    mutable size_t size;
+
+    /** Sum of fixlen data item sizes in the data record representation. */
+    mutable size_t fixlen_data_record_size;
 
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

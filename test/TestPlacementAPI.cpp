@@ -45,7 +45,7 @@
 #include "FileInputSource.h"
 #include "IPFIXReader.h"
 #include "InfoModel.h"
-#include "PlacementCallback.h"
+#include "PlacementCollector.h"
 
 #include "exceptions/FormatError.h"
 
@@ -71,9 +71,9 @@ BOOST_AUTO_TEST_CASE(SkipDataSet) {
 BOOST_AUTO_TEST_CASE(FileDataSet) {
   const char* filename = "dahlem-01.ipfix";
 
-  class MyCallback : public PlacementCallback {
+  class MyCollector : public PlacementCollector {
   public:
-    MyCallback()
+    MyCollector()
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
                                     :
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
@@ -84,17 +84,17 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
       const InfoElement* sipv4a
         = InfoModel::instance().lookupIE("sourceIPv4Address");
       assert(sipv4a != 0);
-      my_template->register_placement(sipv4a, &source_ipv4_address);
+      my_template->register_placement(sipv4a, &source_ipv4_address, 0);
 
       register_placement_template(my_template);
     }
 
     void start_placement(const PlacementTemplate* tmpl) {
-      LOG4CPLUS_DEBUG(logger, "MyCallback: START placement");
+      LOG4CPLUS_DEBUG(logger, "MyCollector: START placement");
     }
 
     void end_placement(const PlacementTemplate* tmpl) {
-      LOG4CPLUS_DEBUG(logger, "MyCallback: END placement, address="
+      LOG4CPLUS_DEBUG(logger, "MyCollector: END placement, address="
                       << std::hex << source_ipv4_address);
     }
 
@@ -105,13 +105,13 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
     uint32_t source_ipv4_address;
   };
 
-  MyCallback cb;
+  MyCollector cb;
 
   int fd = open(filename, O_RDONLY);
   if (fd >= 0) {
     FileInputSource is(fd);
     try {
-      cb.parse(is);
+      cb.collect(is);
     } catch (FormatError e) {
       BOOST_FAIL("Format error: " << e.what());
     }

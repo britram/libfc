@@ -30,33 +30,63 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_INPUTSOURCE_H
-#  define IPFIX_INPUTSOURCE_H
+#ifndef IPFIX_EXPORTDESTINATION_H
+#  define IPFIX_EXPORTDESTINATION_H
 
 #  include <cstdint>
+#  include <vector>
 
+/* For struct iovec */
+#  include <sys/uio.h>
+
+/* For ssize_t and size_t */
 #  include <unistd.h>
 
 namespace IPFIX {
 
-  /** Abstract base class for IPFIX input sources.
+  /** Abstract base class for IPFIX outputs.
    *
-   * This class defines the interface that all IPFIX input sources
+   * This class defines the interface that all IPFIX outputs
    * must implement.
    */
-  class InputSource {
+  class ExportDestination {
   public:
-    /** Reads a number of bytes from the input source into a buffer.
+    /** Writes a set of scattered buffers.
      *
-     * @param buf the buffer in which to put the bytes
-     * @param len the number of bytes to read
-     *
-     * @return the number of bytes read (0 indicates end of file), or
-     *     -1 on error.
+     * @param iovecs a vector of struct iovec (see `man writev')
+     * @return 0 on success, or -1 on error
      */
-    virtual ssize_t read(uint8_t* buf, size_t len) = 0;
+    virtual ssize_t writev(const std::vector< ::iovec>& iovecs) = 0;
+
+    /** Checks whether this output is connection-oriented or not.
+     *
+     * This information is needed by the exporter: on connectionless
+     * outputs, new messages must contain all the wire templates that
+     * have accumulated in the meantime (or at least all wire
+     * templates that are relevant for the message to come). This is
+     * because it cannot be guaranteed that the receiver receives
+     * messages in order and thus might miss messages containing
+     * important wire templates otherwise.
+     *
+     * @return true if this output is connectionless, false if it
+     *     is connection-oriented
+     */
+    virtual bool is_connectionless() const = 0;
+
+    /** Returns the preferred message size.
+     * 
+     * Connectionless transports have to fight with fragmentation
+     * problems: a message will not be delivered if even one fragment
+     * is not delivered.  Therefore, this method should return the
+     * preferred maximum message size on connectionless transports,
+     * so that the exporter can optimise message sizes accordingly.
+     *
+     * @return preferred maximum message size for connectionless
+     *     transports, or kMaxMessageLen for connection-oriented transports
+     */
+    virtual size_t preferred_maximum_message_size() const = 0;
   };
 
 } // namespace IPFIX
 
-#endif // IPFIX_INPUTSOURCE_H
+#endif // IPFIX_EXPORTDESTINATION_H

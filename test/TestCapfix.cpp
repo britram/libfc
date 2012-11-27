@@ -207,6 +207,9 @@ int main_to_ipfix(const std::string& filename) {
   return rv;
 }
 
+#if defined(__GNUC__)
+__attribute__((unused))
+#endif
 static int test_capfix (const std::string& filename) {
   
   // set up signal handlers

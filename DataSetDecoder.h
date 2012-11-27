@@ -50,7 +50,7 @@
 
 namespace IPFIX {
 
-  class PlacementCallback;
+  class PlacementCollector;
 
   /** This class decodes data sets, and is the main go-to point when
    * using the "Placement Interface"-type of IPFIX collection.  For a
@@ -97,7 +97,7 @@ namespace IPFIX {
      */
     void register_placement_template(
         const PlacementTemplate* placement_template,
-        PlacementCallback* callback);
+        PlacementCollector* callback);
 
   private:
     /** Observation domain for this message. */
@@ -170,7 +170,7 @@ namespace IPFIX {
     std::list<const PlacementTemplate*> placement_templates;
 
     /** Association between placement template and callback. */
-    std::map<const PlacementTemplate*, PlacementCallback*> callbacks;
+    std::map<const PlacementTemplate*, PlacementCollector*> callbacks;
 
 #if defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE)
     /** Association between wire template and placement template.

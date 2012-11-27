@@ -63,7 +63,7 @@ const void *RecordReceiver::getPointer(const InfoElement* ie, size_t& len) {
 
 bool RecordReceiver::getValue(const InfoElement* ie, void *vp, size_t len) {
     if (!wt_->contains(ie)) return false;
-    size_t nextoff = xc_->decodeAt(vp, len, oc_.offsetOf(ie), ie->canonical());
+    /* size_t nextoff = */ xc_->decodeAt(vp, len, oc_.offsetOf(ie), ie->canonical());
     return true;
 }
 

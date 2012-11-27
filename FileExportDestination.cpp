@@ -7,9 +7,7 @@
  *    * Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of NEC Europe Ltd, Consorzio Nazionale 
- *      Interuniversitario per le Telecomunicazioni, Institut Telecom/Telecom 
- *      Bretagne, ETH Zürich, INVEA-TECH a.s. nor the names of its contributors 
+ *    * Neither the names of ETH Zürich nor the names of other contributors 
  *      may be used to endorse or promote products derived from this software 
  *      without specific prior written permission.
  *
@@ -20,35 +18,39 @@
  * HOLDERBE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
- * PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <unistd.h>
+#include <errno.h>
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include "Constants.h"
+#include "FileExportDestination.h"
 
-#include "MBuf.h"
+namespace IPFIX {
 
-BOOST_AUTO_TEST_SUITE(Basics)
+  FileExportDestination::FileExportDestination(int _fd)
+    : fd(_fd) {
+  }
 
-BOOST_AUTO_TEST_CASE(MBuf01) {
-  IPFIX::MBuf buf;
-  BOOST_CHECK_EQUAL(buf.domain(), 0U);
-  BOOST_CHECK_EQUAL(buf.sequence(), 0U);
-  BOOST_CHECK_EQUAL(buf.export_time(), 0U);
-}
+  ssize_t FileExportDestination::writev(const std::vector< ::iovec>& iovecs) {
+    return ::writev(fd, iovecs.data(), iovecs.size());
+  }
 
-BOOST_AUTO_TEST_CASE(MBuf02) {
-  IPFIX::MBuf buf;
-  buf.clear();
+  int FileExportDestination::flush() {
+    return 0;
+  }
 
-  BOOST_CHECK_EQUAL(buf.domain(), 0U);
-  BOOST_CHECK_EQUAL(buf.sequence(), 0U);
-  BOOST_CHECK_EQUAL(buf.export_time(), 0U);
-}
+  bool FileExportDestination::is_connectionless() const {
+    return false;
+  }
 
-BOOST_AUTO_TEST_SUITE_END()
+  size_t FileExportDestination::preferred_maximum_message_size() const {
+    return kMaxMessageLen;
+  }
+
+
+
+} // namespace IPFIX

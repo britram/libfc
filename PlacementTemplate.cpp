@@ -24,32 +24,84 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <arpa/inet.h>
+
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_DEBUG(logger, expr)
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
+#include "BasicOctetArray.h"
 #include "PlacementTemplate.h"
 
 namespace IPFIX {
 
+  class PlacementTemplate::PlacementInfo {
+  public:
+    PlacementInfo(const InfoElement* ie, void* address, size_t size_on_wire);
+
+    /** Information element.
+     *
+     * This is used to find out the type of varlen-encoded IEs
+     */
+    const InfoElement* ie;
+
+    /** Address where to write/read values from/to. */
+    void* address;
+    
+    /** Size of InfoElement on the wire. This is useful only when
+     * exporting. */
+    size_t size_on_wire;
+  };
+
+  PlacementTemplate::PlacementInfo::PlacementInfo(const InfoElement* _ie,
+                                                  void* _address,
+                                                  size_t _size_on_wire) 
+    : ie(_ie), address(_address), size_on_wire(_size_on_wire) {
+  }
+
   PlacementTemplate::PlacementTemplate() 
+    : buf(0), 
+      size(0),
+      fixlen_data_record_size(0)
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
-    : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+    , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
   {
   }
 
-  void PlacementTemplate::register_placement(const InfoElement* ie,
-                                             void* p) {
-    placements[ie] = p;
+  PlacementTemplate::~PlacementTemplate() {
+    delete[] buf;
   }
 
-  void* PlacementTemplate::lookup_placement(const InfoElement* ie) const {
-    std::map<const InfoElement*, void*>::const_iterator it
+  bool PlacementTemplate::register_placement(const InfoElement* ie,
+                                             void* p, size_t size) {
+    if (size == 0)
+      size = ie->canonical()->len();
+    placements[ie] = new PlacementInfo(ie, p, size);
+
+    if (size == kVarlen)
+      varlen_ies.push_back(placements[ie]);
+    else
+      fixlen_data_record_size += size;
+
+    return true;
+  }
+
+  bool PlacementTemplate::lookup_placement(const InfoElement* ie,
+                                           void** p, size_t* size) const {
+    std::map<const InfoElement*, PlacementInfo*>::const_iterator it
       = placements.find(ie);
-    return it == placements.end() ? 0 : it->second;
+    if (it == placements.end()) {
+      *p = 0;
+      return false;
+    } else {
+      *p = it->second->address;
+      if (size != 0)
+        *size = it->second->size_on_wire;
+      return true;
+    }
   }
 
   bool PlacementTemplate::is_match(const MatchTemplate* t) const {
@@ -65,6 +117,71 @@ namespace IPFIX {
     }
     LOG4CPLUS_DEBUG(logger, "  all found -> true");
     return true;
+  }
+
+  void PlacementTemplate::wire_template(
+      uint16_t template_id,
+      const uint8_t** _buf,
+      size_t* _size) const {
+    if (buf == 0) {
+      /* Templates start with a 2-byte template ID and a 2-byte field
+       * count. */
+      size =  sizeof(uint16_t) + sizeof(uint16_t);
+      uint16_t n_fields = 0;
+
+      for (auto i = placements.begin(); i != placements.end(); ++i) {
+        /* A template record is 2 bytes for the IE id, 2 bytes for
+         * the field length and a potential 4 more bytes for the
+         * private enterprise number, if there is one. */
+        size = size + sizeof(uint16_t) + sizeof(uint16_t)
+          + (i->first->pen() == 0 ? 0 : sizeof(uint32_t));
+        n_fields++;
+      }
+
+      buf = new uint8_t[size];
+
+      uint8_t* p = buf + sizeof(uint16_t);
+
+      n_fields = htons(n_fields);
+      assert(p + sizeof(n_fields) <= buf + size);
+      memcpy(p, &n_fields, sizeof n_fields); p += sizeof n_fields;
+      
+      for (auto i = placements.begin(); i != placements.end(); ++i) {
+        uint32_t ie_pen = htonl(i->first->pen());
+        uint16_t ie_id = htons(i->first->number()
+                               | (ie_pen == 0 ? 0 : (1 << 15)));
+        uint16_t ie_len = htons(i->first->len());
+        assert(p + sizeof(ie_id) <= buf + size);
+        memcpy(p, &ie_id, sizeof ie_id); p += sizeof ie_id;
+        assert(p + sizeof(ie_len) <= buf + size);
+        memcpy(p, &ie_len, sizeof ie_len); p += sizeof ie_len;
+
+        if (ie_pen != 0) {
+          assert(p + sizeof(ie_pen) <= buf + size);
+          memcpy(p, &ie_pen, sizeof ie_pen);
+          p += sizeof ie_pen;
+        }
+      }
+      assert(p <= buf + size);
+    }
+
+    template_id = htons(template_id);
+    assert(buf + sizeof(template_id) <= buf + size);
+    memcpy(buf, &template_id, sizeof template_id);
+
+    if (_buf != 0)
+      *_buf = buf;
+    *_size = size;
+  }
+
+  size_t PlacementTemplate::data_record_size() const {
+    size_t ret = fixlen_data_record_size;
+
+    if (varlen_ies.size() != 0) {
+      for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i)
+        ret += reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
+    }
+    return ret;
   }
 
 } // namespace IPFIX
