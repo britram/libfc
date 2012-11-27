@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "Constants.h"
 #include "FileExportDestination.h"
 
 namespace IPFIX {
@@ -34,28 +35,20 @@ namespace IPFIX {
     : fd(_fd) {
   }
 
-  ssize_t FileExportDestination::write(uint8_t* buf, size_t len) {
-    errno = 0;
-    ssize_t n_written = ::write(fd, buf, len);
-    
-    if (n_written >= 0 && static_cast<size_t>(n_written) != len) {
-      size_t count = n_written;
-
-      while (n_written >= 0 && count < len) {
-        n_written = ::write(fd, buf + count, len - count);
-        count += n_written;
-      }
-    }
-
-    return n_written < 0 ? -1 : 0;
+  ssize_t FileExportDestination::writev(const std::vector< ::iovec>& iovecs) {
+    return ::writev(fd, iovecs.data(), iovecs.size());
   }
 
   int FileExportDestination::flush() {
     return 0;
   }
 
-  bool FileExportDestination::is_connection_oriented() const {
-    return true;
+  bool FileExportDestination::is_connectionless() const {
+    return false;
+  }
+
+  size_t FileExportDestination::preferred_maximum_message_size() const {
+    return kMaxMessageLen;
   }
 
 

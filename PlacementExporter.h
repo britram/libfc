@@ -121,10 +121,6 @@ namespace IPFIX {
     /** Index for iovec of template set for this message. */
     int template_set_index;
 
-    /** The octets in the currently assembled data set, including set
-     * header. */
-    ::iovec current_set;
-
     /** The number of octets in the currently assembled set.
      *
      * The space between `<' and `::' is mandatory because of the

@@ -32,6 +32,7 @@
 #  define LOG4CPLUS_DEBUG(logger, expr)
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
+#include "BasicOctetArray.h"
 #include "PlacementTemplate.h"
 
 namespace IPFIX {
@@ -79,7 +80,12 @@ namespace IPFIX {
     if (size == 0)
       size = ie->canonical()->len();
     placements[ie] = new PlacementInfo(ie, p, size);
-    // FIXME: if (ie is varlen encoded) varlen_ies.push_back(placements[ie]);
+
+    if (size == kVarlen)
+      varlen_ies.push_back(placements[ie]);
+    else
+      fixlen_data_record_size += size;
+
     return true;
   }
 
@@ -169,8 +175,13 @@ namespace IPFIX {
   }
 
   size_t PlacementTemplate::data_record_size() const {
-    // FIXME
-    return 0;
+    size_t ret = fixlen_data_record_size;
+
+    if (varlen_ies.size() != 0) {
+      for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i)
+        ret += reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
+    }
+    return ret;
   }
 
 } // namespace IPFIX

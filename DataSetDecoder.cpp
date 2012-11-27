@@ -135,12 +135,13 @@ private:
       transfer_fixlen,
 
       /** Transfer a boolean. Someone found it amusing in RFC 2579 to
-       * specify boolean values true and false as 1 and 2,
+       * encode the boolean values true and false as 1 and 2,
        * respectively [sic!].  And someone else found it amusing to
        * standardise this behaviour in RFC 5101 too.  This is of
        * course wrong, since it disallows entirely sensible operations
-       * like + for "or", * for "and" and "<=" for implication (which
-       * is what you get when you make false less than true). */
+       * like `plus' for "or", `times' for "and" and `less than' for
+       * implication (which is what you get when you make false less
+       * than true). */
       transfer_boolean,
 
       /** Transfer a fixed amount, with endianness conversion. */
