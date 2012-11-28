@@ -33,6 +33,7 @@
 #ifndef IPFIX_PLACEMENTTEMPLATE_H
 #  define IPFIX_PLACEMENTTEMPLATE_H
 
+#  include <list>
 #  include <map>
 #  include <list>
 
@@ -223,6 +224,7 @@ namespace IPFIX {
    */
   class PlacementTemplate {
   public:
+    /** Information associated with an InfoElement in a PlacementTemplate. */
     PlacementTemplate();
 
     ~PlacementTemplate();
@@ -231,18 +233,27 @@ namespace IPFIX {
      *
      * @param ie the information element
      * @param p the memory location to be associated with the IE
-     * @param size the size of the IE on the wire, or 0 for canonical size
+     * @param size the size of the information element on the wire, or
+     *     0 for the default size (this can be used, for example, when
+     *     collecting) 
+     *
+     * @return true if the operation was successful, false if the
+     *     given size is not appropriate for the information element.
      */
-    void register_placement(const InfoElement* ie, void* p, size_t size);
+    bool register_placement(const InfoElement* ie, void* p, size_t size);
 
     /** Retrieves the memory location given an IE.
      *
      * @param ie the information element to look for
+     * @param p pointer to the the memory location associated with
+     *     that information element
+     * @param size pointer to the size of the information element, or
+     *     NULL if the size isn't requested
      *
-     * @return the memory location associated with this IE, or NULL if
-     *     the IE hasn't been registered previously.
+     * @return true if the information element was found, false if
+     *     the information element hasn't been registered previously.
      */
-    void* lookup_placement(const InfoElement* ie) const;
+    bool lookup_placement(const InfoElement* ie, void** p, size_t* size) const;
 
     /** Tells whether a given template matches this template.
      *
@@ -304,6 +315,9 @@ namespace IPFIX {
 
     /** Size of this template's representation for a message. */
     mutable size_t size;
+
+    /** Sum of fixlen data item sizes in the data record representation. */
+    mutable size_t fixlen_data_record_size;
 
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

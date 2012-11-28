@@ -56,7 +56,7 @@ namespace IPFIX {
      * @param iovecs a vector of struct iovec (see `man writev')
      * @return 0 on success, or -1 on error
      */
-    virtual int writev(const std::vector< ::iovec>& iovecs) = 0;
+    virtual ssize_t writev(const std::vector< ::iovec>& iovecs) = 0;
 
     /** Checks whether this output is connection-oriented or not.
      *
@@ -72,6 +72,19 @@ namespace IPFIX {
      *     is connection-oriented
      */
     virtual bool is_connectionless() const = 0;
+
+    /** Returns the preferred message size.
+     * 
+     * Connectionless transports have to fight with fragmentation
+     * problems: a message will not be delivered if even one fragment
+     * is not delivered.  Therefore, this method should return the
+     * preferred maximum message size on connectionless transports,
+     * so that the exporter can optimise message sizes accordingly.
+     *
+     * @return preferred maximum message size for connectionless
+     *     transports, or kMaxMessageLen for connection-oriented transports
+     */
+    virtual size_t preferred_maximum_message_size() const = 0;
   };
 
 } // namespace IPFIX

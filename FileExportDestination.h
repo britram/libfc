@@ -42,9 +42,10 @@ namespace IPFIX {
   public:
     FileExportDestination(int fd);
 
-    ssize_t write(uint8_t* buf, size_t len);
+    ssize_t writev(const std::vector< ::iovec>& iovecs);
     int flush();
-    bool is_connection_oriented() const;
+    bool is_connectionless() const;
+    size_t preferred_maximum_message_size() const;
 
   private:
     int fd;

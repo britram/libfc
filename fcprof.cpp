@@ -30,15 +30,18 @@
 #include <fstream>
 
 #include <fcntl.h>
+#include <getopt.h>
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
 #include "FileInputSource.h"
+#include "FileExportDestination.h"
 #include "IPFIXReader.h"
 #include "InfoModel.h"
 #include "MatchTemplate.h"
 #include "MBuf.h"
 #include "PlacementCollector.h"
+#include "PlacementExporter.h"
 #include "RecordReceiver.h"
 
 #include "test/TestCommon.h"
@@ -608,28 +611,28 @@ static void read_file_with_placement_interface(const std::string& filename) {
 
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("flowStartMilliseconds"),
-        &flow_start_milliseconds);
+        &flow_start_milliseconds, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("flowEndMilliseconds"),
-        &flow_end_milliseconds);
+        &flow_end_milliseconds, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("sourceIPv4Address"),
-        &source_ip_v4_address);
+        &source_ip_v4_address, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("destinationIPv4Address"),
-        &destination_ip_v4_address);
+        &destination_ip_v4_address, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("sourceTransportPort"),
-        &source_transport_port);
+        &source_transport_port, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("destinationTransportPort"),
-        &destination_transport_port);
+        &destination_transport_port, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("protocolIdentifier"),
-        &protocol_identifier);
+        &protocol_identifier, 0);
       my_flow_template->register_placement(
         InfoModel::instance().lookupIE("octetDeltaCount[4]"),
-        &octet_delta_count);
+        &octet_delta_count, 0);
 
       register_placement_template(my_flow_template);
 
@@ -637,13 +640,13 @@ static void read_file_with_placement_interface(const std::string& filename) {
 
       my_obs_template->register_placement(
          InfoModel::instance().lookupIE("observationTimeMilliseconds"),
-         &observation_time_milliseconds);
+         &observation_time_milliseconds, 0);
       my_obs_template->register_placement(
          InfoModel::instance().lookupIE("observationValue"),
-         &observation_value);
+         &observation_value, 0);
       my_obs_template->register_placement(
          InfoModel::instance().lookupIE("observationLabel"),
-        &observation_label);
+        &observation_label, 0);
 
       register_placement_template(my_obs_template);
     }
@@ -774,24 +777,167 @@ static void read_file_with_struct_interface(const std::string& filename) {
   delete c;
 }
 
+static void write_file_with_placement_interface(int fd) {
+  FileExportDestination d(fd);
+  PlacementExporter e(d, 0x12344321);
+
+  uint64_t flow_start_milliseconds = 0;
+  uint64_t flow_end_milliseconds = 0;
+  uint32_t source_ip_v4_address = 0;
+  uint32_t destination_ip_v4_address = 0;
+  uint16_t source_transport_port = 0;
+  uint16_t destination_transport_port = 0;
+  uint8_t  protocol_identifier = 0;
+  uint64_t octet_delta_count = 0;
+
+  PlacementTemplate* my_flow_template = new PlacementTemplate();
+
+  my_flow_template->register_placement(
+    InfoModel::instance().lookupIE("flowStartMilliseconds"),
+    &flow_start_milliseconds, 0);
+  my_flow_template->register_placement(
+    InfoModel::instance().lookupIE("flowEndMilliseconds"),
+    &flow_end_milliseconds, 0);
+  my_flow_template->register_placement(
+    InfoModel::instance().lookupIE("sourceIPv4Address"),
+    &source_ip_v4_address, 0);
+  my_flow_template->register_placement(
+    InfoModel::instance().lookupIE("destinationIPv4Address"),
+    &destination_ip_v4_address, 0);
+  my_flow_template->register_placement(
+    InfoModel::instance().lookupIE("sourceTransportPort"),
+    &source_transport_port, 0);
+  my_flow_template->register_placement(
+    InfoModel::instance().lookupIE("destinationTransportPort"),
+    &destination_transport_port, 0);
+  my_flow_template->register_placement(
+    InfoModel::instance().lookupIE("protocolIdentifier"),
+    &protocol_identifier, 0);
+  my_flow_template->register_placement(
+    InfoModel::instance().lookupIE("octetDeltaCount[4]"),
+    &octet_delta_count, 0);
+
+  for (int i = 0; i < 10; i++) {
+    e.place_values(my_flow_template);
+    flow_start_milliseconds++;
+  }
+
+  e.flush();
+
+  delete my_flow_template;
+}
 
 
-int main(int argc, const char* argv[]) {
+static int verbose_flag = 0;
+static int read_flag = 1;
+static enum api_type_t { record_api, placement_api, struct_api } api_type;
+
+/* Code patterned after http://www.gnu.org/software/libc/
+ * manual/html_node/Getopt-Long-Option-Example.html
+ * #Getopt-Long-Option-Example */
+static void parse_options(int argc, char* const* argv) {
+
+  while (1) {
+    static struct option options[] = {
+      { "verbose", no_argument, &verbose_flag, 1 },
+      { "read", no_argument, &read_flag, 1 },
+      { "write", no_argument, &read_flag, 0 },
+      { "interface-type", required_argument, 0, 'i' },
+      { 0, 0, 0, 0 },
+    };
+
+    int option_index = 0;
+
+    int c = getopt_long(argc, argv, "i:rvw", options, &option_index);
+
+    if (c == -1)
+      break;
+
+    switch(c) {
+    case 0:
+      if (options[option_index].flag != 0)
+        break;
+      std::cerr << "option \"" << options[option_index].name << "\"";
+      if (optarg)
+        std::cerr << " with arg \"" << optarg << "\"";
+      std::cerr << std::endl;
+      break;
+    case 'i': 
+      if (strcmp(optarg, "record") == 0)
+        api_type = record_api;
+      else if (strcmp(optarg, "struct") == 0)
+        api_type = struct_api;
+      else if (strcmp(optarg, "placement") == 0)
+        api_type = placement_api;
+      else {
+        std::cerr << "unknown interface type \"" << optarg
+                  << "\", using placement instead" << std::endl;
+        api_type = placement_api;
+      }
+      break;
+    case 'r': break;
+    case 'v': break;
+    case 'w': break;
+    default:
+      std::cerr << "Unrecognised option character '" << c 
+                << "', aborting" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+
+static const std::string read_filename = "loopfile";
+static const std::string write_filename = "export_test.ipfix";
+
+int main(int argc, char* const* argv) {
   InfoModel::instance().defaultIPFIX();
   TestFlow::addIEs();
   TestObs::addIEs();
 
-  static const std::string filename = "loopfile";
+  parse_options(argc, argv);
 
-  if (!file_exists(filename)) {
-    write_file(filename);
-  } else if (argc > 1) {
-    if (strcmp(argv[1], "--record") == 0)
-      read_file_with_record_interface(filename);
-    else if (strcmp(argv[1], "--placement") == 0)
-      read_file_with_placement_interface(filename);
-    else if (strcmp(argv[1], "--struct") == 0)
-      read_file_with_struct_interface(filename);
+  if (read_flag) {
+    if (!file_exists(read_filename))
+      write_file(read_filename);
+
+    switch (api_type) {
+    case record_api:
+      read_file_with_record_interface(read_filename);
+      break;
+    case placement_api:
+      read_file_with_placement_interface(read_filename);
+      break;
+    case struct_api:
+      read_file_with_struct_interface(read_filename);
+      break;
+    }
+  } else {
+    int fd = open(write_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
+                  S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+    if (fd == -1) {
+      std::cerr << "Can't open \"" << write_filename << "\" for writing"
+                << std::endl;
+      return EXIT_FAILURE;
+    }
+
+    switch (api_type) {
+    case record_api:
+      std::cerr << "Record API writing not supported; ignored" << std::endl;
+      break;
+    case placement_api: 
+      write_file_with_placement_interface(fd);
+      break;
+    case struct_api:
+      std::cerr << "Struct API writing not supported; ignored" << std::endl;
+      break;
+    }
+
+    if (close(fd) != 0) {
+      std::cerr << "Error closing file \"" << write_filename
+                << std::cerr;
+      return EXIT_FAILURE;
+    }
   }
-  return 0;
+  return EXIT_SUCCESS;
 }

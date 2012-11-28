@@ -24,19 +24,47 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <arpa/inet.h>
+
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_DEBUG(logger, expr)
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
+#include "BasicOctetArray.h"
 #include "PlacementTemplate.h"
 
 namespace IPFIX {
 
+  class PlacementTemplate::PlacementInfo {
+  public:
+    PlacementInfo(const InfoElement* ie, void* address, size_t size_on_wire);
+
+    /** Information element.
+     *
+     * This is used to find out the type of varlen-encoded IEs
+     */
+    const InfoElement* ie;
+
+    /** Address where to write/read values from/to. */
+    void* address;
+    
+    /** Size of InfoElement on the wire. This is useful only when
+     * exporting. */
+    size_t size_on_wire;
+  };
+
+  PlacementTemplate::PlacementInfo::PlacementInfo(const InfoElement* _ie,
+                                                  void* _address,
+                                                  size_t _size_on_wire) 
+    : ie(_ie), address(_address), size_on_wire(_size_on_wire) {
+  }
+
   PlacementTemplate::PlacementTemplate() 
     : buf(0), 
-      size(0)
+      size(0),
+      fixlen_data_record_size(0)
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
@@ -62,10 +90,19 @@ namespace IPFIX {
     return true;
   }
 
-  void* PlacementTemplate::lookup_placement(const InfoElement* ie) const {
-    std::map<const InfoElement*, void*>::const_iterator it
+  bool PlacementTemplate::lookup_placement(const InfoElement* ie,
+                                           void** p, size_t* size) const {
+    std::map<const InfoElement*, PlacementInfo*>::const_iterator it
       = placements.find(ie);
-    return it == placements.end() ? 0 : it->second;
+    if (it == placements.end()) {
+      *p = 0;
+      return false;
+    } else {
+      *p = it->second->address;
+      if (size != 0)
+        *size = it->second->size_on_wire;
+      return true;
+    }
   }
 
   bool PlacementTemplate::is_match(const MatchTemplate* t) const {
@@ -137,8 +174,6 @@ namespace IPFIX {
       *_buf = buf;
     *_size = size;
   }
-<<<<<<< Updated upstream
-=======
 
   size_t PlacementTemplate::data_record_size() const {
     size_t ret = fixlen_data_record_size;
@@ -160,5 +195,4 @@ namespace IPFIX {
     return ies.end();
   }
 
->>>>>>> Stashed changes
 } // namespace IPFIX
