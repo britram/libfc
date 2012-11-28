@@ -26,10 +26,126 @@
  */
 #include <climits>
 #include <ctime>
+#include <sstream>
 
 #include <unistd.h>
 
 #include "PlacementExporter.h"
+
+/** Encode plans describe how a data record is to be encoded.
+ *
+ * Decoding a data record means determining, for each data field, 
+ *
+ *   - if the data's endianness must be converted;
+ *   - if the data needs to be transformed in any other way (for
+ *     example, boolean values are encoded with 1 meaning true and 2
+ *     meaning false(!!), or reduced-length encoding of floating-point
+ *     values means that doubles are really transferred as floats); and
+ *   - for variable-length data, what the length of the encoded value
+ *     is.
+ *
+ * See also the documentation for DecodePlan in DataSetDecoder.cpp
+ */
+class EncodePlan {
+public:
+  /** Creates an encoding plan from a placement template.
+   *
+   * @param placement_template a placement template from which we
+   *   encode a data record.
+   */
+  EncodePlan(const IPFIX::PlacementTemplate* placementTemplate);
+
+  /** Executes this plan.
+   *
+   * @param buf the buffer where to store the encoded values
+   * @param offset the offset at which to store the values
+   * @param length the total length of the buffer
+   *
+   * @return the number of encoded octets
+   */
+  uint16_t execute(uint8_t* buf, uint16_t offset, uint16_t length);
+  
+private:
+  struct Decision {
+    /** The decision type. */
+    enum decision_type_t {
+      /** Encode a boolean.  I'm repeating here the comment I made in
+       * the corresponding declaration for transfer_boolean in
+       * DataSetDecoder.cpp, because it still gets my blood up:
+       *
+       * Someone found it amusing in RFC 2579 to encode the boolean
+       * values true and false as 1 and 2, respectively [sic!].  And
+       * someone else found it amusing to standardise this behaviour
+       * in RFC 5101 too.  This is of course wrong, since it disallows
+       * entirely sensible operations like `plus' for "or", `times'
+       * for "and" and `less than' for implication (which is what you
+       * get when you make false less than true).
+       *
+       * This is why we can't subsume the encoding of booleans (which
+       * are fixlen-encoded values of length 1) under
+       * encode_basic_no_endianness below. */
+      encode_boolean,
+
+      /** Encode a basic type (fixlen) with no endianness conversion. */
+      encode_basic_no_endianness,
+
+      /** Encode a basic type (fixlen) with endianness conversion. */
+      encode_basic_endianness,
+
+      /** Encode a BasicOctetArray as fixlen. */
+      encode_fixlen_octet_array,
+
+      /** Encode a BasicOctetArray as varlen. Varlen encoding is
+       * supported only for BasicOctetArray and derived classes.  In
+       * all other instances, I'll do what Brian Trammell recommended
+       * I do and tell the user to eff off. */
+      encode_varlen,
+
+      /** Encode double as float. */
+      encode_double_as_float,
+    } type;
+
+    /** Address where original value is to be found. */
+    const void* address;
+
+    /** Size of original (unencoded) data. */
+    size_t unencoded_length;
+
+    /** Requested size of encoded data. */
+    size_t encoded_length;
+
+    /** Creates a printable version of this encoding decision. 
+     *
+     * @return a printable version of this encoding decision
+     */
+    std::string to_string() const;
+  };
+
+  std::vector<Decision> plan;
+};
+
+EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placementTemplate) {
+  
+}
+
+std::string EncodePlan::Decision::to_string() const {
+  std::stringstream sstr;
+
+  sstr << "[";
+
+  switch (type) {
+  case encode_boolean: sstr << "encode_boolean"; break;
+  case encode_basic_no_endianness: sstr << "encode_basic_no_endianness"; break;
+  case encode_basic_endianness: sstr << "encode_basic_endianness"; break;
+  case encode_fixlen_octet_array: sstr << "encode_fixlen_octet_array"; break;
+  case encode_varlen: sstr << "encode_varlen"; break;
+  case encode_double_as_float: sstr << "encode_double_as_float"; break;
+  }
+
+  sstr << "@" << address << "[" << encoded_length << "]";
+  return sstr.str();
+}
+
 
 namespace IPFIX {
 
@@ -150,7 +266,8 @@ namespace IPFIX {
 
         /* Need to add a new template to the template record section */
         size_t template_bytes;
-        tmpl->wire_template(new_template_id(), 0, &template_bytes);
+        // FIXME tmpl->wire_template(new_template_id(), 0, &template_bytes);
+        tmpl->wire_template(1234, 0, &template_bytes);
         new_bytes += template_bytes;
 
         /* Need to create template set? */

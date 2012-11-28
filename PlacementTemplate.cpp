@@ -47,9 +47,19 @@ namespace IPFIX {
     delete[] buf;
   }
 
-  void PlacementTemplate::register_placement(const InfoElement* ie,
-                                             void* p) {
-    placements[ie] = p;
+  bool PlacementTemplate::register_placement(const InfoElement* ie,
+                                             void* p, size_t size) {
+    if (size == 0)
+      size = ie->canonical()->len();
+    placements[ie] = new PlacementInfo(ie, p, size);
+    ies.push_back(ie);
+
+    if (size == kVarlen)
+      varlen_ies.push_back(placements[ie]);
+    else
+      fixlen_data_record_size += size;
+
+    return true;
   }
 
   void* PlacementTemplate::lookup_placement(const InfoElement* ie) const {
@@ -127,4 +137,28 @@ namespace IPFIX {
       *_buf = buf;
     *_size = size;
   }
+<<<<<<< Updated upstream
+=======
+
+  size_t PlacementTemplate::data_record_size() const {
+    size_t ret = fixlen_data_record_size;
+
+    if (varlen_ies.size() != 0) {
+      for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i)
+        ret += reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
+    }
+    return ret;
+  }
+
+  std::list<const InfoElement*>::const_iterator 
+  PlacementTemplate::begin() const {
+    return ies.begin();
+  }
+
+  std::list<const InfoElement*>::const_iterator 
+  PlacementTemplate::end() const {
+    return ies.end();
+  }
+
+>>>>>>> Stashed changes
 } // namespace IPFIX

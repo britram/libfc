@@ -34,6 +34,7 @@
 #  define IPFIX_PLACEMENTTEMPLATE_H
 
 #  include <map>
+#  include <list>
 
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
@@ -230,8 +231,9 @@ namespace IPFIX {
      *
      * @param ie the information element
      * @param p the memory location to be associated with the IE
+     * @param size the size of the IE on the wire, or 0 for canonical size
      */
-    void register_placement(const InfoElement* ie, void* p);
+    void register_placement(const InfoElement* ie, void* p, size_t size);
 
     /** Retrieves the memory location given an IE.
      *
@@ -261,8 +263,41 @@ namespace IPFIX {
     void wire_template(uint16_t template_id, 
                        const uint8_t** buf,
                        size_t* size) const;
+
+    /** Computes the size of the current data record.
+     *
+     * This method can only meaningfully be called after all the
+     * memory locations belonging to this template have valid values.
+     * This method then computes the size of a data record given the
+     * current values for the IEs.  This is only an issue for
+     * varlen-encoded IEs, since all others can obviously be computed
+     * without knowing the actual values.
+     *
+     * @return data record size, in octets
+     */
+    size_t data_record_size() const;
+
+    /** Returns an iterator over the InfoElements in this template.
+     *
+     * @return an iterator pointing to the first information element.
+     */
+    std::list<const InfoElement*>::const_iterator begin() const;
+
+    /** Returns an iterator to the end of the InfoElements in this template.
+     *
+     * @return an iterator pointing to the end of the information elements.
+     */
+    std::list<const InfoElement*>::const_iterator end() const;
+
   private:
-    std::map<const InfoElement*, void*> placements;
+    class PlacementInfo;
+    std::map<const InfoElement*, PlacementInfo*> placements;
+
+    /** List of information elements; needed for iteration. */
+    std::list<const InfoElement*> ies;
+
+    /** List of varlen IEs */
+    std::list<const PlacementInfo*> varlen_ies;
 
     /** Representation of this template for a message. */
     mutable uint8_t* buf;
