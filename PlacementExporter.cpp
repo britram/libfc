@@ -26,9 +26,12 @@
  */
 #include <climits>
 #include <ctime>
+#include <cstdarg>
 #include <sstream>
 
 #include <unistd.h>
+
+#include <boost/detail/endian.hpp>
 
 #include "PlacementExporter.h"
 
@@ -71,6 +74,9 @@ private:
   struct Decision {
     /** The decision type. */
     enum decision_type_t {
+      /** Value for an uninitialised decision type. */
+      encode_none,
+
       /** Encode a boolean.  I'm repeating here the comment I made in
        * the corresponding declaration for transfer_boolean in
        * DataSetDecoder.cpp, because it still gets my blood up:
@@ -107,7 +113,7 @@ private:
       encode_double_as_float_endianness,
 
       /** Encode double as float, no endianness conversion. */
-      encode_double_as_float_no_endianness,
+      encode_double_as_float,
     } type;
 
     /** Address where original value is to be found. */
@@ -165,26 +171,40 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template) {
   Decision::decision_type_t encode_fixlen_maybe_endianness
     = Decision::encode_fixlen;
   Decision::decision_type_t encode_double_as_float_maybe_endianness
-    = Decision::encode_double_as_float_no_endianness;
+    = Decision::encode_double_as_float;
 #elif defined(BOOST_LITTLE_ENDIAN)
-  Decision::decision_type_t transfer_fixlen_maybe_endianness
+  Decision::decision_type_t encode_fixlen_maybe_endianness
     = Decision::encode_fixlen_endianness;
-  Decision::decision_type_t transfer_float_into_double_maybe_endianness
+  Decision::decision_type_t encode_float_into_double_maybe_endianness
     = Decision::encode_double_as_float_endianness;
 #else
 #  error libfc does not compile on weird-endian machines.
 #endif
 
-  for (auto ie = placement_template.begin();
-       i != placement_template.end();
-       ++i) {
+  for (auto ie = placement_template->begin();
+       ie != placement_template->end();
+       ++ie) {
     assert(*ie != 0);
-    assert((*ie)->ietype != 0);
+    assert((*ie)->ietype() != 0);
 
     Decision d;
     void* location;
     size_t size;
-    
+
+    /* Either g++ is too stupid to figure out that the relevant fields
+     * will all be set in the various cases below (not even with -O3),
+     * or I really have forgotten to set them.  Unfortunately, all the
+     * error message says is that "warning:
+     * ‘d.EncodePlan::Decision::xxx’ may be used uninitialized in this
+     * function", and then pointing to the *declaration* of d, and not
+     * at the places where it thinks that the variable might be used
+     * uninitialised.  I'm therefore forced to initialise (possibly
+     * redundantly) the members of the struct, just to shut the
+     * compiler up. Not helpful. */
+    d.type = Decision::encode_none;
+    d.unencoded_length = 0;
+    d.encoded_length = 0;
+
     /* The IE *must* be present in the placement template. If not,
      * there is something very wrong in the PlacementTemplate
      * implementation. */
@@ -201,219 +221,218 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template) {
       break;
 
     case IPFIX::IEType::kUnsigned8:
-      assert((*ie)->len() == 1);
+      assert(size <= sizeof(uint8_t));
 
       d.type = Decision::encode_fixlen;
       d.unencoded_length = sizeof(uint8_t);
-      d.encoded_length = (*ie)->len();
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kUnsigned16:
-      d.type = transfer_fixlen_maybe_endianness;
+      assert(size <= sizeof(uint16_t));
+
+      d.type = encode_fixlen_maybe_endianness;
       d.unencoded_length = sizeof(uint16_t);
-      d.encoded_length = (*ie)->len();
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kUnsigned32:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.unencoded_length = (*ie)->len();
-      d.encoded_length = sizeof(uint32_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("enc IE %s length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      assert(size <= sizeof(uint32_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = sizeof(uint32_t);
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kUnsigned64:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.unencoded_length = (*ie)->len();
-      d.encoded_length = sizeof(uint64_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      assert(size <= sizeof(uint64_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = sizeof(uint64_t);
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kSigned8:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.unencoded_length = (*ie)->len();
-      d.encoded_length = sizeof(int8_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      assert(size <= sizeof(int8_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = sizeof(int8_t);
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kSigned16:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.unencoded_length = (*ie)->len();
-      d.encoded_length = sizeof(int16_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      assert(size <= sizeof(int16_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = sizeof(int16_t);
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kSigned32:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.unencoded_length = (*ie)->len();
-      d.encoded_length = sizeof(int32_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      assert(size <= sizeof(int32_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = sizeof(int32_t);
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kSigned64:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.unencoded_length = (*ie)->len();
-      d.encoded_length = sizeof(int64_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      assert(size <= sizeof(int64_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = sizeof(int64_t);
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kFloat32:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.unencoded_length = (*ie)->len();
+      /* Can't use reduced-length encoding on float; see RFC 5101,
+       * Chapter 6, Verse 2. */
+      assert(size == sizeof(uint32_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = sizeof(uint32_t);
       d.encoded_length = sizeof(uint32_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
       break;
 
     case IPFIX::IEType::kFloat64:
-      assert((*ie)->len() == sizeof(float)
-             || d.length == sizeof(double));
-      d.length = (*ie)->len();
-      if (d.length == sizeof(float))
-        d.type = transfer_float_into_double_maybe_endianness;
+      assert(size == sizeof(uint32_t)
+             || size == sizeof(uint64_t));
+
+      d.unencoded_length = sizeof(uint64_t);
+      d.encoded_length = size;
+      if (d.unencoded_length == sizeof(uint32_t))
+        d.type = encode_float_into_double_maybe_endianness;
       else
-        d.type = transfer_fixlen_maybe_endianness;
-      d.destination_size = sizeof(double);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+        d.type = encode_fixlen_maybe_endianness;
       break;
 
     case IPFIX::IEType::kBoolean:
-      d.type = Decision::transfer_boolean;
-      d.unencoded_length = (*ie)->len();
-      d.encoded_length = sizeof(uint8_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      assert(size == sizeof(uint8_t));
+
+      d.type = Decision::encode_boolean;
+      d.unencoded_length = size;
+      d.encoded_length = size;
       break;
 
     case IPFIX::IEType::kMacAddress:
       /* RFC 5101 says to treat MAC addresses as 6-byte integers,
        * but Brian Trammell says that this is wrong and that the
        * RFC will be changed.  If for some reason this does not
-       * come about, replace "transfer_fixlen" with
-       * "transfer_fixlen_maybe_endianness". */
-      d.type = Decision::transfer_fixlen;
-      d.unencoded_length = (*ie)->len();
-      d.encoded_length = 6*sizeof(uint8_t);
-      if (d.length != 6)
-        report_error("MAC IE not 6 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
+       * come about, replace "encode_fixlen" with
+       * "encode_fixlen_maybe_endianness". */
+      assert(size == 6*sizeof(uint8_t));
+             
+      d.type = Decision::encode_fixlen;
+      d.unencoded_length = size;
+      d.encoded_length = size;
       break;
         
     case IPFIX::IEType::kString:
-      if ((*ie)->len() == IPFIX::kVarlen) {
-        d.type = Decision::transfer_varlen;
+      if (size == IPFIX::kVarlen) {
+        d.type = Decision::encode_varlen;
       } else {
-        d.type = Decision::transfer_fixlen_octets;
-        d.length = (*ie)->len();
+        d.type = Decision::encode_fixlen_octets;
+        d.encoded_length = size;
       }
       break;
 
     case IPFIX::IEType::kDateTimeSeconds:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.length = (*ie)->len();
-      d.destination_size = sizeof(uint32_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      /* Must be encoded as a "32-bit integer"; see RFC 5101, Chapter
+       * 6, Verse 1.7.
+       *
+       * The standard doesn't say whether the integer in question is
+       * signed or unsigned, but since there is additional information
+       * saying that "[t]he 32-bit integer allows the time encoding up
+       * to 136 years", this makes sense only if the integer in
+       * question is unsigned (signed integers give 68 years, in
+       * either direction from the epoch). */
+      assert(size == sizeof(uint32_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = size;
+      d.encoded_length = size;
       break;
         
     case IPFIX::IEType::kDateTimeMilliseconds:
-      d.type = transfer_fixlen_maybe_endianness;
-      d.length = (*ie)->len();
-      d.destination_size = sizeof(uint64_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
+       * 6, Verse 1.8.
+       *
+       * The standard doesn't say whether the integer in question is
+       * signed or unsigned, but in analogy with dateTimeSeconds, we
+       * will assume the unsigned variant. */
+      assert(size == sizeof(uint64_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = size;
+      d.encoded_length = size;
       break;
         
     case IPFIX::IEType::kDateTimeMicroseconds:
-      d.type = transfer_fixlen_maybe_endianness;
-      // RFC 5101, Chapter 6, Verse 2
-      assert((*ie)->len() == sizeof(uint64_t));
-      d.length = (*ie)->len();
-      d.destination_size = sizeof(uint64_t);
-      if (d.length > d.destination_size)
-        report_error("IE %s length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+      /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
+       * 6, Verse 1.9.
+       *
+       * The standard doesn't say whether the integer in question is
+       * signed or unsigned, but in analogy with dateTimeSeconds, we
+       * will assume the unsigned variant. */
+      assert(size == sizeof(uint64_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = size;
+      d.encoded_length = size;
       break;
         
     case IPFIX::IEType::kDateTimeNanoseconds:
-      d.type = transfer_fixlen_maybe_endianness;
-      // RFC 5101, Chapter 6, Verse 2
-      assert((*ie)->len() == sizeof(uint64_t));
-      d.length = (*ie)->len();
-      d.destination_size = sizeof(uint64_t);
-      if (d.encoded_length > d.unencoded_length)
-        report_error("IE %s enc length %zu greater than native size %zu",
-                     (*ie)->toIESpec().c_str(), d.encoded_length,
-                     d.destination_size);
+      /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
+       * 6, Verse 1.10.  See dateTimeMicroseconds above. */
+      assert(size == sizeof(uint64_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = size;
+      d.encoded_length = size;
       break;
-        
+                
     case IPFIX::IEType::kIpv4Address:
       /* RFC 5101 says to treat all addresses as integers. This
        * would mean endianness conversion for all of these address
        * types, including MAC addresses and IPv6 addresses. But the
        * only reasonable address type with endianness conversion is
        * the IPv4 address.  If for some reason this is not correct
-       * replace "transfer_fixlen_maybe_endianness" with
-       * "transfer_fixlen". */
-      d.type = transfer_fixlen_maybe_endianness;
-      d.length = (*ie)->len();
-      d.destination_size = sizeof(uint32_t);
-      if (d.length != 4)
-        report_error("IPv4 Address IE not 4 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
+       * replace "encode_fixlen_maybe_endianness" with
+       * "encode_fixlen".
+       *
+       * Also, treating addresses as integers would subject them to
+       * reduced-length encoding, a concept that is quite bizarre
+       * since you can't do arithmetic on addresses.  We will
+       * therefore not accept reduced-length encoding on addresses.
+       */
+      assert(size == sizeof(uint32_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = size;
+      d.encoded_length = size;
       break;
         
     case IPFIX::IEType::kIpv6Address:
-      /* RFC 5101 says to treat IPv6 addresses as 16-byte integers,
-       * but Brian Trammell says that this is wrong and that the
-       * RFC will be changed.  If for some reason this does not
-       * come about, replace "transfer_fixlen" with
-       * "transfer_fixlen_maybe_endianness". */
-      d.type = Decision::transfer_fixlen;
-      d.length = (*ie)->len();
-      d.destination_size = 16*sizeof(uint8_t);
-      if (d.encoded_length != 16)
-        report_error("IPv6 Address IE not 16 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
+      /* See comment on kIpv4Address. */
+      assert(size == 16*sizeof(uint8_t));
+
+      d.type = encode_fixlen_maybe_endianness;
+      d.unencoded_length = size;
+      d.encoded_length = size;
       break;
         
     default: 
       report_error("Unknown IE type");
       break;
     }
+    
+    if ((d.type == Decision::encode_fixlen 
+         || d.type == Decision::encode_fixlen_endianness)
+        && d.encoded_length > d.unencoded_length)
+      report_error("IE %s encoded length %zu greater than native size %zu",
+                   (*ie)->toIESpec().c_str(), d.encoded_length,
+                   d.unencoded_length);
+
   }
 }
 
@@ -423,12 +442,18 @@ std::string EncodePlan::Decision::to_string() const {
   sstr << "[";
 
   switch (type) {
+  case encode_none: sstr << "encode_none"; break;
   case encode_boolean: sstr << "encode_boolean"; break;
-  case encode_basic_no_endianness: sstr << "encode_basic_no_endianness"; break;
-  case encode_basic_endianness: sstr << "encode_basic_endianness"; break;
-  case encode_fixlen_octet_array: sstr << "encode_fixlen_octet_array"; break;
+  case encode_fixlen: sstr << "encode_fixlen"; break;
+  case encode_fixlen_endianness: sstr << "encode_fixlen_endianness"; break;
+  case encode_fixlen_octets: sstr << "encode_fixlen_octets"; break;
   case encode_varlen: sstr << "encode_varlen"; break;
-  case encode_double_as_float: sstr << "encode_double_as_float"; break;
+  case encode_double_as_float_endianness:
+    sstr << "encode_double_as_float_endianness";
+    break;
+  case encode_double_as_float:
+    sstr << "encode_double_as_float";
+    break;
   }
 
   sstr << "@" << address << "[" << encoded_length << "]";

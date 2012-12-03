@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
 set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 
 # Use matched template cache?
 #
@@ -20,6 +21,8 @@ else ($ENV{CLANG})
   add_definitions(-g -Wall --std=c++0x)
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     #include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
+  else (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions("-O3")
   endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif($ENV{CLANG})
 include_directories(.)
