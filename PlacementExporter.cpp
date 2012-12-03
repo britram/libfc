@@ -207,8 +207,12 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template) {
 
     /* The IE *must* be present in the placement template. If not,
      * there is something very wrong in the PlacementTemplate
-     * implementation. */
-    assert(placement_template->lookup_placement(*ie, &location, &size));
+     * implementation.  Weird construction is to avoid call to
+     * lookup_placement() to be thrown out when compiling with
+     * -DNDEBUG. */
+    bool ie_present 
+      = placement_template->lookup_placement(*ie, &location, &size);
+    assert(ie_present);
 
     switch ((*ie)->ietype()->number()) {
     case IPFIX::IEType::kOctetArray: 
@@ -369,11 +373,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template) {
         
     case IPFIX::IEType::kDateTimeMicroseconds:
       /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
-       * 6, Verse 1.9.
-       *
-       * The standard doesn't say whether the integer in question is
-       * signed or unsigned, but in analogy with dateTimeSeconds, we
-       * will assume the unsigned variant. */
+       * 6, Verse 1.9. See dateTimeMilliseconds above. */
       assert(size == sizeof(uint64_t));
 
       d.type = encode_fixlen_maybe_endianness;
