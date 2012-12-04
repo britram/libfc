@@ -55,6 +55,7 @@ bool TCPSingleCollector::ensureSocket() {
     
     // We have a listener socket, and we don't have a receiver socket.
     // Accept a connection. This blocks the thread.
+    sa_len = sizeof(sa);
     sock_ = accept(lsock_, reinterpret_cast<struct sockaddr*>(&sa), &sa_len);
     
     if (sock_ == -1) {
