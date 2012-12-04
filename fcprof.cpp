@@ -46,6 +46,10 @@
 
 #include "test/TestCommon.h"
 
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  include <log4cplus/configurator.h>
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
 using namespace IPFIX;
 
 static uint64_t kTimeSeqStart = 1141344000000UL; // March 3, 2006
@@ -827,7 +831,7 @@ static void write_file_with_placement_interface(int fd) {
   delete my_flow_template;
 }
 
-
+static int help_flag = 0;
 static int verbose_flag = 0;
 static int read_flag = 1;
 static enum api_type_t { record_api, placement_api, struct_api } api_type;
@@ -839,6 +843,7 @@ static void parse_options(int argc, char* const* argv) {
 
   while (1) {
     static struct option options[] = {
+      { "help", no_argument, &help_flag, 1 },
       { "verbose", no_argument, &verbose_flag, 1 },
       { "read", no_argument, &read_flag, 1 },
       { "write", no_argument, &read_flag, 0 },
@@ -886,16 +891,40 @@ static void parse_options(int argc, char* const* argv) {
   }
 }
 
+static void help() {
+  std::cerr << "usage: ./fcprof [options]" << std::endl
+            << "Options:" << std::endl
+            << "  -h|--help\tprint this help text" << std::endl
+            << "  -v|--verbose\tprint verbose output" << std::endl
+            << "  -r|--read\tprofile collection process" << std::endl
+            << "  -w|--write\tprofile exporting process" << std::endl
+            << "  -i type|--interface-type=type" << std::endl
+            << "\tcollection/export interface to use; possible values are:" << std::endl
+            << "\t\trecord\t\trecord-oriented interface" << std::endl
+            << "\t\tstruct\t\tstruct (POD) interface" << std::endl
+            << "\t\tplacement\tplacement interface" << std::endl;
+}
+
 
 static const std::string read_filename = "loopfile";
 static const std::string write_filename = "export_test.ipfix";
 
 int main(int argc, char* const* argv) {
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+  log4cplus::BasicConfigurator config;
+  config.configure();
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
   InfoModel::instance().defaultIPFIX();
   TestFlow::addIEs();
   TestObs::addIEs();
 
   parse_options(argc, argv);
+
+  if (help_flag) {
+    help();
+    return EXIT_SUCCESS;
+  }
 
   if (read_flag) {
     if (!file_exists(read_filename))

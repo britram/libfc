@@ -40,9 +40,15 @@
 
 #  include <sys/uio.h>
 
+#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
 #  include "Constants.h"
 #  include "ExportDestination.h"
 #  include "PlacementTemplate.h"
+
+class EncodePlan;
 
 namespace IPFIX {
 
@@ -127,6 +133,12 @@ namespace IPFIX {
      * trigraph `<::', which stands for `['.  Who came up with this
      * crap? */
     std::vector< ::iovec> iovecs;
+
+    EncodePlan* plan;
+
+#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
   };
 
 } // namespace IPFIX

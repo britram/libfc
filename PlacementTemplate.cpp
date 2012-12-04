@@ -77,6 +77,7 @@ namespace IPFIX {
 
   bool PlacementTemplate::register_placement(const InfoElement* ie,
                                              void* p, size_t size) {
+    LOG4CPLUS_DEBUG(logger, "ENTER register_placement");
     if (size == 0)
       size = ie->canonical()->len();
     placements[ie] = new PlacementInfo(ie, p, size);
@@ -92,6 +93,7 @@ namespace IPFIX {
 
   bool PlacementTemplate::lookup_placement(const InfoElement* ie,
                                            void** p, size_t* size) const {
+    LOG4CPLUS_DEBUG(logger, "ENTER lookup_placement");
     std::map<const InfoElement*, PlacementInfo*>::const_iterator it
       = placements.find(ie);
     if (it == placements.end()) {
@@ -124,6 +126,7 @@ namespace IPFIX {
       uint16_t template_id,
       const uint8_t** _buf,
       size_t* _size) const {
+    LOG4CPLUS_DEBUG(logger, "ENTER wire_template");
     if (buf == 0) {
       /* Templates start with a 2-byte template ID and a 2-byte field
        * count. */
@@ -176,12 +179,14 @@ namespace IPFIX {
   }
 
   size_t PlacementTemplate::data_record_size() const {
+    LOG4CPLUS_DEBUG(logger, "ENTER data_record_size");
     size_t ret = fixlen_data_record_size;
 
     if (varlen_ies.size() != 0) {
       for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i)
         ret += reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
     }
+    LOG4CPLUS_DEBUG(logger, "RETURN data_record_size=" << ret);
     return ret;
   }
 

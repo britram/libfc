@@ -33,6 +33,10 @@
 #ifndef IPFIX_FILEEXPORTDESTINATION_H
 #  define IPFIX_FILEEXPORTDESTINATION_H
 
+#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
 #  include "ExportDestination.h"
 
 namespace IPFIX {
@@ -49,6 +53,9 @@ namespace IPFIX {
 
   private:
     int fd;
+#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
   };
 
 } // namespace IPFIX
