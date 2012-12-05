@@ -108,11 +108,13 @@ namespace IPFIX {
     /** All templates used so far in this session or message.
      *
      * In this set, we capture all templates used so far in this
-     * session (for connection-oriented ExportDestination-s) or in
-     * this message (for connectionless ones).  When a data record
-     * comes along that belongs to a hitherto unknown template, that
-     * template is inserted here, and a new template is issued. */
+     * session.  When a data record comes along that belongs to a
+     * hitherto unknown template, that template is inserted here, and
+     * a new template is issued. */
     std::set<const PlacementTemplate*> used_templates;
+
+    /** Templates that need to go into this message's template record. */
+    std::set<const PlacementTemplate*> new_templates;
 
     /** Sequence number for messages; see RFC 5101. */
     uint32_t sequence_number;
@@ -126,6 +128,9 @@ namespace IPFIX {
 
     /** Index for iovec of template set for this message. */
     int template_set_index;
+
+    /** Number of octets in template set, or 0 if no template set. */
+    uint16_t template_set_size;
 
     /** The number of octets in the currently assembled set.
      *

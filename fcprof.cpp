@@ -48,6 +48,7 @@
 
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
 #  include <log4cplus/configurator.h>
+#  include <log4cplus/loggingmacros.h>
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 using namespace IPFIX;
@@ -834,6 +835,7 @@ static void write_file_with_placement_interface(int fd) {
 static int help_flag = 0;
 static int verbose_flag = 0;
 static int read_flag = 1;
+static const char* filename = 0;
 static enum api_type_t { record_api, placement_api, struct_api } api_type;
 
 /* Code patterned after http://www.gnu.org/software/libc/
@@ -845,6 +847,7 @@ static void parse_options(int argc, char* const* argv) {
     static struct option options[] = {
       { "help", no_argument, &help_flag, 1 },
       { "verbose", no_argument, &verbose_flag, 1 },
+      { "file", required_argument, 0, 'f' },
       { "read", no_argument, &read_flag, 1 },
       { "write", no_argument, &read_flag, 0 },
       { "interface-type", required_argument, 0, 'i' },
@@ -867,7 +870,10 @@ static void parse_options(int argc, char* const* argv) {
         std::cerr << " with arg \"" << optarg << "\"";
       std::cerr << std::endl;
       break;
-    case 'i': 
+    case 'f':
+      filename = optarg;
+      break;
+    case 'i':
       if (strcmp(optarg, "record") == 0)
         api_type = record_api;
       else if (strcmp(optarg, "struct") == 0)
@@ -892,11 +898,13 @@ static void parse_options(int argc, char* const* argv) {
 }
 
 static void help() {
-  std::cerr << "usage: ./fcprof [options]" << std::endl
+  std::cerr << "usage: ./fcprof [options] -f file|--file=file" << std::endl
             << "Options:" << std::endl
+            << "  -f file|--file=file" << std::endl
+            << "\tuse FILE as filename" << std::endl
             << "  -h|--help\tprint this help text" << std::endl
-            << "  -v|--verbose\tprint verbose output" << std::endl
             << "  -r|--read\tprofile collection process" << std::endl
+            << "  -v|--verbose\tprint verbose output" << std::endl
             << "  -w|--write\tprofile exporting process" << std::endl
             << "  -i type|--interface-type=type" << std::endl
             << "\tcollection/export interface to use; possible values are:" << std::endl
@@ -905,9 +913,6 @@ static void help() {
             << "\t\tplacement\tplacement interface" << std::endl;
 }
 
-
-static const std::string read_filename = "loopfile";
-static const std::string write_filename = "export_test.ipfix";
 
 int main(int argc, char* const* argv) {
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
@@ -921,31 +926,37 @@ int main(int argc, char* const* argv) {
 
   parse_options(argc, argv);
 
+  if (filename == 0) {
+    help();
+    std::cerr << "missing filename" << std::endl;
+    return EXIT_FAILURE;
+  }
+
   if (help_flag) {
     help();
     return EXIT_SUCCESS;
   }
 
   if (read_flag) {
-    if (!file_exists(read_filename))
-      write_file(read_filename);
+    if (!file_exists(filename))
+      write_file(filename);
 
     switch (api_type) {
     case record_api:
-      read_file_with_record_interface(read_filename);
+      read_file_with_record_interface(filename);
       break;
     case placement_api:
-      read_file_with_placement_interface(read_filename);
+      read_file_with_placement_interface(filename);
       break;
     case struct_api:
-      read_file_with_struct_interface(read_filename);
+      read_file_with_struct_interface(filename);
       break;
     }
   } else {
-    int fd = open(write_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC,
                   S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
     if (fd == -1) {
-      std::cerr << "Can't open \"" << write_filename << "\" for writing"
+      std::cerr << "Can't open \"" << filename << "\" for writing"
                 << std::endl;
       return EXIT_FAILURE;
     }
@@ -963,7 +974,7 @@ int main(int argc, char* const* argv) {
     }
 
     if (close(fd) != 0) {
-      std::cerr << "Error closing file \"" << write_filename
+      std::cerr << "Error closing file \"" << filename
                 << std::cerr;
       return EXIT_FAILURE;
     }

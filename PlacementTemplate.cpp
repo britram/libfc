@@ -64,7 +64,8 @@ namespace IPFIX {
   PlacementTemplate::PlacementTemplate() 
     : buf(0), 
       size(0),
-      fixlen_data_record_size(0)
+      fixlen_data_record_size(0),
+      template_id(0)
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
@@ -77,7 +78,6 @@ namespace IPFIX {
 
   bool PlacementTemplate::register_placement(const InfoElement* ie,
                                              void* p, size_t size) {
-    LOG4CPLUS_DEBUG(logger, "ENTER register_placement");
     if (size == 0)
       size = ie->canonical()->len();
     placements[ie] = new PlacementInfo(ie, p, size);
@@ -123,7 +123,7 @@ namespace IPFIX {
   }
 
   void PlacementTemplate::wire_template(
-      uint16_t template_id,
+      uint16_t _template_id,
       const uint8_t** _buf,
       size_t* _size) const {
     LOG4CPLUS_DEBUG(logger, "ENTER wire_template");
@@ -167,11 +167,13 @@ namespace IPFIX {
         }
       }
       assert(p <= buf + size);
-    }
 
-    template_id = htons(template_id);
-    assert(buf + sizeof(template_id) <= buf + size);
-    memcpy(buf, &template_id, sizeof template_id);
+      /* Can set template ID only once. */
+      template_id = _template_id;
+      _template_id = htons(_template_id);
+      assert(buf + sizeof(template_id) <= buf + size);
+      memcpy(buf, &template_id, sizeof template_id);
+    }
 
     if (_buf != 0)
       *_buf = buf;
@@ -179,15 +181,17 @@ namespace IPFIX {
   }
 
   size_t PlacementTemplate::data_record_size() const {
-    LOG4CPLUS_DEBUG(logger, "ENTER data_record_size");
     size_t ret = fixlen_data_record_size;
 
     if (varlen_ies.size() != 0) {
       for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i)
         ret += reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
     }
-    LOG4CPLUS_DEBUG(logger, "RETURN data_record_size=" << ret);
     return ret;
+  }
+
+  uint16_t PlacementTemplate::get_template_id() const {
+    return template_id;
   }
 
   std::list<const InfoElement*>::const_iterator 

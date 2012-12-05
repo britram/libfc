@@ -288,6 +288,12 @@ namespace IPFIX {
      */
     size_t data_record_size() const;
 
+    /** Returns the template id.
+     *
+     * @return the template id, if it has been set, or 0 otherwise.
+     */
+    uint16_t get_template_id() const;
+
     /** Returns an iterator over the InfoElements in this template.
      *
      * @return an iterator pointing to the first information element.
@@ -318,6 +324,9 @@ namespace IPFIX {
 
     /** Sum of fixlen data item sizes in the data record representation. */
     mutable size_t fixlen_data_record_size;
+
+    /** The template ID for the wire representation of this template. */
+    mutable uint16_t template_id;
 
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
