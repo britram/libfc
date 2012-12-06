@@ -485,8 +485,6 @@ std::string EncodePlan::Decision::to_string() const {
 
 uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
                              uint16_t length) {
-  LOG4CPLUS_DEBUG(logger, "ENTER EncodePlan::execute");
-
   uint16_t ret = 0;
 
   /* Make sure that there is space for at least one more octet. */
@@ -524,7 +522,6 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       break;
 
     case Decision::encode_fixlen:
-      LOG4CPLUS_DEBUG(logger, "encode_fixlen");
       assert(offset + i->encoded_length <= length);
       memcpy(buf + offset,
              static_cast<const uint8_t*>(i->address) + i->unencoded_length - i->encoded_length,
@@ -534,7 +531,6 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       break;
 
     case Decision::encode_fixlen_endianness:
-      LOG4CPLUS_DEBUG(logger, "encode_fixlen_endianness");
       {
         const uint8_t* src = static_cast<const uint8_t*>(i->address);
         uint8_t* dst = buf + offset + i->encoded_length - 1;
@@ -549,7 +545,6 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       break;
 
     case Decision::encode_fixlen_octets:
-      LOG4CPLUS_DEBUG(logger, "encode_fixlen_octets");
       {
         const IPFIX::BasicOctetArray* src
           = static_cast<const IPFIX::BasicOctetArray*>(i->address);
@@ -567,7 +562,6 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       break;
 
     case Decision::encode_varlen:
-      LOG4CPLUS_DEBUG(logger, "encode_varlen");
       /* There seems to be no good way to do varlen encoding without
        * a lot of branches, either implicit or explicit.  It would
        * IMHO have been better if octetArray or string fields simply
@@ -598,7 +592,6 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       break;
 
     case Decision::encode_double_as_float_endianness:
-      LOG4CPLUS_DEBUG(logger, "encode_double_as_float_endianness");
       {
         float f = *static_cast<const double*>(i->address);
         bytes_copied = sizeof(uint32_t);
@@ -606,7 +599,6 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       break;
 
     case Decision::encode_double_as_float:
-      LOG4CPLUS_DEBUG(logger, "encode_double_as_float");
       {
         float f = *static_cast<const double*>(i->address);
         bytes_copied = sizeof(uint32_t);
@@ -748,6 +740,9 @@ namespace IPFIX {
       {
         iovec& l = iovecs.back();
 
+        LOG4CPLUS_DEBUG(logger, "finishing current data set, len="
+                        << l.iov_len);
+
         if (l.iov_len > 0) {
           assert(l.iov_base != 0);
           uint8_t* buf = static_cast<uint8_t*>(l.iov_base);
@@ -884,6 +879,14 @@ namespace IPFIX {
         > os.preferred_maximum_message_size()) {
       flush();
       unknown_template = tmpl;
+
+      iovecs.resize(iovecs.size() + 1);
+
+      iovec& l = iovecs.back();
+
+      l.iov_base = new uint8_t[kMaxMessageLen];
+      l.iov_len = kSetHeaderLen;
+      new_bytes += kSetHeaderLen;
     }
 
     n_message_octets += new_bytes;

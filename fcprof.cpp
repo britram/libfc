@@ -822,7 +822,7 @@ static void write_file_with_placement_interface(int fd) {
     InfoModel::instance().lookupIE("octetDeltaCount[4]"),
     &octet_delta_count, 0);
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10000; i++) {
     e.place_values(my_flow_template);
     flow_start_milliseconds++;
   }

@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <sstream>
 
 #include <boost/detail/endian.hpp>
 
@@ -187,7 +188,12 @@ namespace IPFIX {
         const uint8_t* set_end = cur + set_length;
         
         if (set_end > message_end) {
-          error_handler->fatal(Error::long_set, 0);
+          std::stringstream sstr;
+          sstr << "set_len=" << set_length 
+               << ",set_end=" << static_cast<const void*>(set_end) 
+               << ",message_len=" << message_size
+               << ",message_end=" << static_cast<const void*>(message_end);
+          error_handler->fatal(Error::long_set, sstr.str().c_str());
           parse_in_progress = false;
           return;
         }
