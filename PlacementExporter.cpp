@@ -45,6 +45,7 @@
 
 #include "exceptions/ExportError.h"
 
+
 /** Encode plans describe how a data record is to be encoded.
  *
  * Decoding a data record means determining, for each data field, 
@@ -155,6 +156,7 @@ private:
   log4cplus::Logger logger;
 #  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 };
+
 
 static void report_error(const char* message, ...) {
   static const size_t buf_size = 10240;
@@ -632,7 +634,7 @@ namespace IPFIX {
  {
     /* Push an empty iovec into the iovec vector, to be filled later
      * with the message header by flush(). */
-   LOG4CPLUS_DEBUG(logger, "Hi!");
+   LOG4CPLUS_DEBUG(logger, "First resize for message header");
    iovecs.resize(1);
    iovecs[0].iov_base = 0;
    iovecs[0].iov_len = 0;
@@ -770,9 +772,10 @@ namespace IPFIX {
       template_set_size = 0;
 
       /* Space for next message header. */
-      iovecs.resize(iovecs.size() + 1);
-      iovecs[iovecs.size()].iov_base = 0;
-      iovecs[iovecs.size()].iov_len = 0;
+      LOG4CPLUS_DEBUG(logger, "Subsequent resize for message header");
+      iovecs.resize(1);
+      iovecs[0].iov_base = 0;
+      iovecs[0].iov_len = 0;
       
       n_message_octets = kMessageHeaderLen;
     }
@@ -848,11 +851,15 @@ namespace IPFIX {
       }
 
       if (template_set_index == -1) {
-        LOG4CPLUS_DEBUG(logger, "appending new template set");
+        LOG4CPLUS_DEBUG(logger, "resizing for new template set");
         template_set_index = iovecs.size();
         iovecs.resize(iovecs.size() + 1);
         iovec& l = iovecs.back();
 
+        /* Don't worry if you find that on flushing, this is still
+         * zero.  This can happen when there is no template to be
+         * exported in a message.  The writev() syscall handles this
+         * correctly. */
         l.iov_base = 0;
         l.iov_len = 0;
       }
@@ -880,6 +887,7 @@ namespace IPFIX {
       flush();
       unknown_template = tmpl;
 
+      LOG4CPLUS_DEBUG(logger, "resize for data set");
       iovecs.resize(iovecs.size() + 1);
 
       iovec& l = iovecs.back();

@@ -822,14 +822,40 @@ static void write_file_with_placement_interface(int fd) {
     InfoModel::instance().lookupIE("octetDeltaCount[4]"),
     &octet_delta_count, 0);
 
-  for (int i = 0; i < 10000; i++) {
-    e.place_values(my_flow_template);
-    flow_start_milliseconds++;
+  uint64_t observation_time_milliseconds = 0;
+  uint64_t observation_value = 1;
+  BasicOctetArray observation_label;
+  
+  observation_label.copy_content(reinterpret_cast<const uint8_t*>("Yay libfc"), 9);
+
+  PlacementTemplate* my_obs_template = new PlacementTemplate();
+
+  my_obs_template->register_placement(
+     InfoModel::instance().lookupIE("observationTimeMilliseconds"),
+     &observation_time_milliseconds, 0);
+  my_obs_template->register_placement(
+     InfoModel::instance().lookupIE("observationValue"),
+     &observation_value, 0);
+  my_obs_template->register_placement(
+     InfoModel::instance().lookupIE("observationLabel"),
+     &observation_label, 0);
+
+  for (unsigned int i = 0 ; i < kTestCycleCount; i++) {
+    for (unsigned int k = 0; k < kTestFlowPerSetCount; k++) {
+      e.place_values(my_flow_template);
+      flow_start_milliseconds++;
+    }
+
+    for (unsigned int k = 0 ; k < kTestObsPerSetCount; k++) {
+      e.place_values(my_obs_template);
+      observation_value++;
+    }
   }
 
   e.flush();
 
   delete my_flow_template;
+  delete my_obs_template;
 }
 
 static int help_flag = 0;

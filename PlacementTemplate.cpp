@@ -79,7 +79,7 @@ namespace IPFIX {
   bool PlacementTemplate::register_placement(const InfoElement* ie,
                                              void* p, size_t size) {
     if (size == 0)
-      size = ie->canonical()->len();
+      size = ie->len();
     placements[ie] = new PlacementInfo(ie, p, size);
     ies.push_back(ie);
 
@@ -184,8 +184,11 @@ namespace IPFIX {
     size_t ret = fixlen_data_record_size;
 
     if (varlen_ies.size() != 0) {
-      for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i)
-        ret += reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
+      for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i) {
+        uint16_t varlen_len
+          = reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
+        ret += varlen_len + (varlen_len < 255 ? 1 : 2);
+      }
     }
     return ret;
   }
