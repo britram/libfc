@@ -116,10 +116,16 @@ namespace IPFIX {
     /** Templates that need to go into this message's template record. */
     std::set<const PlacementTemplate*> new_templates;
 
+    /** Most recently assigned template id. */
+    uint16_t current_template_id;
+
     /** Sequence number for messages; see RFC 5101. */
     uint32_t sequence_number;
 
-    /** Observation domain for messages; see RFC 5101. */
+    /** Observation domain for messages; see RFC 5101.
+     *
+     * For the moment, we support only one observation domain. This
+     * may change in the future. */
     uint32_t observation_domain;
 
     /** Number of octets in this message so far. This includes message

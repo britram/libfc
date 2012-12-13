@@ -128,6 +128,9 @@ namespace IPFIX {
       size_t* _size) const {
     LOG4CPLUS_DEBUG(logger, "ENTER wire_template");
     if (buf == 0) {
+      LOG4CPLUS_DEBUG(logger,
+                      "  computing wire template, id=" << _template_id);
+      assert(_template_id != 0);
       /* Templates start with a 2-byte template ID and a 2-byte field
        * count. */
       size =  sizeof(uint16_t) + sizeof(uint16_t);
@@ -150,11 +153,18 @@ namespace IPFIX {
       assert(p + sizeof(n_fields) <= buf + size);
       memcpy(p, &n_fields, sizeof n_fields); p += sizeof n_fields;
       
-      for (auto i = placements.begin(); i != placements.end(); ++i) {
-        uint32_t ie_pen = htonl(i->first->pen());
-        uint16_t ie_id = htons(i->first->number()
+      /* Use IES, not PLACEMENTS for iteration, because now, sequence
+       * matters. */
+      for (auto i = ies.begin(); i != ies.end(); ++i) {
+        LOG4CPLUS_DEBUG(logger,
+                        "  wire template for (" << (*i)->pen()
+                        << "/" << (*i)->number()
+                        << ")[" << (*i)->len() << "]");
+
+        uint32_t ie_pen = htonl((*i)->pen());
+        uint16_t ie_id = htons((*i)->number()
                                | (ie_pen == 0 ? 0 : (1 << 15)));
-        uint16_t ie_len = htons(i->first->len());
+        uint16_t ie_len = htons((*i)->len());
         assert(p + sizeof(ie_id) <= buf + size);
         memcpy(p, &ie_id, sizeof ie_id); p += sizeof ie_id;
         assert(p + sizeof(ie_len) <= buf + size);
@@ -171,8 +181,8 @@ namespace IPFIX {
       /* Can set template ID only once. */
       template_id = _template_id;
       _template_id = htons(_template_id);
-      assert(buf + sizeof(template_id) <= buf + size);
-      memcpy(buf, &template_id, sizeof template_id);
+      assert(buf + sizeof(_template_id) <= buf + size);
+      memcpy(buf, &_template_id, sizeof _template_id);
     }
 
     if (_buf != 0)
@@ -187,7 +197,7 @@ namespace IPFIX {
       for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i) {
         uint16_t varlen_len
           = reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
-        ret += varlen_len + (varlen_len < 255 ? 1 : 2);
+        ret += varlen_len + (varlen_len < 255 ? 1 : 3);
       }
     }
     return ret;

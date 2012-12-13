@@ -788,7 +788,7 @@ static void write_file_with_placement_interface(int fd) {
 
   uint64_t flow_start_milliseconds = 0;
   uint64_t flow_end_milliseconds = 0;
-  uint32_t source_ip_v4_address = 0;
+  uint32_t source_ip_v4_address = 0x0A000000;
   uint32_t destination_ip_v4_address = 0;
   uint16_t source_transport_port = 0;
   uint16_t destination_transport_port = 0;
@@ -822,8 +822,8 @@ static void write_file_with_placement_interface(int fd) {
     InfoModel::instance().lookupIE("octetDeltaCount[4]"),
     &octet_delta_count, 0);
 
-  uint64_t observation_time_milliseconds = 0;
-  uint64_t observation_value = 1;
+  uint64_t observation_time_milliseconds = 0x1234567824681357ULL;
+  uint64_t observation_value = 0x1357246812345678ULL;
   BasicOctetArray observation_label;
   
   observation_label.copy_content(reinterpret_cast<const uint8_t*>("Yay libfc"), 9);
@@ -844,6 +844,8 @@ static void write_file_with_placement_interface(int fd) {
     for (unsigned int k = 0; k < kTestFlowPerSetCount; k++) {
       e.place_values(my_flow_template);
       flow_start_milliseconds++;
+      source_ip_v4_address++;
+      destination_ip_v4_address++;
     }
 
     for (unsigned int k = 0 ; k < kTestObsPerSetCount; k++) {
@@ -882,7 +884,7 @@ static void parse_options(int argc, char* const* argv) {
 
     int option_index = 0;
 
-    int c = getopt_long(argc, argv, "i:rvw", options, &option_index);
+    int c = getopt_long(argc, argv, "f:i:rvw", options, &option_index);
 
     if (c == -1)
       break;

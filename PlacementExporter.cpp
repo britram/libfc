@@ -575,7 +575,9 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       {
         const IPFIX::BasicOctetArray* src
           = static_cast<const IPFIX::BasicOctetArray*>(i->address);
-        uint16_t memcpy_offset = src->get_length() < 255 ? 1 : 2;
+        LOG4CPLUS_DEBUG(logger,
+                        "  encoding varlen length " << src->get_length());
+        uint16_t memcpy_offset = src->get_length() < 255 ? 1 : 3;
 
         assert(offset + src->get_length() + memcpy_offset <= length);
 
@@ -583,10 +585,11 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
                src->get_length());
 
         if (memcpy_offset == 1)
-          buf[0] = static_cast<uint8_t>(src->get_length());
+          buf[offset + 0] = static_cast<uint8_t>(src->get_length());
         else {
-          buf[0] = static_cast<uint8_t>(src->get_length() >> 8);
-          buf[1] = static_cast<uint8_t>(src->get_length() >> 0);
+          buf[offset + 0] = UCHAR_MAX;
+          buf[offset + 1] = static_cast<uint8_t>(src->get_length() >> 8);
+          buf[offset + 2] = static_cast<uint8_t>(src->get_length() >> 0);
         }
 
         bytes_copied = src->get_length() + memcpy_offset;
@@ -618,10 +621,14 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
 
 namespace IPFIX {
 
+  static const unsigned int message_header_index = 0;
+  static const unsigned int template_set_index = 1;
+
   PlacementExporter::PlacementExporter(ExportDestination& _os,
                                        uint32_t _observation_domain)
     : os(_os),
       current_template(0),
+      current_template_id(255),
       sequence_number(0),
       observation_domain(_observation_domain), 
       n_message_octets(kMessageHeaderLen),
@@ -632,12 +639,14 @@ namespace IPFIX {
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
  {
-    /* Push an empty iovec into the iovec vector, to be filled later
-     * with the message header by flush(). */
-   LOG4CPLUS_DEBUG(logger, "First resize for message header");
-   iovecs.resize(1);
-   iovecs[0].iov_base = 0;
-   iovecs[0].iov_len = 0;
+    /* Push two empty iovecs into the iovec vector, to be filled later
+     * with the message header and template set by flush(). */
+   LOG4CPLUS_DEBUG(logger, "First resize for message header and template set");
+   iovecs.resize(2);
+   iovecs[message_header_index].iov_base = 0;
+   iovecs[message_header_index].iov_len = 0;
+   iovecs[template_set_index].iov_base = 0;
+   iovecs[template_set_index].iov_len = 0;
   }
 
   PlacementExporter::~PlacementExporter() {
@@ -699,10 +708,8 @@ namespace IPFIX {
       encode32(sequence_number++, &p, message_end);
       encode32(observation_domain, &p, message_end);
       
-      ::iovec& header = iovecs.at(0);
-      
-      header.iov_base = message_header;
-      header.iov_len = kMessageHeaderLen;
+      iovecs[message_header_index].iov_base = message_header;
+      iovecs[message_header_index].iov_len = kMessageHeaderLen;
       
       LOG4CPLUS_DEBUG(logger, "writing message with "
                       << "version=" << kIpfixVersion
@@ -714,12 +721,10 @@ namespace IPFIX {
 
       /* Template set, if any */
       if (new_templates.size() != 0) {
-        assert(template_set_index > 0);
         LOG4CPLUS_DEBUG(logger, "writing template set...");
 
         iovecs[template_set_index].iov_len = template_set_size;
         iovecs[template_set_index].iov_base = new uint8_t[template_set_size];
-
         uint8_t* buf
           = static_cast<uint8_t*>(iovecs[template_set_index].iov_base);
         const uint8_t* buf_end = buf + template_set_size;
@@ -768,14 +773,15 @@ namespace IPFIX {
       }
       iovecs.clear();
       new_templates.clear();
-      template_set_index = -1;
       template_set_size = 0;
 
-      /* Space for next message header. */
+      /* Space for next message header and template set. */
       LOG4CPLUS_DEBUG(logger, "Subsequent resize for message header");
-      iovecs.resize(1);
-      iovecs[0].iov_base = 0;
-      iovecs[0].iov_len = 0;
+      iovecs.resize(2);
+      iovecs[message_header_index].iov_base = 0;
+      iovecs[message_header_index].iov_len = 0;
+      iovecs[template_set_index].iov_base = 0;
+      iovecs[template_set_index].iov_len = 0;
       
       n_message_octets = kMessageHeaderLen;
     }
@@ -813,13 +819,17 @@ namespace IPFIX {
         LOG4CPLUS_DEBUG(logger, "template not known, inserting");
         unknown_template = tmpl;
 
+        /* Need to create template set? */
+        if (template_set_size == 0) {
+          template_set_size += kSetHeaderLen;
+          new_bytes += kSetHeaderLen;
+          LOG4CPLUS_DEBUG(logger, "need to create new template set, now "
+                          << new_bytes << " new bytes");
+        }
+
         /* Need to add a new template to the template record section */
         size_t template_bytes = 0;
-        // FIXME: should be somethign like this:
-        //   tmpl->wire_template(new_template_id(), 0,
-        //   &template_bytes);
-        // but is something like this instead
-        tmpl->wire_template(1234, 0, &template_bytes);
+        tmpl->wire_template(++current_template_id, 0, &template_bytes);
         new_bytes += template_bytes;
         template_set_size += template_bytes;
         new_templates.insert(tmpl);
@@ -827,13 +837,6 @@ namespace IPFIX {
         LOG4CPLUS_DEBUG(logger, "computed wire template, now "
                         << new_bytes << " new bytes");
 
-        /* Need to create template set? */
-        if (template_set_index == -1) {
-          template_set_size += kSetHeaderLen;
-          new_bytes += kSetHeaderLen;
-          LOG4CPLUS_DEBUG(logger, "need to create new template set, now "
-                          << new_bytes << " new bytes");
-        }
       }
 
       /* Finish current data set. */
@@ -845,23 +848,9 @@ namespace IPFIX {
           uint8_t* buf = static_cast<uint8_t*>(l.iov_base);
           const uint8_t* buf_end = buf + 2*sizeof(uint16_t);
 
-          encode16(tmpl->get_template_id(), &buf, buf_end);
+          encode16(current_template->get_template_id(), &buf, buf_end);
           encode16(l.iov_len, &buf, buf_end);
         }
-      }
-
-      if (template_set_index == -1) {
-        LOG4CPLUS_DEBUG(logger, "resizing for new template set");
-        template_set_index = iovecs.size();
-        iovecs.resize(iovecs.size() + 1);
-        iovec& l = iovecs.back();
-
-        /* Don't worry if you find that on flushing, this is still
-         * zero.  This can happen when there is no template to be
-         * exported in a message.  The writev() syscall handles this
-         * correctly. */
-        l.iov_base = 0;
-        l.iov_len = 0;
       }
 
       /* Open a new data set. */
@@ -879,14 +868,12 @@ namespace IPFIX {
       /* Switch to another template for this new data set. */
       current_template = tmpl;
       delete plan;
-      plan = new EncodePlan(tmpl);
+      plan = new EncodePlan(current_template);
     }
 
     if (n_message_octets + new_bytes 
         > os.preferred_maximum_message_size()) {
       flush();
-      unknown_template = tmpl;
-
       LOG4CPLUS_DEBUG(logger, "resize for data set");
       iovecs.resize(iovecs.size() + 1);
 

@@ -564,11 +564,35 @@ static uint16_t decode_varlen_length(const uint8_t** cur,
     //  report_error("three-byte varlen encoding used for value < 255");
   }
 
-  if (*cur + ret > buf_end)
-    report_error("varlen IE goes beyond buffer");
+  if (*cur + ret > buf_end) {
+    std::stringstream sstr;
+    sstr << "varlen length " << ret
+         << " (0x" << std::hex << ret << ")" << std::dec
+         << " goes beyond buffer (only " << (buf_end - *cur)
+         << " bytes left";
+    report_error(sstr.str().c_str());
+  }
 
   return ret;
 }
+
+#if defined(_IPFIX_HAVE_LOG4CPLUS_)
+static void hexdump(log4cplus::Logger& logger, const uint8_t* buf,
+                    const uint8_t* buf_end) {
+  char out_buf[81];
+  const uint8_t* p = buf;
+  size_t size = sizeof(out_buf);
+  for (; p < buf_end; p += 16) {
+    snprintf(out_buf, size, "%08x", static_cast<unsigned int>(p - buf));
+    size -= 8;
+    for (int i = 0; i < 16 && p < buf_end; i++) {
+      snprintf(out_buf + 8 + 3*i, size, " %02x", p[i]);
+      size -= 3;
+    }
+    LOG4CPLUS_DEBUG(logger, out_buf);
+  }
+}
+#endif /* defined(_IPFIX_HAVE_LOG4CPLUS_) */
 
 uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
   LOG4CPLUS_DEBUG(logger, "ENTER DecodePlan::execute");
@@ -635,6 +659,15 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
       assert(i->length <= i->destination_size);
 
+#if defined(_IPFIX_HAVE_LOG4CPLUS_)
+        {
+          LOG4CPLUS_DEBUG(logger, "Before");
+          hexdump(logger, buf, cur);
+          LOG4CPLUS_DEBUG(logger, "At and after");
+          hexdump(logger, cur, cur + 8);
+        }
+#endif /* defined(_IPFIX_HAVE_LOG4CPLUS_) */
+
       /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
       // FIXME: Check if transferring native data types is faster
       // (e.g., short when i->length == 2, long when i->length == 4
@@ -646,6 +679,7 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
         for (uint16_t k = 0; k < i->length; k++)
           q[k] = cur[i->length - (k + 1)];
       }
+      LOG4CPLUS_DEBUG(logger, "advancing cur by " << i->length);
       cur += i->length;
       break;
 
@@ -683,12 +717,21 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
         val.b[3] = cur[0];
         *static_cast<double*>(i->p) = val.f;
       }
-      cur += sizeof(float);
+      cur += sizeof(uint32_t);
       break;
 
     case Decision::transfer_varlen:
       {
+#if defined(_IPFIX_HAVE_LOG4CPLUS_)
+        {
+          LOG4CPLUS_DEBUG(logger, "Before");
+          hexdump(logger, buf, cur);
+          LOG4CPLUS_DEBUG(logger, "At and after");
+          hexdump(logger, cur, buf_end);
+        }
+#endif /* defined(_IPFIX_HAVE_LOG4CPLUS_) */
         uint16_t varlen_length = decode_varlen_length(&cur, buf_end);
+        LOG4CPLUS_DEBUG(logger, "  varlen length " << varlen_length);
         assert(cur + varlen_length <= buf_end);
       
         IPFIX::BasicOctetArray* p
@@ -802,10 +845,22 @@ namespace IPFIX {
   void DataSetDecoder::end_template_record() {
     LOG4CPLUS_DEBUG(logger, "ENTER end_template_record");
     if (current_wire_template->size() > 0) {
+#if defined(_IPFIX_HAVE_LOG4CPLUS_)
+      {
+        std::map<uint64_t, const MatchTemplate*>::const_iterator i
+          = wire_templates.find(make_template_key(current_template_id));
+        if (i != wire_templates.end())
+          LOG4CPLUS_DEBUG(logger, "  overwriting template for id "
+                          << std::hex
+                          << make_template_key(current_template_id));
+      }
+
+#endif /* defined(_IPFIX_HAVE_LOG4CPLUS_) */
+
       wire_templates[make_template_key(current_template_id)]
         = current_wire_template;
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#if defined(_IPFIX_HAVE_LOG4CPLUS_)
       if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
         LOG4CPLUS_DEBUG(logger,
                         "  current wire template has "
@@ -817,7 +872,7 @@ namespace IPFIX {
         for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
           LOG4CPLUS_DEBUG(logger, "  " << n++ << " " << (*i)->toIESpec().c_str());
       }
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* defined(_IPFIX_HAVE_LOG4CPLUS_) */
     }
 
     if (current_field_count != current_field_no) {

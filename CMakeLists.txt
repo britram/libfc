@@ -16,8 +16,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 # Use log4cplus?
 #
 add_definitions(-D_IPFIX_HAVE_LOG4CPLUS_)
-include_directories(/home/neuhaust/include)
-link_directories(/home/neuhaust/lib)
+include_directories(/opt/log4cplus/include)
+link_directories(/opt/log4cplus/lib)
 
 # debuggery
 if ($ENV{CLANG}) 
