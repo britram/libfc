@@ -48,18 +48,21 @@ namespace IPFIX {
 
   /** Association between IEs and memory locations.
    *
+   * @section INTRODUCTION
+   *
    * IPFIX is sometimes called a <em>self-describing format</em>.  In
    * order to self-describe, an IPFIX message contains <em>template
    * records</em> that describe the format of the <em>data
    * records</em>, which contain the content.  A template record
    * basically says, "Hi, I'm a template record with the identifying
-   * number 1234.  Later in this message, there may be data set, also
-   * having the identifying number 1234.  This means that the records
-   * in that data set will have the following structure: [...]" That
-   * structure is then described by giving a sequence of
-   * <em>information elements</em> (and their encoded lengths as they
-   * appear on the wire).  For example, a simplified version of a
-   * flow template record could look like this:
+   * number 1234.  Later in this message, there may be collection of
+   * data records, called a <em>data set</em>, also having the
+   * identifying number 1234.  This means that the records in that
+   * data set will have the following structure: [...]" That structure
+   * is then described by giving a sequence of <em>information
+   * elements</em> (and their encoded lengths as they appear on the
+   * wire).  For example, a simplified version of a flow template
+   * record could look like this:
    *
    * <table>
    *   <tr><th>IE name</th><th>length</th></tr>
@@ -85,7 +88,7 @@ namespace IPFIX {
    * of reasons:
    *
    *  - The data might need to undergo <em>endianness conversion</em>.
-   *    For example, data will appear on the wire in network byte
+   *    For example, numbers will appear on the wire in network byte
    *    order (big endian), but the native format will be host byte
    *    order, which might be little endian.  This conversion affects
    *    some, but not all, information elements.  For example, the
@@ -95,7 +98,9 @@ namespace IPFIX {
    *
    *  - Some information elements have variable length; this is
    *    known as <em>varlen encoding</em>.  Obviously, varlen-encoded
-   *    information elements cannot be directly mapped to structs.
+   *    information elements cannot be directly mapped to structs,
+   *    because structs have a fixed length, available with the
+   *    <code>sizeof</code> operator.
    *
    *  - Some information element types cannot be directly mapped to
    *    native C++ data types.  Examples would be the
@@ -157,14 +162,19 @@ namespace IPFIX {
    *    &dip);
    * @endcode
    *
-   * Now what you need are two more things: first, you need to tell
-   * someone that you want this placement template to go into effect,
-   * and second, you need a way for that someone to tell you that it's
-   * just read a record that matched this placement template and that
-   * it has placed the values form the data record into the pointers
-   * that you have provided in that placement template.  All this is
-   * provided by a custom class derived from PlacementCollector
-   * (we will be using the IPFIX namespace for simplicity):
+   *
+   * @section COLLECTION
+   *
+   * Now before you can start collecting records with these
+   * information elements, you need two more things: first, you need
+   * to tell someone that you want this placement template to go into
+   * effect, and second, you need a way for that someone to tell you
+   * that it's just read a record that matched this placement template
+   * and that it has placed the values form the data record into the
+   * pointers that you have provided in that placement template.  All
+   * this is provided by a custom class derived from
+   * PlacementCollector (we will be using the IPFIX namespace for
+   * simplicity):
    *
    * @code
    * class MyCollector : public PlacementCollector {
@@ -221,6 +231,45 @@ namespace IPFIX {
    * which of your templates has just been matched and hence which of
    * your data members now have fresh content.  Obviously, for this,
    * the template pointers should be data members of MyCollector.
+   *
+   * @section EXPORT
+   *
+   * Placement templates can also be used for export.  In fact, export
+   * using the placement interface is slightly simpler than
+   * collection, since no custom derived class is needed. (The reason
+   * for this is that export needs no callback function, since the
+   * information flow is now from the program to the IPFIX messages.)
+   *
+   * Let's say you want to write IPFIX records to a file, and that you
+   * have a file descriptor for that file in the variable
+   * <code>fd</code>.  Here is how you could export flow records:
+   *
+   * @code
+   * FileExportDestination d(fd);
+   * PlacementExporter exporter(d, 0x12344321);
+   *
+   * uint64_t flow_start_milliseconds = ...;
+   * uint64_t flow_end_milliseconds = ...;
+   * uint32_t source_ip_v4_address = ...;
+   * uint32_t destination_ip_v4_address = ...;
+   * uint16_t source_transport_port = ...;
+   * uint16_t destination_transport_port = ...;
+   * uint8_t  protocol_identifier = ...;
+   * uint64_t octet_delta_count = ...;
+   *
+   * PlacementTemplate* my_flow_template = new PlacementTemplate();
+   * // Fill template as above
+   *
+   * exporter.place_values(my_flow_template);
+   *
+   * // more calls to place_values()
+   *
+   * exporter.flush();
+   *
+   * delete my_flow_template;
+   * @endcode
+   *
+   * And that's all!
    */
   class PlacementTemplate {
   public:
