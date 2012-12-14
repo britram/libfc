@@ -632,7 +632,6 @@ namespace IPFIX {
       sequence_number(0),
       observation_domain(_observation_domain), 
       n_message_octets(kMessageHeaderLen),
-      template_set_index(-1),
       template_set_size(0),
       plan(0)
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
@@ -674,6 +673,22 @@ namespace IPFIX {
     *(*buf)++ = (val >>  8) & 0xff;
     *(*buf)++ = (val >>  0) & 0xff;
     assert(*buf <= buf_end);
+  }
+
+  void PlacementExporter::finish_current_data_set() {
+    iovec& l = iovecs.back();
+
+    if (l.iov_len > 0) {
+      LOG4CPLUS_DEBUG(logger, "finishing current data set, len="
+                      << l.iov_len);
+
+      assert(l.iov_base != 0);
+      uint8_t* buf = static_cast<uint8_t*>(l.iov_base);
+      const uint8_t* buf_end = buf + 2*sizeof(uint16_t);
+      
+      encode16(current_template->get_template_id(), &buf, buf_end);
+      encode16(l.iov_len, &buf, buf_end);
+    }
   }
 
   bool PlacementExporter::flush() {
@@ -743,22 +758,7 @@ namespace IPFIX {
         }
       }
 
-      /* Finish current data set */
-      {
-        iovec& l = iovecs.back();
-
-        LOG4CPLUS_DEBUG(logger, "finishing current data set, len="
-                        << l.iov_len);
-
-        if (l.iov_len > 0) {
-          assert(l.iov_base != 0);
-          uint8_t* buf = static_cast<uint8_t*>(l.iov_base);
-          const uint8_t* buf_end = buf + 2*sizeof(uint16_t);
-
-          encode16(current_template->get_template_id(), &buf, buf_end);
-          encode16(l.iov_len, &buf, buf_end);
-        }
-      }
+      finish_current_data_set();
 
       ret = os.writev(iovecs);
       LOG4CPLUS_DEBUG(logger, "wrote " << ret << " bytes");
@@ -799,6 +799,7 @@ namespace IPFIX {
      * used. */
     size_t record_size = tmpl->data_record_size();
     size_t new_bytes = record_size;
+    bool make_new_data_set = false;
 
     LOG4CPLUS_DEBUG(logger, "place_values: adding "
                     << new_bytes << " new bytes");
@@ -839,34 +840,13 @@ namespace IPFIX {
 
       }
 
-      /* Finish current data set. */
-      {
-        iovec& l = iovecs.back();
+      finish_current_data_set();
 
-        if (l.iov_len > 0) {
-          assert(l.iov_base != 0);
-          uint8_t* buf = static_cast<uint8_t*>(l.iov_base);
-          const uint8_t* buf_end = buf + 2*sizeof(uint16_t);
-
-          encode16(current_template->get_template_id(), &buf, buf_end);
-          encode16(l.iov_len, &buf, buf_end);
-        }
-      }
-
-      /* Open a new data set. */
-      new_bytes += kSetHeaderLen;
-
-      LOG4CPLUS_DEBUG(logger, "need to create new data set, now "
-                      << new_bytes << " new bytes");
-
-      iovecs.resize(iovecs.size() + 1);
-      iovec& l = iovecs.back();
-
-      l.iov_base = new uint8_t[kMaxMessageLen];
-      l.iov_len = kSetHeaderLen;
+      make_new_data_set = true;
 
       /* Switch to another template for this new data set. */
       current_template = tmpl;
+
       delete plan;
       plan = new EncodePlan(current_template);
     }
@@ -874,7 +854,11 @@ namespace IPFIX {
     if (n_message_octets + new_bytes 
         > os.preferred_maximum_message_size()) {
       flush();
-      LOG4CPLUS_DEBUG(logger, "resize for data set");
+      make_new_data_set = true;
+    }
+
+    if (make_new_data_set) {
+      LOG4CPLUS_DEBUG(logger, "make new data set");
       iovecs.resize(iovecs.size() + 1);
 
       iovec& l = iovecs.back();
@@ -892,7 +876,7 @@ namespace IPFIX {
     iovec& l = iovecs.back();
     assert(l.iov_base != 0);
     uint16_t enc_bytes 
-      = plan->execute(static_cast<uint8_t*>(l.iov_base) + kSetHeaderLen,
+      = plan->execute(static_cast<uint8_t*>(l.iov_base),
                       l.iov_len, kMaxMessageLen);
     assert(enc_bytes == record_size);
     l.iov_len += enc_bytes;

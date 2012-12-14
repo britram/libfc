@@ -132,9 +132,6 @@ namespace IPFIX {
      * and set headers, template sets and data sets. */
     size_t n_message_octets;
 
-    /** Index for iovec of template set for this message. */
-    int template_set_index;
-
     /** Number of octets in template set, or 0 if no template set. */
     uint16_t template_set_size;
 
@@ -150,6 +147,8 @@ namespace IPFIX {
 #  ifdef _IPFIX_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
 #  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
+    void finish_current_data_set();
   };
 
 } // namespace IPFIX

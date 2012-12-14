@@ -717,7 +717,7 @@ static void read_file_with_placement_interface(const std::string& filename) {
   }
 
   std::cout << cb.get_n_flow_records() << " flows, "
-            << cb.get_n_obs_records() << " observations, "
+            << cb.get_n_obs_records() << " observations"
             << std::endl;
 }
 
@@ -795,6 +795,8 @@ static void write_file_with_placement_interface(int fd) {
   uint8_t  protocol_identifier = 0;
   uint64_t octet_delta_count = 0;
 
+  size_t n_flows = 0;
+
   PlacementTemplate* my_flow_template = new PlacementTemplate();
 
   my_flow_template->register_placement(
@@ -826,6 +828,8 @@ static void write_file_with_placement_interface(int fd) {
   uint64_t observation_value = 0x1357246812345678ULL;
   BasicOctetArray observation_label;
   
+  size_t n_obs = 0;
+
   observation_label.copy_content(reinterpret_cast<const uint8_t*>("Yay libfc"), 9);
 
   PlacementTemplate* my_obs_template = new PlacementTemplate();
@@ -846,11 +850,13 @@ static void write_file_with_placement_interface(int fd) {
       flow_start_milliseconds++;
       source_ip_v4_address++;
       destination_ip_v4_address++;
+      n_flows++;
     }
 
     for (unsigned int k = 0 ; k < kTestObsPerSetCount; k++) {
       e.place_values(my_obs_template);
       observation_value++;
+      n_obs++;
     }
   }
 
@@ -858,6 +864,9 @@ static void write_file_with_placement_interface(int fd) {
 
   delete my_flow_template;
   delete my_obs_template;
+
+  std::cout << n_flows << " flows, "
+            << n_obs << " observations" << std::endl;
 }
 
 static int help_flag = 0;

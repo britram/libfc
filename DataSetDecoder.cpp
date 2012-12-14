@@ -661,7 +661,7 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
 #if defined(_IPFIX_HAVE_LOG4CPLUS_)
         {
-          LOG4CPLUS_DEBUG(logger, "Before");
+          LOG4CPLUS_DEBUG(logger, "transfer w/endianness Before");
           hexdump(logger, buf, cur);
           LOG4CPLUS_DEBUG(logger, "At and after");
           hexdump(logger, cur, cur + 8);
@@ -727,7 +727,7 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
           LOG4CPLUS_DEBUG(logger, "Before");
           hexdump(logger, buf, cur);
           LOG4CPLUS_DEBUG(logger, "At and after");
-          hexdump(logger, cur, buf_end);
+          hexdump(logger, cur, std::min(cur + 12, buf_end));
         }
 #endif /* defined(_IPFIX_HAVE_LOG4CPLUS_) */
         uint16_t varlen_length = decode_varlen_length(&cur, buf_end);
