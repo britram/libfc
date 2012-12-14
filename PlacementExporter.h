@@ -40,9 +40,9 @@
 
 #  include <sys/uio.h>
 
-#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
-#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "Constants.h"
 #  include "ExportDestination.h"
@@ -144,10 +144,15 @@ namespace IPFIX {
 
     EncodePlan* plan;
 
-#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
-#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
+    /** Finishes the current data set by putting the template ID and
+     * set length into the set header. 
+     *
+     * This function is idempotent.
+     */
     void finish_current_data_set();
   };
 

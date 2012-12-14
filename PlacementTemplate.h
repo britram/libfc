@@ -37,9 +37,9 @@
 #  include <map>
 #  include <list>
 
-#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
-#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "InfoElement.h"
 #  include "MatchTemplate.h"
@@ -328,9 +328,9 @@ namespace IPFIX {
     /** The template ID for the wire representation of this template. */
     mutable uint16_t template_id;
 
-#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
-#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
 } // namespace IPFIX

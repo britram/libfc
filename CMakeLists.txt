@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 
 # Use log4cplus?
 #
-#add_definitions(-D_IPFIX_HAVE_LOG4CPLUS_)
+#add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)
 #include_directories(/opt/log4cplus/include)
 #link_directories(/opt/log4cplus/lib)
 
@@ -39,9 +39,6 @@ if (Boost_FOUND)
   include_directories (${Boost_INCLUDE_DIRS})
 endif()
 
-# include log4cplus
-#include_directories(${Log4cplus_INCLUDE_DIR})
-#link_directories(${Log4cplus_LIBRARY_DIR})
 
 # core objects; library classes begin with a upper-case letter,
 # program files (containing main()) with a lower-case letter.
@@ -67,8 +64,8 @@ add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 if ($ENV{CLANG}) 
   target_link_libraries (fc c++)
 else ($ENV{CLANG})
-  # target_link_libraries (fc)
   target_link_libraries (fc)
+  #target_link_libraries (fc log4cplus)
 endif($ENV{CLANG})
 
 if ($ENV{CLANG})

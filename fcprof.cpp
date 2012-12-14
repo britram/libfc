@@ -46,10 +46,10 @@
 
 #include "test/TestCommon.h"
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/configurator.h>
 #  include <log4cplus/loggingmacros.h>
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 using namespace IPFIX;
 
@@ -68,9 +68,15 @@ static uint64_t kOctetsSeqStep  = 44;
 static uint16_t kFlowTemplateId = 256;
 static uint16_t kObsTemplateId = 257;
 
+#if 1
 static unsigned int kTestCycleCount = 100000;
 static unsigned int kTestFlowPerSetCount = 222;
 static unsigned int kTestObsPerSetCount = 111;
+#else
+static unsigned int kTestCycleCount = 1000;
+static unsigned int kTestFlowPerSetCount = 222;
+static unsigned int kTestObsPerSetCount = 111;
+#endif
 
 class TestFlow {
     friend std::ostream& operator<<(std::ostream& out, const TestFlow& f);
@@ -786,14 +792,14 @@ static void write_file_with_placement_interface(int fd) {
   FileExportDestination d(fd);
   PlacementExporter e(d, 0x12344321);
 
-  uint64_t flow_start_milliseconds = 0;
-  uint64_t flow_end_milliseconds = 0;
-  uint32_t source_ip_v4_address = 0x0A000000;
-  uint32_t destination_ip_v4_address = 0;
-  uint16_t source_transport_port = 0;
-  uint16_t destination_transport_port = 0;
+  uint64_t flow_start_milliseconds = kTimeSeqStart;
+  uint64_t flow_end_milliseconds = kTimeSeqStart + 10;
+  uint32_t source_ip_v4_address = kIPSeqStart;
+  uint32_t destination_ip_v4_address = kIPSeqStart;
+  uint16_t source_transport_port = kPortSeqStart;
+  uint16_t destination_transport_port = kPortSeqStart;
   uint8_t  protocol_identifier = 0;
-  uint64_t octet_delta_count = 0;
+  uint64_t octet_delta_count = kOctetsSeqStart;
 
   size_t n_flows = 0;
 
@@ -830,7 +836,50 @@ static void write_file_with_placement_interface(int fd) {
   
   size_t n_obs = 0;
 
-  observation_label.copy_content(reinterpret_cast<const uint8_t*>("Yay libfc"), 9);
+  const char* labels[] = {
+    "Hear the sound of music",
+    "Drifting in the aisles",
+    "Elevator prozac",
+    "Stretching on for miles",
+    "",
+    "The music of the future",
+    "Will not entertain",
+    "It's only meant to repress",
+    "And neutralise your brain",
+    "",
+    "Soul gets squeezed out",
+    "Edges get blunt",
+    "Demographic",
+    "Gives what you want",
+    "",
+    "One of the wonders of the world is going down",
+    "It's going down I know",
+    "It's one of the blunders of the world that no-one cares",
+    "No-one cares enough",
+    "",
+    "Now the sound of music",
+    "Comes in silver pills",
+    "Engineered to suit you",
+    "Building cheaper thrills",
+    "",
+    "The music of rebellion",
+    "Makes you wanna rage",
+    "But it's made by millionaires",
+    "Who are nearly twice your age",
+    "",
+    "Soul gets squeezed out",
+    "Edges get blunt",
+    "Demographic",
+    "Gives what you want",
+    "",
+    "One of the wonders of the world is going down",
+    "It's going down I know",
+    "It's one of the blunders of the world that no-one cares",
+    "No-one cares enough",
+  };
+  unsigned int label_ix = 0;
+
+  observation_label.copy_content(reinterpret_cast<const uint8_t*>(labels[label_ix]), strlen(labels[label_ix]));
 
   PlacementTemplate* my_obs_template = new PlacementTemplate();
 
@@ -847,15 +896,21 @@ static void write_file_with_placement_interface(int fd) {
   for (unsigned int i = 0 ; i < kTestCycleCount; i++) {
     for (unsigned int k = 0; k < kTestFlowPerSetCount; k++) {
       e.place_values(my_flow_template);
-      flow_start_milliseconds++;
+      flow_start_milliseconds += kTimeSeqStep;
+      flow_end_milliseconds += kTimeSeqStep;
       source_ip_v4_address++;
       destination_ip_v4_address++;
+      source_transport_port++;
+      destination_transport_port++;
+      octet_delta_count += kOctetsSeqStep;
       n_flows++;
     }
 
     for (unsigned int k = 0 ; k < kTestObsPerSetCount; k++) {
       e.place_values(my_obs_template);
       observation_value++;
+      label_ix = (label_ix + 1) % (sizeof(labels)/sizeof(labels[0]));
+      observation_label.copy_content(reinterpret_cast<const uint8_t*>(labels[label_ix]), strlen(labels[label_ix]));
       n_obs++;
     }
   }
@@ -952,10 +1007,10 @@ static void help() {
 
 
 int main(int argc, char* const* argv) {
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
-  log4cplus::BasicConfigurator config;
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+  log4cplus::PropertyConfigurator config("log4cplus.properties");
   config.configure();
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
   InfoModel::instance().defaultIPFIX();
   TestFlow::addIEs();
