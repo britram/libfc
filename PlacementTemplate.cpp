@@ -26,11 +26,11 @@
 
 #include <arpa/inet.h>
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
-#  define LOG4CPLUS_DEBUG(logger, expr)
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "BasicOctetArray.h"
 #include "PlacementTemplate.h"
@@ -66,9 +66,9 @@ namespace IPFIX {
       size(0),
       fixlen_data_record_size(0),
       template_id(0)
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
-    , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+    , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementTemplate")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
   }
 
@@ -93,7 +93,7 @@ namespace IPFIX {
 
   bool PlacementTemplate::lookup_placement(const InfoElement* ie,
                                            void** p, size_t* size) const {
-    LOG4CPLUS_DEBUG(logger, "ENTER lookup_placement");
+    LOG4CPLUS_TRACE(logger, "ENTER lookup_placement");
     std::map<const InfoElement*, PlacementInfo*>::const_iterator it
       = placements.find(ie);
     if (it == placements.end()) {
@@ -108,17 +108,17 @@ namespace IPFIX {
   }
 
   bool PlacementTemplate::is_match(const MatchTemplate* t) const {
-    LOG4CPLUS_DEBUG(logger, "ENTER is_match");
+    LOG4CPLUS_TRACE(logger, "ENTER is_match");
 
     for (auto i = placements.begin(); i != placements.end(); ++i) {
-      LOG4CPLUS_DEBUG(logger, "  looking up IE " << i->first->toIESpec());
+      LOG4CPLUS_TRACE(logger, "  looking up IE " << i->first->toIESpec());
       auto p = t->find(i->first);
       if (p == t->end()) {
-        LOG4CPLUS_DEBUG(logger, "    not found -> false");
+        LOG4CPLUS_TRACE(logger, "    not found -> false");
         return false;
       }
     }
-    LOG4CPLUS_DEBUG(logger, "  all found -> true");
+    LOG4CPLUS_TRACE(logger, "  all found -> true");
     return true;
   }
 
@@ -126,8 +126,11 @@ namespace IPFIX {
       uint16_t _template_id,
       const uint8_t** _buf,
       size_t* _size) const {
-    LOG4CPLUS_DEBUG(logger, "ENTER wire_template");
+    LOG4CPLUS_TRACE(logger, "ENTER wire_template");
     if (buf == 0) {
+      LOG4CPLUS_TRACE(logger,
+                      "  computing wire template, id=" << _template_id);
+      assert(_template_id != 0);
       /* Templates start with a 2-byte template ID and a 2-byte field
        * count. */
       size =  sizeof(uint16_t) + sizeof(uint16_t);
@@ -150,11 +153,18 @@ namespace IPFIX {
       assert(p + sizeof(n_fields) <= buf + size);
       memcpy(p, &n_fields, sizeof n_fields); p += sizeof n_fields;
       
-      for (auto i = placements.begin(); i != placements.end(); ++i) {
-        uint32_t ie_pen = htonl(i->first->pen());
-        uint16_t ie_id = htons(i->first->number()
+      /* Use IES, not PLACEMENTS for iteration, because now, sequence
+       * matters. */
+      for (auto i = ies.begin(); i != ies.end(); ++i) {
+        LOG4CPLUS_TRACE(logger,
+                        "  wire template for (" << (*i)->pen()
+                        << "/" << (*i)->number()
+                        << ")[" << (*i)->len() << "]");
+
+        uint32_t ie_pen = htonl((*i)->pen());
+        uint16_t ie_id = htons((*i)->number()
                                | (ie_pen == 0 ? 0 : (1 << 15)));
-        uint16_t ie_len = htons(i->first->len());
+        uint16_t ie_len = htons((*i)->len());
         assert(p + sizeof(ie_id) <= buf + size);
         memcpy(p, &ie_id, sizeof ie_id); p += sizeof ie_id;
         assert(p + sizeof(ie_len) <= buf + size);
@@ -171,8 +181,8 @@ namespace IPFIX {
       /* Can set template ID only once. */
       template_id = _template_id;
       _template_id = htons(_template_id);
-      assert(buf + sizeof(template_id) <= buf + size);
-      memcpy(buf, &template_id, sizeof template_id);
+      assert(buf + sizeof(_template_id) <= buf + size);
+      memcpy(buf, &_template_id, sizeof _template_id);
     }
 
     if (_buf != 0)
@@ -187,7 +197,7 @@ namespace IPFIX {
       for (auto i = varlen_ies.begin(); i != varlen_ies.end(); ++i) {
         uint16_t varlen_len
           = reinterpret_cast<BasicOctetArray*>((*i)->address)->get_length();
-        ret += varlen_len + (varlen_len < 255 ? 1 : 2);
+        ret += varlen_len + (varlen_len < 255 ? 1 : 3);
       }
     }
     return ret;

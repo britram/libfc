@@ -40,9 +40,9 @@
 
 #  include <sys/uio.h>
 
-#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
-#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "Constants.h"
 #  include "ExportDestination.h"
@@ -150,18 +150,21 @@ namespace IPFIX {
     /** Templates that need to go into this message's template record. */
     std::set<const PlacementTemplate*> new_templates;
 
+    /** Most recently assigned template id. */
+    uint16_t current_template_id;
+
     /** Sequence number for messages; see RFC 5101. */
     uint32_t sequence_number;
 
-    /** Observation domain for messages; see RFC 5101. */
+    /** Observation domain for messages; see RFC 5101.
+     *
+     * For the moment, we support only one observation domain. This
+     * may change in the future. */
     uint32_t observation_domain;
 
     /** Number of octets in this message so far. This includes message
      * and set headers, template sets and data sets. */
     size_t n_message_octets;
-
-    /** Index for iovec of template set for this message. */
-    int template_set_index;
 
     /** Number of octets in template set, or 0 if no template set. */
     uint16_t template_set_size;
@@ -175,9 +178,16 @@ namespace IPFIX {
 
     EncodePlan* plan;
 
-#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
-#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+    /** Finishes the current data set by putting the template ID and
+     * set length into the set header. 
+     *
+     * This function is idempotent.
+     */
+    void finish_current_data_set();
   };
 
 } // namespace IPFIX

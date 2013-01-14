@@ -33,9 +33,9 @@
 #ifndef IPFIX_IPFIXREADER_H
 #  define IPFIX_IPFIXREADER_H
 
-#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
-#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "ContentHandler.h"
 #  include "ErrorHandler.h"
@@ -78,9 +78,9 @@ namespace IPFIX {
 
   private:
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
 } // namespace IPFIX

@@ -72,6 +72,10 @@ GlobalFixture::GlobalFixture() {
   info_model.add("subTemplateList(292)<octetArray>[65535]");
   info_model.add("subTemplateMultiList(293)<octetArray>[65535]");
 
+  /* Add these to test placement import/export. */
+  info_model.add("observationValue(35566/804)<unsigned64>[8]");
+  info_model.add("observationLabel(35566/805)<string>[v]");
+
 #ifdef _IPFIX_HAVE_LOG4CPLUS_
   log4cplus::BasicConfigurator config;
   config.configure();

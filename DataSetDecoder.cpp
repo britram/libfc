@@ -34,11 +34,11 @@
 
 #include <boost/detail/endian.hpp>
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
-#  define LOG4CPLUS_DEBUG(logger, expr)
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
@@ -184,9 +184,9 @@ private:
   
   std::vector<Decision> plan;
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 };
 
 
@@ -246,13 +246,13 @@ static void report_error(const char* message, ...) {
 DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
                        const IPFIX::MatchTemplate* wire_template) 
   : plan(wire_template->size())
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
                                ,
-    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("DecodePlan")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
 
-  LOG4CPLUS_DEBUG(logger, "ENTER DecodePlan::DecodePlan (wt with "
+  LOG4CPLUS_TRACE(logger, "ENTER DecodePlan::DecodePlan (wt with "
                   << wire_template->size() << " entries)");
 
 #if defined(BOOST_BIG_ENDIAN)
@@ -272,13 +272,13 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
   unsigned int decision_number = 0;
   for (auto ie = wire_template->begin(); ie != wire_template->end(); ie++) {
     assert(*ie != 0);
-    LOG4CPLUS_DEBUG(logger, "  decision " << (decision_number + 1)
+    LOG4CPLUS_TRACE(logger, "  decision " << (decision_number + 1)
                     << ": looking up placement");// for " << (*ie)->toIESpec());
 
     Decision d;
 
     if (placement_template->lookup_placement(*ie, &d.p, 0)) { /* IE present */
-      LOG4CPLUS_DEBUG(logger, "    found -> transfer");
+      LOG4CPLUS_TRACE(logger, "    found -> transfer");
       d.wire_ie = *ie;
 
       if ((*ie)->ietype() == 0)
@@ -497,7 +497,7 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         break;
       }
     } else {                    /* Encode skip decision */
-      LOG4CPLUS_DEBUG(logger, "    not found -> skip");
+      LOG4CPLUS_TRACE(logger, "    not found -> skip");
       if ((*ie)->len() == IPFIX::kVarlen) {
         d.type = Decision::skip_varlen;
       } else {
@@ -507,7 +507,7 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
     }
 
     plan[decision_number++] = d;
-    LOG4CPLUS_DEBUG(logger, "  decision " << decision_number
+    LOG4CPLUS_TRACE(logger, "  decision " << decision_number
                     << " entered as " << d.to_string());
   }
 
@@ -528,15 +528,15 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
     }
   }
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
   if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
-    LOG4CPLUS_DEBUG(logger, "  plan is: ");
+    LOG4CPLUS_TRACE(logger, "  plan is: ");
     for (auto d = plan.begin(); d != plan.end(); ++d)
-      LOG4CPLUS_DEBUG(logger, "    " << d->to_string());
+      LOG4CPLUS_TRACE(logger, "    " << d->to_string());
   }
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-  LOG4CPLUS_DEBUG(logger, "LEAVE DecodePlan::DecodePlan");
+  LOG4CPLUS_TRACE(logger, "LEAVE DecodePlan::DecodePlan");
 }
 
 static uint16_t decode_varlen_length(const uint8_t** cur,
@@ -564,14 +564,38 @@ static uint16_t decode_varlen_length(const uint8_t** cur,
     //  report_error("three-byte varlen encoding used for value < 255");
   }
 
-  if (*cur + ret > buf_end)
-    report_error("varlen IE goes beyond buffer");
+  if (*cur + ret > buf_end) {
+    std::stringstream sstr;
+    sstr << "varlen length " << ret
+         << " (0x" << std::hex << ret << ")" << std::dec
+         << " goes beyond buffer (only " << (buf_end - *cur)
+         << " bytes left";
+    report_error(sstr.str().c_str());
+  }
 
   return ret;
 }
 
+#if defined(_LIBFC_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
+static void hexdump(log4cplus::Logger& logger, const uint8_t* buf,
+                    const uint8_t* buf_end) {
+  char out_buf[81];
+  const uint8_t* p = buf;
+  size_t size = sizeof(out_buf);
+  for (; p < buf_end; p += 16) {
+    snprintf(out_buf, size, "%08x", static_cast<unsigned int>(p - buf));
+    size -= 8;
+    for (int i = 0; i < 16 && p < buf_end; i++) {
+      snprintf(out_buf + 8 + 3*i, size, " %02x", p[i]);
+      size -= 3;
+    }
+    LOG4CPLUS_TRACE(logger, out_buf);
+  }
+}
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+
 uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
-  LOG4CPLUS_DEBUG(logger, "ENTER DecodePlan::execute");
+  LOG4CPLUS_TRACE(logger, "ENTER DecodePlan::execute");
 
   const uint8_t* cur = buf;
   const uint8_t* buf_end = buf + length;
@@ -635,6 +659,15 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
       assert(i->length <= i->destination_size);
 
+#if defined(_LIBFC_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
+        {
+          LOG4CPLUS_TRACE(logger, "transfer w/endianness Before");
+          hexdump(logger, buf, cur);
+          LOG4CPLUS_TRACE(logger, "At and after");
+          hexdump(logger, cur, cur + 8);
+        }
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+
       /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
       // FIXME: Check if transferring native data types is faster
       // (e.g., short when i->length == 2, long when i->length == 4
@@ -683,12 +716,21 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
         val.b[3] = cur[0];
         *static_cast<double*>(i->p) = val.f;
       }
-      cur += sizeof(float);
+      cur += sizeof(uint32_t);
       break;
 
     case Decision::transfer_varlen:
       {
+#if defined(_LIBFC_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
+        {
+          LOG4CPLUS_TRACE(logger, "Before");
+          hexdump(logger, buf, cur);
+          LOG4CPLUS_TRACE(logger, "At and after");
+          hexdump(logger, cur, std::min(cur + 12, buf_end));
+        }
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
         uint16_t varlen_length = decode_varlen_length(&cur, buf_end);
+        LOG4CPLUS_TRACE(logger, "  varlen length " << varlen_length);
         assert(cur + varlen_length <= buf_end);
       
         IPFIX::BasicOctetArray* p
@@ -711,10 +753,10 @@ namespace IPFIX {
     : info_model(InfoModel::instance()),
       current_wire_template(0),
       parse_is_good(true)
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
                          ,
-      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("DataSetDecoder")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
   }
 
@@ -724,7 +766,7 @@ namespace IPFIX {
     }
   }
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
   static const char* make_time(uint32_t export_time) {
     struct tm tms;
     time_t then = export_time;
@@ -736,14 +778,14 @@ namespace IPFIX {
 
     return gmtime_buf;
   }
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
   void DataSetDecoder::start_message(uint16_t version,
                                      uint16_t length,
                                      uint32_t export_time,
                                      uint32_t sequence_number,
                                      uint32_t observation_domain) {
-    LOG4CPLUS_DEBUG(logger,
+    LOG4CPLUS_TRACE(logger,
                     "ENTER start_message"
                     << ", version=" << version
                     << ", length=" << length
@@ -761,20 +803,20 @@ namespace IPFIX {
   }
 
   void DataSetDecoder::end_message() {
-    LOG4CPLUS_DEBUG(logger, "ENTER end_message");
+    LOG4CPLUS_TRACE(logger, "ENTER end_message");
     assert(current_wire_template == 0);
   }
 
   void DataSetDecoder::start_template_set(uint16_t set_id,
                                           uint16_t set_length) {
-    LOG4CPLUS_DEBUG(logger, "ENTER start_template_set"
+    LOG4CPLUS_TRACE(logger, "ENTER start_template_set"
                     << ", set_id=" << set_id
                     << ", set_length=" << set_length);
     assert(current_wire_template == 0);
   }
 
   void DataSetDecoder::end_template_set() {
-    LOG4CPLUS_DEBUG(logger, "ENTER end_template_set");
+    LOG4CPLUS_TRACE(logger, "ENTER end_template_set");
   }
 
   uint64_t DataSetDecoder::make_template_key(uint16_t tid) const {
@@ -784,7 +826,7 @@ namespace IPFIX {
   void DataSetDecoder::start_template_record(
       uint16_t template_id,
       uint16_t field_count) {
-    LOG4CPLUS_DEBUG(logger,
+    LOG4CPLUS_TRACE(logger,
                     "ENTER start_template_record"
                     << ", template_id=" << template_id
                     << ", field_count=" << field_count);
@@ -800,14 +842,26 @@ namespace IPFIX {
   }
 
   void DataSetDecoder::end_template_record() {
-    LOG4CPLUS_DEBUG(logger, "ENTER end_template_record");
+    LOG4CPLUS_TRACE(logger, "ENTER end_template_record");
     if (current_wire_template->size() > 0) {
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+      {
+        std::map<uint64_t, const MatchTemplate*>::const_iterator i
+          = wire_templates.find(make_template_key(current_template_id));
+        if (i != wire_templates.end())
+          LOG4CPLUS_TRACE(logger, "  overwriting template for id "
+                          << std::hex
+                          << make_template_key(current_template_id));
+      }
+
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+
       wire_templates[make_template_key(current_template_id)]
         = current_wire_template;
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
-        LOG4CPLUS_DEBUG(logger,
+        LOG4CPLUS_TRACE(logger,
                         "  current wire template has "
                         << current_wire_template->size()
                         << " entries, there are now "
@@ -815,9 +869,9 @@ namespace IPFIX {
                         << " registered wire templates");
         unsigned int n = 1;
         for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
-          LOG4CPLUS_DEBUG(logger, "  " << n++ << " " << (*i)->toIESpec().c_str());
+          LOG4CPLUS_TRACE(logger, "  " << n++ << " " << (*i)->toIESpec().c_str());
       }
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }
 
     if (current_field_count != current_field_no) {
@@ -832,21 +886,21 @@ namespace IPFIX {
   void DataSetDecoder::start_option_template_set(
       uint16_t set_id,
       uint16_t set_length) {
-    LOG4CPLUS_DEBUG(logger, "ENTER start_option_template_set"
+    LOG4CPLUS_TRACE(logger, "ENTER start_option_template_set"
                     << ", set_id=" << set_id
                     << ", set_length=" << set_length);
     assert(current_wire_template == 0);
   }
 
   void DataSetDecoder::end_option_template_set() {
-    LOG4CPLUS_DEBUG(logger, "ENTER end_option_template_set");
+    LOG4CPLUS_TRACE(logger, "ENTER end_option_template_set");
   }
 
   void DataSetDecoder::start_option_template_record(
       uint16_t template_id,
       uint16_t field_count,
       uint16_t scope_field_count) {
-    LOG4CPLUS_DEBUG(logger, "ENTER start_option_template_record"
+    LOG4CPLUS_TRACE(logger, "ENTER start_option_template_record"
                     << ", template_id=" << template_id
                     << ", field_count=" << field_count
                     << ", scope_field_count=" << scope_field_count);
@@ -854,7 +908,7 @@ namespace IPFIX {
   }
 
   void DataSetDecoder::end_option_template_record() {
-    LOG4CPLUS_DEBUG(logger, "ENTER end_option_template_record");
+    LOG4CPLUS_TRACE(logger, "ENTER end_option_template_record");
   }
 
   void DataSetDecoder::field_specifier(
@@ -862,7 +916,7 @@ namespace IPFIX {
       uint16_t ie_id,
       uint16_t ie_length,
       uint32_t enterprise_number) {
-    LOG4CPLUS_DEBUG(logger,
+    LOG4CPLUS_TRACE(logger,
                     "ENTER field_specifier"
                     << ", enterprise=" << enterprise
                     << ", pen=" << enterprise_number
@@ -875,12 +929,12 @@ namespace IPFIX {
                    "given in the header");
     }
 
-    LOG4CPLUS_DEBUG(logger, "  looking up (" << enterprise_number
+    LOG4CPLUS_TRACE(logger, "  looking up (" << enterprise_number
                     << "/" << ie_id
                     << ")[" << ie_length << "]");
     const InfoElement* ie
       = info_model.lookupIE(enterprise_number, ie_id, ie_length);
-    LOG4CPLUS_DEBUG(logger, "  found " << (current_field_no + 1)
+    LOG4CPLUS_TRACE(logger, "  found " << (current_field_no + 1)
                     << ": " << ie->toIESpec());
 
     assert(enterprise || enterprise_number == 0);
@@ -888,7 +942,7 @@ namespace IPFIX {
 
     if (ie == 0) {
       if (enterprise)
-        LOG4CPLUS_DEBUG(logger,
+        LOG4CPLUS_TRACE(logger,
                         "  if unknown, enter "
                         << " (" << enterprise_number
                         << "/" << ie_id
@@ -913,7 +967,7 @@ namespace IPFIX {
 
   const PlacementTemplate*
   DataSetDecoder::match_placement_template(const MatchTemplate* wire_template) const {
-    LOG4CPLUS_DEBUG(logger, "ENTER match_placement_template");
+    LOG4CPLUS_TRACE(logger, "ENTER match_placement_template");
 
     /* This strategy: return first match. Other strategies are also
      * possible, such as "return match with most IEs". */
@@ -947,7 +1001,7 @@ namespace IPFIX {
   void DataSetDecoder::start_data_set(uint16_t id,
                                       uint16_t length,
                                       const uint8_t* buf) {
-    LOG4CPLUS_DEBUG(logger,
+    LOG4CPLUS_TRACE(logger,
                     "ENTER start_data_set"
                     << ", id=" << id
                     << ", length=" << length);
@@ -955,20 +1009,20 @@ namespace IPFIX {
     // Find out who is interested in data from this data set
     const MatchTemplate* wire_template = find_wire_template(id);
 
-    LOG4CPLUS_DEBUG(logger, "  wire_template=" << wire_template);
+    LOG4CPLUS_TRACE(logger, "  wire_template=" << wire_template);
 
     if (wire_template == 0) {
-      LOG4CPLUS_DEBUG(logger, "  no template for this data set; skipping");
+      LOG4CPLUS_TRACE(logger, "  no template for this data set; skipping");
       return;
     }
 
     const PlacementTemplate* placement_template
       = match_placement_template(wire_template);
 
-    LOG4CPLUS_DEBUG(logger, "  placement_template=" << placement_template);
+    LOG4CPLUS_TRACE(logger, "  placement_template=" << placement_template);
 
     if (placement_template == 0) {
-      LOG4CPLUS_DEBUG(logger, "  no one interested in this data set; skipping");
+      LOG4CPLUS_TRACE(logger, "  no one interested in this data set; skipping");
       return;
     }
 
@@ -992,7 +1046,7 @@ namespace IPFIX {
   }
 
   void DataSetDecoder::end_data_set() {
-    LOG4CPLUS_DEBUG(logger, "ENTER end_data_set");
+    LOG4CPLUS_TRACE(logger, "ENTER end_data_set");
   }
 
   void DataSetDecoder::register_placement_template(

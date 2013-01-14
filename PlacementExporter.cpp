@@ -34,11 +34,11 @@
 
 #include <boost/detail/endian.hpp>
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
-#  define LOG4CPLUS_DEBUG(logger, expr)
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "BasicOctetArray.h"
 #include "PlacementExporter.h"
@@ -152,9 +152,9 @@ private:
 
   std::vector<Decision> plan;
 
-#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
   log4cplus::Logger logger;
-#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 };
 
 
@@ -181,9 +181,9 @@ static void report_error(const char* message, ...) {
 
 /* See DataSetDecoder::DecodePlan::DecodePlan. */
 EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
-  : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+  : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("EncodePlan")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
  {
 #if defined(BOOST_BIG_ENDIAN)
   Decision::decision_type_t encode_fixlen_maybe_endianness
@@ -199,7 +199,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
 #  error libfc does not compile on weird-endian machines.
 #endif
 
-  LOG4CPLUS_DEBUG(logger, "Yay EncodePlan");
+  LOG4CPLUS_TRACE(logger, "Yay EncodePlan");
 
   for (auto ie = placement_template->begin();
        ie != placement_template->end();
@@ -455,7 +455,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
                    (*ie)->toIESpec().c_str(), d.encoded_length,
                    d.unencoded_length);
 
-    LOG4CPLUS_DEBUG(logger, "encoding decision " << d.to_string());
+    LOG4CPLUS_TRACE(logger, "encoding decision " << d.to_string());
 
     plan.push_back(d);
   }
@@ -514,7 +514,7 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       break;
 
     case Decision::encode_boolean:
-      LOG4CPLUS_DEBUG(logger, "encode_boolean");
+      LOG4CPLUS_TRACE(logger, "encode_boolean");
       {
         const bool* p = static_cast<const bool*>(i->address);
         assert(offset + 1 <= length);
@@ -575,7 +575,9 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
       {
         const IPFIX::BasicOctetArray* src
           = static_cast<const IPFIX::BasicOctetArray*>(i->address);
-        uint16_t memcpy_offset = src->get_length() < 255 ? 1 : 2;
+        LOG4CPLUS_TRACE(logger,
+                        "  encoding varlen length " << src->get_length());
+        uint16_t memcpy_offset = src->get_length() < 255 ? 1 : 3;
 
         assert(offset + src->get_length() + memcpy_offset <= length);
 
@@ -583,10 +585,11 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
                src->get_length());
 
         if (memcpy_offset == 1)
-          buf[0] = static_cast<uint8_t>(src->get_length());
+          buf[offset + 0] = static_cast<uint8_t>(src->get_length());
         else {
-          buf[0] = static_cast<uint8_t>(src->get_length() >> 8);
-          buf[1] = static_cast<uint8_t>(src->get_length() >> 0);
+          buf[offset + 0] = UCHAR_MAX;
+          buf[offset + 1] = static_cast<uint8_t>(src->get_length() >> 8);
+          buf[offset + 2] = static_cast<uint8_t>(src->get_length() >> 0);
         }
 
         bytes_copied = src->get_length() + memcpy_offset;
@@ -618,26 +621,31 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
 
 namespace IPFIX {
 
+  static const unsigned int message_header_index = 0;
+  static const unsigned int template_set_index = 1;
+
   PlacementExporter::PlacementExporter(ExportDestination& _os,
                                        uint32_t _observation_domain)
     : os(_os),
       current_template(0),
+      current_template_id(255),
       sequence_number(0),
       observation_domain(_observation_domain), 
       n_message_octets(kMessageHeaderLen),
-      template_set_index(-1),
       template_set_size(0),
       plan(0)
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
-    , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+    , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementExporter")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
  {
-    /* Push an empty iovec into the iovec vector, to be filled later
-     * with the message header by flush(). */
-   LOG4CPLUS_DEBUG(logger, "First resize for message header");
-   iovecs.resize(1);
-   iovecs[0].iov_base = 0;
-   iovecs[0].iov_len = 0;
+    /* Push two empty iovecs into the iovec vector, to be filled later
+     * with the message header and template set by flush(). */
+   LOG4CPLUS_TRACE(logger, "First resize for message header and template set");
+   iovecs.resize(2);
+   iovecs[message_header_index].iov_base = 0;
+   iovecs[message_header_index].iov_len = 0;
+   iovecs[template_set_index].iov_base = 0;
+   iovecs[template_set_index].iov_len = 0;
   }
 
   PlacementExporter::~PlacementExporter() {
@@ -667,8 +675,38 @@ namespace IPFIX {
     assert(*buf <= buf_end);
   }
 
+  void PlacementExporter::finish_current_data_set() {
+    iovec& l = iovecs.back();
+
+    if (l.iov_len > 0) {
+      LOG4CPLUS_TRACE(logger, "finishing current data set, len="
+                      << l.iov_len);
+
+      assert(l.iov_base != 0);
+      uint8_t* buf = static_cast<uint8_t*>(l.iov_base);
+      const uint8_t* buf_end = buf + 2*sizeof(uint16_t);
+      
+      encode16(current_template->get_template_id(), &buf, buf_end);
+      encode16(l.iov_len, &buf, buf_end);
+    }
+  }
+
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+  static const char* make_time(uint32_t export_time) {
+    struct tm tms;
+    time_t then = export_time;
+    static char gmtime_buf[100];
+
+    gmtime_r(&then, &tms);
+    strftime(gmtime_buf, sizeof gmtime_buf, "%c", &tms);
+    gmtime_buf[sizeof(gmtime_buf) - 1] = '\0';
+
+    return gmtime_buf;
+  }
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
   bool PlacementExporter::flush() {
-    LOG4CPLUS_DEBUG(logger, "ENTER flush");
+    LOG4CPLUS_TRACE(logger, "ENTER flush");
     /** This message header.
      *
      * This variable is dynamically allocated so as to facilitate
@@ -699,27 +737,23 @@ namespace IPFIX {
       encode32(sequence_number++, &p, message_end);
       encode32(observation_domain, &p, message_end);
       
-      ::iovec& header = iovecs.at(0);
+      iovecs[message_header_index].iov_base = message_header;
+      iovecs[message_header_index].iov_len = kMessageHeaderLen;
       
-      header.iov_base = message_header;
-      header.iov_len = kMessageHeaderLen;
-      
-      LOG4CPLUS_DEBUG(logger, "writing message with "
+      LOG4CPLUS_TRACE(logger, "writing message with "
                       << "version=" << kIpfixVersion
                       << ", length=" << n_message_octets
-                      << ", export-time=" << now
+                      << ", export-time=" << make_time(now)
                       << ", sequence=" << (sequence_number - 1)
                       << ", domain=" << observation_domain);
-      LOG4CPLUS_DEBUG(logger, "" << iovecs.size() << " iovecs");
+      LOG4CPLUS_TRACE(logger, "" << iovecs.size() << " iovecs");
 
       /* Template set, if any */
       if (new_templates.size() != 0) {
-        assert(template_set_index > 0);
-        LOG4CPLUS_DEBUG(logger, "writing template set...");
+        LOG4CPLUS_TRACE(logger, "writing template set...");
 
         iovecs[template_set_index].iov_len = template_set_size;
         iovecs[template_set_index].iov_base = new uint8_t[template_set_size];
-
         uint8_t* buf
           = static_cast<uint8_t*>(iovecs[template_set_index].iov_base);
         const uint8_t* buf_end = buf + template_set_size;
@@ -738,44 +772,30 @@ namespace IPFIX {
         }
       }
 
-      /* Finish current data set */
-      {
-        iovec& l = iovecs.back();
-
-        LOG4CPLUS_DEBUG(logger, "finishing current data set, len="
-                        << l.iov_len);
-
-        if (l.iov_len > 0) {
-          assert(l.iov_base != 0);
-          uint8_t* buf = static_cast<uint8_t*>(l.iov_base);
-          const uint8_t* buf_end = buf + 2*sizeof(uint16_t);
-
-          encode16(current_template->get_template_id(), &buf, buf_end);
-          encode16(l.iov_len, &buf, buf_end);
-        }
-      }
+      LOG4CPLUS_TRACE(logger, "finish 2");
+      finish_current_data_set();
 
       ret = os.writev(iovecs);
-      LOG4CPLUS_DEBUG(logger, "wrote " << ret << " bytes");
+      LOG4CPLUS_TRACE(logger, "wrote " << ret << " bytes");
 
-#if defined(_IPFIX_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       int n = 0;
-#endif /* defined(_IPFIX_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
       for (auto i = iovecs.begin(); i != iovecs.end(); ++i) {
-        LOG4CPLUS_DEBUG(logger, "  iovec " << ++n
+        LOG4CPLUS_TRACE(logger, "  iovec " << ++n
                         << " size " << i->iov_len);
         delete[] static_cast<uint8_t*>(i->iov_base);
       }
       iovecs.clear();
       new_templates.clear();
-      template_set_index = -1;
       template_set_size = 0;
 
-      /* Space for next message header. */
-      LOG4CPLUS_DEBUG(logger, "Subsequent resize for message header");
-      iovecs.resize(1);
-      iovecs[0].iov_base = 0;
-      iovecs[0].iov_len = 0;
+      LOG4CPLUS_TRACE(logger, "Making space for new message header");
+      iovecs.resize(2);
+      iovecs[message_header_index].iov_base = 0;
+      iovecs[message_header_index].iov_len = 0;
+      iovecs[template_set_index].iov_base = 0;
+      iovecs[template_set_index].iov_len = 0;
       
       n_message_octets = kMessageHeaderLen;
     }
@@ -783,7 +803,9 @@ namespace IPFIX {
   }
 
   void PlacementExporter::place_values(const PlacementTemplate* tmpl) {
-    LOG4CPLUS_DEBUG(logger, "ENTER place_values");
+    LOG4CPLUS_TRACE(logger, "ENTER place_values");
+
+    assert(n_message_octets <= kMaxMessageLen);
 
     /** The number of bytes added to the current message as a result
      * of issuing this new data record.  It might be as small as the
@@ -793,15 +815,16 @@ namespace IPFIX {
      * used. */
     size_t record_size = tmpl->data_record_size();
     size_t new_bytes = record_size;
+    bool make_new_data_set = false;
 
-    LOG4CPLUS_DEBUG(logger, "place_values: adding "
+    LOG4CPLUS_TRACE(logger, "place_values: adding "
                     << new_bytes << " new bytes");
 
     /** Will contain tmpl if this template is hitherto unknown. */
     const PlacementTemplate* unknown_template = 0;
 
     if (tmpl != current_template) {
-      LOG4CPLUS_DEBUG(logger, "template not current");
+      LOG4CPLUS_TRACE(logger, "template not current");
       /* We need to insert a new template and start a new data set if
        *
        *  - the underlying transport is connection-oriented and we
@@ -810,84 +833,58 @@ namespace IPFIX {
        *    seen the template in this message so far.
        */
       if (used_templates.find(tmpl) == used_templates.end()) {
-        LOG4CPLUS_DEBUG(logger, "template not known, inserting");
+        LOG4CPLUS_TRACE(logger, "template not known, inserting");
         unknown_template = tmpl;
+
+        /* Need to create template set? */
+        if (template_set_size == 0) {
+          template_set_size += kSetHeaderLen;
+          new_bytes += kSetHeaderLen;
+          LOG4CPLUS_TRACE(logger, "need to create new template set, now "
+                          << new_bytes << " new bytes");
+        }
 
         /* Need to add a new template to the template record section */
         size_t template_bytes = 0;
-        // FIXME: should be somethign like this:
-        //   tmpl->wire_template(new_template_id(), 0,
-        //   &template_bytes);
-        // but is something like this instead
-        tmpl->wire_template(1234, 0, &template_bytes);
+        tmpl->wire_template(++current_template_id, 0, &template_bytes);
         new_bytes += template_bytes;
         template_set_size += template_bytes;
         new_templates.insert(tmpl);
 
-        LOG4CPLUS_DEBUG(logger, "computed wire template, now "
+        LOG4CPLUS_TRACE(logger, "computed wire template, now "
                         << new_bytes << " new bytes");
 
-        /* Need to create template set? */
-        if (template_set_index == -1) {
-          template_set_size += kSetHeaderLen;
-          new_bytes += kSetHeaderLen;
-          LOG4CPLUS_DEBUG(logger, "need to create new template set, now "
-                          << new_bytes << " new bytes");
-        }
+        /* Switch to new template here already, but only if this is
+         * the very first template we see. */
+        if (current_template == 0)
+          current_template = tmpl;
       }
 
-      /* Finish current data set. */
-      {
-        iovec& l = iovecs.back();
+      LOG4CPLUS_TRACE(logger, "finish 1");
+      finish_current_data_set();
 
-        if (l.iov_len > 0) {
-          assert(l.iov_base != 0);
-          uint8_t* buf = static_cast<uint8_t*>(l.iov_base);
-          const uint8_t* buf_end = buf + 2*sizeof(uint16_t);
+      make_new_data_set = true;
 
-          encode16(tmpl->get_template_id(), &buf, buf_end);
-          encode16(l.iov_len, &buf, buf_end);
-        }
-      }
-
-      if (template_set_index == -1) {
-        LOG4CPLUS_DEBUG(logger, "resizing for new template set");
-        template_set_index = iovecs.size();
-        iovecs.resize(iovecs.size() + 1);
-        iovec& l = iovecs.back();
-
-        /* Don't worry if you find that on flushing, this is still
-         * zero.  This can happen when there is no template to be
-         * exported in a message.  The writev() syscall handles this
-         * correctly. */
-        l.iov_base = 0;
-        l.iov_len = 0;
-      }
-
-      /* Open a new data set. */
-      new_bytes += kSetHeaderLen;
-
-      LOG4CPLUS_DEBUG(logger, "need to create new data set, now "
-                      << new_bytes << " new bytes");
-
-      iovecs.resize(iovecs.size() + 1);
-      iovec& l = iovecs.back();
-
-      l.iov_base = new uint8_t[kMaxMessageLen];
-      l.iov_len = kSetHeaderLen;
-
-      /* Switch to another template for this new data set. */
-      current_template = tmpl;
       delete plan;
       plan = new EncodePlan(tmpl);
     }
 
-    if (n_message_octets + new_bytes 
+    size_t prospective_data_set_header
+      = make_new_data_set ? kSetHeaderLen : 0;
+    if (n_message_octets + new_bytes + prospective_data_set_header
         > os.preferred_maximum_message_size()) {
+      LOG4CPLUS_TRACE(logger,
+                      "Flushing because n_message_octets ("
+                      << n_message_octets
+                      << ") + new_bytes (" << new_bytes
+                      << ") > preferred ("
+                      << os.preferred_maximum_message_size());
       flush();
-      unknown_template = tmpl;
+      make_new_data_set = true;
+    }
 
-      LOG4CPLUS_DEBUG(logger, "resize for data set");
+    if (make_new_data_set) {
+      LOG4CPLUS_TRACE(logger, "make new data set");
       iovecs.resize(iovecs.size() + 1);
 
       iovec& l = iovecs.back();
@@ -897,7 +894,14 @@ namespace IPFIX {
       new_bytes += kSetHeaderLen;
     }
 
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+    if (n_message_octets + new_bytes > kMaxMessageLen)
+      LOG4CPLUS_TRACE(logger,
+                      "n_message_octets=" << n_message_octets
+                      << ", new_bytes=" << new_bytes);
+#endif /* defined(_LIBGC_HAVE_LOG4CPLUS_) */
     n_message_octets += new_bytes;
+    assert(n_message_octets <= kMaxMessageLen);
 
     if (unknown_template != 0)
       used_templates.insert(unknown_template);
@@ -905,10 +909,18 @@ namespace IPFIX {
     iovec& l = iovecs.back();
     assert(l.iov_base != 0);
     uint16_t enc_bytes 
-      = plan->execute(static_cast<uint8_t*>(l.iov_base) + kSetHeaderLen,
+      = plan->execute(static_cast<uint8_t*>(l.iov_base),
                       l.iov_len, kMaxMessageLen);
     assert(enc_bytes == record_size);
     l.iov_len += enc_bytes;
+
+    /* Either we already have current_template == tmpl, in which case
+     * nothing happens, or current_template != tmpl, in which case we
+     * need to switch to tmpl. */
+    current_template = tmpl;
+
+
+    assert(n_message_octets <= kMaxMessageLen);
   }
 
 } // namespace IPFIX
