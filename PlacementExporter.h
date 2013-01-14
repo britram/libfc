@@ -52,7 +52,41 @@ class EncodePlan;
 
 namespace IPFIX {
 
-  /** Interface for exporter with the placement interface. */
+  /** Interface for exporter with the placement interface.
+   *
+   * A simple example of how to use the placement interface for export
+   * is this (with error checking omitted):
+   *
+   * @code
+   * FileExportDestination d(some_file_descriptor);
+   * PlacementExporter e(d, my_observation_domain);
+   *
+   * uint64_t flow_start_milliseconds = 0;
+   * uint32_t source_ip_v4_address = 0;
+   *
+   * PlacementTemplate* my_flow_template = new PlacementTemplate();
+   * 
+   * my_flow_template->register_placement(
+   *   InfoModel::instance().lookupIE("flowStartMilliseconds"),
+   *   &flow_start_milliseconds, 0);
+   * my_flow_template->register_placement(
+   *   InfoModel::instance().lookupIE("sourceIPv4Address"),
+   *   &source_ip_v4_address, 0);
+   *
+   * // Assign values to source_ip_v4_address and flow_start_milliseconds
+   *
+   * e.place_values(my_flow_template);
+   * e.flush();
+   *
+   * delete my_flow_template
+   *
+   * close(some_file_descriptor);
+   * @endcode
+   *
+   * See the documentation for ExportDestination,
+   * FileExportDestination, and PlacementTemplate for more
+   * information.
+   */
   class PlacementExporter {
   public:
     /** Creates an exporter.

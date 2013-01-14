@@ -47,7 +47,27 @@ namespace IPFIX {
   /** Abstract base class for IPFIX outputs.
    *
    * This class defines the interface that all IPFIX outputs
-   * must implement.
+   * must implement.  Only implementers of ExportDestination
+   * subclasses should read this documentation.  All others are
+   * referred to to the documentation of that subclass.
+   *
+   * IPFIX export with the placement interface works with
+   * scatter-gather I/O, which in Unix-like or POSIX-compatible
+   * operating systems is done with the @code{writev} system call,
+   * which will have to be delegated by an implementation of this
+   * interface.
+   *
+   * Furthermore, there is a difference between connection-oriented
+   * and connectionless export destinations because on connectionless
+   * exports, each message must contain all templates for all data
+   * sets included in that message, which is not true for
+   * connection-oriented protocols.
+   *
+   * Finally, connectionless export destinations might have a
+   * preferred message size because large messages will cause
+   * fragmentation, and the loss of a fragment means the loss of the
+   * entire message.  It is therefore advantageous to have messages
+   * that are only as large as the path MTU.
    */
   class ExportDestination {
   public:
@@ -57,6 +77,15 @@ namespace IPFIX {
      * @return 0 on success, or -1 on error
      */
     virtual ssize_t writev(const std::vector< ::iovec>& iovecs) = 0;
+
+    /** Flushes the stream.
+     *
+     * This method flushes the message that is currently being
+     * assembled and causes a new IPFIX message to be written.
+     * 
+     * @return 0 on success and -1 on error
+     */
+    virtual int flush() = 0;
 
     /** Checks whether this output is connection-oriented or not.
      *

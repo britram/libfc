@@ -44,6 +44,11 @@ namespace IPFIX {
   /** IPFIX file outputs. */
   class FileExportDestination : public ExportDestination {
   public:
+    /** Creates a file export destination from an already existing
+     * file descriptor. 
+     *
+     * @param fd file descriptor pointing to an open file
+     */
     FileExportDestination(int fd);
 
     ssize_t writev(const std::vector< ::iovec>& iovecs);
