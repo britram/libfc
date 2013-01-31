@@ -651,6 +651,8 @@ namespace IPFIX {
   PlacementExporter::~PlacementExporter() {
     flush();
 
+    delete plan;
+
     for (auto i = iovecs.begin(); i != iovecs.end(); ++i)
       delete[] static_cast<uint8_t*>(i->iov_base);
   }
@@ -707,25 +709,25 @@ namespace IPFIX {
 
   bool PlacementExporter::flush() {
     LOG4CPLUS_TRACE(logger, "ENTER flush");
-    /** This message header.
-     *
-     * This variable is dynamically allocated so as to facilitate
-     * its deletion later as part of the iovecs vector. */
-    uint8_t* message_header = new uint8_t[kMessageHeaderLen];
-
-    /** Points to the end of this message.
-     *
-     * Used for range checks. */
-    const uint8_t* message_end = message_header + kMessageHeaderLen;
-
-    /** Moves through the message header. */
-    uint8_t* p = message_header;
-
     /** Return value. */
     int ret = 0;
 
     /* Only write something if we have anything nontrivial to write. */
     if (n_message_octets > kMessageHeaderLen) {
+      /** This message header.
+       *
+       * This variable is dynamically allocated so as to facilitate
+       * its deletion later as part of the iovecs vector. */
+      uint8_t* message_header = new uint8_t[kMessageHeaderLen];
+      
+      /** Points to the end of this message.
+       *
+       * Used for range checks. */
+      const uint8_t* message_end = message_header + kMessageHeaderLen;
+      
+      /** Moves through the message header. */
+      uint8_t* p = message_header;
+      
       time_t now = time(0);
       if (now == static_cast<time_t>(-1))
         return false;

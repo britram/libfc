@@ -73,6 +73,9 @@ namespace IPFIX {
   }
 
   PlacementTemplate::~PlacementTemplate() {
+    for (auto i = ies.begin(); i != ies.end(); ++i)
+      delete *i;
+
     delete[] buf;
   }
 

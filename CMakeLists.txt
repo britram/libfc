@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
-set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+set(CMAKE_CXX_FLAGS_PROFILE "-g -O0 -pg")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 # Use matched template cache?
 #
