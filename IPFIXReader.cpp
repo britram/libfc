@@ -26,15 +26,16 @@
 
 #include <cassert>
 #include <cstdint>
+#include <sstream>
 
 #include <boost/detail/endian.hpp>
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
-#  define LOG4CPLUS_DEBUG(logger, expr)
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "Constants.h"
 #include "IPFIXReader.h"
@@ -87,10 +88,10 @@ namespace IPFIX {
     : parse_in_progress(false),
       content_handler(0),
       error_handler(0)
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
                       ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
   }
 
@@ -103,7 +104,7 @@ namespace IPFIX {
   }
 
   void IPFIXReader::parse(InputSource& is) {
-    LOG4CPLUS_DEBUG(logger, "ENTER parse()");
+    LOG4CPLUS_TRACE(logger, "ENTER parse()");
 
     assert(content_handler != 0);
     assert(error_handler != 0);
@@ -187,7 +188,12 @@ namespace IPFIX {
         const uint8_t* set_end = cur + set_length;
         
         if (set_end > message_end) {
-          error_handler->fatal(Error::long_set, 0);
+          std::stringstream sstr;
+          sstr << "set_len=" << set_length 
+               << ",set_end=" << static_cast<const void*>(set_end) 
+               << ",message_len=" << message_size
+               << ",message_end=" << static_cast<const void*>(message_end);
+          error_handler->fatal(Error::long_set, sstr.str().c_str());
           parse_in_progress = false;
           return;
         }

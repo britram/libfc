@@ -40,13 +40,53 @@
 
 #  include <sys/uio.h>
 
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
 #  include "Constants.h"
 #  include "ExportDestination.h"
 #  include "PlacementTemplate.h"
 
+class EncodePlan;
+
 namespace IPFIX {
 
-  /** Interface for exporter with the placement interface. */
+  /** Interface for exporter with the placement interface.
+   *
+   * A simple example of how to use the placement interface for export
+   * is this (with error checking omitted):
+   *
+   * @code
+   * FileExportDestination d(some_file_descriptor);
+   * PlacementExporter e(d, my_observation_domain);
+   *
+   * uint64_t flow_start_milliseconds = 0;
+   * uint32_t source_ip_v4_address = 0;
+   *
+   * PlacementTemplate* my_flow_template = new PlacementTemplate();
+   * 
+   * my_flow_template->register_placement(
+   *   InfoModel::instance().lookupIE("flowStartMilliseconds"),
+   *   &flow_start_milliseconds, 0);
+   * my_flow_template->register_placement(
+   *   InfoModel::instance().lookupIE("sourceIPv4Address"),
+   *   &source_ip_v4_address, 0);
+   *
+   * // Assign values to source_ip_v4_address and flow_start_milliseconds
+   *
+   * e.place_values(my_flow_template);
+   * e.flush();
+   *
+   * delete my_flow_template
+   *
+   * close(some_file_descriptor);
+   * @endcode
+   *
+   * See the documentation for ExportDestination,
+   * FileExportDestination, and PlacementTemplate for more
+   * information.
+   */
   class PlacementExporter {
   public:
     /** Creates an exporter.
@@ -102,24 +142,32 @@ namespace IPFIX {
     /** All templates used so far in this session or message.
      *
      * In this set, we capture all templates used so far in this
-     * session (for connection-oriented ExportDestination-s) or in
-     * this message (for connectionless ones).  When a data record
-     * comes along that belongs to a hitherto unknown template, that
-     * template is inserted here, and a new template is issued. */
+     * session.  When a data record comes along that belongs to a
+     * hitherto unknown template, that template is inserted here, and
+     * a new template is issued. */
     std::set<const PlacementTemplate*> used_templates;
+
+    /** Templates that need to go into this message's template record. */
+    std::set<const PlacementTemplate*> new_templates;
+
+    /** Most recently assigned template id. */
+    uint16_t current_template_id;
 
     /** Sequence number for messages; see RFC 5101. */
     uint32_t sequence_number;
 
-    /** Observation domain for messages; see RFC 5101. */
+    /** Observation domain for messages; see RFC 5101.
+     *
+     * For the moment, we support only one observation domain. This
+     * may change in the future. */
     uint32_t observation_domain;
 
     /** Number of octets in this message so far. This includes message
      * and set headers, template sets and data sets. */
     size_t n_message_octets;
 
-    /** Index for iovec of template set for this message. */
-    int template_set_index;
+    /** Number of octets in template set, or 0 if no template set. */
+    uint16_t template_set_size;
 
     /** The number of octets in the currently assembled set.
      *
@@ -127,6 +175,19 @@ namespace IPFIX {
      * trigraph `<::', which stands for `['.  Who came up with this
      * crap? */
     std::vector< ::iovec> iovecs;
+
+    EncodePlan* plan;
+
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+    /** Finishes the current data set by putting the template ID and
+     * set length into the set header. 
+     *
+     * This function is idempotent.
+     */
+    void finish_current_data_set();
   };
 
 } // namespace IPFIX

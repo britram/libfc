@@ -46,6 +46,11 @@
 
 #include "test/TestCommon.h"
 
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  include <log4cplus/configurator.h>
+#  include <log4cplus/loggingmacros.h>
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
 using namespace IPFIX;
 
 static uint64_t kTimeSeqStart = 1141344000000UL; // March 3, 2006
@@ -63,9 +68,15 @@ static uint64_t kOctetsSeqStep  = 44;
 static uint16_t kFlowTemplateId = 256;
 static uint16_t kObsTemplateId = 257;
 
+#if 1
 static unsigned int kTestCycleCount = 100000;
 static unsigned int kTestFlowPerSetCount = 222;
 static unsigned int kTestObsPerSetCount = 111;
+#else
+static unsigned int kTestCycleCount = 1000;
+static unsigned int kTestFlowPerSetCount = 222;
+static unsigned int kTestObsPerSetCount = 111;
+#endif
 
 class TestFlow {
     friend std::ostream& operator<<(std::ostream& out, const TestFlow& f);
@@ -712,7 +723,7 @@ static void read_file_with_placement_interface(const std::string& filename) {
   }
 
   std::cout << cb.get_n_flow_records() << " flows, "
-            << cb.get_n_obs_records() << " observations, "
+            << cb.get_n_obs_records() << " observations"
             << std::endl;
 }
 
@@ -781,14 +792,16 @@ static void write_file_with_placement_interface(int fd) {
   FileExportDestination d(fd);
   PlacementExporter e(d, 0x12344321);
 
-  uint64_t flow_start_milliseconds = 0;
-  uint64_t flow_end_milliseconds = 0;
-  uint32_t source_ip_v4_address = 0;
-  uint32_t destination_ip_v4_address = 0;
-  uint16_t source_transport_port = 0;
-  uint16_t destination_transport_port = 0;
+  uint64_t flow_start_milliseconds = kTimeSeqStart;
+  uint64_t flow_end_milliseconds = kTimeSeqStart + 10;
+  uint32_t source_ip_v4_address = kIPSeqStart;
+  uint32_t destination_ip_v4_address = kIPSeqStart;
+  uint16_t source_transport_port = kPortSeqStart;
+  uint16_t destination_transport_port = kPortSeqStart;
   uint8_t  protocol_identifier = 0;
-  uint64_t octet_delta_count = 0;
+  uint64_t octet_delta_count = kOctetsSeqStart;
+
+  size_t n_flows = 0;
 
   PlacementTemplate* my_flow_template = new PlacementTemplate();
 
@@ -817,19 +830,104 @@ static void write_file_with_placement_interface(int fd) {
     InfoModel::instance().lookupIE("octetDeltaCount[4]"),
     &octet_delta_count, 0);
 
-  for (int i = 0; i < 10; i++) {
-    e.place_values(my_flow_template);
-    flow_start_milliseconds++;
+  uint64_t observation_time_milliseconds = 0x1234567824681357ULL;
+  uint64_t observation_value = 0x1357246812345678ULL;
+  BasicOctetArray observation_label;
+  
+  size_t n_obs = 0;
+
+  const char* labels[] = {
+    "Hear the sound of music",
+    "Drifting in the aisles",
+    "Elevator prozac",
+    "Stretching on for miles",
+    "",
+    "The music of the future",
+    "Will not entertain",
+    "It's only meant to repress",
+    "And neutralise your brain",
+    "",
+    "Soul gets squeezed out",
+    "Edges get blunt",
+    "Demographic",
+    "Gives what you want",
+    "",
+    "One of the wonders of the world is going down",
+    "It's going down I know",
+    "It's one of the blunders of the world that no-one cares",
+    "No-one cares enough",
+    "",
+    "Now the sound of music",
+    "Comes in silver pills",
+    "Engineered to suit you",
+    "Building cheaper thrills",
+    "",
+    "The music of rebellion",
+    "Makes you wanna rage",
+    "But it's made by millionaires",
+    "Who are nearly twice your age",
+    "",
+    "Soul gets squeezed out",
+    "Edges get blunt",
+    "Demographic",
+    "Gives what you want",
+    "",
+    "One of the wonders of the world is going down",
+    "It's going down I know",
+    "It's one of the blunders of the world that no-one cares",
+    "No-one cares enough",
+  };
+  unsigned int label_ix = 0;
+
+  observation_label.copy_content(reinterpret_cast<const uint8_t*>(labels[label_ix]), strlen(labels[label_ix]));
+
+  PlacementTemplate* my_obs_template = new PlacementTemplate();
+
+  my_obs_template->register_placement(
+     InfoModel::instance().lookupIE("observationTimeMilliseconds"),
+     &observation_time_milliseconds, 0);
+  my_obs_template->register_placement(
+     InfoModel::instance().lookupIE("observationValue"),
+     &observation_value, 0);
+  my_obs_template->register_placement(
+     InfoModel::instance().lookupIE("observationLabel"),
+     &observation_label, 0);
+
+  for (unsigned int i = 0 ; i < kTestCycleCount; i++) {
+    for (unsigned int k = 0; k < kTestFlowPerSetCount; k++) {
+      e.place_values(my_flow_template);
+      flow_start_milliseconds += kTimeSeqStep;
+      flow_end_milliseconds += kTimeSeqStep;
+      source_ip_v4_address++;
+      destination_ip_v4_address++;
+      source_transport_port++;
+      destination_transport_port++;
+      octet_delta_count += kOctetsSeqStep;
+      n_flows++;
+    }
+
+    for (unsigned int k = 0 ; k < kTestObsPerSetCount; k++) {
+      e.place_values(my_obs_template);
+      observation_value++;
+      label_ix = (label_ix + 1) % (sizeof(labels)/sizeof(labels[0]));
+      observation_label.copy_content(reinterpret_cast<const uint8_t*>(labels[label_ix]), strlen(labels[label_ix]));
+      n_obs++;
+    }
   }
 
   e.flush();
 
   delete my_flow_template;
+  delete my_obs_template;
+
+  std::cout << n_flows << " flows, "
+            << n_obs << " observations" << std::endl;
 }
 
-
+static int help_flag = 0;
 static int verbose_flag = 0;
 static int read_flag = 1;
+static const char* filename = 0;
 static enum api_type_t { record_api, placement_api, struct_api } api_type;
 
 /* Code patterned after http://www.gnu.org/software/libc/
@@ -839,7 +937,9 @@ static void parse_options(int argc, char* const* argv) {
 
   while (1) {
     static struct option options[] = {
+      { "help", no_argument, &help_flag, 1 },
       { "verbose", no_argument, &verbose_flag, 1 },
+      { "file", required_argument, 0, 'f' },
       { "read", no_argument, &read_flag, 1 },
       { "write", no_argument, &read_flag, 0 },
       { "interface-type", required_argument, 0, 'i' },
@@ -848,7 +948,7 @@ static void parse_options(int argc, char* const* argv) {
 
     int option_index = 0;
 
-    int c = getopt_long(argc, argv, "i:rvw", options, &option_index);
+    int c = getopt_long(argc, argv, "f:i:rvw", options, &option_index);
 
     if (c == -1)
       break;
@@ -862,7 +962,10 @@ static void parse_options(int argc, char* const* argv) {
         std::cerr << " with arg \"" << optarg << "\"";
       std::cerr << std::endl;
       break;
-    case 'i': 
+    case 'f':
+      filename = optarg;
+      break;
+    case 'i':
       if (strcmp(optarg, "record") == 0)
         api_type = record_api;
       else if (strcmp(optarg, "struct") == 0)
@@ -886,37 +989,66 @@ static void parse_options(int argc, char* const* argv) {
   }
 }
 
+static void help() {
+  std::cerr << "usage: ./fcprof [options] -f file|--file=file" << std::endl
+            << "Options:" << std::endl
+            << "  -f file|--file=file" << std::endl
+            << "\tuse FILE as filename" << std::endl
+            << "  -h|--help\tprint this help text" << std::endl
+            << "  -r|--read\tprofile collection process" << std::endl
+            << "  -v|--verbose\tprint verbose output" << std::endl
+            << "  -w|--write\tprofile exporting process" << std::endl
+            << "  -i type|--interface-type=type" << std::endl
+            << "\tcollection/export interface to use; possible values are:" << std::endl
+            << "\t\trecord\t\trecord-oriented interface" << std::endl
+            << "\t\tstruct\t\tstruct (POD) interface" << std::endl
+            << "\t\tplacement\tplacement interface" << std::endl;
+}
 
-static const std::string read_filename = "loopfile";
-static const std::string write_filename = "export_test.ipfix";
 
 int main(int argc, char* const* argv) {
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+  log4cplus::PropertyConfigurator config("log4cplus.properties");
+  config.configure();
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
   InfoModel::instance().defaultIPFIX();
   TestFlow::addIEs();
   TestObs::addIEs();
 
   parse_options(argc, argv);
 
+  if (filename == 0) {
+    help();
+    std::cerr << "missing filename" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if (help_flag) {
+    help();
+    return EXIT_SUCCESS;
+  }
+
   if (read_flag) {
-    if (!file_exists(read_filename))
-      write_file(read_filename);
+    if (!file_exists(filename))
+      write_file(filename);
 
     switch (api_type) {
     case record_api:
-      read_file_with_record_interface(read_filename);
+      read_file_with_record_interface(filename);
       break;
     case placement_api:
-      read_file_with_placement_interface(read_filename);
+      read_file_with_placement_interface(filename);
       break;
     case struct_api:
-      read_file_with_struct_interface(read_filename);
+      read_file_with_struct_interface(filename);
       break;
     }
   } else {
-    int fd = open(write_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC,
                   S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
     if (fd == -1) {
-      std::cerr << "Can't open \"" << write_filename << "\" for writing"
+      std::cerr << "Can't open \"" << filename << "\" for writing"
                 << std::endl;
       return EXIT_FAILURE;
     }
@@ -934,7 +1066,7 @@ int main(int argc, char* const* argv) {
     }
 
     if (close(fd) != 0) {
-      std::cerr << "Error closing file \"" << write_filename
+      std::cerr << "Error closing file \"" << filename
                 << std::cerr;
       return EXIT_FAILURE;
     }

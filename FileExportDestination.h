@@ -33,6 +33,10 @@
 #ifndef IPFIX_FILEEXPORTDESTINATION_H
 #  define IPFIX_FILEEXPORTDESTINATION_H
 
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
 #  include "ExportDestination.h"
 
 namespace IPFIX {
@@ -40,6 +44,11 @@ namespace IPFIX {
   /** IPFIX file outputs. */
   class FileExportDestination : public ExportDestination {
   public:
+    /** Creates a file export destination from an already existing
+     * file descriptor. 
+     *
+     * @param fd file descriptor pointing to an open file
+     */
     FileExportDestination(int fd);
 
     ssize_t writev(const std::vector< ::iovec>& iovecs);
@@ -49,6 +58,9 @@ namespace IPFIX {
 
   private:
     int fd;
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
 } // namespace IPFIX

@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
-set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
+set(CMAKE_CXX_FLAGS_PROFILE "-g -O0 -pg")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 # Use matched template cache?
 #
@@ -12,6 +13,12 @@ set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
 #
 # add_definitions(-DLIBFC_USE_MATCHED_TEMPLATE_CACHE)
 
+# Use log4cplus?
+#
+#add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)
+#include_directories(/opt/log4cplus/include)
+#link_directories(/opt/log4cplus/lib)
+
 # debuggery
 if ($ENV{CLANG}) 
   message(STATUS "hey, you're using clang! good luck!")
@@ -20,6 +27,8 @@ else ($ENV{CLANG})
   add_definitions(-g -Wall --std=c++0x)
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     #include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
+  else (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions("-O3")
   endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif($ENV{CLANG})
 include_directories(.)
@@ -30,9 +39,6 @@ if (Boost_FOUND)
   include_directories (${Boost_INCLUDE_DIRS})
 endif()
 
-# include log4cplus
-include_directories(${Log4cplus_INCLUDE_DIR})
-link_directories(${Log4cplus_LIBRARY_DIR})
 
 # core objects; library classes begin with a upper-case letter,
 # program files (containing main()) with a lower-case letter.
@@ -59,7 +65,7 @@ if ($ENV{CLANG})
   target_link_libraries (fc c++)
 else ($ENV{CLANG})
   target_link_libraries (fc)
-#  target_link_libraries (fc log4cplus)
+  #target_link_libraries (fc log4cplus)
 endif($ENV{CLANG})
 
 if ($ENV{CLANG})
