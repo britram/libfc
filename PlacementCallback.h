@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2012 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -23,26 +24,35 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "Error.h"
+
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
+
+#ifndef IPFIX_PLACEMENTCALLBACK_H
+#  define IPFIX_PLACEMENTCALLBACK_H
+
+#  include "PlacementTemplate.h"
 
 namespace IPFIX {
+  
+  /** Interface for callback with the placement interface. */
+  class PlacementCallback {
+  public:
+    /** Signals that placement of values will now begin. 
+     *
+     * @param template placement template for current placements
+     */
+    virtual void start_placement(const PlacementTemplate* tmpl) = 0;
 
-  Error::Error(error_t e)
-    : e(e) {
-  }
-
-  Error::operator const char*() const {
-    switch (e) {
-    case no_error: return "no error"; break;
-    case parse_while_parsing: return "call to parse() while parsing"; break;
-    case read_error: return "read error"; break;
-    case short_header: return "short message header"; break;
-    case short_body: return "short message body"; break;
-    case long_set: return "set too long (exceeds message size)"; break;
-    case long_fieldspec: return "field specification exceeds set"; break;
-    case option_templates_ni: return "option templates not implemented"; break;
-    default: return "unknown error"; break;
-    }
- }
+    /** Signals that placement of values has ended. 
+     *
+     * @param template placement template for current placements
+     */
+    virtual void end_placement(const PlacementTemplate* tmpl) = 0;
+  };
 
 } // namespace IPFIX
+
+#endif // IPFIX_PLACEMENTCALLBACK_H

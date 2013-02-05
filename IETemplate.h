@@ -42,11 +42,12 @@
 #ifndef IPFIX_IETEMPLATE_H // idem
 #define IPFIX_IETEMPLATE_H // hack
 
+#include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <map>
-#include <stdint.h>
 #include <vector>
 
 #include "InfoElement.h"
@@ -185,6 +186,16 @@ public:
    * @return end iterator
    */
   IETemplateIter end() const { return ies_.end(); }
+
+  /** Finds a certain IE.
+   *
+   * @param ie IE to find
+   *
+   * @return iterator to found element if found, end() if not
+   */
+  IETemplateIter find(const InfoElement* ie) const {
+    return std::find(ies_.begin(), ies_.end(), ie);
+  }
 
   /** Returns number of IEs in this template.
    *

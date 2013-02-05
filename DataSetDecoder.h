@@ -37,12 +37,15 @@
 #  include <map>
 #  include <vector>
 
-#  include <log4cplus/logger.h>
+#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 #  include "DefaultHandler.h"
 #  include "InfoElement.h"
 #  include "InfoModel.h"
 #  include "MatchTemplate.h"
+#  include "PlacementCallback.h"
 #  include "PlacementTemplate.h"
 
 namespace IPFIX {
@@ -76,7 +79,8 @@ namespace IPFIX {
     void end_data_set();
 
     void register_placement_template(
-        const PlacementTemplate* placement_template);
+        const PlacementTemplate* placement_template,
+        PlacementCallback* callback);
 
   private:
     /** Observation domain for this message. */
@@ -148,6 +152,9 @@ namespace IPFIX {
      */
     std::list<const PlacementTemplate*> placement_templates;
 
+    /** Association between placement template and callback. */
+    std::map<const PlacementTemplate*, PlacementCallback*> callbacks;
+
     // Data for reading template sets
     /** The current wire template that is being assembled. 
      *
@@ -176,8 +183,10 @@ namespace IPFIX {
      */
     bool parse_is_good;
 
+#  ifdef _IPFIX_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
-  };
+#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+ };
 
 } // namespace IPFIX
 

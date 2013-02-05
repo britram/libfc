@@ -24,9 +24,22 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_DEBUG(logger, expr)
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
 #include "PlacementTemplate.h"
 
 namespace IPFIX {
+
+  PlacementTemplate::PlacementTemplate() 
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+    : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+  {
+  }
 
   void PlacementTemplate::register_placement(const InfoElement* ie,
                                              void* p) {
@@ -40,11 +53,17 @@ namespace IPFIX {
   }
 
   bool PlacementTemplate::is_match(const MatchTemplate* t) const {
-    for (auto i = t->begin(); i != t->end(); ++i) {
-      auto p = placements.find(*i);
-      if (p == placements.end())
+    LOG4CPLUS_DEBUG(logger, "ENTER is_match");
+
+    for (auto i = placements.begin(); i != placements.end(); ++i) {
+      LOG4CPLUS_DEBUG(logger, "  looking up IE " << i->first->toIESpec());
+      auto p = t->find(i->first);
+      if (p == t->end()) {
+        LOG4CPLUS_DEBUG(logger, "    not found -> false");
         return false;
+      }
     }
+    LOG4CPLUS_DEBUG(logger, "  all found -> true");
     return true;
   }
 

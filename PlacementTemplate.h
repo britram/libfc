@@ -35,6 +35,10 @@
 
 #  include <map>
 
+#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
 #  include "InfoElement.h"
 #  include "MatchTemplate.h"
 
@@ -52,6 +56,8 @@ namespace IPFIX {
    */
   class PlacementTemplate {
   public:
+    PlacementTemplate();
+
     /** Registers an association between an IE and a memory location.
      *
      * @param ie the information element
@@ -79,6 +85,10 @@ namespace IPFIX {
 
   private:
     std::map<const InfoElement*, void*> placements;
+
+#  ifdef _IPFIX_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#  endif /* _IPFIX_HAVE_LOG4CPLUS_ */
   };
 
 } // namespace IPFIX

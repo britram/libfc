@@ -26,12 +26,19 @@
 
 #include <cassert>
 #include <climits>
+#include <cstdarg>
 #include <cstdio>
+#include <sstream>
+
+#include <time.h>
 
 #include <boost/detail/endian.hpp>
 
-#include <log4cplus/logger.h>
-#include <log4cplus/loggingmacros.h>
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_DEBUG(logger, expr)
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
@@ -52,18 +59,18 @@
  *   - where the converted data is to be stored.
  *
  * Basically, clients register sets of pairs of <ie, pointer> with the
- * DataSetDecoder class below.  This is called a Minimal Template.
- * This minimal template will then be used to match incoming data
+ * DataSetDecoder class below.  This is called a Placement Template.
+ * This placement template will then be used to match incoming data
  * records.  The previously used procedure was to nominate the first
- * minimal template whose set of information elements is a subset of
- * the information elements for the data set. in question. We
+ * placement template whose set of information elements is a subset of
+ * the information elements for the data set in question. We
  * implement this here as well, but it might be changed easily.  (For
- * example, we might reasonably select that minimal template that is a
+ * example, we might reasonably select that placement template that is a
  * subset of the data set's template and at the same time matches the
  * most fields.)
  *
  * Now having a template for the data set (called a Wire Template) and
- * a matching minimal template, we create a Decoding Plan.  Basically,
+ * a matching placement template, we create a Decoding Plan.  Basically,
  * a decoding plan is a sequence of decisions, one for each field.
  * There are two types of decisions:
  *
@@ -84,11 +91,11 @@
  */
 class DecodePlan {
 public:
-  /** Creates a decoding plan from a minimal template and a wire
+  /** Creates a decoding plan from a placement template and a wire
    * template.
    *
-   * @param placement_template a minimal template that must have been
-   *   found to match the wire template (all IEs in the minimal
+   * @param placement_template a placement template that must have been
+   *   found to match the wire template (all IEs in the placement
    *   template must also appear in the wire template)
    * @param wire_template the wire template for the data set
    */
@@ -165,11 +172,48 @@ private:
      * transfers), or that they point to a BasicOctetArray object (for
      * varlen transfers). */
     void* p;
+
+    std::string to_string() const;
   };
   
   std::vector<Decision> plan;
+
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 };
 
+
+std::string DecodePlan::Decision::to_string() const {
+  std::stringstream sstr;
+
+  sstr << "[";
+  switch (type) {
+  case skip_fixlen:
+    sstr << "skip_fixlen " << length; break;
+  case skip_varlen:
+    sstr << "skip_varlen"; break;
+  case transfer_fixlen:
+    sstr << "transfer_fixlen " << length 
+         << "/" << destination_size; break;
+  case transfer_boolean:
+    sstr << "transfer_boolean"; break;
+  case transfer_fixlen_endianness:
+    sstr << "transfer_fixlen_endianness " << length
+         << "/" << destination_size; break;
+  case transfer_fixlen_octets:
+    sstr << "transfer_fixlen_octets " << length; break;
+  case transfer_float_into_double:
+    sstr << "transfer_float_into_double"; break;
+  case transfer_float_into_double_endianness:
+    sstr << "transfer_float_into_double_endianness"; break;
+  case transfer_varlen:
+    sstr << "transfer_varlen"; break;
+  };
+  sstr << "]";
+  
+  return sstr.str();
+}
 
 
 static void report_error(const char* message, ...) {
@@ -195,7 +239,15 @@ static void report_error(const char* message, ...) {
 
 DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
                        const IPFIX::MatchTemplate* wire_template) 
-  : plan(wire_template->size()) {
+  : plan(wire_template->size())
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+                               ,
+    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+  {
+
+  LOG4CPLUS_DEBUG(logger, "ENTER DecodePlan::DecodePlan (wt with "
+                  << wire_template->size() << " entries)");
 
 #if defined(BOOST_BIG_ENDIAN)
   Decision::decision_type_t transfer_fixlen_maybe_endianness
@@ -213,9 +265,15 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
 
   unsigned int decision_number = 0;
   for (auto ie = wire_template->begin(); ie != wire_template->end(); ie++) {
+    assert(*ie != 0);
+    LOG4CPLUS_DEBUG(logger, "  decision " << (decision_number + 1)
+                    << ": looking up placement");// for " << (*ie)->toIESpec());
+
     Decision d;
+
     d.p = placement_template->lookup_placement(*ie);
     if (d.p != 0) {   /* IE is present, so encode transfer decision */
+      LOG4CPLUS_DEBUG(logger, "    found -> transfer");
       if ((*ie)->ietype() == 0)
         report_error("IE has NULL ietype");
 
@@ -409,18 +467,46 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
         break;
       }
     } else {                    /* Encode skip decision */
+      LOG4CPLUS_DEBUG(logger, "    not found -> skip");
       if ((*ie)->len() == IPFIX::kVarlen) {
         d.type = Decision::skip_varlen;
       } else {
         d.type = Decision::skip_fixlen;
         d.length = (*ie)->len();
       }
-      break;
     }
 
-    /* Enter decision into plan */
-    plan[decision_number] = d;
+    plan[decision_number++] = d;
+    LOG4CPLUS_DEBUG(logger, "  decision " << decision_number
+                    << " entered as " << d.to_string());
   }
+
+  /* Coalesce adjacent skip_fixlen decisions. */
+  for (auto decision = plan.begin(); decision != plan.end(); ++decision) {
+    if (decision->type == Decision::skip_fixlen) {
+      auto skips = decision;
+      auto next = decision;
+      uint16_t length = decision->length;
+      
+      ++next;
+      for (++skips;
+           skips != plan.end() && skips->type == Decision::skip_fixlen;
+           ++skips)
+        length += skips->length;
+      plan.erase(next, skips);
+      decision->length = length;
+    }
+  }
+
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+  if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
+    LOG4CPLUS_DEBUG(logger, "  plan is: ");
+    for (auto d = plan.begin(); d != plan.end(); ++d)
+      LOG4CPLUS_DEBUG(logger, "    " << d->to_string());
+  }
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
+  LOG4CPLUS_DEBUG(logger, "LEAVE DecodePlan::DecodePlan");
 }
 
 static uint16_t decode_varlen_length(const uint8_t** cur,
@@ -455,6 +541,8 @@ static uint16_t decode_varlen_length(const uint8_t** cur,
 }
 
 uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
+  LOG4CPLUS_DEBUG(logger, "ENTER DecodePlan::execute");
+
   const uint8_t* cur = buf;
   const uint8_t* buf_end = buf + length;
 
@@ -590,8 +678,12 @@ namespace IPFIX {
   DataSetDecoder::DataSetDecoder()
     : info_model(InfoModel::instance()),
       current_wire_template(0),
-      parse_is_good(true),
-      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger"))) {
+      parse_is_good(true)
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+                         ,
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+  {
   }
 
   DataSetDecoder::~DataSetDecoder() {
@@ -600,6 +692,20 @@ namespace IPFIX {
     }
   }
 
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+  static const char* make_time(uint32_t export_time) {
+    struct tm tms;
+    time_t then = export_time;
+    static char gmtime_buf[100];
+
+    gmtime_r(&then, &tms);
+    strftime(gmtime_buf, sizeof gmtime_buf, "%c", &tms);
+    gmtime_buf[sizeof(gmtime_buf) - 1] = '\0';
+
+    return gmtime_buf;
+  }
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+
   void DataSetDecoder::start_message(uint16_t version,
                                      uint16_t length,
                                      uint32_t export_time,
@@ -607,9 +713,9 @@ namespace IPFIX {
                                      uint32_t observation_domain) {
     LOG4CPLUS_DEBUG(logger,
                     "ENTER start_message"
-                    << ", version=0x" << std::hex << version
-                    << ", length=" << std::dec << length
-                    << ", export_time=" << export_time
+                    << ", version=" << version
+                    << ", length=" << length
+                    << ", export_time=" << make_time(export_time)
                     << ", sequence_number=" << sequence_number
                     << ", observation_domain=" << observation_domain);
     assert(current_wire_template == 0);
@@ -663,14 +769,24 @@ namespace IPFIX {
 
   void DataSetDecoder::end_template_record() {
     LOG4CPLUS_DEBUG(logger, "ENTER end_template_record");
-    if (current_wire_template->size() > 0)
+    if (current_wire_template->size() > 0) {
       wire_templates[make_template_key(current_template_id)]
         = current_wire_template;
 
-    LOG4CPLUS_DEBUG(logger,
-                    "  wire template has "
-                    << current_wire_template->size()
-                    << " entries");
+#ifdef _IPFIX_HAVE_LOG4CPLUS_
+      if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
+        LOG4CPLUS_DEBUG(logger,
+                        "  current wire template has "
+                        << current_wire_template->size()
+                        << " entries, there are now "
+                        << wire_templates.size()
+                        << " registered wire templates");
+        unsigned int n = 1;
+        for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
+          LOG4CPLUS_DEBUG(logger, "  " << n++ << " " << (*i)->toIESpec());
+      }
+#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+    }
 
     if (current_field_count != current_field_no) {
       parse_is_good = false;
@@ -727,8 +843,14 @@ namespace IPFIX {
                    "given in the header");
     }
 
+    LOG4CPLUS_DEBUG(logger, "  looking up (" << enterprise_number
+                    << "/" << ie_id
+                    << ")[" << ie_length << "]");
     const InfoElement* ie
       = info_model.lookupIE(enterprise_number, ie_id, ie_length);
+    LOG4CPLUS_DEBUG(logger, "  found " << (current_field_no + 1)
+                    << ": " << ie->toIESpec());
+
     assert(enterprise || enterprise_number == 0);
     assert ((enterprise && enterprise_number != 0) || ie != 0);
 
@@ -741,7 +863,8 @@ namespace IPFIX {
                         << ")<sometype>[" << ie_length
                         << "]");
 
-      ; // FIXME ???
+      // FIXME: Enter IE with unknown type. Can be skipped but not placed. 
+      ;
     }
 
     assert(ie != 0);
@@ -758,6 +881,8 @@ namespace IPFIX {
 
   const PlacementTemplate*
   DataSetDecoder::match_placement_template(const MatchTemplate* wire_template) const {
+    LOG4CPLUS_DEBUG(logger, "ENTER match_placement_template");
+
     /* This strategy: return first match. Other strategies are also
      * possible, such as "return match with most IEs". */
     for (auto i = placement_templates.begin();
@@ -782,26 +907,32 @@ namespace IPFIX {
 
     LOG4CPLUS_DEBUG(logger, "  wire_template=" << wire_template);
 
-    if (wire_template == 0)
-      // No wire template for this data set: skip (but no error)
+    if (wire_template == 0) {
+      LOG4CPLUS_DEBUG(logger, "  no template for this data set; skipping");
       return;
+    }
 
     const PlacementTemplate* placement_template
       = match_placement_template(wire_template);
 
     LOG4CPLUS_DEBUG(logger, "  placement_template=" << placement_template);
 
-    if (placement_template == 0)
-      // No one is interested in this data set: skip (but no error)
+    if (placement_template == 0) {
+      LOG4CPLUS_DEBUG(logger, "  no one interested in this data set; skipping");
       return;
+    }
 
     DecodePlan plan(placement_template, wire_template);
 
     const uint8_t* buf_end = buf + length;
     const uint8_t* cur = buf;
+    auto callback = callbacks.find(placement_template);
+    assert(callback != callbacks.end());
 
     while (cur < buf_end && length >= min_length(wire_template)) {
+      callback->second->start_placement(placement_template);
       uint16_t consumed = plan.execute(cur, length);
+      callback->second->end_placement(placement_template);
       cur += consumed;
       length -= consumed;
     }
@@ -813,8 +944,10 @@ namespace IPFIX {
   }
 
   void DataSetDecoder::register_placement_template(
-      const PlacementTemplate* placement_template) {
+      const PlacementTemplate* placement_template,
+      PlacementCallback* callback) {
     placement_templates.push_back(placement_template);
+    callbacks[placement_template] = callback;
   }
 
   uint16_t DataSetDecoder::min_length(const MatchTemplate* t) {
