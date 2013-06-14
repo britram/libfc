@@ -603,6 +603,8 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
   for (auto i = plan.begin(); i != plan.end(); ++i) {
     assert(cur < buf_end);
 
+    LOG4CPLUS_TRACE(logger, "  decision: " << i->type);
+
     switch (i->type) {
     case Decision::skip_fixlen:
       assert (cur + i->length <= buf_end);
@@ -645,6 +647,8 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
       // etc).
       {
         uint8_t* q = static_cast<uint8_t*>(i->p);
+        LOG4CPLUS_TRACE(logger, "  fixlen: q == " << static_cast<void*>(q));
+
         memset(q, '\0', i->destination_size);
         // Intention: right-justify value at cur in field at i->p
         memcpy(q + i->destination_size - i->length, cur, i->length);
@@ -674,11 +678,14 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
       // etc).
       {
         uint8_t* q = static_cast<uint8_t*>(i->p);        
+        LOG4CPLUS_TRACE(logger, "  fixlen_endianness: q == " << static_cast<void*>(q) << ", size=" << i->destination_size);
         memset(q, '\0', i->destination_size);
+        LOG4CPLUS_TRACE(logger, "  memset done");
         // Intention: left-justify value at cur in field at i->p
         for (uint16_t k = 0; k < i->length; k++)
           q[k] = cur[i->length - (k + 1)];
       }
+      LOG4CPLUS_TRACE(logger, "  transfer done");
       cur += i->length;
       break;
 
@@ -934,8 +941,6 @@ namespace IPFIX {
                     << ")[" << ie_length << "]");
     const InfoElement* ie
       = info_model.lookupIE(enterprise_number, ie_id, ie_length);
-    LOG4CPLUS_TRACE(logger, "  found " << (current_field_no + 1)
-                    << ": " << ie->toIESpec());
 
     assert(enterprise || enterprise_number == 0);
     assert ((enterprise && enterprise_number != 0) || ie != 0);
@@ -954,6 +959,10 @@ namespace IPFIX {
     }
 
     assert(ie != 0);
+
+    LOG4CPLUS_TRACE(logger, "  found " << (current_field_no + 1)
+                    << ": " << ie->toIESpec());
+
     current_wire_template->add(ie);
     current_field_no++;
   }

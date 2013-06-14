@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
+set(CMAKE_CXX_FLAGS "-O3")
 set(CMAKE_CXX_FLAGS_PROFILE "-g -O0 -pg")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
@@ -28,7 +29,6 @@ else ($ENV{CLANG})
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     #include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
   else (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definitions("-O3")
   endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif($ENV{CLANG})
 include_directories(.)
@@ -61,6 +61,11 @@ file (GLOB FC_OBJ "*.cpp")
 file (GLOB EXCEPTIONS_OBJ "exceptions/*.cpp") 
 
 add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
+
+add_executable(ipfix2csv ipfix2csv.cpp)
+target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES} pcap)
+#target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES} pcap log4cplus)
+
 if ($ENV{CLANG}) 
   target_link_libraries (fc c++)
 else ($ENV{CLANG})
