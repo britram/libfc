@@ -204,7 +204,7 @@ public:
 
   /** 
    * Get an IEType representing an unknown IPFIX type. This is meant only for the internal use of libfc.
-   * @return a pointer to the octetArray type
+   * @return a pointer to unknown type
    */
   static const IEType* unknown();
   

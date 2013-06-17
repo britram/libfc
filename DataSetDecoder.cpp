@@ -918,6 +918,14 @@ namespace IPFIX {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_record");
   }
 
+  static const InfoElement*
+  add_unknown_ie(bool enterprise,
+      uint16_t ie_id,
+      uint16_t ie_length,
+      uint32_t enterprise_number) {
+    return 0;
+  }
+
   void DataSetDecoder::field_specifier(
       bool enterprise,
       uint16_t ie_id,
@@ -954,8 +962,8 @@ namespace IPFIX {
                         << ")<sometype>[" << ie_length
                         << "]");
 
-      // FIXME: Enter IE with unknown type. Can be skipped but not placed. 
-      ;
+      // Enter IE with unknown type.
+      ie = add_unknown_ie(enterprise, ie_id, ie_length, enterprise_number);
     }
 
     assert(ie != 0);

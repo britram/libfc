@@ -599,6 +599,11 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
     case Decision::encode_double_as_float_endianness:
       {
         float f = *static_cast<const double*>(i->address);
+        assert(sizeof(f) == sizeof(uint32_t));
+        std::reverse_copy(reinterpret_cast<char*>(&f),
+                          reinterpret_cast<char*>(&f) + sizeof(uint32_t) - 1,
+                          buf);
+        
         bytes_copied = sizeof(uint32_t);
       }
       break;
@@ -606,6 +611,8 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
     case Decision::encode_double_as_float:
       {
         float f = *static_cast<const double*>(i->address);
+        assert(sizeof(f) == sizeof(uint32_t));
+        memcpy(buf, &f, sizeof(uint32_t));
         bytes_copied = sizeof(uint32_t);
       }
       break;
