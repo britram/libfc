@@ -275,40 +275,45 @@ const InfoElement InfoModel::parseIESpec(const char* iespec) const {
   return parseIESpec(std::string(iespec));
 }
 
-void InfoModel::add(const InfoElement& ie) {
+const InfoElement* InfoModel::add(const InfoElement& ie) {
   // Short circuit unless we have a record valid for insertion:
   // at least a name, number, and valid, known type
   if (!ie.name().size() || !ie.number() || ie.ietype() == IEType::unknown()) {
     throw IESpecError("incomplete IESpec for InfoModel addition");
   }
   
+  const InfoElement* ret = 0;
+
   // Only add if we don't have an existing IE for the given name and pen
-  if (lookupIE(ie.pen(), ie.number(), ie.len())) return;
+  if ((ret = lookupIE(ie.pen(), ie.number(), ie.len())) != 0) return ret;
+
 
   if (ie.pen()) {
     name_registry_[ie.name()] = 
       pen_registry_[ie.pen()][ie.number()] = 
-      std::shared_ptr<InfoElement>(new InfoElement(ie));
+        std::shared_ptr<InfoElement>(new InfoElement(ie));
     // std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
   } else {
     name_registry_[ie.name()] = 
       iana_registry_[ie.number()] = 
-      std::shared_ptr<InfoElement>(new InfoElement(ie));
+        std::shared_ptr<InfoElement>(new InfoElement(ie));
     // std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
   }
+
+  return name_registry_[ie.name()].get();
 }
 
 void InfoModel::add(const std::string& iespec) {
   add(parseIESpec(iespec));
 }
 
-void InfoModel::add_unknown(uint32_t pen, uint16_t number, uint16_t len) {
+const InfoElement* InfoModel::add_unknown(uint32_t pen, uint16_t number, uint16_t len) {
   std::string name = "_unknown_" + std::to_string(pen) + 
     "_" + std::to_string(number);
 
   InfoElement ie(name, pen, number, lookupIEType("octetArray"), len);
 
-  add(ie);
+  return add(ie);
 }
   
 const InfoElement* InfoModel::lookupIE(uint32_t pen, uint16_t number, uint16_t len) const {  

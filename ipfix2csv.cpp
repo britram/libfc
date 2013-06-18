@@ -68,6 +68,7 @@
 #include <cstddef>
 #include <ctime>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <list>
 
@@ -238,6 +239,92 @@ print_macaddress(std::ostream& os, const IEType* type, void* v) {
   }
 }
 
+static char
+to_digit(unsigned int d) {
+  assert(0 <= d && d < 10);
+  switch(d) {
+  case 0: return '0';
+  case 1: return '1';
+  case 2: return '2';
+  case 3: return '3';
+  case 4: return '4';
+  case 5: return '5';
+  case 6: return '6';
+  case 7: return '7';
+  case 8: return '8';
+  case 9: return '9';
+  }
+  assert(d == 0);               /* Will evaluate to false. */
+  return '\0';                  /* Shut up compiler. */
+}
+
+static void
+print_iso_datetime(std::ostream& os, struct tm* tm, uint64_t fraction) {
+  char buf[21];
+  char* p = buf;
+
+  assert(p + 5 < buf + sizeof(buf));
+  tm->tm_year += 1900;
+  assert(tm->tm_year < 10000);
+  *(p + 3) = to_digit(tm->tm_year % 10); tm->tm_year /= 10;
+  *(p + 2) = to_digit(tm->tm_year % 10); tm->tm_year /= 10;
+  *(p + 1) = to_digit(tm->tm_year % 10); tm->tm_year /= 10;
+  *(p + 0) = to_digit(tm->tm_year % 10);
+
+  p += 4; *p++ = '-';
+
+  assert(p + 3 < buf + sizeof(buf));
+  tm->tm_mon++;
+  assert(1 <= tm->tm_mon && tm->tm_mon <= 12);
+  *(p + 1) = to_digit(tm->tm_mon % 10); tm->tm_mon /= 10;
+  *(p + 0) = to_digit(tm->tm_mon % 10);
+
+  p += 2; *p++ = '-';
+
+  assert(p + 3 < buf + sizeof(buf));
+  assert(1 <= tm->tm_mday && tm->tm_mday <= 31);
+  *(p + 1) = to_digit(tm->tm_mday % 10); tm->tm_mday /= 10;
+  *(p + 0) = to_digit(tm->tm_mday % 10);
+
+  p += 2; *p++ = 'T';
+
+  assert(p + 3 < buf + sizeof(buf));
+  assert(0 <= tm->tm_hour && tm->tm_hour < 24);
+  *(p + 1) = to_digit(tm->tm_hour % 10); tm->tm_hour /= 10;
+  *(p + 0) = to_digit(tm->tm_hour % 10);
+
+  p += 2; *p++ = ':';
+
+  assert(p + 3 < buf + sizeof(buf));
+  assert(0 <= tm->tm_min && tm->tm_min < 60);
+  *(p + 1) = to_digit(tm->tm_min % 10); tm->tm_min /= 10;
+  *(p + 0) = to_digit(tm->tm_min % 10);
+
+  p += 2; *p++ = ':';
+
+  assert(p + 4 == buf + sizeof(buf));
+  assert(0 <= tm->tm_sec && tm->tm_sec <= 60); // Leap second
+  *(p + 1) = to_digit(tm->tm_sec % 10); tm->tm_sec /= 10;
+  *(p + 0) = to_digit(tm->tm_sec % 10);
+
+  p += 2; *p++ = '.'; *p = '\0';
+
+  os << buf;
+
+  p = buf + 9;
+  *p-- = '\0';
+
+  while (fraction != 0 && fraction % 10 == 0)
+    fraction /= 10;
+
+  do {
+    *p-- = to_digit(fraction % 10);
+    fraction /= 10;
+  } while (fraction != 0);
+
+  os << (p + 1);
+}
+
 static void
 print_datetime(std::ostream& os, const IEType* type, void* v) {
   /* Convert to dateTimeNanoseconds. */
@@ -266,16 +353,7 @@ print_datetime(std::ostream& os, const IEType* type, void* v) {
 
   struct tm tm;
   gmtime_r(&seconds, &tm);
-
-  char time_buf[1000];
-  strftime(time_buf, sizeof(time_buf), "%FT%T.", &tm);
-  time_buf[sizeof(time_buf) - 1] = '\0';
-  os << time_buf;
-
-  while (fraction != 0 && fraction % 10 == 0)
-    fraction /= 10;
-
-  os << fraction;
+  print_iso_datetime(os, &tm, fraction);
 }
 
 static void
@@ -495,6 +573,8 @@ int main(int argc, char* const* argv) {
     help();
     return EXIT_SUCCESS;
   }
+
+  std::cout.fill('0');
 
   CSVCollector cc;
 

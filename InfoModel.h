@@ -131,8 +131,10 @@ public:
    * Idempotent; will only add the Information Element once.
    *
    * @param specie the Information Element to add
+   *
+   * @return the added information element
    */
-  void add(const InfoElement& specie);
+  const InfoElement* add(const InfoElement& specie);
   
   /**
    * Add an Information Element described by a complete IESpec to the
@@ -150,8 +152,10 @@ public:
    * @param pen the private enterprise number to add, or 0 for an IANA IE
    * @param number the IE number (low-order 15 bits without enterprise bit)
    * @param size the IE length
+   *
+   * @return the information element that was added
    */
-  void add_unknown(uint32_t pen, uint16_t number, uint16_t size);
+  const InfoElement* add_unknown(uint32_t pen, uint16_t number, uint16_t size);
 
   /**
    * Look up and return a pointer to the canonical Information Element given 
