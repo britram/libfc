@@ -154,8 +154,8 @@
  *     exit(1);
  *
  *   struct ipfix_template_t* t = ipfix_template_new();
- *   ipfix_register_placement(t, "sourceIPv4Address", &sip, 4);
- *   ipfix_register_placement(t, "destinationIPv4Address", &dip, 4);
+ *   ipfix_register_placement(t, "sourceIPv4Address", &sip, 0);
+ *   ipfix_register_placement(t, "destinationIPv4Address", &dip, 0);
  *   ipfix_register_callback(t, callback);
  *   ipfix_collect_from_file(fd, t);
  *
