@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
-set(CMAKE_CXX_FLAGS "-O3")
-set(CMAKE_CXX_FLAGS_PROFILE "-g -O0 -pg")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-
 # Use matched template cache?
 #
 # This has been shown in experiments to actually slow down the
@@ -23,9 +19,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 # debuggery
 if ($ENV{CLANG}) 
   message(STATUS "hey, you're using clang! good luck!")
-  add_definitions(-g -Wall --std=c++0x --stdlib=libc++)
+  set(CMAKE_CXX_FLAGS "-g -Wall --std=c++0x --stdlib=libc++ -O3")
+  set(CMAKE_CXX_FLAGS_PROFILE "-g -Wall --std=c++0x --stdlib=libc++ -O0 -pg")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall --std=c++0x --stdlib=libc++ -O0")
+
 else ($ENV{CLANG})
-  add_definitions(-g -Wall --std=c++0x)
+  set(CMAKE_CXX_FLAGS "-g -Wall --std=c++0x -O3")
+  set(CMAKE_CXX_FLAGS_PROFILE "-g -Wall --std=c++0x -O0 -pg")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall --std=c++0x -O0")
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     #include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
   else (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -65,6 +66,9 @@ add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 add_executable(ipfix2csv ipfix2csv.cpp)
 target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES} pcap)
 #target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES} pcap log4cplus)
+
+add_executable(cbinding cbinding.c)
+target_link_libraries(cbinding fc)
 
 if ($ENV{CLANG}) 
   target_link_libraries (fc c++)
