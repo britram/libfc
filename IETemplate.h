@@ -51,7 +51,6 @@
 #include <vector>
 
 #include "InfoElement.h"
-#include "Transcoder.h"
 #include "Constants.h"
 
 namespace IPFIX {
