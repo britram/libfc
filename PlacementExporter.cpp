@@ -32,13 +32,13 @@
 
 #include <unistd.h>
 
-#include <boost/detail/endian.hpp>
-
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+#include "ipfix_endian.h"
 
 #include "BasicOctetArray.h"
 #include "PlacementExporter.h"
@@ -185,12 +185,12 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
   : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("EncodePlan")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
  {
-#if defined(BOOST_BIG_ENDIAN)
+#if defined(IPFIX_BIG_ENDIAN)
   Decision::decision_type_t encode_fixlen_maybe_endianness
     = Decision::encode_fixlen;
   Decision::decision_type_t encode_double_as_float_maybe_endianness
     = Decision::encode_double_as_float;
-#elif defined(BOOST_LITTLE_ENDIAN)
+#elif defined(IPFIX_LITTLE_ENDIAN)
   Decision::decision_type_t encode_fixlen_maybe_endianness
     = Decision::encode_fixlen_endianness;
   Decision::decision_type_t encode_float_into_double_maybe_endianness

@@ -32,13 +32,14 @@
 
 #include <time.h>
 
-#include <boost/detail/endian.hpp>
 
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+#include "ipfix_endian.h"
 
 #include "BasicOctetArray.h"
 #include "DataSetDecoder.h"
@@ -255,12 +256,12 @@ DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
   LOG4CPLUS_TRACE(logger, "ENTER DecodePlan::DecodePlan (wt with "
                   << wire_template->size() << " entries)");
 
-#if defined(BOOST_BIG_ENDIAN)
+#if defined(IPFIX_BIG_ENDIAN)
   Decision::decision_type_t transfer_fixlen_maybe_endianness
     = Decision::transfer_fixlen;
   Decision::decision_type_t transfer_float_into_double_maybe_endianness
     = Decision::transfer_float_into_double;
-#elif defined(BOOST_LITTLE_ENDIAN)
+#elif defined(IPFIX_LITTLE_ENDIAN)
   Decision::decision_type_t transfer_fixlen_maybe_endianness
     = Decision::transfer_fixlen_endianness;
   Decision::decision_type_t transfer_float_into_double_maybe_endianness

@@ -28,8 +28,6 @@
 #include <cstdint>
 #include <sstream>
 
-#include <boost/detail/endian.hpp>
-
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
