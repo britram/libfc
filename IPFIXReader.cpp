@@ -137,7 +137,8 @@ namespace IPFIX {
                                      message_size,
                                      decode_uint32(cur +  4),
                                      decode_uint32(cur +  8),
-                                     decode_uint32(cur + 12));
+                                     decode_uint32(cur + 12),
+				     0);
       
       const uint8_t* message_end = message + message_size;
 

@@ -58,7 +58,8 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
                      uint16_t length,
                      uint32_t export_time,
                      uint32_t sequence_number,
-                     uint32_t observation_domain) {
+                     uint32_t observation_domain,
+		     uint64_t base_time) {
     time_t e = export_time;
     char* e_string = asctime(localtime(&e));
 
@@ -72,6 +73,7 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
               << ", extime=" << e_string
               << ", seq=" << sequence_number
               << ", domain=" << observation_domain
+	      << ", basetime=" << base_time
               << std::endl;
   }
 

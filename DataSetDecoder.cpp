@@ -792,14 +792,16 @@ namespace IPFIX {
                                      uint16_t length,
                                      uint32_t export_time,
                                      uint32_t sequence_number,
-                                     uint32_t observation_domain) {
+                                     uint32_t observation_domain,
+				     uint64_t base_time) {
     LOG4CPLUS_TRACE(logger,
                     "ENTER start_message"
                     << ", version=" << version
                     << ", length=" << length
                     << ", export_time=" << make_time(export_time)
                     << ", sequence_number=" << sequence_number
-                    << ", observation_domain=" << observation_domain);
+                    << ", observation_domain=" << observation_domain
+		    << ", base_time=" << base_time);
     assert(current_wire_template == 0);
 
     if (version != kIpfixVersion) {
@@ -807,6 +809,12 @@ namespace IPFIX {
       report_error("Expected message version %04x, got %04x",
                    kIpfixVersion, version);
     }
+
+    if (base_time != 0) {
+      parse_is_good = false;
+      report_error("Expected base_time 0, got %04x", base_time);
+    }
+
     this->observation_domain = observation_domain;
   }
 

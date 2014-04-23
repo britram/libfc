@@ -41,7 +41,8 @@ namespace IPFIX {
                                      uint16_t length,
                                      uint32_t export_time,
                                      uint32_t sequence_number,
-                                     uint32_t observation_domain) {
+                                     uint32_t observation_domain,
+				     uint64_t base_time) {
   }
 
   void DefaultHandler::start_template_set(uint16_t set_id, uint16_t set_length) {
