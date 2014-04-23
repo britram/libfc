@@ -63,7 +63,8 @@
 // GNU libc offers the helpful header <endian.h> which defines
 // __BYTE_ORDER
 
-#  if defined(__GNUC__)
+/* For some reason, clang lies and defines __GNUC__. WTF, clang?? */
+#  if defined(__GNUC__) && !defined(__clang__)
 #   include <endian.h>
 #   if (__BYTE_ORDER == __LITTLE_ENDIAN)
 #    define IPFIX_LITTLE_ENDIAN
