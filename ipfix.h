@@ -267,8 +267,8 @@ extern "C" {
    *
    * @return non-zero on success and 0 on error
    */
-  extern int ipfix_collect_from_file(int fd, struct ipfix_template_t* t);
-
+  extern int ipfix_collect_from_wandio(io_t wio, struct ipfix_template_t* t);
+#endif
    
 #  if defined(__cplusplus)
 }
