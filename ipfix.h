@@ -153,16 +153,17 @@
  *   if (fd < 0)
  *     exit(1);
  *
- *   struct ipfix_template_t* t = ipfix_template_new();
+ *   struct ipfix_template_set_t* s = ipfix_template_set_new();
+ *   struct ipfix_template_t* t = ipfix_template_new(s);
  *   ipfix_register_placement(t, "sourceIPv4Address", &sip, 0);
  *   ipfix_register_placement(t, "destinationIPv4Address", &dip, 0);
- *   ipfix_register_callback(t, callback);
- *   ipfix_collect_from_file(fd, t);
+ *   ipfix_register_callback(s, callback);
+ *   ipfix_collect_from_file(fd, s);
  *
  *   if (close(fd) < 0)
  *     exit(1);
  *
- *   ipfix_template_delete(t);
+ *   ipfix_template_set_delete(s);
  *
  *   return 0;
  * }
@@ -178,6 +179,13 @@ extern "C" {
 
 #  include <stdlib.h>
 
+  /** An IPFIX template set.
+   *
+   * This is an opaque struct, and you should only ever handle a
+   * pointer to it.
+   */
+  struct ipfix_template_set_t;
+
   /** An IPFIX template.
    *
    * This is an opaque struct, and you should only ever handle a
@@ -185,18 +193,28 @@ extern "C" {
    */
   struct ipfix_template_t;
 
-  /** Creates a new IPFIX template.
+  /** Creates a new IPFIX template set.
    *
+   * @return a new IPFIX template set.
+   */
+  extern struct ipfix_template_set_t* ipfix_template_set_new();
+
+  /** Creates a new IPFIX template within a template set.
+   *
+   * @param s the template set in which to create the new template
    * @return a new IPFIX template.
    */
-  extern struct ipfix_template_t* ipfix_template_new();
+  extern struct ipfix_template_t* ipfix_template_new(
+    struct ipfix_template_set_t* s);
 
-  /** Destroys an IPFIX template.
+  /** Destroys an IPFIX template set.
    *
-   * @param p IPFIX template, previously created by
-   * ipfix_template_new().
+   * This also destroys all templates in the template set.
+   *
+   * @param s IPFIX template set, previously created by
+   * ipfix_template_set_new().
    */
-  extern void ipfix_template_delete(struct ipfix_template_t* p);
+  extern void ipfix_template_set_delete(struct ipfix_template_set_t* s);
 
   /** Registers IE name/address association for .
    *
@@ -220,25 +238,25 @@ extern "C" {
   /** Registers callback for when placement is complete.
    *
    * This function registers a callback that is called whenever a
-   * record has been read that matches the given template.  In that
+   * record has been read that matches any template in the set.  In that
    * case, the memory addresses in the template will have been filled
    * with new values.
    *
-   * @param t the template
+   * @param s the template set
    * @param c the callback to call
    */
-  extern void ipfix_register_callback(struct ipfix_template_t* t,
+  extern void ipfix_register_callback(struct ipfix_template_set_t* s,
                                       void (*c) (const struct ipfix_template_t*));
 
   /** Collect IPFIX data from a file.
    *
    * @param fd a valid file descriptor, such as you'd get back from a
    *     successful call to open(2)
-   * @param t template containing the IEs of interest and the callback
+   * @param s template set containing the templates of interest and the callback
    *
    * @return non-zero on success and 0 on error
    */
-  extern int ipfix_collect_from_file(int fd, struct ipfix_template_t* t);
+  extern int ipfix_collect_from_file(int fd, struct ipfix_template_set_t* t);
 
    
 #  if defined(__cplusplus)

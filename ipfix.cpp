@@ -24,6 +24,10 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
+#include <set>
+
+#include <cstddef>
+
 #include "ipfix.h"
 
 #include "InfoModel.h"
@@ -34,25 +38,28 @@
 
 static bool infomodel_initialized = false;
 
+struct ipfix_template_t {
+  IPFIX::PlacementTemplate* tmpl;
+};
+
 class CBinding : public IPFIX::PlacementCollector {
 private:
-  const struct ipfix_template_t* enclosing;
-  IPFIX::PlacementTemplate* tmpl;
+  std::set<IPFIX::PlacementTemplate*> templates;
   void (*callback) (const ipfix_template_t* t);
 
 public:
-  CBinding(const struct ipfix_template_t* enclosing) 
-    : enclosing(enclosing),
-      tmpl(new IPFIX::PlacementTemplate()), callback(0) {
+  CBinding()
+    : callback(0) {
   }
 
   virtual ~CBinding() {
-    delete tmpl;
+    for (auto i = templates.begin(); i != templates.end(); ++i)
+      delete *i;
+    templates.clear();
   }
 
-  bool register_placement(const char* name, void* address, size_t size) {
-    return tmpl->register_placement(IPFIX::InfoModel::instance().lookupIE(name),
-                                    address, size);
+  void add_template(ipfix_template_t* t) {
+    templates.insert(t->tmpl);
   }
 
   void register_callback(void (*c) (const struct ipfix_template_t*)) {
@@ -62,41 +69,57 @@ public:
   void start_placement(const IPFIX::PlacementTemplate* tmpl) {
   }
 
-  void end_placement(const IPFIX::PlacementTemplate* tmpl) {
-    callback(enclosing);
+  void end_placement(const IPFIX::PlacementTemplate* t) {
+    // I wonder if this is portable?  --neuhaust
+    const ipfix_template_t* this_template 
+      = reinterpret_cast<const ipfix_template_t*>(
+	  reinterpret_cast<const unsigned char*>(t) 
+	  - offsetof(struct ipfix_template_t, tmpl));
+    callback(this_template);
   }
 };
 
-struct ipfix_template_t {
+struct ipfix_template_set_t {
   CBinding* binding;
 };
 
-extern struct ipfix_template_t* ipfix_template_new() {
+extern struct ipfix_template_set_t* ipfix_template_set_new() {
+  if (!infomodel_initialized)
+    IPFIX::InfoModel::instance().defaultIPFIX();
+  infomodel_initialized = true;
+
+  struct ipfix_template_set_t* ret = new ipfix_template_set_t;
+  ret->binding = new CBinding();
+  return ret;
+}
+
+extern struct ipfix_template_t* ipfix_template_new(
+    struct ipfix_template_set_t* s) {
   if (!infomodel_initialized)
     IPFIX::InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
 
   struct ipfix_template_t* ret = new ipfix_template_t;
-  ret->binding = new CBinding(ret);
+  s->binding->add_template(ret);
   return ret;
 }
 
-extern void ipfix_template_delete(struct ipfix_template_t* p) {
-  delete p->binding;
-  delete p;
+extern void ipfix_template_set_delete(struct ipfix_template_set_t* s) {
+  delete s->binding;
 }
 
 extern int ipfix_register_placement(struct ipfix_template_t* t,
                                     const char* ie_name, void* p, size_t size) {
-  return t->binding->register_placement(ie_name, p, size);
+  return t->tmpl->register_placement(
+           IPFIX::InfoModel::instance().lookupIE(ie_name), p, size);
 }
 
-extern void ipfix_register_callback(struct ipfix_template_t* t,
+extern void ipfix_register_callback(struct ipfix_template_set_t* s,
                                     void (*c) (const struct ipfix_template_t*)) {
-  t->binding->register_callback(c);
+  s->binding->register_callback(c);
 }
 
-extern int ipfix_collect_from_file(int fd, struct ipfix_template_t* t) {
+extern int ipfix_collect_from_file(int fd, struct ipfix_template_set_t* t) {
   int ret = 1;
 
   IPFIX::FileInputSource is(fd);

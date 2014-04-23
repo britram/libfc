@@ -47,15 +47,17 @@ int main() {
   if (fd < 0)
     exit(1);
   
-  struct ipfix_template_t* t = ipfix_template_new();
+  struct ipfix_template_set_t* s = ipfix_template_set_new();
+
+  struct ipfix_template_t* t = ipfix_template_new(s);
   ipfix_register_placement(t, "sourceIPv4Address", &sip, 4);
   ipfix_register_placement(t, "destinationIPv4Address", &dip, 4);
-  ipfix_register_callback(t, callback);
-  ipfix_collect_from_file(fd, t);
+  ipfix_register_callback(s, callback);
+  ipfix_collect_from_file(fd, s);
   if (close(fd) < 0)
     exit(1);
    
-  ipfix_template_delete(t);
+  ipfix_template_set_delete(s);
 
   return 0;
 }
