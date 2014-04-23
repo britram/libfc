@@ -37,10 +37,13 @@
 #define _LIBFTRACE_H_ /* hack */
 
 /** Opaque structure representing a libftrace source */
+struct libftrace_st;
 typedef struct libftrace_st libftrace_t;
 
 /** Structure representing a unidirectional flow */
 typedef struct libftrace_uniflow_st {
+  /** Parent libftrace source structure */
+  libftrace_t     *_ft;
   /** Flow start time in POSIX epoch milliseconds */
   uint64_t        time_start;
   /** Flow end time in POSIX epoch milliseconds */
@@ -89,7 +92,6 @@ typedef struct libftrace_uniflow_st {
   uint8_t         tcp_flags;
 } libftrace_uniflow_t;
 
-
 /** Open a libftrace reader on an IPFIX/PDU file */
 libftrace_t *ftrace_create(const char *filename);
 
@@ -97,7 +99,7 @@ libftrace_t *ftrace_create(const char *filename);
 void ftrace_destroy(libftrace_t *ft);
 
 /** Create a libftrace uniflow structure for reading uniflows */
-libftrace_uniflow_t *ftrace_create_uniflow();
+libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft);
 
 /** Destroy a uniflow structure created by ftrace_create_uniflow */
 void ftrace_destroy_uniflow(libftrace_uniflow_t *uf);
