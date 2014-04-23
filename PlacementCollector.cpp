@@ -29,8 +29,8 @@
 namespace IPFIX {
 
   PlacementCollector::PlacementCollector() {
-    ir.set_content_handler(&dsd);
-    ir.set_error_handler(&dsd);
+    ir.set_content_handler(&d);
+    ir.set_error_handler(&d);
   }
 
   void PlacementCollector::collect(InputSource& is) {
@@ -39,7 +39,7 @@ namespace IPFIX {
 
   void PlacementCollector::register_placement_template(
       const PlacementTemplate* placement) {
-    dsd.register_placement_template(placement, this);
+    d.register_placement_template(placement, this);
   }
 
 } // namespace IPFIX

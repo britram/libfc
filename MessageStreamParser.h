@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_IPFIXREADER_H
-#  define IPFIX_IPFIXREADER_H
+#ifndef IPFIX_MESSAGESTREAMPARSER_H
+#  define IPFIX_MESSAGESTREAMPARSER_H
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
@@ -43,9 +43,9 @@
 
 namespace IPFIX {
 
-  class IPFIXReader {
+  class MessageStreamParser {
   public:
-    IPFIXReader();
+    MessageStreamParser();
 
     /** Parses an IPFIX message stream from an input source.
      *
@@ -85,4 +85,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_IPFIXREADER_H
+#endif // IPFIX_MESSAGESTREAMPARSER_H

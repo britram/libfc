@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 

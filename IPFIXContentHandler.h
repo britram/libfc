@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_DATASETDECODER_H
-#  define IPFIX_DATASETDECODER_H
+#ifndef IPFIX_IPFIXCONTENTHANDLER_H
+#  define IPFIX_IPFIXCONTENTHANDLER_H
 
 #  include <list>
 #  include <map>
@@ -41,7 +41,8 @@
 #    include <log4cplus/logger.h>
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-#  include "DefaultHandler.h"
+#  include "ContentHandler.h"
+#  include "ErrorHandler.h"
 #  include "InfoElement.h"
 #  include "InfoModel.h"
 #  include "InputSource.h"
@@ -57,10 +58,14 @@ namespace IPFIX {
    * more in-depth treatment, see the documentation on
    * PlacementTemplate.
    */
-  class DataSetDecoder : public DefaultHandler {
+  class IPFIXContentHandler : public ContentHandler, public ErrorHandler {
   public:
-    DataSetDecoder();
-    ~DataSetDecoder();
+    IPFIXContentHandler();
+    ~IPFIXContentHandler();
+
+    /* From ContentHandler */
+    void start_session();
+    void end_session();
 
     void start_message(uint16_t version,
                        uint16_t length,
@@ -69,11 +74,15 @@ namespace IPFIX {
                        uint32_t observation_domain,
 		       uint64_t base_time);
     void end_message();
-    void start_template_set(uint16_t set_id, uint16_t set_length);
+    void start_template_set(uint16_t set_id,
+			    uint16_t set_length,
+			    const uint8_t* buf);
     void end_template_set();
     void start_template_record(uint16_t template_id, uint16_t field_count);
     void end_template_record();
-    void start_option_template_set(uint16_t set_id, uint16_t set_length);
+    void start_option_template_set(uint16_t set_id,
+				   uint16_t set_length,
+				   const uint8_t* buf);
     void end_option_template_set();
     void start_option_template_record(uint16_t template_id,
                                       uint16_t field_count,
@@ -85,6 +94,11 @@ namespace IPFIX {
                          uint32_t enterprise_number);
     void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf);
     void end_data_set();
+
+    /* From ErrorHandler */
+    void error(Error error, const char* message);
+    void fatal(Error error, const char* message);
+    void warning(Error error, const char* message);
 
     /** Registers a placement template.
      *
@@ -226,4 +240,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_DATASETDECODER_H
+#endif // IPFIX_IPFIXCONTENTHANDLER_H

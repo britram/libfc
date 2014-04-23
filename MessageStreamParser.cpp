@@ -36,53 +36,14 @@
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "Constants.h"
-#include "IPFIXReader.h"
+#include "MessageStreamParser.h"
+
+#include "decode_util.h"
 
 namespace IPFIX {
 
-  /** Decodes a 16-bit value from a buffer.
-   *
-   * Values are transported on the wire in network byte order (=
-   * big-endian).  This function converts two adjacent bytes to a
-   * 16-bit number in host byte order.
-   *
-   * It is the responsibility of the caller to make sure that buf
-   * contains at least two more octets.  It would be tempting to use
-   * functions like ntohs(), but we can't do that since we don't know
-   * if the buffer is properly aligned.
-   *
-   * @param buf the buffer from which to decode the octets
-   *
-   * @return the decoded 16-bit value
-   */
-  static uint16_t decode_uint16(const uint8_t* buf) {
-    return (static_cast<uint16_t>(buf[0]) << 8) 
-      | (static_cast<uint16_t>(buf[1]) << 0);
-  }
 
-  /** Decodes a 32-bit value from a buffer.
-   *
-   * Values are transported on the wire in network byte order (=
-   * big-endian).  This function converts four adjacent bytes to a
-   * 32-bit number in host byte order.
-   *
-   * It is the responsibility of the caller to make sure that buf
-   * contains at least four more octets.  It would be tempting to use
-   * functions like ntohs(), but we can't do that since we don't know
-   * if the buffer is properly aligned.
-   *
-   * @param buf the buffer from which to decode the octets
-   *
-   * @return the decoded 32-bit value
-   */
-  static uint32_t decode_uint32(const uint8_t* buf) {
-    return (static_cast<uint32_t>(buf[0]) << 24) 
-      | (static_cast<uint32_t>(buf[1]) << 16)
-      | (static_cast<uint32_t>(buf[2]) <<  8) 
-      | (static_cast<uint32_t>(buf[3]) <<  0);
-  }
-
-  IPFIXReader::IPFIXReader() 
+  MessageStreamParser::MessageStreamParser() 
     : parse_in_progress(false),
       content_handler(0),
       error_handler(0)
@@ -93,15 +54,15 @@ namespace IPFIX {
   {
   }
 
-  void IPFIXReader::set_error_handler(ErrorHandler* handler) {
+  void MessageStreamParser::set_error_handler(ErrorHandler* handler) {
     error_handler = handler;
   }
 
-  void IPFIXReader::set_content_handler(ContentHandler* handler) {
+  void MessageStreamParser::set_content_handler(ContentHandler* handler) {
     content_handler = handler;
   }
 
-  void IPFIXReader::parse(InputSource& is) {
+  void MessageStreamParser::parse(InputSource& is) {
     LOG4CPLUS_TRACE(logger, "ENTER parse()");
 
     assert(content_handler != 0);
@@ -200,59 +161,23 @@ namespace IPFIX {
         cur += kSetHeaderLen;
 
         if (set_id == kTemplateSetID) {
-          content_handler->start_template_set(set_id, set_length);
-
-          /* Decode template set */
-          while (cur + kTemplateHeaderLen <= set_end) {
-            /* Decode template record */
-            uint16_t set_id = decode_uint16(cur + 0);
-            uint16_t field_count = decode_uint16(cur + 2);
-            content_handler->start_template_record(set_id, field_count);
-         
-            cur += kTemplateHeaderLen;
-
-            for (unsigned int field = 0; field < field_count; field++) {
-              if (cur + kFieldSpecifierLen > set_end) {
-                error_handler->fatal(Error::long_fieldspec, 0);
-                parse_in_progress = false;
-                return;
-              }
-
-              uint16_t ie_id = decode_uint16(cur + 0);
-              uint16_t ie_length = decode_uint16(cur + 2);
-              bool enterprise = ie_id & 0x8000;
-              ie_id &= 0x7fff;
-
-              uint32_t enterprise_number = 0;
-              if (enterprise) {
-                if (cur + kFieldSpecifierLen + kEnterpriseLen > set_end) {
-                  error_handler->fatal(Error::long_fieldspec, 0);
-                  parse_in_progress = false;
-                  return;
-                }
-                enterprise_number = decode_uint32(cur + 4);
-              }
-
-              content_handler->field_specifier(enterprise, ie_id,
-                                               ie_length, enterprise_number);
-
-              cur += kFieldSpecifierLen + (enterprise ? kEnterpriseLen : 0);
-              assert (cur <= set_end);
-            }
-            
-            content_handler->end_template_record();
-          }
+          content_handler->start_template_set(set_id,
+					      set_length - kSetHeaderLen, 
+					      cur);
+	  cur += set_length - kSetHeaderLen;
           content_handler->end_template_set();
         } else if (set_id == kOptionTemplateSetID) {
-          /* Decode option template set */
-          content_handler->start_option_template_set(set_id, set_length);
-          /* FIXME: This is not really implemented yet, so we skip over it. */
+          content_handler->start_option_template_set(set_id,
+						     set_length - kSetHeaderLen,
+						     cur);
+          /* FIXME: This is not implemented yet, so we skip over it. */
           error_handler->warning(Error::option_templates_ni, 0);
           cur += set_length - kSetHeaderLen;
           content_handler->end_option_template_set();
-        } else {
-          /* Decode data set */
-          content_handler->start_data_set(set_id, set_length, cur);
+        } else {          /* Decode data set */
+          content_handler->start_data_set(set_id,
+					  set_length - kSetHeaderLen,
+					  cur);
           cur += set_length - kSetHeaderLen;
           content_handler->end_data_set();
         }

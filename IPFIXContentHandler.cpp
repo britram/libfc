@@ -32,17 +32,17 @@
 
 #include <time.h>
 
-
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
+#include "decode_util.h"
 #include "ipfix_endian.h"
 
 #include "BasicOctetArray.h"
-#include "DataSetDecoder.h"
+#include "IPFIXContentHandler.h"
 #include "PlacementCollector.h"
 
 #include "exceptions/FormatError.h"
@@ -61,7 +61,7 @@
  *   - where the converted data is to be stored.
  *
  * Basically, clients register sets of pairs of <ie, pointer> with the
- * DataSetDecoder class below.  This is called a Placement Template.
+ * IPFIXContentHandler class below.  This is called a Placement Template.
  * This placement template will then be used to match incoming data
  * records.  The previously used procedure was to nominate the first
  * placement template whose set of information elements is a subset of
@@ -757,18 +757,18 @@ uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
 
 namespace IPFIX {
 
-  DataSetDecoder::DataSetDecoder()
+  IPFIXContentHandler::IPFIXContentHandler()
     : info_model(InfoModel::instance()),
       current_wire_template(0),
       parse_is_good(true)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                          ,
-      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("DataSetDecoder")))
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("IPFIXContentHandler")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
   }
 
-  DataSetDecoder::~DataSetDecoder() {
+  IPFIXContentHandler::~IPFIXContentHandler() {
     if (parse_is_good) { /* Check assertions only when no exception. */
       assert (current_wire_template == 0);
     }
@@ -788,7 +788,15 @@ namespace IPFIX {
   }
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-  void DataSetDecoder::start_message(uint16_t version,
+  void IPFIXContentHandler::start_session() {
+    LOG4CPLUS_TRACE(logger, "Session starts");
+  }
+
+  void IPFIXContentHandler::end_session() {
+    LOG4CPLUS_TRACE(logger, "Session ends");
+  }
+
+  void IPFIXContentHandler::start_message(uint16_t version,
                                      uint16_t length,
                                      uint32_t export_time,
                                      uint32_t sequence_number,
@@ -816,30 +824,73 @@ namespace IPFIX {
     }
 
     this->observation_domain = observation_domain;
+    LOG4CPLUS_TRACE(logger, "LEAVE start_message");
   }
 
-  void DataSetDecoder::end_message() {
+  void IPFIXContentHandler::end_message() {
     LOG4CPLUS_TRACE(logger, "ENTER end_message");
     assert(current_wire_template == 0);
+    LOG4CPLUS_TRACE(logger, "LEAVE end_message");
   }
 
-  void DataSetDecoder::start_template_set(uint16_t set_id,
-                                          uint16_t set_length) {
+  void IPFIXContentHandler::start_template_set(uint16_t set_id,
+					       uint16_t set_length,
+					       const uint8_t* buf) {
     LOG4CPLUS_TRACE(logger, "ENTER start_template_set"
                     << ", set_id=" << set_id
                     << ", set_length=" << set_length);
     assert(current_wire_template == 0);
+
+    const uint8_t* set_end = buf + set_length;
+
+    while (buf + kTemplateHeaderLen <= set_end) {
+      /* Decode template record */
+      uint16_t set_id = decode_uint16(buf + 0);
+      uint16_t field_count = decode_uint16(buf + 2);
+      
+      start_template_record(set_id, field_count);
+      
+      buf += kTemplateHeaderLen;
+      
+      for (unsigned int field = 0; field < field_count; field++) {
+	if (buf + kFieldSpecifierLen > set_end) {
+	  error(Error::long_fieldspec, 0);
+	  return;
+	}
+	
+	uint16_t ie_id = decode_uint16(buf + 0);
+	uint16_t ie_length = decode_uint16(buf + 2);
+	bool enterprise = ie_id & 0x8000;
+	ie_id &= 0x7fff;
+	
+	uint32_t enterprise_number = 0;
+	if (enterprise) {
+	  if (buf + kFieldSpecifierLen + kEnterpriseLen > set_end) {
+	    error(Error::long_fieldspec, 0);
+	    return;
+	  }
+	  enterprise_number = decode_uint32(buf + 4);
+	}
+	
+	field_specifier(enterprise, ie_id, ie_length, enterprise_number);
+	
+	buf += kFieldSpecifierLen + (enterprise ? kEnterpriseLen : 0);
+	assert (buf <= set_end);
+      }
+      
+      end_template_record();
+    }
   }
 
-  void DataSetDecoder::end_template_set() {
+  void IPFIXContentHandler::end_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_set");
   }
 
-  uint64_t DataSetDecoder::make_template_key(uint16_t tid) const {
+  uint64_t IPFIXContentHandler::make_template_key(uint16_t tid) const {
     return (static_cast<uint64_t>(observation_domain) << 16) + tid;
   }
 
-  void DataSetDecoder::start_template_record(
+  void IPFIXContentHandler::start_template_record(
       uint16_t template_id,
       uint16_t field_count) {
     LOG4CPLUS_TRACE(logger,
@@ -851,13 +902,13 @@ namespace IPFIX {
 
     /* It is not an error if the same template (as given by template
      * ID and observation domain) is repeated, so we don't check for
-     * that. */
+     * that. FIXME this has changed! --neuhaust */
     current_field_count = field_count;
     current_field_no = 0;
     current_wire_template = new MatchTemplate();
   }
 
-  void DataSetDecoder::end_template_record() {
+  void IPFIXContentHandler::end_template_record() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_record");
     if (current_wire_template->size() > 0) {
 #if defined(_LIBFC_HAVE_LOG4CPLUS_)
@@ -899,20 +950,21 @@ namespace IPFIX {
     current_wire_template = 0;
   }
 
-  void DataSetDecoder::start_option_template_set(
+  void IPFIXContentHandler::start_option_template_set(
       uint16_t set_id,
-      uint16_t set_length) {
+      uint16_t set_length,
+      const uint8_t* buf) {
     LOG4CPLUS_TRACE(logger, "ENTER start_option_template_set"
                     << ", set_id=" << set_id
                     << ", set_length=" << set_length);
     assert(current_wire_template == 0);
   }
 
-  void DataSetDecoder::end_option_template_set() {
+  void IPFIXContentHandler::end_option_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_set");
   }
 
-  void DataSetDecoder::start_option_template_record(
+  void IPFIXContentHandler::start_option_template_record(
       uint16_t template_id,
       uint16_t field_count,
       uint16_t scope_field_count) {
@@ -923,11 +975,11 @@ namespace IPFIX {
     assert(current_wire_template == 0);
   }
 
-  void DataSetDecoder::end_option_template_record() {
+  void IPFIXContentHandler::end_option_template_record() {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_record");
   }
 
-  void DataSetDecoder::field_specifier(
+  void IPFIXContentHandler::field_specifier(
       bool enterprise,
       uint16_t ie_id,
       uint16_t ie_length,
@@ -976,14 +1028,14 @@ namespace IPFIX {
   }
 
   const MatchTemplate*
-  DataSetDecoder::find_wire_template(uint16_t id) const {
+  IPFIXContentHandler::find_wire_template(uint16_t id) const {
     std::map<uint64_t, const MatchTemplate*>::const_iterator i
       = wire_templates.find(make_template_key(id));
     return i == wire_templates.end() ? 0 : i->second;
   }
 
   const PlacementTemplate*
-  DataSetDecoder::match_placement_template(const MatchTemplate* wire_template) const {
+  IPFIXContentHandler::match_placement_template(const MatchTemplate* wire_template) const {
     LOG4CPLUS_TRACE(logger, "ENTER match_placement_template");
 
     /* This strategy: return first match. Other strategies are also
@@ -1015,7 +1067,7 @@ namespace IPFIX {
 #endif /* defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE) */
   }
 
-  void DataSetDecoder::start_data_set(uint16_t id,
+  void IPFIXContentHandler::start_data_set(uint16_t id,
                                       uint16_t length,
                                       const uint8_t* buf) {
     LOG4CPLUS_TRACE(logger,
@@ -1062,18 +1114,31 @@ namespace IPFIX {
 
   }
 
-  void DataSetDecoder::end_data_set() {
+  void IPFIXContentHandler::end_data_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_data_set");
+    LOG4CPLUS_TRACE(logger, "LEAVE end_data_set");
   }
 
-  void DataSetDecoder::register_placement_template(
+  void IPFIXContentHandler::error(Error error, const char* message) {
+    LOG4CPLUS_TRACE(logger, "Warning: " << error << ": " << message);
+  }
+
+  void IPFIXContentHandler::fatal(Error error, const char* message) {
+    LOG4CPLUS_TRACE(logger, "Warning: " << error << ": " << message);
+  }
+
+  void IPFIXContentHandler::warning(Error error, const char* message) {
+    LOG4CPLUS_TRACE(logger, "Warning: " << error << ": " << message);
+  }
+
+  void IPFIXContentHandler::register_placement_template(
       const PlacementTemplate* placement_template,
       PlacementCollector* callback) {
     placement_templates.push_back(placement_template);
     callbacks[placement_template] = callback;
   }
 
-  uint16_t DataSetDecoder::wire_template_min_length(const MatchTemplate* t) {
+  uint16_t IPFIXContentHandler::wire_template_min_length(const MatchTemplate* t) {
     uint16_t min = 0;
 
     for (auto i = t->begin(); i != t->end(); ++i) {

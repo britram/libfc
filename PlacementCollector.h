@@ -33,8 +33,8 @@
 #ifndef IPFIX_PLACEMENTCALLBACK_H
 #  define IPFIX_PLACEMENTCALLBACK_H
 
-#  include "DataSetDecoder.h"
-#  include "IPFIXReader.h"
+#  include "IPFIXContentHandler.h"
+#  include "MessageStreamParser.h"
 #  include "PlacementTemplate.h"
 
 namespace IPFIX {
@@ -71,8 +71,8 @@ namespace IPFIX {
     void register_placement_template(const PlacementTemplate*);
 
   private:
-    DataSetDecoder dsd;
-    IPFIXReader ir;
+    IPFIXContentHandler d;
+    MessageStreamParser ir;
   };
 
 } // namespace IPFIX

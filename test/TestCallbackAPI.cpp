@@ -41,7 +41,7 @@
 #include "Constants.h"
 #include "ContentHandler.h"
 #include "ErrorHandler.h"
-#include "IPFIXReader.h"
+#include "MessageStreamParser.h"
 
 using namespace IPFIX;
 
@@ -81,7 +81,9 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
     std::cerr << "  Message ends" << std::endl;
   }
 
-  void start_template_set(uint16_t set_id, uint16_t set_length) {
+  void start_template_set(uint16_t set_id,
+			  uint16_t set_length,
+			  const uint8_t* buf) {
     std::cerr << "    Template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
@@ -103,7 +105,8 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
   }
 
   void start_option_template_set(uint16_t set_id,
-                                 uint16_t set_length) {
+                                 uint16_t set_length,
+				 const uint8_t* buf) {
     std::cerr << "    Option template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
@@ -187,7 +190,7 @@ BOOST_AUTO_TEST_CASE(BasicCallback) {
     0x00,0x0a,0x00,0x56,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x18,0x03,0xe9,0x00,0x04,0x01,0x36,0x00,0x04,0x00,0x52,0xff,0xff,0x01,0x37,0x00,0x08,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x2e,0x10,0x20,0x30,0x40,0x04,0x65,0x74,0x68,0x30,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65 };
 
   PrintHandler ph;
-  IPFIXReader ir;
+  MessageStreamParser ir;
 
   ir.set_content_handler(&ph);
   ir.set_error_handler(&ph);
@@ -207,7 +210,7 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
   const char* filename = "dahlem-01.ipfix";
 
   PrintHandler ph;
-  IPFIXReader ir;
+  MessageStreamParser ir;
 
   ir.set_content_handler(&ph);
   ir.set_error_handler(&ph);

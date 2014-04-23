@@ -67,7 +67,7 @@ namespace IPFIX {
      * directly from the message header, some computed from it.
      *
      * @param version the version number in the header
-     * @param length overall length of message in octets
+     * @param length overall length of message in bytes
      * @param export_time seconds since Jan 1, 1970 when this header
      *   left the exporter. 
      * @param sequence_number sequence number as per RFC 5101
@@ -95,68 +95,33 @@ namespace IPFIX {
     /** Receives notification that a new template set begins.
      *
      * @param set_id set ID as per RFC 5101 (should be 2)
-     * @param set_length overall set length as per RFC 5101
+     * @param set_length set length (excluding header) in bytes
+     * @param buf pointer to the buffer containing the template set
      */
-    virtual void start_template_set(uint16_t set_id, uint16_t set_length) = 0;
+    virtual void start_template_set(uint16_t set_id,
+				    uint16_t set_length,
+				    const uint8_t* buf) = 0;
 
     /** Receives notification that a template set ends. */
     virtual void end_template_set() = 0;
 
-    /** Receives notification that a template record is starting.
-     *
-     * @param template_id template ID as per RFC 5101
-     * @param field_count number of fields in this template record
-     */
-    virtual void start_template_record(uint16_t template_id,
-                                       uint16_t field_count) = 0;
-
-    /** Receives notification that a template record ends. */
-    virtual void end_template_record() = 0;
-
     /** Receives notification that a new option template set begins.
      *
      * @param set_id set ID as per RFC 5101 (should be 3)
-     * @param set_length overall set length as per RFC 5101
+     * @param set_length set length (excluding header) in bytes
+     * @param buf pointer to the buffer containing the template set
      */
     virtual void start_option_template_set(uint16_t set_id,
-                                           uint16_t set_length) = 0;
+                                           uint16_t set_length,
+					   const uint8_t* buf) = 0;
 
     /** Receives notification that an option template set ends. */
     virtual void end_option_template_set() = 0;
 
-    /** Receives notification that an option template record is starting.
-     *
-     * @param template_id option template ID as per RFC 5101
-     * @param field_count number of fields in this template record
-     * @param scope_field_count number of scope fields as per RFC 5101
-     */
-    virtual void start_option_template_record(uint16_t template_id,
-                                              uint16_t field_count,
-                                              uint16_t scope_field_count) = 0;
-
-    /** Receives notification that an option template record ends. */
-    virtual void end_option_template_record() = 0;
-
-    /** Receives notification of a field specifier.
-     *
-     * @param enterprise true if this an enterprise-specific
-     *     information element, false if it is defined by the IETF
-     * @param ie_id information element identifier as per RFC 5102
-     * @param ie_length length of wire representation of this
-     *     information element as per RFC 5102
-     * @param enterprise_number IANA enterprise number as per the IANA
-     *     Private Enterprise Number Registry. This value is only
-     *     meaningful if the enterprise parameter is true.
-     */
-    virtual void field_specifier(bool enterprise,
-                                 uint16_t ie_id,
-                                 uint16_t ie_length,
-                                 uint32_t enterprise_number) = 0;
-
     /** Receives notification that a data set is available.
      *
      * @param id set id (= template ID) as per RFC 5101, > 255
-     * @param length length in octets of the data records in this set
+     * @param length length in bytes of the data records in this set
      *     (excluding the header)
      * @param buf pointer to the beginning of the data records
      *     (excluding the header)
