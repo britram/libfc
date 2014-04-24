@@ -31,6 +31,9 @@
 
 #include <wandio.h>
 
+#include <pthread.h>
+#include <semaphore.h>
+
 /**
  * @file libftrace.c
  * @brief Implementation of libtrace-like interface to IPFIX uniflow records
@@ -43,8 +46,13 @@ struct libftrace_st {
     io_t                    *wio;
     /** template set for callbacks */
     ipfix_template_set_t    *ts;
+    /** write ready */
+    sem_t                   wok;
+    /** read ready */
+    sem_t                   rok;
     /* storage for uniflow */
     libftrace_uniflow_t     uf;
+    /** templates to match for setting ip_version field */
     struct {
         ipfix_template_t    *v4;
         ipfix_template_t    *v6;
@@ -70,6 +78,10 @@ libftrace_t *ftrace_create(const char *filename)
     /* create a template set -- this will be populated once we decide what to collect */
     ft->ts = ipfix_template_set_new();
 
+    /* create semaphores */
+    sem_init(&ft->wok)
+    sem_init(&ft->rok)
+
     /* all done */
     return ft;
 
@@ -81,10 +93,20 @@ err:
 void ftrace_destroy(libftrace_t *ft)
 {
     if (ft) {
+        sem_destroy(&ft->wok);
+        sem_destroy(&ft->rok);
         if (ft->ts) ipfix_template_set_delete(ft->ts);
         if (ft->wio) wandio_destroy(ft->wio);
         free(ft);
     }
+}
+
+void _ftrace_semcb() {
+
+}
+
+void _ftrace_rthread() {
+    
 }
 
 /** Start reading uniflows from a libftrace source */
@@ -137,10 +159,9 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
 
     /* FIXME more templates */
 
-    /* bind a callback to the set */
+    /* bind a callback to the set to handle semaphores */
 
-    /* FIXME how do we impedence match between callback and iteration? */
-
+    /* then start the reader thread */
 }
 
 /** Destroy a uniflow structure created by ftrace_create_uniflow */
@@ -148,4 +169,9 @@ void ftrace_destroy_uniflow(libftrace_uniflow_t *uf);
 
 /** Read the next uniflow from a libftrace reader. 
     Skips records in the stream which do not match uniflows. */
-int ftrace_read_uniflow(libftrace_uniflow_t *uf);
+int ftrace_read_uniflow(libftrace_uniflow_t *uf) {
+
+    /* manipulate semaphores */
+
+    /* return code */
+}
