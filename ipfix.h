@@ -245,7 +245,7 @@ extern "C" {
    * @param s the template set
    * @param c the callback to call
    */
-  extern void ipfix_register_callback(struct ipfix_template_set_t* s,
+  extern void ipfix_register_callback(struct ipfix_template_t* s,
                                       void (*c) (const struct ipfix_template_t*));
 
   /** Collect IPFIX data from a file.
