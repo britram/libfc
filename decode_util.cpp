@@ -23,7 +23,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
+
 #include "decode_util.h"
+
+#include "exceptions/FormatError.h"
 
 namespace IPFIX {
   uint16_t decode_uint16(const uint8_t* buf) {
@@ -36,5 +42,26 @@ namespace IPFIX {
       | (static_cast<uint32_t>(buf[1]) << 16)
       | (static_cast<uint32_t>(buf[2]) <<  8) 
       | (static_cast<uint32_t>(buf[3]) <<  0);
+  }
+
+  void report_error(const char* message, ...) {
+    static const size_t buf_size = 10240;
+    static char buf[buf_size];
+    va_list args;
+  
+    va_start(args, message);
+    int nchars = vsnprintf(buf, buf_size, message, args);
+    va_end(args);
+
+    if (nchars < 0)
+      strcpy(buf, "Error while formatting error message");
+    else if (static_cast<unsigned int>(nchars) > buf_size - 1 - 3) {
+      buf[buf_size - 4] = '.';
+      buf[buf_size - 3] = '.';
+      buf[buf_size - 2] = '.';
+      buf[buf_size - 1] = '\0';   // Shouldn't be necessary
+    }
+
+    throw IPFIX::FormatError(buf);
   }
 } // namespace IPFIX

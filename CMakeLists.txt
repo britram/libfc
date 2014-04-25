@@ -1,24 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
-# Use matched template cache?
-#
-# This has been shown in experiments to actually slow down the
-# collection process for simple templates, when there are not many
-# possible candidates for matching, so use this with care and make
-# experiments before you commit to this flag.
-#
-# add_definitions(-DLIBFC_USE_MATCHED_TEMPLATE_CACHE)
-
-# Template matching strategy
-#
-# See comment in IPFIXContentHandler.h::match_placement_template().
-# You must define exactly one of these:
-#
-#add_definitions(-DLIBFC_USE_FIRST_MATCHING_TEMPLATE)
-#add_definitions(-DLIBFC_USE_FULLY_MATCHING_TEMPLATE)
-add_definitions(-DLIBFC_USE_BEST_MATCHING_TEMPLATE)
-
 # Use log4cplus?
 #
 #add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)

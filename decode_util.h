@@ -36,7 +36,7 @@
 #  include <cstdint>
 
 namespace IPFIX {
-    /** Decodes a 16-bit value from a buffer.
+  /** Decodes a 16-bit value from a buffer.
    *
    * Values are transported on the wire in network byte order (=
    * big-endian).  This function converts two adjacent bytes to a
@@ -69,6 +69,12 @@ namespace IPFIX {
    * @return the decoded 32-bit value
    */
   extern uint32_t decode_uint32(const uint8_t* buf);
+
+  /** Prints an error message.
+   *
+   * @param message format string a la printf(3)
+   */
+  extern void report_error(const char* message, ...);
 
 } // namespace IPFIX
 

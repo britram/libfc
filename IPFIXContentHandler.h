@@ -145,30 +145,20 @@ namespace IPFIX {
      * B, C, and D, all three placement templates are potential
      * candidates.
      *
-     * There are several strategies are available at compile time to
-     * choose a placement template:
+     * We resolve this problem as follows. We store the placement
+     * templates @em{in sequence} and take the first one that
+     * matches. That means if you have the three templates in the
+     * above example, putting the one with A and B before the others
+     * will pre-empt both of the two other ones.
      *
-     * - -DLIBFC_USE_FIRST_MATCHING_TEMPLATE says to use any matching
-     *    template.  If you can make sure that none of your placement
-     *    templates can conflict, this will yield consistent results.
-     *    Otherwise, different placement templates may be chosen at
-     *    different times for the same wire template.  This is
-     *    especially true if you register placement templates while
-     *    parsing.
+     * This means that if you are in a situation where you have
+     * placement templates that might conceivably match several wire
+     * templates, you should:
      *
-     * - -DLIBFC_USE_BEST_MATCHING_TEMPLATE says to use any matching
-     *    template with the most IEs matched.  To take the example
-     *    above, this strategy will choose either the template with
-     *    IEs A, B, and C, or the template with IEs A, B, and D, but
-     *    not the one with IEs A and B only.  This stategy solves the
-     *    problem when placement templates are subsets of other
-     *    placement templates, but does not solve the problem of
-     *    choosing between equally good templates.
-     *
-     * - -DLIBFC_USE_FULLY_MATCHING_TEMPLATE says to use only the
-     *    (unique, if it exists at all) placement template whose IE
-     *    set is identical to the set of IEs in the wire template. In
-     *    the above example, this would result in no match at all.
+     * - add the templates from most specific to least specific;
+     * - add more common ones before less common ones; and
+     * - resolve remaining conflicts through addition order, where the
+     *   earlier template wins.
      *
      * @param wire_template the wire template to match
      *
@@ -219,7 +209,13 @@ namespace IPFIX {
     /** Association between placement template and callback. */
     std::map<const PlacementTemplate*, PlacementCollector*> callbacks;
 
-#if defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE)
+    /** Says whether to use the matched template cache. 
+     *
+     * At the moment, this is statically set in the constructor (to
+     * false), but it could be made into a constructor parameter.
+     */
+    bool use_matched_template_cache;
+
     /** Association between wire template and placement template.
      *
      * We are using the strategy that we choose the @em{first}
@@ -235,9 +231,7 @@ namespace IPFIX {
      */
     mutable std::map<const MatchTemplate*, const PlacementTemplate*>
       matched_templates;
-#endif /* defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE) */
 
-    // Data for reading template sets
     /** The current wire template that is being assembled. 
      *
      * This pointer is deleted after every template record.
