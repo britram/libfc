@@ -1057,6 +1057,7 @@ namespace IPFIX {
     } else
       return m->second;
 #else /* !defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE) */
+#  if defined(LIBFC_USE_FIRST_MATCHING_TEMPLATE)
     for (auto i = placement_templates.begin();
          i != placement_templates.end();
          ++i) {
@@ -1064,6 +1065,30 @@ namespace IPFIX {
         return *i;
     }
     return 0;
+#  elif defined(LIBFC_USE_BEST_MATCHING_TEMPLATE)
+    const PlacementTemplate* ret = 0;
+    unsigned int max_matches = 0;
+    for (auto i = placement_templates.begin();
+         i != placement_templates.end();
+         ++i) {
+      unsigned int n_matches = (*i)->is_match(wire_template);
+      if (n_matches > max_matches) {
+	ret = *i;
+	max_matches = n_matches;
+      }
+    }
+    return ret;
+#  elif defined(LIBFC_USE_FULLY_MATCHING_TEMPLATE)
+    for (auto i = placement_templates.begin();
+         i != placement_templates.end();
+         ++i) {
+      if ((*i)->is_match(wire_template) == wire_template->size())
+	return *i;
+    }
+    return 0;
+#  else
+#    error You need to define either LIBFC_USE_FIRST_MATCHING_TEMPLATE, LIBFC_USE_BEST_MATCHING_TEMPLATE or LIBFC_USE_FULLY_MATCHING_TEMPLATE
+#  endif /* defined(LIBFC_USE_BEST_MATCHING_TEMPLATE) */
 #endif /* defined(LIBFC_USE_MATCHED_TEMPLATE_CACHE) */
   }
 

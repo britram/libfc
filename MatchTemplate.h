@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -40,53 +41,19 @@
  */
 
 #ifndef IPFIX_MATCHTEMPLATE_H // idem
-#define IPFIX_MATCHTEMPLATE_H // hack
+#  define IPFIX_MATCHTEMPLATE_H // hack
 
 namespace IPFIX {
 
-class MatchTemplate : public IETemplate {
-
-public:
+  class MatchTemplate : public IETemplate {
+  public:
+    MatchTemplate();
     
-    MatchTemplate():
-    IETemplate() {}
-
-    void activate() {}
-    
-    void dumpIdent(std::ostream &os) const {
-        os << "*** MatchTemplate " << reinterpret_cast<uint64_t> (this) << std::endl;
-    }
-    
-    void add(const InfoElement* ie) {
-        add_inner(ie);
-
-        if (ie->len() == kVarlen) {
-            minlen_ += 1;
-        } else {
-            minlen_ += ie->len();
-        }
-        
-        // we don't care about offsets but
-        // lots of template code assumes they're there...
-        offsets_.push_back(0);
-    }
-    
-    void clear() {
-        ies_.clear();
-        index_map_.clear();
-        offsets_.clear();
-        minlen_ = 0;
-    }
-  
-    void mimic(const IETemplate& rhs) {
-        clear();
-        for (IETemplateIter i = rhs.begin(); i != rhs.end(); ++i) {
-            add(*i);
-        }
-    }
-
-};
-
-}
+    void dumpIdent(std::ostream &os) const;    
+    void add(const InfoElement* ie);
+    void clear();
+    void mimic(const IETemplate& rhs);
+  };
+} // namespace IPFIX
 
 #endif

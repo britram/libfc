@@ -24,58 +24,47 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Hi Emacs, please use -*- mode: C++ -*- */
-/**
- * @file
- * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
- */
-#ifndef IPFIX_TEMPLATEREGISTRY_H
-#  define IPFIX_TEMPLATEREGISTRY_H
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-#  include <map>
-#  include <string>
+#include "MatchTemplate.h"
 
 namespace IPFIX {
 
-  /** Register template by name. 
-   *
-   * This class is deliberately without any connections to the rest of
-   * this library. */
-  class TemplateRegistry {
-  public:
-    /** Gets the template registry instance.
-     *
-     * @return the unique template registry instance.
-     */
-    static TemplateRegistry& instance();
+  MatchTemplate::MatchTemplate() {
+  }
 
-    /** Returns the template ID associated with the template name.
-     *
-     * @param template_name the name of the template.  This name must
-     *   be unique for each template.
-     *
-     * @return the ID associated with the template.  If the template
-     *   was unknown before, a new template ID is created.
-     */
-    unsigned int get_template_id(const std::string& template_name);
+  void MatchTemplate::dumpIdent(std::ostream &os) const {
+    os << "*** MatchTemplate " << reinterpret_cast<const void*> (this)
+       << std::endl;
+  }
+    
+  void MatchTemplate::add(const InfoElement* ie) {
+    add_inner(ie);
 
-  private:
-    /** Private constructor. */
-    TemplateRegistry();
+    if (ie->len() == kVarlen) {
+      minlen_ += 1;
+    } else {
+      minlen_ += ie->len();
+    }        
+  }
+    
+  void MatchTemplate::clear() {
+    ies_.clear();
+    index_map_.clear();
+    minlen_ = 0;
+  }
+  
+  void MatchTemplate::mimic(const IETemplate& rhs) {
+    clear();
+    for (IETemplateIter i = rhs.begin(); i != rhs.end(); ++i) {
+      add(*i);
+    }
+  }
 
-    TemplateRegistry(const TemplateRegistry&) = delete;
-    TemplateRegistry& operator=(const TemplateRegistry&) = delete;
 
-    /** The registry instance. */
-    static TemplateRegistry registry_instance;
-
-    /** Maps strings to template IDs. */
-    std::map<std::string, unsigned int> registry;
-
-    /** The most recently assigned template ID. */
-    unsigned int last_id;
-  };
 
 } // namespace IPFIX
-
-#endif // IPFIX_TEMPLATEREGISTRY_H

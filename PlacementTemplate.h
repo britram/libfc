@@ -309,9 +309,10 @@ namespace IPFIX {
      * A template T matches this template iff T's set of IEs is a
      * subset of this template's set of IEs.
      *
-     * @return true if the templates match, false otherwise
+     * @return if the templates match, the number of IEs in this
+     *   template, 0 otherwise
      */
-    bool is_match(const MatchTemplate* t) const;
+    unsigned int is_match(const MatchTemplate* t) const;
 
     /** Creates a wire template suitable to represent this template
      * on the wire in a template record.

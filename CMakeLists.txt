@@ -10,6 +10,15 @@ project(libfc)
 #
 # add_definitions(-DLIBFC_USE_MATCHED_TEMPLATE_CACHE)
 
+# Template matching strategy
+#
+# See comment in IPFIXContentHandler.h::match_placement_template().
+# You must define exactly one of these:
+#
+#add_definitions(-DLIBFC_USE_FIRST_MATCHING_TEMPLATE)
+#add_definitions(-DLIBFC_USE_FULLY_MATCHING_TEMPLATE)
+add_definitions(-DLIBFC_USE_BEST_MATCHING_TEMPLATE)
+
 # Use log4cplus?
 #
 #add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)

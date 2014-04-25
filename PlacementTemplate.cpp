@@ -107,7 +107,7 @@ namespace IPFIX {
     }
   }
 
-  bool PlacementTemplate::is_match(const MatchTemplate* t) const {
+  unsigned int PlacementTemplate::is_match(const MatchTemplate* t) const {
     LOG4CPLUS_TRACE(logger, "ENTER is_match");
 
     for (auto i = placements.begin(); i != placements.end(); ++i) {
@@ -115,11 +115,11 @@ namespace IPFIX {
       auto p = t->find(i->first);
       if (p == t->end()) {
         LOG4CPLUS_TRACE(logger, "    not found -> false");
-        return false;
+        return 0;
       }
     }
-    LOG4CPLUS_TRACE(logger, "  all found -> true");
-    return true;
+    LOG4CPLUS_TRACE(logger, "  all found -> return " << placements.size());
+    return placements.size();
   }
 
   void PlacementTemplate::wire_template(

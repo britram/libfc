@@ -138,6 +138,38 @@ namespace IPFIX {
 
     /** Given a wire template, finds a matching placement template.
      *
+     * A given wire template may match more than one stored placement
+     * template.  For example, if there is one placement template for
+     * IEs A and B, one for IEs A, B, and C, and a third for IEs A, B,
+     * and D, then, when a data set comes along that contains IEs A,
+     * B, C, and D, all three placement templates are potential
+     * candidates.
+     *
+     * There are several strategies are available at compile time to
+     * choose a placement template:
+     *
+     * - -DLIBFC_USE_FIRST_MATCHING_TEMPLATE says to use any matching
+     *    template.  If you can make sure that none of your placement
+     *    templates can conflict, this will yield consistent results.
+     *    Otherwise, different placement templates may be chosen at
+     *    different times for the same wire template.  This is
+     *    especially true if you register placement templates while
+     *    parsing.
+     *
+     * - -DLIBFC_USE_BEST_MATCHING_TEMPLATE says to use any matching
+     *    template with the most IEs matched.  To take the example
+     *    above, this strategy will choose either the template with
+     *    IEs A, B, and C, or the template with IEs A, B, and D, but
+     *    not the one with IEs A and B only.  This stategy solves the
+     *    problem when placement templates are subsets of other
+     *    placement templates, but does not solve the problem of
+     *    choosing between equally good templates.
+     *
+     * - -DLIBFC_USE_FULLY_MATCHING_TEMPLATE says to use only the
+     *    (unique, if it exists at all) placement template whose IE
+     *    set is identical to the set of IEs in the wire template. In
+     *    the above example, this would result in no match at all.
+     *
      * @param wire_template the wire template to match
      *
      * @return the matching placement template, or NULL if no
