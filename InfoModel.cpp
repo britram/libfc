@@ -170,8 +170,8 @@ const InfoElement InfoModel::parseIESpec(const std::string& iespec) const {
         (iespec.find('<') == std::string::npos) &&
         (iespec.find('{') == std::string::npos))
     {
-        InfoElement ie(iespec, 0, 0, 0, 0);
-        return ie;
+      InfoElement ie(iespec, 0, 0, 0, 0);
+      return ie;
     }
     
     std::istringstream iestream(iespec);

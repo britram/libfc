@@ -51,20 +51,5 @@ namespace IPFIX {
       minlen_ += ie->len();
     }        
   }
-    
-  void MatchTemplate::clear() {
-    ies_.clear();
-    index_map_.clear();
-    minlen_ = 0;
-  }
-  
-  void MatchTemplate::mimic(const IETemplate& rhs) {
-    clear();
-    for (IETemplateIter i = rhs.begin(); i != rhs.end(); ++i) {
-      add(*i);
-    }
-  }
-
-
 
 } // namespace IPFIX

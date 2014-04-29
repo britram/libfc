@@ -183,6 +183,9 @@ namespace IPFIX {
      */
     uint16_t wire_template_min_length(const MatchTemplate* t);
 
+    void process_template_set(uint16_t set_id, uint16_t set_length,
+			      const uint8_t* buf, bool is_options_set);
+
     void start_template_record(uint16_t template_id, uint16_t field_count);
     void end_template_record();
     void start_options_template_record(uint16_t template_id,

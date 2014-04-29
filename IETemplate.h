@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -145,8 +146,13 @@ namespace IPFIX {
     
   protected:
     
+    /** Creates an empty template. */
     IETemplate();
     
+    /** Creates an empty template with preallocated space.
+     *
+     * @param n_ies the number of IEs we expect to see in this template
+     */
     IETemplate(size_t n_ies);
     
     /** Adds an information element to internal maps; used by subclasses.

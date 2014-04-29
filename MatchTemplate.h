@@ -51,8 +51,6 @@ namespace IPFIX {
     
     void dumpIdent(std::ostream &os) const;    
     void add(const InfoElement* ie);
-    void clear();
-    void mimic(const IETemplate& rhs);
   };
 } // namespace IPFIX
 
