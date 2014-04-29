@@ -167,13 +167,11 @@ namespace IPFIX {
 	  cur += set_length - kSetHeaderLen;
           content_handler->end_template_set();
         } else if (set_id == kOptionTemplateSetID) {
-          content_handler->start_option_template_set(set_id,
+          content_handler->start_options_template_set(set_id,
 						     set_length - kSetHeaderLen,
 						     cur);
-          /* FIXME: This is not implemented yet, so we skip over it. */
-          error_handler->warning(Error::option_templates_ni, 0);
           cur += set_length - kSetHeaderLen;
-          content_handler->end_option_template_set();
+          content_handler->end_options_template_set();
         } else {          /* Decode data set */
           content_handler->start_data_set(set_id,
 					  set_length - kSetHeaderLen,

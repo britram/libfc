@@ -104,7 +104,7 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
     std::cerr << "      Template record ends" << std::endl;
   }
 
-  void start_option_template_set(uint16_t set_id,
+  void start_options_template_set(uint16_t set_id,
                                  uint16_t set_length,
 				 const uint8_t* buf) {
     std::cerr << "    Option template set: id=" << set_id
@@ -112,11 +112,11 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
               << std::endl;
   }
 
-  void end_option_template_set() {
+  void end_options_template_set() {
     std::cerr << "    Option template set ends" << std::endl;
   }
 
-  void start_option_template_record(uint16_t template_id,
+  void start_options_template_record(uint16_t template_id,
                                     uint16_t field_count,
                                     uint16_t scope_field_count) {
     std::cerr << "      Option template record: id=" << template_id
@@ -125,7 +125,7 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
               << std::endl;
   }
 
-  void end_option_template_record() {
+  void end_options_template_record() {
     std::cerr << "      Option template record ends" << std::endl;
   }
 

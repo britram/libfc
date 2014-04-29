@@ -111,12 +111,12 @@ namespace IPFIX {
      * @param set_length set length (excluding header) in bytes
      * @param buf pointer to the buffer containing the template set
      */
-    virtual void start_option_template_set(uint16_t set_id,
-                                           uint16_t set_length,
-					   const uint8_t* buf) = 0;
+    virtual void start_options_template_set(uint16_t set_id,
+					    uint16_t set_length,
+					    const uint8_t* buf) = 0;
 
     /** Receives notification that an option template set ends. */
-    virtual void end_option_template_set() = 0;
+    virtual void end_options_template_set() = 0;
 
     /** Receives notification that a data set is available.
      *

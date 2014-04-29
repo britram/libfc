@@ -241,33 +241,79 @@ namespace IPFIX {
     current_wire_template = 0;
   }
 
-  void IPFIXContentHandler::start_option_template_set(
+  void IPFIXContentHandler::start_options_template_set(
       uint16_t set_id,
       uint16_t set_length,
       const uint8_t* buf) {
-    LOG4CPLUS_TRACE(logger, "ENTER start_option_template_set"
+    LOG4CPLUS_TRACE(logger, "ENTER start_options_template_set"
                     << ", set_id=" << set_id
                     << ", set_length=" << set_length);
     assert(current_wire_template == 0);
+
+    const uint8_t* set_end = buf + set_length;
+
+    while (buf + kOptionsTemplateHeaderLen <= set_end) {
+      /* Decode options template record */
+      uint16_t set_id = decode_uint16(buf + 0);
+      uint16_t field_count = decode_uint16(buf + 2);
+      uint16_t scope_field_count = decode_uint16(buf + 4);
+
+      start_options_template_record(set_id, field_count, scope_field_count);
+      
+      buf += kOptionsTemplateHeaderLen;
+      
+      for (unsigned int field = 0; field < field_count; field++) {
+	if (buf + kFieldSpecifierLen > set_end) {
+	  error(Error::long_fieldspec, 0);
+	  return;
+	}
+	
+	uint16_t ie_id = decode_uint16(buf + 0);
+	uint16_t ie_length = decode_uint16(buf + 2);
+	bool enterprise = ie_id & 0x8000;
+	ie_id &= 0x7fff;
+	
+	uint32_t enterprise_number = 0;
+	if (enterprise) {
+	  if (buf + kFieldSpecifierLen + kEnterpriseLen > set_end) {
+	    error(Error::long_fieldspec, 0);
+	    return;
+	  }
+	  enterprise_number = decode_uint32(buf + 4);
+	}
+	
+	if (field < scope_field_count)
+	  scope_field_specifier(enterprise, ie_id,
+				ie_length, enterprise_number);
+	else
+	  options_field_specifier(enterprise, ie_id,
+				  ie_length, enterprise_number);
+	
+	buf += kFieldSpecifierLen + (enterprise ? kEnterpriseLen : 0);
+	assert (buf <= set_end);
+      }
+      
+      end_template_record();
+    }
   }
 
-  void IPFIXContentHandler::end_option_template_set() {
+  void IPFIXContentHandler::end_options_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_set");
   }
 
-  void IPFIXContentHandler::start_option_template_record(
+  void IPFIXContentHandler::start_options_template_record(
       uint16_t template_id,
       uint16_t field_count,
       uint16_t scope_field_count) {
-    LOG4CPLUS_TRACE(logger, "ENTER start_option_template_record"
+    LOG4CPLUS_TRACE(logger, "ENTER start_options_template_record"
                     << ", template_id=" << template_id
                     << ", field_count=" << field_count
                     << ", scope_field_count=" << scope_field_count);
     assert(current_wire_template == 0);
   }
 
-  void IPFIXContentHandler::end_option_template_record() {
-    LOG4CPLUS_TRACE(logger, "ENTER end_option_template_record");
+  void IPFIXContentHandler::end_options_template_record() {
+    LOG4CPLUS_TRACE(logger, "ENTER end_options_template_record");
   }
 
   void IPFIXContentHandler::field_specifier(
@@ -317,6 +363,21 @@ namespace IPFIX {
     current_wire_template->add(ie);
     current_field_no++;
   }
+
+  void IPFIXContentHandler::scope_field_specifier(
+      bool enterprise,
+      uint16_t ie_id,
+      uint16_t ie_length,
+      uint32_t enterprise_number) {
+  }
+
+  void IPFIXContentHandler::options_field_specifier(
+      bool enterprise,
+      uint16_t ie_id,
+      uint16_t ie_length,
+      uint32_t enterprise_number) {
+  }
+
 
   const MatchTemplate*
   IPFIXContentHandler::find_wire_template(uint16_t id) const {

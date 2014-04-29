@@ -53,6 +53,8 @@ namespace IPFIX {
     static const size_t kSetLenOffset = 2;
     /** IPFIX framing constant: length of template record header */
     static const size_t kTemplateHeaderLen = 4;
+    /** IPFIX framing constant: length of options template record header */
+    static const size_t kOptionsTemplateHeaderLen = 6;
     
     /** Maximum length of an IPFIX message */
     static const size_t kMaxMessageLen = 65535;

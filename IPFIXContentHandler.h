@@ -78,20 +78,10 @@ namespace IPFIX {
 			    uint16_t set_length,
 			    const uint8_t* buf);
     void end_template_set();
-    void start_template_record(uint16_t template_id, uint16_t field_count);
-    void end_template_record();
-    void start_option_template_set(uint16_t set_id,
+    void start_options_template_set(uint16_t set_id,
 				   uint16_t set_length,
 				   const uint8_t* buf);
-    void end_option_template_set();
-    void start_option_template_record(uint16_t template_id,
-                                      uint16_t field_count,
-                                      uint16_t scope_field_count);
-    void end_option_template_record();
-    void field_specifier(bool enterprise,
-                         uint16_t ie_id,
-                         uint16_t ie_length,
-                         uint32_t enterprise_number);
+    void end_options_template_set();
     void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf);
     void end_data_set();
 
@@ -192,6 +182,25 @@ namespace IPFIX {
      * @return the minimum length of the template on the wire
      */
     uint16_t wire_template_min_length(const MatchTemplate* t);
+
+    void start_template_record(uint16_t template_id, uint16_t field_count);
+    void end_template_record();
+    void start_options_template_record(uint16_t template_id,
+                                      uint16_t field_count,
+                                      uint16_t scope_field_count);
+    void end_options_template_record();
+    void field_specifier(bool enterprise,
+                         uint16_t ie_id,
+                         uint16_t ie_length,
+                         uint32_t enterprise_number);
+    void scope_field_specifier(bool enterprise,
+			       uint16_t ie_id,
+			       uint16_t ie_length,
+			       uint32_t enterprise_number);
+    void options_field_specifier(bool enterprise,
+				 uint16_t ie_id,
+				 uint16_t ie_length,
+				 uint32_t enterprise_number);
 
     /** Wire templates as they're read from template sets.
      *

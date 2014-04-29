@@ -61,7 +61,7 @@ namespace IPFIX {
    *
    * It is the responsibility of the caller to make sure that buf
    * contains at least four more octets.  It would be tempting to use
-   * functions like ntohs(), but we can't do that since we don't know
+   * functions like ntohl(), but we can't do that since we don't know
    * if the buffer is properly aligned.
    *
    * @param buf the buffer from which to decode the octets
