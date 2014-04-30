@@ -77,7 +77,6 @@
 #include "FileInputSource.h"
 #include "InfoElement.h"
 #include "InfoModel.h"
-#include "OctetArray.h"
 #include "PlacementCollector.h"
 #include "PlacementTemplate.h"
 
