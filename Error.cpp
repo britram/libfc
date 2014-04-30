@@ -23,6 +23,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cassert>
+
 #include "Error.h"
 
 namespace IPFIX {
@@ -40,9 +42,13 @@ namespace IPFIX {
     case short_body: return "short message body"; break;
     case long_set: return "set too long (exceeds message size)"; break;
     case long_fieldspec: return "field specification exceeds set"; break;
-    case option_templates_ni: return "option templates not implemented"; break;
-    default: return "unknown error"; break;
     }
+    // This fall-through cannot happen if the switch above contains
+    // all enum values and the object has been initialised properly.
+    // Still, gcc complains that "control reaches end of non-void
+    // function", so this is to shut the compiler up. --neuhaust
+    assert(false);
+    return "unknown error";
  }
 
 } // namespace IPFIX

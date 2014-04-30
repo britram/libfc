@@ -57,9 +57,6 @@ namespace IPFIX {
 
       /** Field specification exceeds set. */
       long_fieldspec,
-
-      /** Option templates not implemented yet. */
-      option_templates_ni,
     };
 
     Error(error_t e);

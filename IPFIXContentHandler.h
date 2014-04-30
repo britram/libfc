@@ -246,7 +246,7 @@ namespace IPFIX {
 
     /** The current wire template that is being assembled. 
      *
-     * This pointer is deleted after every template record.
+     * This pointer is set to null after every template record.
      */
     MatchTemplate* current_wire_template;
 

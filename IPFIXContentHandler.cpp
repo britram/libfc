@@ -39,6 +39,7 @@
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "decode_util.h"
+#include "pointer_checks.h"
 
 #include "BasicOctetArray.h"
 #include "DecodePlan.h"
@@ -132,7 +133,7 @@ namespace IPFIX {
     const uint16_t header_length 
       = is_options_set ? kOptionsTemplateHeaderLen : kTemplateHeaderLen;
 
-    while (buf + header_length <= set_end) {
+    while (CHECK_POINTER_WITHIN_I(buf + header_length, buf, set_end)) {
       /* Decode template record */
       uint16_t set_id = decode_uint16(buf + 0);
       uint16_t field_count = decode_uint16(buf + 2);
@@ -143,7 +144,7 @@ namespace IPFIX {
       buf += header_length;
       
       for (unsigned int field = 0; field < field_count; field++) {
-	if (buf + kFieldSpecifierLen > set_end) {
+	if (!CHECK_POINTER_WITHIN_I(buf + kFieldSpecifierLen, buf, set_end)) {
 	  error(Error::long_fieldspec, 0);
 	  return;
 	}
@@ -155,7 +156,8 @@ namespace IPFIX {
 	
 	uint32_t enterprise_number = 0;
 	if (enterprise) {
-	  if (buf + kFieldSpecifierLen + kEnterpriseLen > set_end) {
+	if (!CHECK_POINTER_WITHIN_I(buf + kFieldSpecifierLen
+				    + kEnterpriseLen, buf, set_end)) {
 	    error(Error::long_fieldspec, 0);
 	    return;
 	  }
