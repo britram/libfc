@@ -244,30 +244,32 @@ extern "C" {
    *
    * @param s the template set
    * @param c the callback to call
+   * @param vparg an optional argument to pass to the callback
    */
-  extern void ipfix_register_callback(struct ipfix_template_t* s,
-                                      void (*c) (const struct ipfix_template_t*));
-
+extern void ipfix_register_callback(struct ipfix_template_t* t,
+                                    void (*c) (const struct ipfix_template_t*, 
+                                               void *),
+                                    void *vparg);
   /** Collect IPFIX data from a file.
    *
    * @param fd a valid file descriptor, such as you'd get back from a
    *     successful call to open(2)
-   * @param s template set containing the templates of interest and the callback
+   * @param s template set containing the templates of interest
    *
    * @return non-zero on success and 0 on error
    */
-  extern int ipfix_collect_from_file(int fd, struct ipfix_template_set_t* t);
+extern int ipfix_collect_from_file(int fd, struct ipfix_template_set_t* s);
 
 #if ENABLE_WANDIO
-  /** Collect IPFIX data from a file.
+  /** Collect IPFIX data from a wandio stream.
    *
    * @param fd a valid file descriptor, such as you'd get back from a
    *     successful call to open(2)
-   * @param t template containing the IEs of interest and the callback
+   * @param s template set containing the templates of interest
    *
    * @return non-zero on success and 0 on error
    */
-  extern int ipfix_collect_from_wandio(io_t wio, struct ipfix_template_t* t);
+extern int ipfix_collect_from_wandio(io_t wio, struct ipfix_template_set_t* s);
 #endif
    
 #  if defined(__cplusplus)

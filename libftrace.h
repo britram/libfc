@@ -44,6 +44,8 @@ typedef struct libftrace_st libftrace_t;
 typedef struct libftrace_uniflow_st {
   /** Parent libftrace source structure */
   libftrace_t     *_ft;
+  /** Record valid flag */
+  int             _valid;
   /** Flow start time in POSIX epoch milliseconds */
   uint64_t        time_start;
   /** Flow end time in POSIX epoch milliseconds */
@@ -106,7 +108,7 @@ void ftrace_destroy_uniflow(libftrace_uniflow_t *uf);
 
 /** Read the next uniflow from a libftrace reader. 
     Skips records in the stream which do not match uniflows. */
-int ftrace_read_uniflow(libftrace_t *ft, libftrace_uniflow_t *uf);
+int ftrace_next_uniflow(libftrace_t *ft, libftrace_uniflow_t *uf);
 
 
 #endif /* idem hack */

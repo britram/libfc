@@ -51,11 +51,7 @@ struct libftrace_st {
     pthread_cond_t          rok;
     /* storage for uniflow */
     libftrace_uniflow_t     uf;
-    /** templates to match for setting ip_version field */
-    struct {
-        ipfix_template_t    *v4;
-        ipfix_template_t    *v6;
-    }
+
 }
 
 /** Open a libftrace source on an IPFIX/PDU file */
@@ -104,14 +100,51 @@ void ftrace_destroy(libftrace_t *ft)
     }
 }
 
-void _ftrace_semcb(const struct ipfix_template_t *t) {
+void _ftrace_semcb_inner(const libftrace_t *ft)
+{
+    /* signal read ready, outer thread will now return a record */
+    pthread_cond_signal(&ft->rok);
 
+    /* wait write ready, since next placement will happen after return */
+    pthread_cond_wait(&ft->wok);
+}
+
+void _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
+    libftrace_t *ft = (libftrace_t *)vpft;
+
+    /* set version */
+    ft->uf.ip_ver = 4;
+
+    /* signal flow ready */
+    _ftrace_semcb_inner(ft)
+}
+
+void _ftrace_semcb_v6(const struct ipfix_template_t *t, void *vpft) {
+    libftrace_t *ft = (libftrace_t *)vpft;
+
+    /* set version */
+    ft->uf.ip_ver = 6;
+
+    /* signal flow ready */
+    _ftrace_semcb_inner(ft)
 }
 
 void _ftrace_rthread(void *vpft) {
     libftrace_t *ft = (libftrace_t *)vpft;
+    int rv;
 
-    
+    /* signal valid content */
+    ft->_valid = 1;
+
+    /* run the placement collector in the subordinate thread */
+    rv = ipfix_collect_from_wandio(io_t wio, struct ipfix_template_t* t));
+
+    /* set valid flag based on rv */
+    if (rv) {
+        ft->_valid = 0; /* eof */
+    } else {
+        ft->_valid = -1; /* error */
+    }
 }
 
 /** Start reading uniflows from a libftrace source */
@@ -121,72 +154,72 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
     if (ft->uf._ft == ft) return &ft->uf;
 
     /* register base template v4 */
-    ft->tmpl.v4 = ipfix_template_new(ft->ts);
-    ipfix_register_placement(ft->tmpl.v4, "flowStartMilliseconds", 
+    t = ipfix_template_new(ft->ts);
+    ipfix_register_placement(t, "flowStartMilliseconds", 
         &ft->uf.time_start, sizeof(ft->uf.time_start));
-    ipfix_register_placement(ft->tmpl.v4, "flowEndMilliseconds", 
+    ipfix_register_placement(t, "flowEndMilliseconds", 
         &ft->uf.time_end, sizeof(ft->uf.time_end));
-    ipfix_register_placement(ft->tmpl.v4, "packetDeltaCount", 
+    ipfix_register_placement(t, "packetDeltaCount", 
         &ft->uf.packets, sizeof(ft->uf.packets));
-    ipfix_register_placement(ft->tmpl.v4, "octetDeltaCount", 
+    ipfix_register_placement(t, "octetDeltaCount", 
         &ft->uf.octets, sizeof(ft->uf.octets));
-    ipfix_register_placement(ft->tmpl.v4, "sourceIPv4Address", 
+    ipfix_register_placement(t, "sourceIPv4Address", 
         &ft->uf.ip.v4.src, sizeof(ft->uf.ip.v4.src));
-    ipfix_register_placement(ft->tmpl.v4, "destinationIPv4Address", 
+    ipfix_register_placement(t, "destinationIPv4Address", 
         &ft->uf.ip.v4.dst, sizeof(ft->uf.ip.v4.dst);
-    ipfix_register_placement(ft->tmpl.v4, "sourceTransportPort",
+    ipfix_register_placement(t, "sourceTransportPort",
         &ft->uf.port_src, sizeof(ft->uf.port_src));
-    ipfix_register_placement(ft->tmpl.v4, "destinationTransportPort",
+    ipfix_register_placement(t, "destinationTransportPort",
         &ft->uf.port_dst, sizeof(ft->uf.port_dst));
-    ipfix_register_placement(ft->tmpl.v4, "protocolIdentifier",
+    ipfix_register_placement(t, "protocolIdentifier",
         &ft->uf.ip_proto, sizeof(ft->uf.ip_proto));
+    ipfix_register_callback(t, _ftrace_semcb_v4, ft);
 
     /* register base template v6 */
-    ft->tmpl.v6 = ipfix_template_new(ft->ts);
-    ipfix_register_placement(ft->tmpl.v6, "flowStartMilliseconds", 
+    t = ipfix_template_new(ft->ts);
+    ipfix_register_placement(t, "flowStartMilliseconds", 
         &ft->uf.time_start, sizeof(ft->uf.time_start));
-    ipfix_register_placement(ft->tmpl.v6, "flowEndMilliseconds", 
+    ipfix_register_placement(t, "flowEndMilliseconds", 
         &ft->uf.time_end, sizeof(ft->uf.time_end));
-    ipfix_register_placement(ft->tmpl.v6, "packetDeltaCount", 
+    ipfix_register_placement(t, "packetDeltaCount", 
         &ft->uf.packets, sizeof(ft->uf.packets));
-    ipfix_register_placement(ft->tmpl.v6, "octetDeltaCount", 
+    ipfix_register_placement(t, "octetDeltaCount", 
         &ft->uf.octets, sizeof(ft->uf.octets));
-    ipfix_register_placement(ft->tmpl.v6, "sourceIPv6Address", 
-        &ft->uf.ip.v6.src, sizeof(ft->uf.ip.v6.src));
-    ipfix_register_placement(ft->tmpl.v6, "destinationIPv6Address", 
-        &ft->uf.ip.v6.dst, sizeof(ft->uf.ip.v6.dst);
-    ipfix_register_placement(ft->tmpl.v6, "sourceTransportPort",
+    ipfix_register_placement(t, "sourceIPv6Address", 
+        &ft->uf.ip.v4.src, sizeof(ft->uf.ip.v4.src));
+    ipfix_register_placement(t, "destinationIPv6Address", 
+        &ft->uf.ip.v4.dst, sizeof(ft->uf.ip.v4.dst);
+    ipfix_register_placement(t, "sourceTransportPort",
         &ft->uf.port_src, sizeof(ft->uf.port_src));
-    ipfix_register_placement(ft->tmpl.v6, "destinationTransportPort",
+    ipfix_register_placement(t, "destinationTransportPort",
         &ft->uf.port_dst, sizeof(ft->uf.port_dst));
-    ipfix_register_placement(ft->tmpl.v6, "protocolIdentifier",
+    ipfix_register_placement(t, "protocolIdentifier",
         &ft->uf.ip_proto, sizeof(ft->uf.ip_proto));
+    ipfix_register_callback(t, _ftrace_semcb_v6, ft);
 
     /* FIXME more templates */
 
-    /* bind a callback to the set to handle semaphores */
-    ipfix_register_callback(ft->ts, _ftrace_semcb);
-
     /* then start the reader thread */
     pthread_create(ft->rt, NULL, _ftrace_rthread, ft);
+
+    return &ft->uf;
 }
 
 /** Destroy a uniflow structure created by ftrace_create_uniflow */
 void ftrace_destroy_uniflow(libftrace_uniflow_t *uf) {
-
+    /* FIXME we need a way to signal the inner ipfix to stop reading */
 }
 
 /** Read the next uniflow from a libftrace reader. 
     Skips records in the stream which do not match uniflows. */
-int ftrace_read_uniflow(libftrace_uniflow_t *uf) {
+int ftrace_next_uniflow(libftrace_uniflow_t *uf) {
 
     /* signal write ready */
-    pthread_cond_signal(&uf->_ft_wok);
+    pthread_cond_signal(&uf->_ft.wok);
 
     /* wait read ready */
     pthread_cond_wait(&uf->_ft.rok);
 
-    /* FIXME check EOF */
-
-    /* return code */
+    /* check valid */
+    return uf->_valid;
 }

@@ -41,6 +41,7 @@ static bool infomodel_initialized = false;
 struct ipfix_template_t {
   IPFIX::PlacementTemplate* tmpl;
   void (*callback) (const ipfix_template_t* t);
+  void *vparg;
 };
 
 class CBinding : public IPFIX::PlacementCollector {
@@ -71,7 +72,7 @@ public:
 	  reinterpret_cast<const unsigned char*>(t) 
 	  - offsetof(struct ipfix_template_t, tmpl));
     if (this_template != 0)
-      this_template->callback(this_template);
+      this_template->callback(this_template, this_template->vparg);
   }
 };
 
@@ -113,14 +114,31 @@ extern int ipfix_register_placement(struct ipfix_template_t* t,
 }
 
 extern void ipfix_register_callback(struct ipfix_template_t* t,
-                                    void (*c) (const struct ipfix_template_t*)) {
+                                    void (*c) (const struct ipfix_template_t*, 
+                                               void *),
+                                    void *vparg) {
   t->callback = c;
+  t->vparg = vparg;
 }
 
 extern int ipfix_collect_from_file(int fd, struct ipfix_template_set_t* t) {
   int ret = 1;
 
   IPFIX::FileInputSource is(fd);
+  try {
+    t->binding->collect(is);
+  } catch (IPFIX::FormatError e) {
+    std::cerr << "Format error: " << e.what() << std::endl;
+    ret = 0;
+  }
+
+  return ret;
+}
+
+extern int ipfix_collect_from_wandio(io_t *wio, struct ipfix_template_set_t* t) {
+  int ret = 1;
+
+  IPFIX::WandioInputSource is(wio);
   try {
     t->binding->collect(is);
   } catch (IPFIX::FormatError e) {
