@@ -40,16 +40,15 @@ static bool infomodel_initialized = false;
 
 struct ipfix_template_t {
   IPFIX::PlacementTemplate* tmpl;
+  void (*callback) (const ipfix_template_t* t);
 };
 
 class CBinding : public IPFIX::PlacementCollector {
 private:
   std::set<IPFIX::PlacementTemplate*> templates;
-  void (*callback) (const ipfix_template_t* t);
 
 public:
-  CBinding()
-    : callback(0) {
+  CBinding() {
   }
 
   virtual ~CBinding() {
@@ -62,10 +61,6 @@ public:
     templates.insert(t->tmpl);
   }
 
-  void register_callback(void (*c) (const struct ipfix_template_t*)) {
-    callback = c;
-  }
-
   void start_placement(const IPFIX::PlacementTemplate* tmpl) {
   }
 
@@ -75,7 +70,8 @@ public:
       = reinterpret_cast<const ipfix_template_t*>(
 	  reinterpret_cast<const unsigned char*>(t) 
 	  - offsetof(struct ipfix_template_t, tmpl));
-    callback(this_template);
+    if (this_template != 0)
+      this_template->callback(this_template);
   }
 };
 
@@ -100,6 +96,8 @@ extern struct ipfix_template_t* ipfix_template_new(
   infomodel_initialized = true;
 
   struct ipfix_template_t* ret = new ipfix_template_t;
+  ret->callback = 0;
+  ret->tmpl = new IPFIX::PlacementTemplate;
   s->binding->add_template(ret);
   return ret;
 }
@@ -114,9 +112,9 @@ extern int ipfix_register_placement(struct ipfix_template_t* t,
            IPFIX::InfoModel::instance().lookupIE(ie_name), p, size);
 }
 
-extern void ipfix_register_callback(struct ipfix_template_set_t* s,
+extern void ipfix_register_callback(struct ipfix_template_t* t,
                                     void (*c) (const struct ipfix_template_t*)) {
-  s->binding->register_callback(c);
+  t->callback = c;
 }
 
 extern int ipfix_collect_from_file(int fd, struct ipfix_template_set_t* t) {
