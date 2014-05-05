@@ -34,7 +34,7 @@
 #  define _LIBFC_PLACEMENTCALLBACK_H_
 
 #  include "IPFIXContentHandler.h"
-#  include "MessageStreamParser.h"
+#  include "IPFIXMessageStreamParser.h"
 #  include "PlacementTemplate.h"
 
 namespace IPFIX {
@@ -72,7 +72,7 @@ namespace IPFIX {
 
   private:
     IPFIXContentHandler d;
-    MessageStreamParser ir;
+    IPFIXMessageStreamParser ir;
   };
 
 } // namespace IPFIX

@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,36 +25,35 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
-#  include <log4cplus/logger.h>
-#  include <log4cplus/loggingmacros.h>
-#else
-#  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
 
-#include "MessageStreamParser.h"
+#ifndef _LIBFC_IPFIXMESSAGESTREAMPARSER_H_
+#  define _LIBFC_IPFIXMESSAGESTREAMPARSER_H_
+
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+#  include "MessageStreamParser.h"
 
 namespace IPFIX {
 
+  /** Parse an IPFIX message stream. */
+  class IPFIXMessageStreamParser : public MessageStreamParser {
+  public:
+    IPFIXMessageStreamParser();
+    void parse(InputSource& is);
 
-  MessageStreamParser::MessageStreamParser() 
-    : parse_in_progress(false),
-      content_handler(0),
-      error_handler(0)
+  private:
+
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
-                      ,
-      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+    log4cplus::Logger logger;
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
-  {
-  }
-
-  void MessageStreamParser::set_error_handler(ErrorHandler* handler) {
-    error_handler = handler;
-  }
-
-  void MessageStreamParser::set_content_handler(ContentHandler* handler) {
-    content_handler = handler;
-  }
-
+  };
 
 } // namespace IPFIX
+
+#endif // _LIBFC_IPFIXMESSAGESTREAMPARSER_H_
