@@ -22,7 +22,8 @@ else ($ENV{CLANG})
     #include(${CMAKE_CURRENT_SOURCE_DIR}/CodeCoverage.cmake)
   else (CMAKE_BUILD_TYPE STREQUAL "Debug")
   endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-endif($ENV{CLANG})
+  include_directories(lib)
+ endif($ENV{CLANG})
 include_directories(.)
 
 # include boost
@@ -49,8 +50,8 @@ endif()
 # which includes too much.  It must be said that this works perfectly
 # fine on Linux.
 #
-file (GLOB FC_OBJ "*.cpp")
-file (GLOB EXCEPTIONS_OBJ "exceptions/*.cpp") 
+file (GLOB FC_OBJ "lib/*.cpp")
+file (GLOB EXCEPTIONS_OBJ "lib/exceptions/*.cpp") 
 
 add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 
