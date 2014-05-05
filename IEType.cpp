@@ -33,7 +33,7 @@ namespace IPFIX {
   }
 
 const IEType* IEType::octetArray() { 
-  static OctetArrayType iet(std::string("octetArray"), kOctetArray, 0, kVarlen); 
+  static OctetArrayType iet(std::string("octetArray"), kOctetArray, 0, kIpfixVarlen); 
   return &iet; 
 }
 
@@ -98,7 +98,7 @@ const IEType* IEType::macAddress() {
 }
 
 const IEType* IEType::string() { 
-  static OctetArrayType iet(std::string("string"), kString, 0, kVarlen); 
+  static OctetArrayType iet(std::string("string"), kString, 0, kIpfixVarlen); 
   return &iet; 
 }
 

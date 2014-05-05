@@ -49,6 +49,14 @@ namespace IPFIX {
 
   private:
 
+    /** The current message. */
+    uint8_t message[kMaxMessageLen];
+
+    /** The current offset into the message stream. Used for error
+     * reporting, and for error reporting @em{only}. */
+    size_t offset;
+
+
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */

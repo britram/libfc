@@ -37,9 +37,20 @@ namespace IPFIX {
     memcpy(&sa, _sa, _sa_len);
   }
 
-  ssize_t UDPInputSource::read(uint8_t* buf, size_t len) {
+  ssize_t UDPInputSource::read(uint8_t* buf, uint16_t len) {
+    // TODO
     return 0;
   }
 
+  bool UDPInputSource::resync() {
+    return true;
+  }
+
+  size_t UDPInputSource::get_message_offset() {
+    return 0;
+  }
+
+  void UDPInputSource::advance_message_offset() {
+  }
 
 } // namespace IPFIX

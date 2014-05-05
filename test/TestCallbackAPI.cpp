@@ -135,7 +135,7 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
                        uint32_t enterprise_number) {
     std::cerr << "        Field specifier: id=" << ie_id
               << ", length=";
-    if (ie_length == kVarlen) 
+    if (ie_length == kIpfixVarlen) 
       std::cerr << "Varlen";
     else
       std::cerr << ie_length;

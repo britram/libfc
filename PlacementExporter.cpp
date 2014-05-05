@@ -238,7 +238,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
 
     switch ((*ie)->ietype()->number()) {
     case IPFIX::IEType::kOctetArray: 
-      if (size == IPFIX::kVarlen) {
+      if (size == IPFIX::kIpfixVarlen) {
         d.type = Decision::encode_varlen;
       } else {
         d.type = Decision::encode_fixlen_octets;
@@ -354,7 +354,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       break;
         
     case IPFIX::IEType::kString:
-      if (size == IPFIX::kVarlen) {
+      if (size == IPFIX::kIpfixVarlen) {
         d.type = Decision::encode_varlen;
       } else {
         d.type = Decision::encode_fixlen_octets;
@@ -638,7 +638,7 @@ namespace IPFIX {
       current_template_id(255),
       sequence_number(0),
       observation_domain(_observation_domain), 
-      n_message_octets(kMessageHeaderLen),
+      n_message_octets(kIpfixMessageHeaderLen),
       template_set_size(0),
       plan(0)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
@@ -720,17 +720,17 @@ namespace IPFIX {
     int ret = 0;
 
     /* Only write something if we have anything nontrivial to write. */
-    if (n_message_octets > kMessageHeaderLen) {
+    if (n_message_octets > kIpfixMessageHeaderLen) {
       /** This message header.
        *
        * This variable is dynamically allocated so as to facilitate
        * its deletion later as part of the iovecs vector. */
-      uint8_t* message_header = new uint8_t[kMessageHeaderLen];
+      uint8_t* message_header = new uint8_t[kIpfixMessageHeaderLen];
       
       /** Points to the end of this message.
        *
        * Used for range checks. */
-      const uint8_t* message_end = message_header + kMessageHeaderLen;
+      const uint8_t* message_end = message_header + kIpfixMessageHeaderLen;
       
       /** Moves through the message header. */
       uint8_t* p = message_header;
@@ -747,7 +747,7 @@ namespace IPFIX {
       encode32(observation_domain, &p, message_end);
       
       iovecs[message_header_index].iov_base = message_header;
-      iovecs[message_header_index].iov_len = kMessageHeaderLen;
+      iovecs[message_header_index].iov_len = kIpfixMessageHeaderLen;
       
       LOG4CPLUS_TRACE(logger, "writing message with "
                       << "version=" << kIpfixVersion
@@ -806,7 +806,7 @@ namespace IPFIX {
       iovecs[template_set_index].iov_base = 0;
       iovecs[template_set_index].iov_len = 0;
       
-      n_message_octets = kMessageHeaderLen;
+      n_message_octets = kIpfixMessageHeaderLen;
     }
     return ret;
   }
@@ -847,8 +847,8 @@ namespace IPFIX {
 
         /* Need to create template set? */
         if (template_set_size == 0) {
-          template_set_size += kSetHeaderLen;
-          new_bytes += kSetHeaderLen;
+          template_set_size += kIpfixSetHeaderLen;
+          new_bytes += kIpfixSetHeaderLen;
           LOG4CPLUS_TRACE(logger, "need to create new template set, now "
                           << new_bytes << " new bytes");
         }
@@ -879,7 +879,7 @@ namespace IPFIX {
     }
 
     size_t prospective_data_set_header
-      = make_new_data_set ? kSetHeaderLen : 0;
+      = make_new_data_set ? kIpfixSetHeaderLen : 0;
     if (n_message_octets + new_bytes + prospective_data_set_header
         > os.preferred_maximum_message_size()) {
       LOG4CPLUS_TRACE(logger,
@@ -899,8 +899,8 @@ namespace IPFIX {
       iovec& l = iovecs.back();
 
       l.iov_base = new uint8_t[kMaxMessageLen];
-      l.iov_len = kSetHeaderLen;
-      new_bytes += kSetHeaderLen;
+      l.iov_len = kIpfixSetHeaderLen;
+      new_bytes += kIpfixSetHeaderLen;
     }
 
 #if defined(_LIBFC_HAVE_LOG4CPLUS_)

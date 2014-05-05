@@ -57,6 +57,9 @@ namespace IPFIX {
 
       /** Field specification exceeds set. */
       long_fieldspec,
+
+      /** Version number in message header is not what it should be. */
+      message_version_number,
     };
 
     Error(error_t e);

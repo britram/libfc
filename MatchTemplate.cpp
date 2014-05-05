@@ -45,7 +45,7 @@ namespace IPFIX {
   void MatchTemplate::add(const InfoElement* ie) {
     add_inner(ie);
 
-    if (ie->len() == kVarlen) {
+    if (ie->len() == kIpfixVarlen) {
       minlen_ += 1;
     } else {
       minlen_ += ie->len();

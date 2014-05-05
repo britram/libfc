@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -45,10 +46,15 @@ namespace IPFIX {
     FileInputSource(int fd);
     ~FileInputSource();
 
-    ssize_t read(uint8_t* buf, size_t len);
+    ssize_t read(uint8_t* buf, uint16_t len);
+    bool resync();
+    size_t get_message_offset();
+    void advance_message_offset();
 
   private:
     int fd;
+    size_t message_offset;
+    size_t current_offset;
   };
 
 } // namespace IPFIX

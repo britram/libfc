@@ -131,7 +131,8 @@ namespace IPFIX {
 						 bool is_options_set) {
     const uint8_t* set_end = buf + set_length;
     const uint16_t header_length 
-      = is_options_set ? kOptionsTemplateHeaderLen : kTemplateHeaderLen;
+      = is_options_set ? kIpfixOptionsTemplateHeaderLen 
+                       : kIpfixTemplateHeaderLen;
 
     while (CHECK_POINTER_WITHIN_I(buf + header_length, buf, set_end)) {
       /* Decode template record */
@@ -144,7 +145,7 @@ namespace IPFIX {
       buf += header_length;
       
       for (unsigned int field = 0; field < field_count; field++) {
-	if (!CHECK_POINTER_WITHIN_I(buf + kFieldSpecifierLen, buf, set_end)) {
+	if (!CHECK_POINTER_WITHIN_I(buf + kIpfixFieldSpecifierLen, buf, set_end)) {
 	  error(Error::long_fieldspec, 0);
 	  return;
 	}
@@ -156,8 +157,8 @@ namespace IPFIX {
 	
 	uint32_t enterprise_number = 0;
 	if (enterprise) {
-	if (!CHECK_POINTER_WITHIN_I(buf + kFieldSpecifierLen
-				    + kEnterpriseLen, buf, set_end)) {
+	if (!CHECK_POINTER_WITHIN_I(buf + kIpfixFieldSpecifierLen
+				    + kIpfixEnterpriseLen, buf, set_end)) {
 	    error(Error::long_fieldspec, 0);
 	    return;
 	  }
@@ -173,7 +174,7 @@ namespace IPFIX {
 	else /* !os_options_set */
 	  field_specifier(enterprise, ie_id, ie_length, enterprise_number);
 	
-	buf += kFieldSpecifierLen + (enterprise ? kEnterpriseLen : 0);
+	buf += kIpfixFieldSpecifierLen + (enterprise ? kIpfixEnterpriseLen : 0);
 	assert (buf <= set_end);
       }
       
@@ -462,7 +463,7 @@ namespace IPFIX {
     uint16_t min = 0;
 
     for (auto i = t->begin(); i != t->end(); ++i) {
-      if ((*i)->len() != kVarlen)
+      if ((*i)->len() != kIpfixVarlen)
         min += (*i)->len();
     }
     return min;

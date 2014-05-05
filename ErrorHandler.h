@@ -39,8 +39,33 @@ namespace IPFIX {
 
   class ErrorHandler {
   public:
+    /** An error has occurred during the parsing of a message.
+     *
+     * This means that the message must be abandoned because it cannot
+     * be recovered, but that an attempt may be made to read more
+     * messages from the message stream.  For file- or TCP-based input
+     * streams this could mean reading byte by byte until a
+     * plausible-looking message header is encountered again.  For
+     * UDP-based input streams, this may mean simply discarding the
+     * current message and receiving the next one.
+     */
     virtual void error(Error error, const char* message) = 0;
+
+    /** A fatal error has occurred during the parsing of a message.
+     *
+     * This means that the entire message stream must be abandoned
+     * because it cannot be recovered, for example due to a read
+     * error.
+     */
     virtual void fatal(Error error, const char* message) = 0;
+
+    /** A strange circumstance has occurred during the parsing of a
+     * message.
+     *
+     * This means that the message can be recovered, but somethign
+     * strange has happened that wouldn't be expected during normal
+     * operations.
+     */
     virtual void warning(Error error, const char* message) = 0;
   };
 

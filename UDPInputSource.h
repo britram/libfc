@@ -47,8 +47,11 @@ namespace IPFIX {
      */
     UDPInputSource(const struct sockaddr* sa, size_t sa_len, int fd);
 
-    ssize_t read(uint8_t* buf, size_t len);
-    
+    ssize_t read(uint8_t* buf, uint16_t len);
+    bool resync();
+    size_t get_message_offset();
+    void advance_message_offset();
+
   private:
     struct sockaddr sa;
     size_t sa_len;

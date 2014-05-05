@@ -42,39 +42,46 @@
 
 namespace IPFIX {
 
-  IPFIXMessageStreamParser::IPFIXMessageStreamParser() {
+  IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
+    : offset(0) {
   }
 
   void IPFIXMessageStreamParser::parse(InputSource& is) {
     LOG4CPLUS_TRACE(logger, "ENTER parse()");
 
+    /* Use assert() instead of error handler since this must (and
+     * will) be caught in testing. */
     assert(content_handler != 0);
     assert(error_handler != 0);
 
     content_handler->start_session();
 
-    if (parse_in_progress) {
-      error_handler->fatal(Error::parse_while_parsing, 0);
-      parse_in_progress = false;
-      return;
-    }
-    parse_in_progress = true;
+    memset(message, '\0', sizeof(message));
 
-    uint8_t message[kMaxMessageLen];
+    /* Member `offset' initialised here as well as in the constructor
+     * so that you know it's not forgotten. */
+    offset = 0;
 
-    ssize_t nbytes = is.read(message, kMessageHeaderLen);
+    /** The number of bytes available after the latest read operation,
+     * or -1 if a read error occurred. */
+    ssize_t nbytes = is.read(message, kIpfixMessageHeaderLen);
+
     while (nbytes > 0) {
       uint8_t* cur = message;
 
       /* Decode message header */
       uint16_t message_size;
 
-      if (static_cast<size_t>(nbytes) < kMessageHeaderLen) {
+      if (static_cast<size_t>(nbytes) < kIpfixMessageHeaderLen) {
         error_handler->fatal(Error::short_header, 0);
-        parse_in_progress = false;
         return;
       }
-      assert(static_cast<size_t>(nbytes) == kMessageHeaderLen);
+      assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
+
+      if (decode_uint16(cur + 0) != kIpfixVersion) {
+	error_handler->fatal(Error::message_version_number, 0);
+	return;
+      }
 
       message_size = decode_uint16(cur +  2);
       content_handler->start_message(decode_uint16(cur +  0),
@@ -89,15 +96,15 @@ namespace IPFIX {
       cur += nbytes;
       assert (cur <= message_end);
 
-      nbytes = is.read(cur, message_size - kMessageHeaderLen);
+      offset += kIpfixMessageHeaderLen;
+
+      nbytes = is.read(cur, message_size - kIpfixMessageHeaderLen);
       if (nbytes < 0) {
         error_handler->fatal(Error::read_error, 0);
-        parse_in_progress = false;
         return;
       } else if (static_cast<size_t>(nbytes) 
-                 != message_size - kMessageHeaderLen) {
+                 != message_size - kIpfixMessageHeaderLen) {
         error_handler->fatal(Error::short_body, 0);
-        parse_in_progress = false;
         return;
       }
       
@@ -124,7 +131,7 @@ namespace IPFIX {
        *
        * -- Stephan Neuhaus
        */
-      while (cur + kSetHeaderLen <= message_end) {
+      while (cur + kIpfixSetHeaderLen <= message_end) {
         /* Decode set header. */
         uint16_t set_id = decode_uint16(cur + 0);
         uint16_t set_length = decode_uint16(cur + 2);
@@ -137,29 +144,28 @@ namespace IPFIX {
                << ",message_len=" << message_size
                << ",message_end=" << static_cast<const void*>(message_end);
           error_handler->fatal(Error::long_set, sstr.str().c_str());
-          parse_in_progress = false;
           return;
         }
 
-        cur += kSetHeaderLen;
+        cur += kIpfixSetHeaderLen;
 
-        if (set_id == kTemplateSetID) {
+        if (set_id == kIpfixTemplateSetID) {
           content_handler->start_template_set(set_id,
-					      set_length - kSetHeaderLen, 
+					      set_length - kIpfixSetHeaderLen, 
 					      cur);
-	  cur += set_length - kSetHeaderLen;
+	  cur += set_length - kIpfixSetHeaderLen;
           content_handler->end_template_set();
-        } else if (set_id == kOptionTemplateSetID) {
+        } else if (set_id == kIpfixOptionTemplateSetID) {
           content_handler->start_options_template_set(set_id,
-						     set_length - kSetHeaderLen,
+						     set_length - kIpfixSetHeaderLen,
 						     cur);
-          cur += set_length - kSetHeaderLen;
+          cur += set_length - kIpfixSetHeaderLen;
           content_handler->end_options_template_set();
-        } else {          /* Decode data set */
+        } else {
           content_handler->start_data_set(set_id,
-					  set_length - kSetHeaderLen,
+					  set_length - kIpfixSetHeaderLen,
 					  cur);
-          cur += set_length - kSetHeaderLen;
+          cur += set_length - kIpfixSetHeaderLen;
           content_handler->end_data_set();
         }
 
@@ -168,18 +174,20 @@ namespace IPFIX {
       }
 
       content_handler->end_message();
-      nbytes = is.read(message, kMessageHeaderLen);
+
+      offset += nbytes;
+      memset(message, '\0', sizeof(message));
+      nbytes = is.read(message, kIpfixMessageHeaderLen);
     }
 
     if (nbytes < 0) {
       error_handler->fatal(Error::read_error, 0);
-      parse_in_progress = false;
       return;
     }
     assert(nbytes == 0);
 
-    parse_in_progress = false;
     content_handler->end_session();
+    memset(message, '\0', sizeof(message));
   }
 
 } // namespace IPFIX

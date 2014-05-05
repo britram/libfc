@@ -123,7 +123,7 @@ namespace IPFIX {
 	 * until this code has been fully debugged. */
 	switch ((*ie)->ietype()->number()) {
 	case IPFIX::IEType::kOctetArray: 
-	  if ((*ie)->len() == IPFIX::kVarlen) {
+	  if ((*ie)->len() == IPFIX::kIpfixVarlen) {
 	    d.type = Decision::transfer_varlen;
 	  } else {
 	    d.type = Decision::transfer_fixlen_octets;
@@ -249,7 +249,7 @@ namespace IPFIX {
 	  break;
         
 	case IPFIX::IEType::kString:
-	  if ((*ie)->len() == IPFIX::kVarlen) {
+	  if ((*ie)->len() == IPFIX::kIpfixVarlen) {
 	    d.type = Decision::transfer_varlen;
 	  } else {
 	    d.type = Decision::transfer_fixlen_octets;
@@ -331,7 +331,7 @@ namespace IPFIX {
 	}
       } else {                    /* Encode skip decision */
 	LOG4CPLUS_TRACE(logger, "    not found -> skip");
-	if ((*ie)->len() == IPFIX::kVarlen) {
+	if ((*ie)->len() == IPFIX::kIpfixVarlen) {
 	  d.type = Decision::skip_varlen;
 	} else {
 	  d.type = Decision::skip_fixlen;

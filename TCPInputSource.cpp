@@ -31,15 +31,34 @@
 namespace IPFIX {
 
   TCPInputSource::TCPInputSource(int fd)
-    : fd(fd) {
+    : fd(fd),
+      message_offset(0),
+      current_offset(0) {
   }
 
   TCPInputSource::~TCPInputSource() {
     (void) close(fd); // FIXME: Error handling?
   }
 
-  ssize_t TCPInputSource::read(uint8_t* buf, size_t len) {
-    return ::read(fd, buf, len);
+  ssize_t TCPInputSource::read(uint8_t* buf, uint16_t len) {
+    ssize_t ret = ::read(fd, buf, len);
+    if (ret > 0)
+      current_offset += message_offset;
+    return ret;
+  }
+
+  bool TCPInputSource::resync() {
+    // TODO
+    return true;
+  }
+
+  size_t TCPInputSource::get_message_offset() {
+    return message_offset;
+  }
+
+  void TCPInputSource::advance_message_offset() {
+    message_offset += current_offset;
+    current_offset = 0;
   }
 
 } // namespace IPFIX

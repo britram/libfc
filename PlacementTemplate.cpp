@@ -83,7 +83,7 @@ namespace IPFIX {
     placements[ie] = new PlacementInfo(ie, p, size);
     ies.push_back(ie);
 
-    if (size == kVarlen)
+    if (size == kIpfixVarlen)
       varlen_ies.push_back(placements[ie]);
     else
       fixlen_data_record_size += size;

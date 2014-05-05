@@ -38,6 +38,7 @@
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "ContentHandler.h"
+#  include "Constants.h"
 #  include "ErrorHandler.h"
 #  include "InputSource.h"
 
@@ -46,7 +47,7 @@ namespace IPFIX {
   /** Parse a message stream.
    *
    * This class is an abstract base for Net Flow v5/v9 and IPFIX
-   * message streams.  A message stream is accessed through an
+   * message stream parsers.  A message stream is accessed through an
    * InputSource and provides either Net Flow or IPFIX messages.
    */
   class MessageStreamParser {
@@ -77,7 +78,6 @@ namespace IPFIX {
     void set_content_handler(ContentHandler* handler);
 
   protected:
-    bool parse_in_progress;
     ContentHandler* content_handler;
     ErrorHandler* error_handler;
 

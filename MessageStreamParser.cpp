@@ -35,10 +35,8 @@
 
 namespace IPFIX {
 
-
   MessageStreamParser::MessageStreamParser() 
-    : parse_in_progress(false),
-      content_handler(0),
+    : content_handler(0),
       error_handler(0)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                       ,

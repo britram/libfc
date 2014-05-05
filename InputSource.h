@@ -54,7 +54,39 @@ namespace IPFIX {
      * @return the number of bytes read (0 indicates end of file), or
      *     -1 on error.
      */
-    virtual ssize_t read(uint8_t* buf, size_t len) = 0;
+    virtual ssize_t read(uint8_t* buf, uint16_t len) = 0;
+
+    /** Attempts to re-synchronise the stream to the beginning of a valid
+     * message.
+     *
+     * This method has no meaning in message-based input sources, such
+     * as UDP. In such cases, the method should simply throw away any
+     * buffers that it might have and receive the next message.
+     *
+     * @return true if resynchronisation worked, false if the stream
+     * has ended before resynchronisation.
+     */
+    virtual bool resync() = 0;
+
+    /** Returns the offset of the current message.
+     *
+     * For stream-based input sources like files or TCP streams, this
+     * is the offset (in bytes) into the stream for the current
+     * message.  For message-based input sources, like UDP, this is
+     * zero.
+     *
+     * @return the message offset
+     */
+    virtual size_t get_message_offset() = 0;
+
+    /** Advances the offset.
+     *
+     * For message-based input sources, this member function is a
+     * no-op.  For stream-based input sources, this increments the
+     * current offset by the total number of bytes read since the last
+     * increment.
+     */
+    virtual void advance_message_offset() = 0;
   };
 
 } // namespace IPFIX

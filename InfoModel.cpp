@@ -94,7 +94,7 @@ namespace IPFIX {
     iestream.get(lenbuf, ']');
     
     if (lenbuf.str()[0] == 'v') {
-      len = kVarlen;
+      len = kIpfixVarlen;
     } else {  // parse size
       unsigned long ullen;
       try {
@@ -105,8 +105,8 @@ namespace IPFIX {
 	throw IESpecError("bad size " + lenbuf.str() + " (out of range)");
       }
 
-      if (ullen != kVarlen &&
-	  ullen > kVarlen - kMessageHeaderLen - kSetHeaderLen) {
+      if (ullen != kIpfixVarlen &&
+	  ullen > kIpfixVarlen - kIpfixMessageHeaderLen - kIpfixSetHeaderLen) {
 	  throw IESpecError("bad size " + std::to_string(ullen)
 			    + " (too large)");
       }

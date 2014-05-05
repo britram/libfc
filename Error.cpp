@@ -42,6 +42,7 @@ namespace IPFIX {
     case short_body: return "short message body"; break;
     case long_set: return "set too long (exceeds message size)"; break;
     case long_fieldspec: return "field specification exceeds set"; break;
+    case message_version_number: return "unexpected version number"; break;
     }
     // This fall-through cannot happen if the switch above contains
     // all enum values and the object has been initialised properly.
