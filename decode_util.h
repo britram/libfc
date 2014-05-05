@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_DECODE_UTIL_H
-#  define IPFIX_DECODE_UTIL_H
+#ifndef _LIBFC_DECODE_UTIL_H_
+#  define _LIBFC_DECODE_UTIL_H_
 
 #  include <cstdint>
 
@@ -78,4 +78,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif /* IPFIX_DECODE_UTIL_H */
+#endif /* _LIBFC_DECODE_UTIL_H_ */

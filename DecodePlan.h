@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_DECODEPLAN_H
-#  define IPFIX_DECODEPLAN_H
+#ifndef _LIBFC_DECODEPLAN_H_
+#  define _LIBFC_DECODEPLAN_H_
 
 #  include <vector>
 
@@ -187,6 +187,6 @@ namespace IPFIX {
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
   
-#endif /* IPFIX_DECODEPLAN_H */
+#endif /* _LIBFC_DECODEPLAN_H_ */
 
 } /* namespace IPFIX */

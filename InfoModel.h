@@ -33,8 +33,8 @@
  *
  * Defines the InfoModel class
  */
-#ifndef IPFIX_INFOMODEL_H // idem
-#define IPFIX_INFOMODEL_H // hack
+#ifndef _LIBFC_INFOMODEL_H_ // idem
+#define _LIBFC_INFOMODEL_H_ // hack
 
 #include <cstdint>
 #include <iostream>

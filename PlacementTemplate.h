@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_PLACEMENTTEMPLATE_H
-#  define IPFIX_PLACEMENTTEMPLATE_H
+#ifndef _LIBFC_PLACEMENTTEMPLATE_H_
+#  define _LIBFC_PLACEMENTTEMPLATE_H_
 
 #  include <list>
 #  include <map>
@@ -384,4 +384,4 @@ namespace IPFIX {
   };
 
 } // namespace IPFIX
-#endif // IPFIX_PLACEMENTTEMPLATE_H
+#endif // _LIBFC_PLACEMENTTEMPLATE_H_

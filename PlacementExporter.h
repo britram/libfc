@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_PLACEMENTEXPORTER_H
-#  define IPFIX_PLACEMENTEXPORTER_H
+#ifndef _LIBFC_PLACEMENTEXPORTER_H_
+#  define _LIBFC_PLACEMENTEXPORTER_H_
 
 #  include <cstdint>
 #  include <list>
@@ -192,4 +192,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_PLACEMENTEXPORTER_H
+#endif // _LIBFC_PLACEMENTEXPORTER_H_

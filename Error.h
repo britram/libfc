@@ -29,8 +29,8 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef IPFIX_ERROR_H
-#  define IPFIX_ERROR_H
+#ifndef _LIBFC_ERROR_H_
+#  define _LIBFC_ERROR_H_
 
 namespace IPFIX {
 
@@ -68,4 +68,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_ERROR_H
+#endif // _LIBFC_ERROR_H_

@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_ERRORHANDLER_H
-#  define IPFIX_ERRORHANDLER_H
+#ifndef _LIBFC_ERRORHANDLER_H_
+#  define _LIBFC_ERRORHANDLER_H_
 
 #  include "Error.h"
 
@@ -48,4 +48,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_ERRORHANDLER_H
+#endif // _LIBFC_ERRORHANDLER_H_

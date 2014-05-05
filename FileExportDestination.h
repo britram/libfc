@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_FILEEXPORTDESTINATION_H
-#  define IPFIX_FILEEXPORTDESTINATION_H
+#ifndef _LIBFC_FILEEXPORTDESTINATION_H_
+#  define _LIBFC_FILEEXPORTDESTINATION_H_
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
@@ -65,4 +65,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_FILEEXPORTDESTINATION_H
+#endif // _LIBFC_FILEEXPORTDESTINATION_H_

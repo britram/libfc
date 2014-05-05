@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_PLACEMENTCALLBACK_H
-#  define IPFIX_PLACEMENTCALLBACK_H
+#ifndef _LIBFC_PLACEMENTCALLBACK_H_
+#  define _LIBFC_PLACEMENTCALLBACK_H_
 
 #  include "IPFIXContentHandler.h"
 #  include "MessageStreamParser.h"
@@ -77,4 +77,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_PLACEMENTCALLBACK_H
+#endif // _LIBFC_PLACEMENTCALLBACK_H_

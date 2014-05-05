@@ -40,8 +40,8 @@
  * and is not bound to a session or ID).
  */
 
-#ifndef IPFIX_MATCHTEMPLATE_H // idem
-#  define IPFIX_MATCHTEMPLATE_H // hack
+#ifndef _LIBFC_MATCHTEMPLATE_H_ // idem
+#  define _LIBFC_MATCHTEMPLATE_H_ // hack
 
 namespace IPFIX {
 

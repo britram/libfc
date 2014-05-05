@@ -170,8 +170,8 @@
  * @endcode
  */
 
-#ifndef IPFIX_IPFIX_H
-#  define IPFIX_IPFIX_H
+#ifndef _LIBFC_IPFIX_H_
+#  define _LIBFC_IPFIX_H_
 
 #  if defined(__cplusplus)
 extern "C" {
@@ -263,4 +263,4 @@ extern "C" {
 }
 #  endif /* defined(__cplusplus) */
 
-#endif /* IPFIX_IPFIX_H */
+#endif /* _LIBFC_IPFIX_H_ */

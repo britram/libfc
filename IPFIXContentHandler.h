@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_IPFIXCONTENTHANDLER_H
-#  define IPFIX_IPFIXCONTENTHANDLER_H
+#ifndef _LIBFC_IPFIXCONTENTHANDLER_H_
+#  define _LIBFC_IPFIXCONTENTHANDLER_H_
 
 #  include <list>
 #  include <map>
@@ -278,4 +278,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_IPFIXCONTENTHANDLER_H
+#endif // _LIBFC_IPFIXCONTENTHANDLER_H_

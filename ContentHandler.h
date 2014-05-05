@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_CONTENTHANDLER_H
-#  define IPFIX_CONTENTHANDLER_H
+#ifndef _LIBFC_CONTENTHANDLER_H_
+#  define _LIBFC_CONTENTHANDLER_H_
 
 #  include <cstdint>
 
@@ -136,4 +136,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_CONTENTHANDLER_H
+#endif // _LIBFC_CONTENTHANDLER_H_

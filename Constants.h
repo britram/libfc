@@ -35,8 +35,8 @@
  */
  
 
-#ifndef IPFIX_K_H // idem
-#define IPFIX_K_H // hack
+#ifndef _LIBFC_K_H_ // idem
+#define _LIBFC_K_H_ // hack
 
 #include <cstring>
 #include <stdint.h>

@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_MESSAGESTREAMPARSER_H
-#  define IPFIX_MESSAGESTREAMPARSER_H
+#ifndef _LIBFC_MESSAGESTREAMPARSER_H_
+#  define _LIBFC_MESSAGESTREAMPARSER_H_
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
@@ -43,21 +43,26 @@
 
 namespace IPFIX {
 
+  /** Parse a message stream.
+   *
+   * This class is an abstract base for Net Flow v5/v9 and IPFIX
+   * message streams.  A message stream is accessed through an
+   * InputSource and provides either Net Flow or IPFIX messages.
+   */
   class MessageStreamParser {
   public:
     MessageStreamParser();
 
     /** Parses an IPFIX message stream from an input source.
      *
-     * The SAX API, on which this API is based, has this as a mere
-     * interface (or, in C++ terms, a virtual void parse() = 0), and
-     * one has to go through a factory to get a concrete instance of
-     * this class. I don't think that this is necessary, but if it's
-     * needed, it can be added later.
+     * In the SAX API, on which this API is based, one has to go
+     * through a factory to get a concrete instance of this class. I
+     * don't think that this is necessary, but if it's needed, it can
+     * be added later.
      *
      * @param is the input source
      */
-    virtual void parse(InputSource& is);
+    virtual void parse(InputSource& is) = 0;
 
     /** Sets an error handler for this parse.
      *
@@ -85,4 +90,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_MESSAGESTREAMPARSER_H
+#endif // _LIBFC_MESSAGESTREAMPARSER_H_

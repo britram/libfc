@@ -29,8 +29,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_BUFFERINPUTSOURCE_H
-#  define IPFIX_BUFFERINPUTSOURCE_H
+#ifndef _LIBFC_BUFFERINPUTSOURCE_H_
+#  define _LIBFC_BUFFERINPUTSOURCE_H_
 
 #  include "InputSource.h"
 
@@ -56,4 +56,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_BUFFERINPUTSOURCE_H
+#endif // _LIBFC_BUFFERINPUTSOURCE_H_

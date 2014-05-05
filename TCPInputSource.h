@@ -29,8 +29,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_TCPINPUTSOURCE_H
-#  define IPFIX_TCPINPUTSOURCE_H
+#ifndef _LIBFC_TCPINPUTSOURCE_H_
+#  define _LIBFC_TCPINPUTSOURCE_H_
 
 #  include "InputSource.h"
 
@@ -53,4 +53,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_TCPINPUTSOURCE_H
+#endif // _LIBFC_TCPINPUTSOURCE_H_

@@ -30,8 +30,8 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef IPFIX_BASICOCTETARRAY_H
-#  define IPFIX_BASICOCTETARRAY_H
+#ifndef _LIBFC_BASICOCTETARRAY_H_
+#  define _LIBFC_BASICOCTETARRAY_H_
 
 #  include <cstdint>
 #  include <cstring>
@@ -102,4 +102,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_BASICOCTETARRAY_H
+#endif // _LIBFC_BASICOCTETARRAY_H_

@@ -36,8 +36,8 @@
  * by the IPFIX encoder and decoder internals.
  */
 
-#ifndef IPFIX_IETYPE_H // idem
-#define IPFIX_IETYPE_H // hack
+#ifndef _LIBFC_IETYPE_H_ // idem
+#define _LIBFC_IETYPE_H_ // hack
 
 #include <cstring>
 #include <map>

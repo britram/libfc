@@ -40,8 +40,8 @@
  * the wire.
  */
 
-#ifndef IPFIX_IETEMPLATE_H // idem
-#  define IPFIX_IETEMPLATE_H // hack
+#ifndef _LIBFC_IETEMPLATE_H_ // idem
+#  define _LIBFC_IETEMPLATE_H_ // hack
 
 #  include <cassert>
 #  include <map>

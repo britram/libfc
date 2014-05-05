@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_INPUTSOURCE_H
-#  define IPFIX_INPUTSOURCE_H
+#ifndef _LIBFC_INPUTSOURCE_H_
+#  define _LIBFC_INPUTSOURCE_H_
 
 #  include <cstdint>
 
@@ -59,4 +59,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_INPUTSOURCE_H
+#endif // _LIBFC_INPUTSOURCE_H_

@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_EXPORTDESTINATION_H
-#  define IPFIX_EXPORTDESTINATION_H
+#ifndef _LIBFC_EXPORTDESTINATION_H_
+#  define _LIBFC_EXPORTDESTINATION_H_
 
 #  include <cstdint>
 #  include <vector>
@@ -118,4 +118,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_EXPORTDESTINATION_H
+#endif // _LIBFC_EXPORTDESTINATION_H_

@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef IPFIX_UDPINPUTSOURCE_H
-#  define IPFIX_UDPINPUTSOURCE_H
+#ifndef _LIBFC_UDPINPUTSOURCE_H_
+#  define _LIBFC_UDPINPUTSOURCE_H_
 
 #  include "InputSource.h"
 
@@ -57,4 +57,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // IPFIX_UDPINPUTSOURCE_H
+#endif // _LIBFC_UDPINPUTSOURCE_H_
