@@ -53,4 +53,9 @@ namespace IPFIX {
   void UDPInputSource::advance_message_offset() {
   }
 
+  const char* UDPInputSource::get_name() const {
+    return "<UDP socket>";
+  }
+
+
 } // namespace IPFIX

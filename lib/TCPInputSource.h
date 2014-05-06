@@ -49,6 +49,7 @@ namespace IPFIX {
     bool resync();
     size_t get_message_offset();
     void advance_message_offset();
+    const char* get_name() const;
 
   private:
     int fd;

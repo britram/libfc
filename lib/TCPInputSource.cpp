@@ -61,4 +61,8 @@ namespace IPFIX {
     current_offset = 0;
   }
 
+  const char* TCPInputSource::get_name() const {
+    return "<TCP socket>";
+  }
+
 } // namespace IPFIX
