@@ -90,4 +90,4 @@ namespace IPFIX {
 
 } // namespace IPFIX
 
-#endif // _LIBFC_MESSAGESTREAMPARSER_H_
+#endif /* _LIBFC_MESSAGESTREAMPARSER_H_ */

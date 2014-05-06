@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
 
   int fd = open(filename, O_RDONLY);
   if (fd >= 0) {
-    FileInputSource is(fd);
+    FileInputSource is(fd, filename);
     try {
       cb.collect(is);
     } catch (FormatError e) {

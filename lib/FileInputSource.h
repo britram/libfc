@@ -42,19 +42,22 @@ namespace IPFIX {
     /** Creates a TCP input source from a file descriptor.
      *
      * @param fd the file descriptor belonging to an IPFIX data file
+     * @param name the name you want this file to be known to diagnostics
      */
-    FileInputSource(int fd);
+    FileInputSource(int fd, const char* name);
     ~FileInputSource();
 
     ssize_t read(uint8_t* buf, uint16_t len);
     bool resync();
-    size_t get_message_offset();
+    size_t get_message_offset() const;
     void advance_message_offset();
+    const char* get_name() const;
 
   private:
     int fd;
     size_t message_offset;
     size_t current_offset;
+    const char* name;
   };
 
 } // namespace IPFIX

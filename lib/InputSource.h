@@ -77,7 +77,7 @@ namespace IPFIX {
      *
      * @return the message offset
      */
-    virtual size_t get_message_offset() = 0;
+    virtual size_t get_message_offset() const = 0;
 
     /** Advances the offset.
      *
@@ -87,6 +87,16 @@ namespace IPFIX {
      * increment.
      */
     virtual void advance_message_offset() = 0;
+
+    /** Returns a name for this input source.
+     *
+     * In case of a file input source, the best name is of course the
+     * file name.  A TCP or UDP source should perhaps return the
+     * IP address and port number of the local and/or remote port.
+     *
+     * @return a name for this input source.
+     */
+    virtual const char* get_name() const = 0;
   };
 
 } // namespace IPFIX

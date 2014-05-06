@@ -158,7 +158,7 @@
  *   ipfix_register_placement(t, "sourceIPv4Address", &sip, 0);
  *   ipfix_register_placement(t, "destinationIPv4Address", &dip, 0);
  *   ipfix_register_callback(s, callback);
- *   ipfix_collect_from_file(fd, s);
+ *   ipfix_collect_from_file(fd, "test.ipfix", s);
  *
  *   if (close(fd) < 0)
  *     exit(1);
@@ -252,11 +252,14 @@ extern "C" {
    *
    * @param fd a valid file descriptor, such as you'd get back from a
    *     successful call to open(2)
+   * @param name the name by which you want to have this file known to
+   *     diagnostics
    * @param s template set containing the templates of interest and the callback
    *
    * @return non-zero on success and 0 on error
    */
-  extern int ipfix_collect_from_file(int fd, struct ipfix_template_set_t* t);
+  extern int ipfix_collect_from_file(int fd, const char* name,
+				     struct ipfix_template_set_t* t);
 
    
 #  if defined(__cplusplus)

@@ -30,10 +30,11 @@
 
 namespace IPFIX {
 
-  FileInputSource::FileInputSource(int fd)
+  FileInputSource::FileInputSource(int fd, const char* name)
     : fd(fd),
       message_offset(0),
-      current_offset(0) {
+      current_offset(0),
+      name(name) {
   }
 
   FileInputSource::~FileInputSource() {
@@ -52,13 +53,17 @@ namespace IPFIX {
     return true;
   }
 
-  size_t FileInputSource::get_message_offset() {
+  size_t FileInputSource::get_message_offset() const {
     return message_offset;
   }
 
   void FileInputSource::advance_message_offset() {
     message_offset += current_offset;
     current_offset = 0;
+  }
+
+  const char* FileInputSource::get_name() const {
+    return name;
   }
 
 } // namespace IPFIX

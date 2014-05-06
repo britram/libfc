@@ -117,10 +117,11 @@ extern void ipfix_register_callback(struct ipfix_template_t* t,
   t->callback = c;
 }
 
-extern int ipfix_collect_from_file(int fd, struct ipfix_template_set_t* t) {
+extern int ipfix_collect_from_file(int fd, const char* name,
+				   struct ipfix_template_set_t* t) {
   int ret = 1;
 
-  IPFIX::FileInputSource is(fd);
+  IPFIX::FileInputSource is(fd, name);
   try {
     t->binding->collect(is);
   } catch (IPFIX::FormatError e) {

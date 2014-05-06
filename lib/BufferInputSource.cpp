@@ -25,6 +25,7 @@
  */
 #include <cassert>
 #include <cstring>
+#include <sstream>
 
 #include "BufferInputSource.h"
 
@@ -35,12 +36,14 @@ namespace IPFIX {
       len(len), 
       off(0),
       message_offset(0),
-      current_offset(0) {
+      current_offset(0),
+      name (0) {
     memcpy(this->buf, buf, len);
   }
 
   BufferInputSource::~BufferInputSource() {
     delete[] buf;
+    delete[] const_cast<char*>(name);
   }
 
   ssize_t BufferInputSource::read(uint8_t* result_buf, uint16_t result_len) {
@@ -68,7 +71,7 @@ namespace IPFIX {
     return true;
   }
 
-  size_t BufferInputSource::get_message_offset() {
+  size_t BufferInputSource::get_message_offset() const {
     return message_offset;
   }
 
@@ -77,4 +80,18 @@ namespace IPFIX {
     current_offset = 0;
   }
 
+  const char* BufferInputSource::get_name() const {
+    if (name == 0) {
+      static const char* prefix = "Buffer@0x";
+      std::stringstream sstr;
+
+      sstr << prefix << buf << '[' << len << ']';
+      std::string s = sstr.str();
+
+      name = new char[s.length() + 1];
+      std::strcpy(const_cast<char*>(name), s.c_str());
+    }
+    
+    return name;
+  }
 }

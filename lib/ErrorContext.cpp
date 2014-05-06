@@ -1,4 +1,3 @@
-/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -25,50 +24,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @file
- * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
- */
-#ifndef _LIBFC_ERROR_H_
-#  define _LIBFC_ERROR_H_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  include <log4cplus/logger.h>
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+#include "ErrorContext.h"
 
 namespace IPFIX {
 
-  class Error {
-  public:
-    enum error_t {
-      /** No error occurred. */
-      no_error,
+  ErrorContext::ErrorContext(Error e, int system_errno, InputSource& is) 
+    : e(e),
+      system_errno(system_errno),
+      is(is)
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+                      ,
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+  {
+  }
 
-      /** Calling parse() while another parse is in progress. */
-      parse_while_parsing,
+  const Error& ErrorContext::get_error() const {
+    return e;
+  }
 
-      /** A system error occurred; more details are available through errno. */
-      system_error,
+  const int ErrorContext::get_system_errno() const {
+    return system_errno;
+  }
 
-      /** The message header is too short. */
-      short_header,
-
-      /** The message body is too short. */
-      short_body,
-
-      /** Set size exceeds message size. */
-      long_set,
-
-      /** Field specification exceeds set. */
-      long_fieldspec,
-
-      /** Version number in message header is not what it should be. */
-      message_version_number,
-    };
-
-    Error(error_t e);
-    operator const char*() const;
-
-  private:
-    error_t e;
-  };
+  InputSource& ErrorContext::get_input_stream() {
+    return is;
+  }
 
 } // namespace IPFIX
-
-#endif // _LIBFC_ERROR_H_

@@ -25,50 +25,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
+
+/** 
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef _LIBFC_ERROR_H_
-#  define _LIBFC_ERROR_H_
+ 
+
+#ifndef _LIBFC_ERRORCONTEXT_H_
+#  define _LIBFC_ERRORCONTEXT_H_
+
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+#  include "Error.h"
+#  include "InputSource.h"
 
 namespace IPFIX {
-
-  class Error {
+  /**
+   */
+  class ErrorContext {
   public:
-    enum error_t {
-      /** No error occurred. */
-      no_error,
+    ErrorContext(Error e, int system_errno, InputSource& is);
 
-      /** Calling parse() while another parse is in progress. */
-      parse_while_parsing,
-
-      /** A system error occurred; more details are available through errno. */
-      system_error,
-
-      /** The message header is too short. */
-      short_header,
-
-      /** The message body is too short. */
-      short_body,
-
-      /** Set size exceeds message size. */
-      long_set,
-
-      /** Field specification exceeds set. */
-      long_fieldspec,
-
-      /** Version number in message header is not what it should be. */
-      message_version_number,
-    };
-
-    Error(error_t e);
-    operator const char*() const;
+    const Error& get_error() const;
+    const int get_system_errno() const;
+    InputSource& get_input_stream();
 
   private:
-    error_t e;
+    Error e;
+    int system_errno;
+    InputSource& is;
+
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
 } // namespace IPFIX
 
-#endif // _LIBFC_ERROR_H_
+#endif /* _LIBFC_ERRORCONTEXT_H_ */

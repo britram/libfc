@@ -53,7 +53,7 @@ int main() {
   ipfix_register_placement(t, "sourceIPv4Address", &sip, 4);
   ipfix_register_placement(t, "destinationIPv4Address", &dip, 4);
   ipfix_register_callback(t, callback);
-  ipfix_collect_from_file(fd, s);
+  ipfix_collect_from_file(fd, "test.ipfix", s);
   if (close(fd) < 0)
     exit(1);
    

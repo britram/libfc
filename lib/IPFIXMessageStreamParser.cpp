@@ -100,7 +100,7 @@ namespace IPFIX {
 
       nbytes = is.read(cur, message_size - kIpfixMessageHeaderLen);
       if (nbytes < 0) {
-        error_handler->fatal(Error::read_error, 0);
+        error_handler->fatal(Error::system_error, 0);
         return;
       } else if (static_cast<size_t>(nbytes) 
                  != message_size - kIpfixMessageHeaderLen) {
@@ -181,7 +181,7 @@ namespace IPFIX {
     }
 
     if (nbytes < 0) {
-      error_handler->fatal(Error::read_error, 0);
+      error_handler->fatal(Error::system_error, 0);
       return;
     }
     assert(nbytes == 0);
