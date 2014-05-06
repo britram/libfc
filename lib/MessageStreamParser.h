@@ -33,13 +33,15 @@
 #ifndef _LIBFC_MESSAGESTREAMPARSER_H_
 #  define _LIBFC_MESSAGESTREAMPARSER_H_
 
+#  include <memory>
+
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "ContentHandler.h"
 #  include "Constants.h"
-#  include "ErrorHandler.h"
+#  include "ErrorContext.h"
 #  include "InputSource.h"
 
 namespace IPFIX {
@@ -63,13 +65,7 @@ namespace IPFIX {
      *
      * @param is the input source
      */
-    virtual void parse(InputSource& is) = 0;
-
-    /** Sets an error handler for this parse.
-     *
-     * @param handler the error handler
-     */
-    void set_error_handler(ErrorHandler* handler);
+    virtual std::shared_ptr<ErrorContext> parse(InputSource& is) = 0;
 
     /** Sets a content handler for this parse.
      *
@@ -79,7 +75,6 @@ namespace IPFIX {
 
   protected:
     ContentHandler* content_handler;
-    ErrorHandler* error_handler;
 
   private:
 

@@ -30,11 +30,10 @@ namespace IPFIX {
 
   PlacementCollector::PlacementCollector() {
     ir.set_content_handler(&d);
-    ir.set_error_handler(&d);
   }
 
-  void PlacementCollector::collect(InputSource& is) {
-    ir.parse(is);
+  std::shared_ptr<ErrorContext> PlacementCollector::collect(InputSource& is) {
+    return ir.parse(is);
   }
 
   void PlacementCollector::register_placement_template(

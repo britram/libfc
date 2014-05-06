@@ -35,9 +35,15 @@
 
 namespace IPFIX {
 
-  ErrorContext::ErrorContext(Error e, int system_errno, InputSource& is) 
-    : e(e),
+  ErrorContext::ErrorContext(error_severity_t severity,
+			     Error e,
+			     int system_errno,
+			     const char* message,
+			     InputSource& is) 
+    : severity(severity),
+      e(e),
       system_errno(system_errno),
+      message(message),
       is(is)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                       ,
@@ -52,6 +58,10 @@ namespace IPFIX {
 
   const int ErrorContext::get_system_errno() const {
     return system_errno;
+  }
+
+  const char* ErrorContext::get_message() const {
+    return message;
   }
 
   InputSource& ErrorContext::get_input_stream() {

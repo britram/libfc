@@ -48,8 +48,10 @@ namespace IPFIX {
     /** Collects information elements from an input stream. 
      *
      * @param is the input stream to parse
+     *
+     * @return an error context, giving information about potential errors.
      */
-    void collect(InputSource& is);
+    std::shared_ptr<ErrorContext> collect(InputSource& is);
 
     /** Signals that placement of values will now begin. 
      *

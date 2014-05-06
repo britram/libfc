@@ -24,6 +24,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <cassert>
+#include <cerrno>
 #include <cstdint>
 #include <sstream>
 
@@ -40,19 +41,28 @@
 #include "decode_util.h"
 
 
+#define RETURN_ERROR(severity, error, message_stream, system_errno, is) \
+  do { \
+    std::stringstream ss; \
+    \
+    ss << message_stream; \
+    return std::shared_ptr<ErrorContext>(new ErrorContext(ErrorContext::severity, Error(Error::error), \
+							  system_errno, ss.str().c_str(), is)); \
+  } while (0)
+
 namespace IPFIX {
 
   IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
     : offset(0) {
   }
 
-  void IPFIXMessageStreamParser::parse(InputSource& is) {
+  std::shared_ptr<ErrorContext>
+  IPFIXMessageStreamParser::parse(InputSource& is) {
     LOG4CPLUS_TRACE(logger, "ENTER parse()");
 
     /* Use assert() instead of error handler since this must (and
      * will) be caught in testing. */
     assert(content_handler != 0);
-    assert(error_handler != 0);
 
     content_handler->start_session();
 
@@ -64,6 +74,7 @@ namespace IPFIX {
 
     /** The number of bytes available after the latest read operation,
      * or -1 if a read error occurred. */
+    errno = 0;
     ssize_t nbytes = is.read(message, kIpfixMessageHeaderLen);
 
     while (nbytes > 0) {
@@ -73,14 +84,21 @@ namespace IPFIX {
       uint16_t message_size;
 
       if (static_cast<size_t>(nbytes) < kIpfixMessageHeaderLen) {
-        error_handler->fatal(Error::short_header, 0);
-        return;
+	RETURN_ERROR(recoverable, short_header, 
+		     "Wanted " 
+		     << kIpfixMessageHeaderLen
+		     << " bytes for IPFIX message header, got only "
+		     << nbytes,
+		     0, is);
       }
       assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
 
       if (decode_uint16(cur + 0) != kIpfixVersion) {
-	error_handler->fatal(Error::message_version_number, 0);
-	return;
+	RETURN_ERROR(recoverable, message_version_number,
+		     "Expected message version number "
+		     << kIpfixMessageHeaderLen
+		     << ", but got " << decode_uint16(cur + 0),
+		     0, is);
       }
 
       message_size = decode_uint16(cur +  2);
@@ -98,14 +116,19 @@ namespace IPFIX {
 
       offset += kIpfixMessageHeaderLen;
 
+      errno = 0;
       nbytes = is.read(cur, message_size - kIpfixMessageHeaderLen);
       if (nbytes < 0) {
-        error_handler->fatal(Error::system_error, 0);
-        return;
+        RETURN_ERROR(fatal, system_error, 
+		     "Wanted to read " 
+		     << message_size - kIpfixMessageHeaderLen
+		     << " bytes, got a read error", errno, is);
       } else if (static_cast<size_t>(nbytes) 
                  != message_size - kIpfixMessageHeaderLen) {
-        error_handler->fatal(Error::short_body, 0);
-        return;
+        RETURN_ERROR(recoverable, short_body, 
+		     "Wanted " << message_size - kIpfixMessageHeaderLen
+		     << " bytes for message body, got " << nbytes,
+		     0, is);
       }
       
       /* Decode sets.
@@ -143,8 +166,12 @@ namespace IPFIX {
                << ",set_end=" << static_cast<const void*>(set_end) 
                << ",message_len=" << message_size
                << ",message_end=" << static_cast<const void*>(message_end);
-          error_handler->fatal(Error::long_set, sstr.str().c_str());
-          return;
+	  RETURN_ERROR(recoverable, long_set, 
+		       "Long set: set_len=" << set_length 
+		       << ",set_end=" << static_cast<const void*>(set_end) 
+		       << ",message_len=" << message_size
+		       << ",message_end=" << static_cast<const void*>(message_end),
+		       0, is);
         }
 
         cur += kIpfixSetHeaderLen;
@@ -177,17 +204,22 @@ namespace IPFIX {
 
       offset += nbytes;
       memset(message, '\0', sizeof(message));
+      errno = 0;
       nbytes = is.read(message, kIpfixMessageHeaderLen);
     }
 
     if (nbytes < 0) {
-      error_handler->fatal(Error::system_error, 0);
-      return;
+        RETURN_ERROR(fatal, system_error, 
+		     "Wanted to read " 
+		     << kIpfixMessageHeaderLen
+		     << " bytes, got a read error", errno, is);
     }
     assert(nbytes == 0);
 
     content_handler->end_session();
     memset(message, '\0', sizeof(message));
+
+    RETURN_ERROR(fine, no_error, "", 0, is);
   }
 
 } // namespace IPFIX

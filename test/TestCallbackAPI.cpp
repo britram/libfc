@@ -193,7 +193,6 @@ BOOST_AUTO_TEST_CASE(BasicCallback) {
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&ph);
-  ir.set_error_handler(&ph);
 
   {
     BufferInputSource is(msg01, sizeof(msg01));
@@ -213,7 +212,6 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&ph);
-  ir.set_error_handler(&ph);
 
   int fd = open(filename, O_RDONLY);
   if (fd >= 0) {

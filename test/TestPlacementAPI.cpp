@@ -59,7 +59,6 @@ BOOST_AUTO_TEST_CASE(SkipDataSet) {
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&dsr);
-  ir.set_error_handler(&dsr);
 
   BufferInputSource is(msg, sizeof(msg));
   ir.parse(is);

@@ -45,7 +45,7 @@ namespace IPFIX {
   class IPFIXMessageStreamParser : public MessageStreamParser {
   public:
     IPFIXMessageStreamParser();
-    void parse(InputSource& is);
+    std::shared_ptr<ErrorContext> parse(InputSource& is);
 
   private:
 

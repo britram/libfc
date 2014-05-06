@@ -43,19 +43,90 @@
 #  include "InputSource.h"
 
 namespace IPFIX {
-  /**
+  /** An error context.
+   *
+   * This class is used to show upper layers where in the processing
+   * of a particular InputSource an error happened and what kind of
+   * error it is.  For this purpose, an ErrorContext object contains
+   * the error that happened, the value of errno, and the InputSource
+   * in which the error occurred.
+   *
+   * The InputSource object also holds information about the location
+   * of the error, in the form of offset counters. (Depending on the
+   * type of input source, the offset may or may not be meaningful.
+   * For example, for message-based input sources, such as
+   * UDPInputSource, the offset of the current message makes no sense,
+   * since there is no message stream.)
    */
   class ErrorContext {
   public:
-    ErrorContext(Error e, int system_errno, InputSource& is);
+    /** The severity of the error. */
+    enum error_severity_t {
+      /** Everything is hunky dory. */
+      fine,
 
+      /** Something is weird with the message, even though it's not an
+       * error. This could be a message that purports to be from 2301
+       * (because, let's face it, if we haven't replaced IPFIX by the
+       * 24th century, something is VERY wrong) or a message that's
+       * supposedly from January 1, 1970. */
+      warning,
+
+      /** The message has an error and must be discarded, but the next
+       * message in the stream may be recoverable.  This could happen
+       * if the message contained a syntax error but the stream itself
+       * seems to be OK. (For example, it's entirely possible that a
+       * bit or two in a large number of large files could flip simply
+       * through bit rot.) */
+      recoverable,
+
+      /** The entire message stream must be discarded.  This can
+       * happen when a read operation returns an operating system
+       * error. */
+      fatal
+    };
+
+    /** Creates an ErrorContext object.
+     *
+     * @param severity the error's severity
+     * @param e the error that occurred
+     * @param system_errno the value of errno after the error was
+     *   detected (this may be zero)
+     * @param is the input source in which the error was detectd.
+     */
+    ErrorContext(error_severity_t severity, Error e,
+		 int system_errno, const char* message,
+		 InputSource& is);
+
+    /** Returns the error.
+     *
+     * @return the error that occurred
+     */
     const Error& get_error() const;
+
+    /** Returns the value of errno when the error occurred.
+     *
+     * @return the saved value of errno (might be zero)
+     */
     const int get_system_errno() const;
+
+    /** Returns the message. 
+     *
+     * @return the message given in the constructor
+     */
+    const char* get_message() const;
+
+    /** Returns the input stream.
+     *
+     * @return the input stream in which the error occurred.
+     */
     InputSource& get_input_stream();
 
   private:
+    error_severity_t severity;
     Error e;
     int system_errno;
+    const char* message;
     InputSource& is;
 
 #ifdef _LIBFC_HAVE_LOG4CPLUS_

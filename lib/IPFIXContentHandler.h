@@ -42,7 +42,6 @@
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "ContentHandler.h"
-#  include "ErrorHandler.h"
 #  include "InfoElement.h"
 #  include "InfoModel.h"
 #  include "InputSource.h"
@@ -58,7 +57,7 @@ namespace IPFIX {
    * more in-depth treatment, see the documentation on
    * PlacementTemplate.
    */
-  class IPFIXContentHandler : public ContentHandler, public ErrorHandler {
+  class IPFIXContentHandler : public ContentHandler {
   public:
     IPFIXContentHandler();
     ~IPFIXContentHandler();
@@ -84,11 +83,6 @@ namespace IPFIX {
     void end_options_template_set();
     void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf);
     void end_data_set();
-
-    /* From ErrorHandler */
-    void error(Error error, const char* message);
-    void fatal(Error error, const char* message);
-    void warning(Error error, const char* message);
 
     /** Registers a placement template.
      *
