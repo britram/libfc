@@ -80,15 +80,17 @@ namespace IPFIX {
   }
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-  void IPFIXContentHandler::start_session() {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_session() {
     LOG4CPLUS_TRACE(logger, "Session starts");
+    return std::shared_ptr<ErrorContext>(0);
   }
 
-  void IPFIXContentHandler::end_session() {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_session() {
     LOG4CPLUS_TRACE(logger, "Session ends");
+    return std::shared_ptr<ErrorContext>(0);
   }
 
-  void IPFIXContentHandler::start_message(uint16_t version,
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_message(uint16_t version,
                                      uint16_t length,
                                      uint32_t export_time,
                                      uint32_t sequence_number,
@@ -117,18 +119,21 @@ namespace IPFIX {
 
     this->observation_domain = observation_domain;
     LOG4CPLUS_TRACE(logger, "LEAVE start_message");
+    return std::shared_ptr<ErrorContext>(0);
   }
 
-  void IPFIXContentHandler::end_message() {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_message() {
     LOG4CPLUS_TRACE(logger, "ENTER end_message");
     assert(current_wire_template == 0);
     LOG4CPLUS_TRACE(logger, "LEAVE end_message");
+    return std::shared_ptr<ErrorContext>(0);
   }
 
-  void IPFIXContentHandler::process_template_set(uint16_t set_id,
-						 uint16_t set_length,
-						 const uint8_t* buf,
-						 bool is_options_set) {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::process_template_set(
+      uint16_t set_id,
+      uint16_t set_length,
+      const uint8_t* buf,
+      bool is_options_set) {
     const uint8_t* set_end = buf + set_length;
     const uint16_t header_length 
       = is_options_set ? kIpfixOptionsTemplateHeaderLen 
@@ -146,7 +151,9 @@ namespace IPFIX {
       
       for (unsigned int field = 0; field < field_count; field++) {
 	if (!CHECK_POINTER_WITHIN_I(buf + kIpfixFieldSpecifierLen, buf, set_end)) {
-	  error(Error::long_fieldspec, 0);
+	  RETURN_ERROR(recoverable, long_fieldspec, 0,
+                       "Field specifier partly outside template record", 
+                       is);
 	  return;
 	}
 	
@@ -182,7 +189,7 @@ namespace IPFIX {
     }
   }
 
-  void IPFIXContentHandler::start_template_set(uint16_t set_id,
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_template_set(uint16_t set_id,
 					       uint16_t set_length,
 					       const uint8_t* buf) {
     LOG4CPLUS_TRACE(logger, "ENTER start_template_set"
@@ -191,10 +198,12 @@ namespace IPFIX {
     assert(current_wire_template == 0);
 
     process_template_set(set_id, set_length, buf, false);
+    return std::shared_ptr<ErrorContext>(0);
   }
 
-  void IPFIXContentHandler::end_template_set() {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_set");
+    return std::shared_ptr<ErrorContext>(0);
   }
 
   uint64_t IPFIXContentHandler::make_template_key(uint16_t tid) const {
@@ -231,7 +240,6 @@ namespace IPFIX {
                           << std::hex
                           << make_template_key(current_template_id));
       }
-
 #endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
       wire_templates[make_template_key(current_template_id)]
@@ -261,7 +269,7 @@ namespace IPFIX {
     current_wire_template = 0;
   }
 
-  void IPFIXContentHandler::start_options_template_set(
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_options_template_set(
       uint16_t set_id,
       uint16_t set_length,
       const uint8_t* buf) {
@@ -271,10 +279,12 @@ namespace IPFIX {
     assert(current_wire_template == 0);
 
     process_template_set(set_id, set_length, buf, true);
+    return std::shared_ptr<ErrorContext>(0);
   }
 
-  void IPFIXContentHandler::end_options_template_set() {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_options_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_set");
+    return std::shared_ptr<ErrorContext>(0);
   }
 
   void IPFIXContentHandler::field_specifier(
@@ -388,7 +398,7 @@ namespace IPFIX {
       return m->second;
   }
 
-  void IPFIXContentHandler::start_data_set(uint16_t id,
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_data_set(uint16_t id,
                                       uint16_t length,
                                       const uint8_t* buf) {
     LOG4CPLUS_TRACE(logger,
@@ -433,23 +443,13 @@ namespace IPFIX {
       length -= consumed;
     }
 
+    return std::shared_ptr<ErrorContext>(0);
   }
 
-  void IPFIXContentHandler::end_data_set() {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_data_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_data_set");
     LOG4CPLUS_TRACE(logger, "LEAVE end_data_set");
-  }
-
-  void IPFIXContentHandler::error(Error error, const char* message) {
-    LOG4CPLUS_TRACE(logger, "Warning: " << error << ": " << message);
-  }
-
-  void IPFIXContentHandler::fatal(Error error, const char* message) {
-    LOG4CPLUS_TRACE(logger, "Warning: " << error << ": " << message);
-  }
-
-  void IPFIXContentHandler::warning(Error error, const char* message) {
-    LOG4CPLUS_TRACE(logger, "Warning: " << error << ": " << message);
+    return std::shared_ptr<ErrorContext>(0);
   }
 
   void IPFIXContentHandler::register_placement_template(

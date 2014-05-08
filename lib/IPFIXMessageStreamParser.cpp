@@ -41,15 +41,6 @@
 #include "decode_util.h"
 
 
-#define RETURN_ERROR(severity, error, message_stream, system_errno, is) \
-  do { \
-    std::stringstream ss; \
-    \
-    ss << message_stream; \
-    return std::shared_ptr<ErrorContext>(new ErrorContext(ErrorContext::severity, Error(Error::error), \
-							  system_errno, ss.str().c_str(), is)); \
-  } while (0)
-
 namespace IPFIX {
 
   IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
@@ -219,7 +210,7 @@ namespace IPFIX {
     content_handler->end_session();
     memset(message, '\0', sizeof(message));
 
-    RETURN_ERROR(fine, no_error, "", 0, is);
+    return std::shared_ptr<ErrorContext>(0);
   }
 
 } // namespace IPFIX

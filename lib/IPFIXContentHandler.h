@@ -63,26 +63,28 @@ namespace IPFIX {
     ~IPFIXContentHandler();
 
     /* From ContentHandler */
-    void start_session();
-    void end_session();
+    std::shared_ptr<ErrorContext> start_session();
+    std::shared_ptr<ErrorContext> end_session();
 
-    void start_message(uint16_t version,
+    std::shared_ptr<ErrorContext> start_message(uint16_t version,
                        uint16_t length,
                        uint32_t export_time,
                        uint32_t sequence_number,
                        uint32_t observation_domain,
 		       uint64_t base_time);
-    void end_message();
-    void start_template_set(uint16_t set_id,
+    std::shared_ptr<ErrorContext> end_message();
+    std::shared_ptr<ErrorContext> start_template_set(uint16_t set_id,
 			    uint16_t set_length,
 			    const uint8_t* buf);
-    void end_template_set();
-    void start_options_template_set(uint16_t set_id,
+    std::shared_ptr<ErrorContext> end_template_set();
+    std::shared_ptr<ErrorContext> start_options_template_set(uint16_t set_id,
 				   uint16_t set_length,
 				   const uint8_t* buf);
-    void end_options_template_set();
-    void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf);
-    void end_data_set();
+    std::shared_ptr<ErrorContext> end_options_template_set();
+    std::shared_ptr<ErrorContext> start_data_set(uint16_t id,
+                                                 uint16_t length,
+                                                 const uint8_t* buf);
+    std::shared_ptr<ErrorContext> end_data_set();
 
     /** Registers a placement template.
      *

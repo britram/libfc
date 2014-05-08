@@ -38,18 +38,33 @@ namespace IPFIX {
   ErrorContext::ErrorContext(error_severity_t severity,
 			     Error e,
 			     int system_errno,
-			     const char* message,
-			     InputSource& is) 
+			     const char* explanation,
+			     InputSource* is,
+                             const uint8_t* message,
+                             uint16_t size,
+                             uint16_t off) 
     : severity(severity),
       e(e),
       system_errno(system_errno),
-      message(message),
-      is(is)
+      explanation(explanation),
+      is(is),
+      message(0),
+      size(message != 0 ? size : 0),
+      off(message != 0 ? off : 0)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                       ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
+    if (message != 0) {
+      this->message = new const uint8_t[size];
+      memcpy(this->message, message, size);
+    }
+  }
+
+  ErrorContext::~ErrorContext() {
+    if (message != 0)
+      delete message;
   }
 
   const Error& ErrorContext::get_error() const {
@@ -60,12 +75,37 @@ namespace IPFIX {
     return system_errno;
   }
 
-  const char* ErrorContext::get_message() const {
+  const char* ErrorContext::get_explanation() const {
+    return explanation;
+  }
+
+  InputSource* ErrorContext::get_input_source() const {
+    return is;
+  }
+
+  void ErrorContext::set_input_source(InputSource* is) const {
+    if (this->is == 0)
+      this->is = is;
+  }
+
+  const uint8_t* ErrorContext::get_message() const {
     return message;
   }
 
-  InputSource& ErrorContext::get_input_stream() {
-    return is;
+  void ErrorContext::set_message(const uint8_t* message, uint16_t size) {
+    if (this->message == 0) {
+      this->message = new const uint8_t[size];
+      memcpy(this->message, message, size);
+      this->size = size;
+    }
+  }
+
+  const ErrorContext::uint16_t get_offset() const {
+    return off;
+  }
+
+  void ErrorContext::set_offset(uint16_t off) {
+    this->off = off;
   }
 
 } // namespace IPFIX

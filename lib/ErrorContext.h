@@ -43,6 +43,50 @@
 #  include "InputSource.h"
 
 namespace IPFIX {
+
+  /** Returns a shared pointer to an ErrorContext object.
+   *
+   * Initialising and returning such objects is (a) tedious, and (b)
+   * always the same.  This macro takes away some of the pain.
+   *
+   * @param severity the severity as per ErrorContext::error_severity_t
+   * @param error the error as per Error::error_t
+   * @param message_stream an error message, assemblee as a stream
+   * @param system_errno the value of errno, or 0
+   * @param is the input stream in which the error was detected
+   */
+#  define RETURN_ERROR(severity, error, message_stream, system_errno, is) \
+    do { \
+      std::stringstream ss; \
+      \
+      ss << message_stream; \
+      return std::shared_ptr<ErrorContext>( \
+        new ErrorContext(ErrorContext::severity, Error(Error::error), \
+                         system_errno, ss.str().c_str(), is));        \
+    } while (0)
+
+
+  /** Returns a shared pointer to an ErrorContext object, without an
+   * InputSource reference.
+   *
+   * Initialising and returning such objects is (a) tedious, and (b)
+   * always the same.  This macro takes away some of the pain.
+   *
+   * @param severity the severity as per ErrorContext::error_severity_t
+   * @param error the error as per Error::error_t
+   * @param message_stream an error message, assemblee as a stream
+   * @param system_errno the value of errno, or 0
+   */
+#  define RETURN_ERROR_NO_IS(severity, error, message_stream, system_errno) \
+    do { \
+      std::stringstream ss; \
+      \
+      ss << message_stream; \
+      return std::shared_ptr<ErrorContext>( \
+        new ErrorContext(ErrorContext::severity, Error(Error::error), \
+                         system_errno, ss.str().c_str())); \
+    } while (0)
+
   /** An error context.
    *
    * This class is used to show upper layers where in the processing
@@ -92,11 +136,29 @@ namespace IPFIX {
      * @param e the error that occurred
      * @param system_errno the value of errno after the error was
      *   detected (this may be zero)
-     * @param is the input source in which the error was detectd.
+     * @param explanation a message further identifying and/or explaining
+     *   the error
+     * @param is the input source in which the error was
+     *   detected. It's OK if this parameter is 0; the InputSource can
+     *   be set later.
+     * @param message the message that caused the error. The
+     *   constructor will make a copy of the message. It's OK if this
+     *   parameter is 0.  The message can be set later.
+     * @param size the size of the message. If the message parameter
+     *   is 0, this value will be ignored.
+     * @param off the offset at which the error was detected. If the
+     *   message parameter is 0, this value will be ignored.
      */
     ErrorContext(error_severity_t severity, Error e,
-		 int system_errno, const char* message,
-		 InputSource& is);
+		 int system_errno, const char* explanation,
+		 InputSource* is, const uint8_t* message,
+                 uint16_t size, uint16_t off);
+
+    /** Copy constructor, preserving copy semantics. */
+    ErrorContext(const ErrorContext& rhs);
+
+    /** Destructor. */
+    ~ErrorContext();
 
     /** Returns the error.
      *
@@ -110,24 +172,76 @@ namespace IPFIX {
      */
     const int get_system_errno() const;
 
-    /** Returns the message. 
+    /** Returns the explanation. 
      *
-     * @return the message given in the constructor
+     * @return the explanation given in the constructor
      */
-    const char* get_message() const;
+    const char* get_explanation() const;
 
     /** Returns the input stream.
      *
-     * @return the input stream in which the error occurred.
+     * @return the input stream in which the error occurred.  May
+     *   return 0.
      */
-    InputSource& get_input_stream();
+    InputSource* get_input_source() const;
+
+    /** Sets the input source.
+     *
+     * This method has an effect only if the input source is not
+     * already set. 
+     *
+     * @param is the new input source
+     */
+    void set_input_source(InputSource* is);
+
+    /** Returns the message that caused the error.
+     *
+     * This returns a pointer to the beginning of a copy of the
+     * message that caused the error. If the message has not yet been
+     * set, this method may well return 0.  The size of the message
+     * thus returned can be inquired with get_size().
+     *
+     * @return a pointer to the beginning of the erroneous message
+     */
+    const uint8_t* get_message() const;
+
+    /** Sets the message that caused the error.
+     *
+     * This method causes a copy of the argument to be made, so it's
+     * safe to delete the message argument after constructing an
+     * ErrorContext object or to let the buffer go out of scope.
+     *
+     * This method has no effect if the message has already been set,
+     * either through the constructor or through a previous call to
+     * set_message().
+     *
+     * @param message the message that caused the error
+     * @param size the size of the message
+     */
+    void set_message(const uint8_t* message, uint16_t size);
+
+    /** Gets the offset into the message at which the error occurred.
+     *
+     * @return offset into the message at which the error occurred
+     */
+    const uint16_t get_offset() const;
+
+    /** Sets the offset into the message at which the error occurred.
+     *
+     * @param off offset into the message at which the error occurred
+     */
+    void set_offset(uint16_t off);
 
   private:
     error_severity_t severity;
     Error e;
     int system_errno;
-    const char* message;
-    InputSource& is;
+    const char* explanation;
+    InputSource* is;
+
+    const uint8_t* message;
+    uint16_t size;
+    uint16_t off;
 
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

@@ -34,6 +34,9 @@
 #  define _LIBFC_CONTENTHANDLER_H_
 
 #  include <cstdint>
+#  include <memory>
+
+#  include <ErrorContext.h>
 
 namespace IPFIX {
 
@@ -49,8 +52,11 @@ namespace IPFIX {
      * This method will be invoked only once, before any other
      * callbacks.  It will be invoked even if the first attempt to
      * read from the message source causes an unrecoverable error.
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
      */
-    virtual void start_session() = 0;
+    virtual std::shared_ptr<ErrorContext> start_session() = 0;
 
     /** Receives notification of the end of a session. 
      *
@@ -58,8 +64,11 @@ namespace IPFIX {
      * be the last method invoked during the parse.  The method will
      * not be invoked if parsing this message has been abandoned due
      * to a nonrecoverable error. 
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
      */
-    virtual void end_session() = 0;
+    virtual std::shared_ptr<ErrorContext> end_session() = 0;
 
     /** Receives notification that a new message has started.
      *
@@ -75,8 +84,11 @@ namespace IPFIX {
      * @param base_time number of milliseconds since Jan 1, 1970 until
      *   the exporter was last (re)started.  This makes sense only for
      *   NetFlow v5 and NetFlow v9; for IPFIX, this must be zero.
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
      */
-    virtual void start_message(uint16_t version,
+    virtual std::shared_ptr<ErrorContext> start_message(uint16_t version,
                                uint16_t length,
                                uint32_t export_time,
                                uint32_t sequence_number,
@@ -89,34 +101,51 @@ namespace IPFIX {
      * is, it will be the last method invoked during the parse of this
      * message.  The method will not be invoked if parsing this
      * message has been abandoned due to a nonrecoverable error.
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
      */
-    virtual void end_message() = 0;
+    virtual std::shared_ptr<ErrorContext> end_message() = 0;
 
     /** Receives notification that a new template set begins.
      *
      * @param set_id set ID as per RFC 5101 (should be 2)
      * @param set_length set length (excluding header) in bytes
      * @param buf pointer to the buffer containing the template set
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
      */
-    virtual void start_template_set(uint16_t set_id,
+    virtual std::shared_ptr<ErrorContext> start_template_set(uint16_t set_id,
 				    uint16_t set_length,
 				    const uint8_t* buf) = 0;
 
-    /** Receives notification that a template set ends. */
-    virtual void end_template_set() = 0;
+    /** Receives notification that a template set ends.
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
+     */
+    virtual std::shared_ptr<ErrorContext> end_template_set() = 0;
 
     /** Receives notification that a new option template set begins.
      *
      * @param set_id set ID as per RFC 5101 (should be 3)
      * @param set_length set length (excluding header) in bytes
      * @param buf pointer to the buffer containing the template set
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
      */
-    virtual void start_options_template_set(uint16_t set_id,
+    virtual std::shared_ptr<ErrorContext> start_options_template_set(uint16_t set_id,
 					    uint16_t set_length,
 					    const uint8_t* buf) = 0;
 
-    /** Receives notification that an option template set ends. */
-    virtual void end_options_template_set() = 0;
+    /** Receives notification that an option template set ends. 
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
+     */
+    virtual std::shared_ptr<ErrorContext> end_options_template_set() = 0;
 
     /** Receives notification that a data set is available.
      *
@@ -125,13 +154,20 @@ namespace IPFIX {
      *     (excluding the header)
      * @param buf pointer to the beginning of the data records
      *     (excluding the header)
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
      */
-    virtual void start_data_set(uint16_t id,
+    virtual std::shared_ptr<ErrorContext> start_data_set(uint16_t id,
                                 uint16_t length,
                                 const uint8_t* buf) = 0;
 
-    /** Receives notification that a data set has ended. */
-    virtual void end_data_set() = 0;
+    /** Receives notification that a data set has ended. 
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
+     */
+    virtual std::shared_ptr<ErrorContext> end_data_set() = 0;
   };
 
 } // namespace IPFIX
