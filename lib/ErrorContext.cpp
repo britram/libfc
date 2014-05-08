@@ -24,6 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <cstring>
+
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
@@ -50,15 +52,15 @@ namespace IPFIX {
       is(is),
       message(0),
       size(message != 0 ? size : 0),
-      off(message != 0 ? off : 0)
+      off(off)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                       ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
     if (message != 0) {
-      this->message = new const uint8_t[size];
-      memcpy(this->message, message, size);
+      this->message = new uint8_t[size];
+      memcpy(const_cast<uint8_t*>(this->message), message, size);
     }
   }
 
@@ -83,7 +85,7 @@ namespace IPFIX {
     return is;
   }
 
-  void ErrorContext::set_input_source(InputSource* is) const {
+  void ErrorContext::set_input_source(InputSource* is) {
     if (this->is == 0)
       this->is = is;
   }
@@ -94,13 +96,13 @@ namespace IPFIX {
 
   void ErrorContext::set_message(const uint8_t* message, uint16_t size) {
     if (this->message == 0) {
-      this->message = new const uint8_t[size];
-      memcpy(this->message, message, size);
+      this->message = new uint8_t[size];
+      memcpy(const_cast<uint8_t*>(this->message), message, size);
       this->size = size;
     }
   }
 
-  const ErrorContext::uint16_t get_offset() const {
+  const uint16_t ErrorContext::get_offset() const {
     return off;
   }
 

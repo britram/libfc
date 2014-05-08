@@ -55,36 +55,22 @@ namespace IPFIX {
    * @param system_errno the value of errno, or 0
    * @param is the input stream in which the error was detected
    */
-#  define RETURN_ERROR(severity, error, message_stream, system_errno, is) \
-    do { \
-      std::stringstream ss; \
-      \
-      ss << message_stream; \
-      return std::shared_ptr<ErrorContext>( \
+#  define LIBFC_RETURN_ERROR(severity, error, message_stream,         \
+			     system_errno, is, message, size, off)    \
+    do {                                                              \
+      std::stringstream ss;                                           \
+                                                                      \
+      ss << message_stream;                                           \
+      return std::shared_ptr<ErrorContext>(                           \
         new ErrorContext(ErrorContext::severity, Error(Error::error), \
-                         system_errno, ss.str().c_str(), is));        \
+                         system_errno, ss.str().c_str(), is, message, \
+			 size, off));				      \
     } while (0)
 
-
-  /** Returns a shared pointer to an ErrorContext object, without an
-   * InputSource reference.
-   *
-   * Initialising and returning such objects is (a) tedious, and (b)
-   * always the same.  This macro takes away some of the pain.
-   *
-   * @param severity the severity as per ErrorContext::error_severity_t
-   * @param error the error as per Error::error_t
-   * @param message_stream an error message, assemblee as a stream
-   * @param system_errno the value of errno, or 0
-   */
-#  define RETURN_ERROR_NO_IS(severity, error, message_stream, system_errno) \
-    do { \
-      std::stringstream ss; \
-      \
-      ss << message_stream; \
-      return std::shared_ptr<ErrorContext>( \
-        new ErrorContext(ErrorContext::severity, Error(Error::error), \
-                         system_errno, ss.str().c_str())); \
+  /** Returns an ErrorContext signaling success. */
+#  define LIBFC_RETURN_OK()			\
+    do {					\
+      return std::shared_ptr<ErrorContext>(0);	\
     } while (0)
 
   /** An error context.
@@ -146,16 +132,22 @@ namespace IPFIX {
      *   parameter is 0.  The message can be set later.
      * @param size the size of the message. If the message parameter
      *   is 0, this value will be ignored.
-     * @param off the offset at which the error was detected. If the
-     *   message parameter is 0, this value will be ignored.
+     * @param off the offset at which the error was detected. This
+     *   value will not be ignored, even is message is 0.  The reason
+     *   is that offsets will be built gradually, until the
+     *   ErrorContext has percolated upward through the stack to the
+     *   point where the message is wholly visible.
      */
     ErrorContext(error_severity_t severity, Error e,
 		 int system_errno, const char* explanation,
 		 InputSource* is, const uint8_t* message,
                  uint16_t size, uint16_t off);
 
-    /** Copy constructor, preserving copy semantics. */
-    ErrorContext(const ErrorContext& rhs);
+    /** Don't copy ErrorContext-s. */
+    ErrorContext(const ErrorContext& rhs) = delete;
+
+    /** Don't assign ErrorContext-s. */
+    ErrorContext& operator=(const ErrorContext& rhs) = delete;
 
     /** Destructor. */
     ~ErrorContext();

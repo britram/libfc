@@ -75,21 +75,21 @@ namespace IPFIX {
       uint16_t message_size;
 
       if (static_cast<size_t>(nbytes) < kIpfixMessageHeaderLen) {
-	RETURN_ERROR(recoverable, short_header, 
-		     "Wanted " 
-		     << kIpfixMessageHeaderLen
-		     << " bytes for IPFIX message header, got only "
-		     << nbytes,
-		     0, is);
+	LIBFC_RETURN_ERROR(recoverable, short_header, 
+			   "Wanted " 
+			   << kIpfixMessageHeaderLen
+			   << " bytes for IPFIX message header, got only "
+			   << nbytes,
+			   0, &is, message, nbytes, 0);
       }
       assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
 
       if (decode_uint16(cur + 0) != kIpfixVersion) {
-	RETURN_ERROR(recoverable, message_version_number,
-		     "Expected message version number "
-		     << kIpfixMessageHeaderLen
-		     << ", but got " << decode_uint16(cur + 0),
-		     0, is);
+	LIBFC_RETURN_ERROR(recoverable, message_version_number,
+			   "Expected message version number "
+			   << kIpfixMessageHeaderLen
+			   << ", but got " << decode_uint16(cur + 0),
+			   0, &is, message, nbytes, 0);
       }
 
       message_size = decode_uint16(cur +  2);
@@ -110,16 +110,17 @@ namespace IPFIX {
       errno = 0;
       nbytes = is.read(cur, message_size - kIpfixMessageHeaderLen);
       if (nbytes < 0) {
-        RETURN_ERROR(fatal, system_error, 
-		     "Wanted to read " 
-		     << message_size - kIpfixMessageHeaderLen
-		     << " bytes, got a read error", errno, is);
+        LIBFC_RETURN_ERROR(fatal, system_error, 
+			   "Wanted to read " 
+			   << message_size - kIpfixMessageHeaderLen
+			   << " bytes, got a read error", errno, &is,
+			   message, message_size, offset);
       } else if (static_cast<size_t>(nbytes) 
                  != message_size - kIpfixMessageHeaderLen) {
-        RETURN_ERROR(recoverable, short_body, 
-		     "Wanted " << message_size - kIpfixMessageHeaderLen
-		     << " bytes for message body, got " << nbytes,
-		     0, is);
+        LIBFC_RETURN_ERROR(recoverable, short_body, 
+			   "Wanted " << message_size - kIpfixMessageHeaderLen
+			   << " bytes for message body, got " << nbytes,
+			   0, &is, message, message_size, offset);
       }
       
       /* Decode sets.
@@ -157,12 +158,12 @@ namespace IPFIX {
                << ",set_end=" << static_cast<const void*>(set_end) 
                << ",message_len=" << message_size
                << ",message_end=" << static_cast<const void*>(message_end);
-	  RETURN_ERROR(recoverable, long_set, 
-		       "Long set: set_len=" << set_length 
-		       << ",set_end=" << static_cast<const void*>(set_end) 
-		       << ",message_len=" << message_size
-		       << ",message_end=" << static_cast<const void*>(message_end),
-		       0, is);
+	  LIBFC_RETURN_ERROR(recoverable, long_set, 
+			     "Long set: set_len=" << set_length 
+			     << ",set_end=" << static_cast<const void*>(set_end) 
+			     << ",message_len=" << message_size
+			     << ",message_end=" << static_cast<const void*>(message_end),
+			     0, &is, message, message_size, offset);
         }
 
         cur += kIpfixSetHeaderLen;
@@ -200,17 +201,18 @@ namespace IPFIX {
     }
 
     if (nbytes < 0) {
-        RETURN_ERROR(fatal, system_error, 
-		     "Wanted to read " 
-		     << kIpfixMessageHeaderLen
-		     << " bytes, got a read error", errno, is);
+        LIBFC_RETURN_ERROR(fatal, system_error, 
+			   "Wanted to read " 
+			   << kIpfixMessageHeaderLen
+			   << " bytes, got a read error", errno, &is,
+			   0, 0, 0);
     }
     assert(nbytes == 0);
 
     content_handler->end_session();
     memset(message, '\0', sizeof(message));
 
-    return std::shared_ptr<ErrorContext>(0);
+    LIBFC_RETURN_OK();
   }
 
 } // namespace IPFIX

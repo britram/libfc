@@ -40,21 +40,22 @@
 #include "FileInputSource.h"
 #include "Constants.h"
 #include "ContentHandler.h"
-#include "ErrorHandler.h"
 #include "IPFIXMessageStreamParser.h"
 
 using namespace IPFIX;
 
-class PrintHandler : public ContentHandler, public ErrorHandler {
-  void start_session() {
+class PrintHandler : public ContentHandler {
+  std::shared_ptr<ErrorContext> start_session() {
     std::cerr << "Session starts" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_session() {
+  std::shared_ptr<ErrorContext> end_session() {
     std::cerr << "Session ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_message(uint16_t version,
+  std::shared_ptr<ErrorContext> start_message(uint16_t version,
                      uint16_t length,
                      uint32_t export_time,
                      uint32_t sequence_number,
@@ -75,61 +76,71 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
               << ", domain=" << observation_domain
 	      << ", basetime=" << base_time
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_message() {
+  std::shared_ptr<ErrorContext> end_message() {
     std::cerr << "  Message ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_template_set(uint16_t set_id,
+  std::shared_ptr<ErrorContext> start_template_set(uint16_t set_id,
 			  uint16_t set_length,
 			  const uint8_t* buf) {
     std::cerr << "    Template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_template_set() {
+  std::shared_ptr<ErrorContext> end_template_set() {
     std::cerr << "    Template set ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_template_record(uint16_t template_id,
+  std::shared_ptr<ErrorContext> start_template_record(uint16_t template_id,
                              uint16_t field_count) {
     std::cerr << "      Template record: id=" << template_id
               << ", fields=" << field_count
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_template_record() {
+  std::shared_ptr<ErrorContext> end_template_record() {
     std::cerr << "      Template record ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_options_template_set(uint16_t set_id,
+  std::shared_ptr<ErrorContext> start_options_template_set(uint16_t set_id,
                                  uint16_t set_length,
 				 const uint8_t* buf) {
     std::cerr << "    Option template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_options_template_set() {
+  std::shared_ptr<ErrorContext> end_options_template_set() {
     std::cerr << "    Option template set ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_options_template_record(uint16_t template_id,
+  std::shared_ptr<ErrorContext> start_options_template_record(uint16_t template_id,
                                     uint16_t field_count,
                                     uint16_t scope_field_count) {
     std::cerr << "      Option template record: id=" << template_id
               << ", fields=" << field_count
               << ", scope-fields=" << scope_field_count
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_options_template_record() {
+  std::shared_ptr<ErrorContext> end_options_template_record() {
     std::cerr << "      Option template record ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void field_specifier(bool enterprise,
+  std::shared_ptr<ErrorContext> field_specifier(bool enterprise,
                        uint16_t ie_id,
                        uint16_t ie_length,
                        uint32_t enterprise_number) {
@@ -145,38 +156,20 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
     else 
       std::cerr << ", IETF IE";
     std::cerr << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf) {
+  std::shared_ptr<ErrorContext> start_data_set(uint16_t id, uint16_t length, const uint8_t* buf) {
     std::cerr << "    Data set: template-id=" << id
               << ", length=" << length
               << std::endl;
+    LIBFC_RETURN_OK();
   }
   
-  void end_data_set() {
+  std::shared_ptr<ErrorContext> end_data_set() {
     std::cerr << "    Data set ends"
               << std::endl;
-  }
-
-  void error(Error error, const char* message) {
-    std::cerr << "Error: " << error;
-    if (message != 0)
-      std::cerr << ": " << message;
-    std::cerr << std::endl;
-  }
-
-  void fatal(Error error, const char* message) {
-    std::cerr << "Fatal: " << error;
-    if (message != 0)
-      std::cerr << ": " << message;
-    std::cerr << std::endl;
-  }
-
-  void warning(Error error, const char* message) {
-    std::cerr << "Warning: " << error;
-    if (message != 0)
-      std::cerr << ": " << message;
-    std::cerr << std::endl;
+    LIBFC_RETURN_OK();
   }
 
 };
