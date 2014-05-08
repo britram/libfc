@@ -51,6 +51,12 @@ namespace IPFIX {
    * This class is an abstract base for Net Flow v5/v9 and IPFIX
    * message stream parsers.  A message stream is accessed through an
    * InputSource and provides either Net Flow or IPFIX messages.
+   *
+   * How to use the ErrorContext interface
+   * =====================================
+   *
+   * The parse() function returns a pointer to an ErrorContext.  That
+   * pointer is non-0 if an error occurred, and 0 otherwise.
    */
   class MessageStreamParser {
   public:
@@ -64,6 +70,9 @@ namespace IPFIX {
      * be added later.
      *
      * @param is the input source
+     *
+     * @return an ErrorContext, describing the error, or 0 if there
+     *   was no error.
      */
     virtual std::shared_ptr<ErrorContext> parse(InputSource& is) = 0;
 

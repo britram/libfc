@@ -40,6 +40,22 @@
 
 #include "decode_util.h"
 
+/** Augments the error context from a callback and returns it.
+ *
+ * This macro calls a callback, examines the result, and, if the
+ * result is an error, augments the error with the current message and
+ * adjusts the offset.
+ */
+#define LIBFC_RETURN_CALLBACK_ERROR(call) \
+    do { \
+      /* Make sure call is evaluated only once */			\
+      std::shared_ptr<ErrorContext> err = content_handler->call;	\
+      if (err != 0) {							\
+        err->set_message(message, message_size);			\
+        err->set_offset(err->get_offset() + offset);			\
+        return err;							\
+      }									\
+    } while (0)
 
 namespace IPFIX {
 
@@ -55,7 +71,12 @@ namespace IPFIX {
      * will) be caught in testing. */
     assert(content_handler != 0);
 
-    content_handler->start_session();
+    /* I would normally declare the message_size further down, but
+     * it's needed for the expansion of the
+     * LIBFC_RETURN_CALLBACK_ERROR macro. */
+    uint16_t message_size = 0;
+
+    LIBFC_RETURN_CALLBACK_ERROR(start_session());
 
     memset(message, '\0', sizeof(message));
 
@@ -72,8 +93,6 @@ namespace IPFIX {
       uint8_t* cur = message;
 
       /* Decode message header */
-      uint16_t message_size;
-
       if (static_cast<size_t>(nbytes) < kIpfixMessageHeaderLen) {
 	LIBFC_RETURN_ERROR(recoverable, short_header, 
 			   "Wanted " 
@@ -93,12 +112,13 @@ namespace IPFIX {
       }
 
       message_size = decode_uint16(cur +  2);
-      content_handler->start_message(decode_uint16(cur +  0),
-                                     message_size,
-                                     decode_uint32(cur +  4),
-                                     decode_uint32(cur +  8),
-                                     decode_uint32(cur + 12),
-				     0);
+      LIBFC_RETURN_CALLBACK_ERROR(
+        start_message(decode_uint16(cur +  0),
+		      message_size,
+		      decode_uint32(cur +  4),
+		      decode_uint32(cur +  8),
+		      decode_uint32(cur + 12),
+		      0));
       
       const uint8_t* message_end = message + message_size;
 
@@ -169,30 +189,31 @@ namespace IPFIX {
         cur += kIpfixSetHeaderLen;
 
         if (set_id == kIpfixTemplateSetID) {
-          content_handler->start_template_set(set_id,
-					      set_length - kIpfixSetHeaderLen, 
-					      cur);
+	  LIBFC_RETURN_CALLBACK_ERROR(
+	    start_template_set(
+              set_id, set_length - kIpfixSetHeaderLen, cur));
 	  cur += set_length - kIpfixSetHeaderLen;
-          content_handler->end_template_set();
+	  LIBFC_RETURN_CALLBACK_ERROR(end_template_set());
         } else if (set_id == kIpfixOptionTemplateSetID) {
-          content_handler->start_options_template_set(set_id,
-						     set_length - kIpfixSetHeaderLen,
-						     cur);
+	  LIBFC_RETURN_CALLBACK_ERROR(
+            start_options_template_set(
+              set_id, set_length - kIpfixSetHeaderLen, cur));
           cur += set_length - kIpfixSetHeaderLen;
-          content_handler->end_options_template_set();
+	  LIBFC_RETURN_CALLBACK_ERROR(
+            end_options_template_set());
         } else {
-          content_handler->start_data_set(set_id,
-					  set_length - kIpfixSetHeaderLen,
-					  cur);
+          LIBFC_RETURN_CALLBACK_ERROR(
+            start_data_set(
+              set_id, set_length - kIpfixSetHeaderLen, cur));
           cur += set_length - kIpfixSetHeaderLen;
-          content_handler->end_data_set();
+	  LIBFC_RETURN_CALLBACK_ERROR(end_data_set());
         }
 
         assert(cur == set_end);
         assert(cur <= message_end);
       }
 
-      content_handler->end_message();
+      LIBFC_RETURN_CALLBACK_ERROR(end_message());
 
       offset += nbytes;
       memset(message, '\0', sizeof(message));
@@ -209,8 +230,13 @@ namespace IPFIX {
     }
     assert(nbytes == 0);
 
-    content_handler->end_session();
+    /* This is important, don't remove it!  Otherwise, if
+     * end_session() gives an error, message_size bytes may be copied
+     * from a (now non-existent) message. */
+    message_size = 0;
     memset(message, '\0', sizeof(message));
+
+    LIBFC_RETURN_CALLBACK_ERROR(end_session());
 
     LIBFC_RETURN_OK();
   }

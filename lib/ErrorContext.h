@@ -87,6 +87,58 @@ namespace IPFIX {
    * For example, for message-based input sources, such as
    * UDPInputSource, the offset of the current message makes no sense,
    * since there is no message stream.)
+   *
+   * Many of the functions that parse messages return a pointer to an
+   * ErrorContext.  That pointer is non-0 if an error occurred, and 0
+   * otherwise.  The ContentHandler methods are called from a
+   * MessageStreamParser object's parse() function that in turn
+   * returns such a pointer.  The idea is that all functions where
+   * potential errors may occur return an ErrorContext pointer.  This
+   * then causes the caller to stop what it's doing, potentially
+   * augmenting the ErrorContext object with additional information
+   * and passing it to the caller's caller and so on, right up to the
+   * initial caller of parse().
+   *
+   * If a method detects an error itself (as opposed to calling a
+   * method that returns a non-0 ErrorContext pointer), you should use
+   * the LIBFC_RETURN_ERROR macro somewhat like this (see the
+   * documentation for error_severity_t below and Error::error_t in
+   * the Error class):
+   *
+   * @code
+   * uint8_t* message = ...;
+   * uint16_t size = ...;
+   * uint16_t off = ...;
+   *
+   * if (some_error_condition) {
+   *   LIBFC_RETURN_ERROR(recoverable, short_header, 
+   *                     "Expected " << kMessageHeaderSize 
+   *                                 << " bytes in header, got "
+   *                                 << nbytes, 
+   *                      system_errno, is, message, size, off);
+   * }
+   * @endcode
+   *
+   * If you call a function that returns a non-zero ErrorContext
+   * pointer, you should do something like this:
+   *
+   * @code
+   * std::shared_ptr<ErrorContext> p = func(message + offset);
+   * if (p != 0) {
+   *   p->set_message(message, size);
+   *   p->set_offset(p->get_offset() + offset);
+   *   return p;
+   * }
+   * @endcode
+   *
+   * In this example, we assumed that func() didn't have access to the
+   * entire message, so we augmented the error context object and
+   * adjusted the offset.
+   *
+   * It is expected that occurrences like these willl be rare, so it's
+   * perfectly OK if the code in the error handler is somewhat slow.
+   * Don't try to write clever code, @em{especially} not in error
+   * handling.
    */
   class ErrorContext {
   public:
