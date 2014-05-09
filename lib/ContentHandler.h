@@ -116,9 +116,10 @@ namespace IPFIX {
      * @return a (shared) pointer to an error context, or null if no
      * error occurred
      */
-    virtual std::shared_ptr<ErrorContext> start_template_set(uint16_t set_id,
-				    uint16_t set_length,
-				    const uint8_t* buf) = 0;
+    virtual std::shared_ptr<ErrorContext> start_template_set(
+        uint16_t set_id,
+	uint16_t set_length,
+	const uint8_t* buf) = 0;
 
     /** Receives notification that a template set ends.
      *
@@ -136,9 +137,10 @@ namespace IPFIX {
      * @return a (shared) pointer to an error context, or null if no
      * error occurred
      */
-    virtual std::shared_ptr<ErrorContext> start_options_template_set(uint16_t set_id,
-					    uint16_t set_length,
-					    const uint8_t* buf) = 0;
+    virtual std::shared_ptr<ErrorContext> start_options_template_set(
+        uint16_t set_id,
+	uint16_t set_length,
+	const uint8_t* buf) = 0;
 
     /** Receives notification that an option template set ends. 
      *
@@ -158,9 +160,10 @@ namespace IPFIX {
      * @return a (shared) pointer to an error context, or null if no
      * error occurred
      */
-    virtual std::shared_ptr<ErrorContext> start_data_set(uint16_t id,
-                                uint16_t length,
-                                const uint8_t* buf) = 0;
+    virtual std::shared_ptr<ErrorContext> start_data_set(
+        uint16_t id,
+	uint16_t length,
+	const uint8_t* buf) = 0;
 
     /** Receives notification that a data set has ended. 
      *
