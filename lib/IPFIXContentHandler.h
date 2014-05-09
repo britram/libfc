@@ -183,24 +183,29 @@ namespace IPFIX {
       uint16_t set_id, uint16_t set_length,
       const uint8_t* buf, bool is_options_set);
 
-    void start_template_record(uint16_t template_id, uint16_t field_count);
-    void end_template_record();
-    void start_options_template_record(uint16_t template_id,
-                                      uint16_t field_count,
-                                      uint16_t scope_field_count);
-    void end_options_template_record();
-    void field_specifier(bool enterprise,
-                         uint16_t ie_id,
-                         uint16_t ie_length,
-                         uint32_t enterprise_number);
-    void scope_field_specifier(bool enterprise,
-			       uint16_t ie_id,
-			       uint16_t ie_length,
-			       uint32_t enterprise_number);
-    void options_field_specifier(bool enterprise,
-				 uint16_t ie_id,
-				 uint16_t ie_length,
-				 uint32_t enterprise_number);
+    std::shared_ptr<ErrorContext> start_template_record(uint16_t template_id,
+							uint16_t field_count);
+    std::shared_ptr<ErrorContext>  end_template_record();
+    std::shared_ptr<ErrorContext> start_options_template_record(
+        uint16_t template_id,
+	uint16_t field_count,
+	uint16_t scope_field_count);
+    std::shared_ptr<ErrorContext> end_options_template_record();
+    std::shared_ptr<ErrorContext> field_specifier(
+        bool enterprise,
+	uint16_t ie_id,
+	uint16_t ie_length,
+	uint32_t enterprise_number);
+    std::shared_ptr<ErrorContext> scope_field_specifier(
+	bool enterprise,
+	uint16_t ie_id,
+	uint16_t ie_length,
+	uint32_t enterprise_number);
+    std::shared_ptr<ErrorContext> options_field_specifier(
+        bool enterprise,
+	uint16_t ie_id,
+	uint16_t ie_length,
+	uint32_t enterprise_number);
 
     /** Wire templates as they're read from template sets.
      *

@@ -450,11 +450,15 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
     
     if ((d.type == Decision::encode_fixlen 
          || d.type == Decision::encode_fixlen_endianness)
-        && d.encoded_length > d.unencoded_length)
+        && d.encoded_length > d.unencoded_length) {
+      /* Don't eliminate the temporary ie_spec.  If you do, the
+       * temporary object created by toIESpec() may be deleted before
+       * report_error is called, invalidating c_str(). */
+      std::string ie_spec = (*ie)->toIESpec();
       report_error("IE %s encoded length %zu greater than native size %zu",
-                   (*ie)->toIESpec().c_str(), d.encoded_length,
+                   ie_spec.c_str(), d.encoded_length,
                    d.unencoded_length);
-
+    }
     LOG4CPLUS_TRACE(logger, "encoding decision " << d.to_string());
 
     plan.push_back(d);

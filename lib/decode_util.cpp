@@ -44,13 +44,13 @@ namespace IPFIX {
       | (static_cast<uint32_t>(buf[3]) <<  0);
   }
 
-  void report_error(const char* message, ...) {
+  void report_error(const std::string message, ...) {
     static const size_t buf_size = 10240;
     static char buf[buf_size];
     va_list args;
   
     va_start(args, message);
-    int nchars = vsnprintf(buf, buf_size, message, args);
+    int nchars = vsnprintf(buf, buf_size, message.c_str(), args);
     va_end(args);
 
     if (nchars < 0)

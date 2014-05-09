@@ -114,8 +114,20 @@ namespace IPFIX {
 	LOG4CPLUS_TRACE(logger, "    found -> transfer");
 	d.wire_ie = *ie;
 
+	/* This object is needed for an interesting reason.  Previous
+	 * versions of this code had lines like these:
+	 *
+	 *   report_error("IE %s has NULL ietype", (*ie)->toIESpec().c_str());
+	 *
+	 * The problem with this line is that the temporary object
+	 * created by toIESpec() may already be destroyed by the time
+	 * report_error() is being called, and then c_str() is no
+	 * longer valid.
+	 */
+	std::string ie_spec = (*ie)->toIESpec();
+
 	if ((*ie)->ietype() == 0)
-	  report_error("IE %s has NULL ietype", (*ie)->toIESpec().c_str());
+	  report_error("IE %s has NULL ietype", ie_spec.c_str());
 
 	/* There is some code duplication going on here, but unless
 	 * someone can demonstrate to me that this leads to higher
@@ -137,7 +149,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint8_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kUnsigned16:
@@ -146,7 +158,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint16_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kUnsigned32:
@@ -155,7 +167,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint32_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kUnsigned64:
@@ -164,7 +176,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint64_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kSigned8:
@@ -173,7 +185,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(int8_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kSigned16:
@@ -182,7 +194,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(int16_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kSigned32:
@@ -191,7 +203,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(int32_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kSigned64:
@@ -200,7 +212,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(int64_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kFloat32:
@@ -209,7 +221,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(float);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kFloat64:
@@ -223,7 +235,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(double);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kBoolean:
@@ -232,7 +244,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint8_t); 
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
 	case IPFIX::IEType::kMacAddress:
@@ -263,7 +275,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint32_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
         
 	case IPFIX::IEType::kDateTimeMilliseconds:
@@ -272,7 +284,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint64_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
         
 	case IPFIX::IEType::kDateTimeMicroseconds:
@@ -283,7 +295,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint64_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
         
 	case IPFIX::IEType::kDateTimeNanoseconds:
@@ -294,7 +306,7 @@ namespace IPFIX {
 	  d.destination_size = sizeof(uint64_t);
 	  if (d.length > d.destination_size)
 	    report_error("IE %s length %zu greater than native size %zu",
-			 (*ie)->toIESpec().c_str(), d.length, d.destination_size);
+			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
         
 	case IPFIX::IEType::kIpv4Address:
@@ -403,7 +415,7 @@ namespace IPFIX {
 	   << " (0x" << std::hex << ret << ")" << std::dec
 	   << " goes beyond buffer (only " << (buf_end - *cur)
 	   << " bytes left";
-      report_error(sstr.str().c_str());
+      report_error(sstr.str());
     }
 
     return ret;
@@ -468,9 +480,11 @@ namespace IPFIX {
 	break;
 
       case Decision::transfer_fixlen:
-	if (cur + i->length > buf_end)
+	if (cur + i->length > buf_end) {
+	  std::string ie_spec = i->wire_ie->toIESpec();
 	  report_error("IE %s length beyond buffer: cur=%p, ielen=%zu, end=%p",
-		       i->wire_ie->toIESpec().c_str(), cur, i->length, buf_end);
+		       ie_spec.c_str(), cur, i->length, buf_end);
+	}
 
 	assert(i->length <= i->destination_size);
 
@@ -490,9 +504,11 @@ namespace IPFIX {
 	break;
 
       case Decision::transfer_fixlen_endianness:
-	if (cur + i->length > buf_end)
+	if (cur + i->length > buf_end) {
+	  std::string ie_spec = i->wire_ie->toIESpec();
 	  report_error("IE %s length beyond buffer: cur=%p, ielen=%zu, end=%p",
-		       i->wire_ie->toIESpec().c_str(), cur, i->length, buf_end);
+		       ie_spec.c_str(), cur, i->length, buf_end);
+	}
 
 	assert(i->length <= i->destination_size);
 

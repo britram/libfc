@@ -276,6 +276,13 @@ namespace IPFIX {
      */
     void set_offset(uint16_t off);
 
+    /** Returns a string representation of this error.
+     *
+     * @return  a string representation of this error
+     */
+    const std::string to_string() const;
+
+
   private:
     error_severity_t severity;
     Error e;

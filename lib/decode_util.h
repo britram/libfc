@@ -34,6 +34,7 @@
 #  define _LIBFC_DECODE_UTIL_H_
 
 #  include <cstdint>
+#  include <string>
 
 namespace IPFIX {
   /** Decodes a 16-bit value from a buffer.
@@ -74,7 +75,7 @@ namespace IPFIX {
    *
    * @param message format string a la printf(3)
    */
-  extern void report_error(const char* message, ...);
+  extern void report_error(const std::string message, ...);
 
 } // namespace IPFIX
 

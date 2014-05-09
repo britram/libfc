@@ -32,6 +32,8 @@
 #ifndef _LIBFC_ERROR_H_
 #  define _LIBFC_ERROR_H_
 
+#  include <string>
+
 namespace IPFIX {
 
   class Error {
@@ -60,10 +62,19 @@ namespace IPFIX {
 
       /** Version number in message header is not what it should be. */
       message_version_number,
+
+      /** Message shorter than minimum message size */
+      short_message,
+
+      /** IPFIX messages don't have a base time. */
+      ipfix_basetime,
+
+      /** General format error. */
+      format_error,
     };
 
     Error(error_t e);
-    operator const char*() const;
+    const std::string to_string() const;
 
   private:
     error_t e;

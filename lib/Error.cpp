@@ -33,7 +33,7 @@ namespace IPFIX {
     : e(e) {
   }
 
-  Error::operator const char*() const {
+  const std::string Error::to_string() const {
     switch (e) {
     case no_error: return "no error"; break;
     case parse_while_parsing: return "call to parse() while parsing"; break;
@@ -43,6 +43,9 @@ namespace IPFIX {
     case long_set: return "set too long (exceeds message size)"; break;
     case long_fieldspec: return "field specification exceeds set"; break;
     case message_version_number: return "unexpected version number"; break;
+    case short_message: return "short message"; break;
+    case ipfix_basetime: return "got basetime in IPFIX message"; break;
+    case format_error: return "format error"; break;
     }
     // This fall-through cannot happen if the switch above contains
     // all enum values and the object has been initialised properly.

@@ -28,6 +28,7 @@
 #include <climits>
 #include <cstdarg>
 #include <cstdio>
+#include <iomanip>
 #include <sstream>
 
 #include <time.h>
@@ -47,6 +48,25 @@
 #include "PlacementCollector.h"
 
 namespace IPFIX {
+
+#define CH_REPORT_ERROR(error, message_stream)				   \
+  do {									   \
+    parse_is_good = false;						   \
+    LIBFC_RETURN_ERROR(recoverable, error, message_stream, 0, 0, 0, 0, 0); \
+  } while (0)
+
+#define CH_REPORT_CALLBACK_ERROR(call) \
+    do { \
+      /* Make sure call is evaluated only once */			\
+      std::shared_ptr<ErrorContext> err = call;				\
+      if (err != 0) 							\
+        return err;							\
+    } while (0)
+
+
+#define CH_HEX(width) \
+  "0x" << std::hex << std::setw(width) << std::setfill('0')
+
 
   IPFIXContentHandler::IPFIXContentHandler()
     : info_model(InfoModel::instance()),
@@ -90,12 +110,13 @@ namespace IPFIX {
     return std::shared_ptr<ErrorContext>(0);
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_message(uint16_t version,
-                                     uint16_t length,
-                                     uint32_t export_time,
-                                     uint32_t sequence_number,
-                                     uint32_t observation_domain,
-				     uint64_t base_time) {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_message(
+      uint16_t version,
+      uint16_t length,
+      uint32_t export_time,
+      uint32_t sequence_number,
+      uint32_t observation_domain,
+      uint64_t base_time) {
     LOG4CPLUS_TRACE(logger,
                     "ENTER start_message"
                     << ", version=" << version
@@ -106,16 +127,30 @@ namespace IPFIX {
 		    << ", base_time=" << base_time);
     assert(current_wire_template == 0);
 
-    if (version != kIpfixVersion) {
-      parse_is_good = false;
-      report_error("Expected message version %04x, got %04x",
-                   kIpfixVersion, version);
-    }
+    if (version != kIpfixVersion)
+      CH_REPORT_ERROR(message_version_number, 
+		      "Expected message version " << CH_HEX(4) << kIpfixVersion 
+		      << ", got " << CH_HEX(4) << version);
 
-    if (base_time != 0) {
-      parse_is_good = false;
-      report_error("Expected base_time 0, got %04x", base_time);
-    }
+    if (base_time != 0)
+      CH_REPORT_ERROR(ipfix_basetime,
+		      "Expected base_time 0, got 0x"
+		      << std::hex << std::setw(4) << base_time);
+
+    /* RFC 5101, Chapter 3, Verse 0: "An IPFIX Message consists of a
+     * Message Header, followed by one or more Sets."  That means
+     * that an IPFIX message must contain the message header, and at
+     * least one set header, which in turn means that a valid IPFIX
+     * message must be at least 16 + 4 = 20 bytes long (message header
+     * length, see Chapter 3 Verse 1; set header length see Chapter
+     * 3, Verse 3.2).  */
+    static const size_t min_message_length 
+      = kIpfixMessageHeaderLen + kIpfixSetHeaderLen;
+
+    if (length < min_message_length)
+      CH_REPORT_ERROR(short_message,
+		      "must be at least " << min_message_length
+		      << " bytes long, got only " << length);
 
     this->observation_domain = observation_domain;
     LOG4CPLUS_TRACE(logger, "LEAVE start_message");
@@ -146,7 +181,7 @@ namespace IPFIX {
       uint16_t field_count = decode_uint16(cur + 2);
       uint16_t scope_field_count = is_options_set ? decode_uint16(cur + 4) : 0;
       
-      start_template_record(set_id, field_count);
+      CH_REPORT_CALLBACK_ERROR(start_template_record(set_id, field_count));
       
       cur += header_length;
       
@@ -177,19 +212,23 @@ namespace IPFIX {
 	}
 	
 	if (is_options_set && field < scope_field_count)
-	  scope_field_specifier(enterprise, ie_id, ie_length,
-				enterprise_number);
+	  CH_REPORT_CALLBACK_ERROR(scope_field_specifier(enterprise, ie_id, 
+							 ie_length,
+							 enterprise_number));
 	else if (is_options_set)
-	  options_field_specifier(enterprise, ie_id, ie_length,
-				  enterprise_number);
+	  CH_REPORT_CALLBACK_ERROR(options_field_specifier(enterprise, ie_id,
+							   ie_length,
+							   enterprise_number));
 	else /* !is_options_set */
-	  field_specifier(enterprise, ie_id, ie_length, enterprise_number);
+	  CH_REPORT_CALLBACK_ERROR(field_specifier(enterprise, ie_id,
+						   ie_length,
+						   enterprise_number));
 	
 	cur += kIpfixFieldSpecifierLen + (enterprise ? kIpfixEnterpriseLen : 0);
 	assert (cur <= set_end);
       }
       
-      end_template_record();
+      CH_REPORT_CALLBACK_ERROR(end_template_record());
     }
     LIBFC_RETURN_OK();
   }
@@ -215,7 +254,7 @@ namespace IPFIX {
     return (static_cast<uint64_t>(observation_domain) << 16) + tid;
   }
 
-  void IPFIXContentHandler::start_template_record(
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_template_record(
       uint16_t template_id,
       uint16_t field_count) {
     LOG4CPLUS_TRACE(logger,
@@ -231,9 +270,11 @@ namespace IPFIX {
     current_field_count = field_count;
     current_field_no = 0;
     current_wire_template = new MatchTemplate();
+
+    LIBFC_RETURN_OK();
   }
 
-  void IPFIXContentHandler::end_template_record() {
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_template_record() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_record");
     if (current_wire_template->size() > 0) {
 #if defined(_LIBFC_HAVE_LOG4CPLUS_)
@@ -260,18 +301,19 @@ namespace IPFIX {
                         << " registered wire templates");
         unsigned int n = 1;
         for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
-          LOG4CPLUS_TRACE(logger, "  " << n++ << " " << (*i)->toIESpec().c_str());
+          LOG4CPLUS_TRACE(logger, "  " << n++ << " " << (*i)->toIESpec();
       }
 #endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }
 
-    if (current_field_count != current_field_no) {
-      parse_is_good = false;
-      report_error("Template field mismatch: expected %u fields, got %u",
-                   current_field_count, current_field_no);
-    }
+      if (current_field_count != current_field_no)
+	CH_REPORT_ERROR(format_error, 
+			"Template field mismatch: expected "
+			<< current_field_count << " fields, got " 
+			<< current_field_no);
 
     current_wire_template = 0;
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> IPFIXContentHandler::start_options_template_set(
@@ -284,15 +326,15 @@ namespace IPFIX {
     assert(current_wire_template == 0);
 
     process_template_set(set_id, set_length, buf, true);
-    return std::shared_ptr<ErrorContext>(0);
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> IPFIXContentHandler::end_options_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_set");
-    return std::shared_ptr<ErrorContext>(0);
+    LIBFC_RETURN_OK();
   }
 
-  void IPFIXContentHandler::field_specifier(
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::field_specifier(
       bool enterprise,
       uint16_t ie_id,
       uint16_t ie_length,
@@ -304,11 +346,10 @@ namespace IPFIX {
                     << ", ie=" << ie_id
                     << ", length=" << ie_length);
     
-    if (current_field_no >= current_field_count) {
-      parse_is_good = false;
-      report_error("Template contains more field specifiers than were "
-                   "given in the header");
-    }
+    if (current_field_no >= current_field_count)
+      CH_REPORT_ERROR(format_error, 
+		      "Template contains more field specifiers than were "
+		      "given in the header");
 
     LOG4CPLUS_TRACE(logger, "  looking up (" << enterprise_number
                     << "/" << ie_id
@@ -338,9 +379,10 @@ namespace IPFIX {
 
     current_wire_template->add(ie);
     current_field_no++;
+    LIBFC_RETURN_OK();
   }
 
-  void IPFIXContentHandler::scope_field_specifier(
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::scope_field_specifier(
       bool enterprise,
       uint16_t ie_id,
       uint16_t ie_length,
@@ -352,9 +394,10 @@ namespace IPFIX {
                     << ", ie=" << ie_id
                     << ", length=" << ie_length);
     field_specifier(enterprise, ie_id, ie_length, enterprise_number);
+    LIBFC_RETURN_OK();
   }
 
-  void IPFIXContentHandler::options_field_specifier(
+  std::shared_ptr<ErrorContext> IPFIXContentHandler::options_field_specifier(
       bool enterprise,
       uint16_t ie_id,
       uint16_t ie_length,
@@ -366,6 +409,7 @@ namespace IPFIX {
                     << ", ie=" << ie_id
                     << ", length=" << ie_length);
     field_specifier(enterprise, ie_id, ie_length, enterprise_number);
+    LIBFC_RETURN_OK();
   }
 
 
@@ -454,7 +498,7 @@ namespace IPFIX {
   std::shared_ptr<ErrorContext> IPFIXContentHandler::end_data_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_data_set");
     LOG4CPLUS_TRACE(logger, "LEAVE end_data_set");
-    return std::shared_ptr<ErrorContext>(0);
+    LIBFC_RETURN_OK();
   }
 
   void IPFIXContentHandler::register_placement_template(

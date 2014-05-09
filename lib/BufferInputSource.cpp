@@ -42,8 +42,8 @@ namespace IPFIX {
   }
 
   BufferInputSource::~BufferInputSource() {
-    delete[] buf;
-    delete[] const_cast<char*>(name);
+    delete buf;
+    delete const_cast<char*>(name);
   }
 
   ssize_t BufferInputSource::read(uint8_t* result_buf, uint16_t result_len) {
@@ -83,9 +83,9 @@ namespace IPFIX {
   const char* BufferInputSource::get_name() const {
     if (name == 0) {
       static const char* prefix = "Buffer@0x";
-      std::stringstream sstr;
+      std::ostringstream sstr;
 
-      sstr << prefix << buf << '[' << len << ']';
+      sstr << prefix << static_cast<const void*>(buf) << '[' << len << ']';
       std::string s = sstr.str();
 
       name = new char[s.length() + 1];

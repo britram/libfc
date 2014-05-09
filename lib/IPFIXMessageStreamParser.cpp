@@ -51,6 +51,7 @@
       /* Make sure call is evaluated only once */			\
       std::shared_ptr<ErrorContext> err = content_handler->call;	\
       if (err != 0) {							\
+	err->set_input_source(&is);					\
         err->set_message(message, message_size);			\
         err->set_offset(err->get_offset() + offset);			\
         return err;							\
@@ -102,14 +103,6 @@ namespace IPFIX {
 			   0, &is, message, nbytes, 0);
       }
       assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
-
-      if (decode_uint16(cur + 0) != kIpfixVersion) {
-	LIBFC_RETURN_ERROR(recoverable, message_version_number,
-			   "Expected message version number "
-			   << kIpfixMessageHeaderLen
-			   << ", but got " << decode_uint16(cur + 0),
-			   0, &is, message, nbytes, 0);
-      }
 
       message_size = decode_uint16(cur +  2);
       LIBFC_RETURN_CALLBACK_ERROR(

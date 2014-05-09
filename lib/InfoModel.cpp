@@ -120,11 +120,11 @@ namespace IPFIX {
     if (iestream.fail()) {
       std::ostringstream b;
       b << "expected character '" << x << "', but read failed";
-      throw IESpecError(b.str().c_str());
+      throw IESpecError(b.str());
     } else if (c != x) {
       std::ostringstream b;
       b << "expected character '" << x << "', but got '" << c << "'";
-      throw IESpecError(b.str().c_str());
+      throw IESpecError(b.str());
     }
   }
     

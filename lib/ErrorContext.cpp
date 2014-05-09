@@ -23,8 +23,9 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include <cassert>
 #include <cstring>
+#include <sstream>
 
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/logger.h>
@@ -48,7 +49,7 @@ namespace IPFIX {
     : severity(severity),
       e(e),
       system_errno(system_errno),
-      explanation(explanation),
+      explanation(strdup(explanation)),
       is(is),
       message(0),
       size(message != 0 ? size : 0),
@@ -67,6 +68,8 @@ namespace IPFIX {
   ErrorContext::~ErrorContext() {
     if (message != 0)
       delete message;
+    if (explanation != 0)
+      delete explanation;
   }
 
   const Error& ErrorContext::get_error() const {
@@ -108,6 +111,23 @@ namespace IPFIX {
 
   void ErrorContext::set_offset(uint16_t off) {
     this->off = off;
+  }
+
+  const std::string ErrorContext::to_string() const {
+    std::stringstream sstr;
+    std::string severity_s;
+
+    switch (severity) {
+    case fine: severity_s = "fine"; break;
+    case warning: severity_s = "warning"; break;
+    case recoverable: severity_s = "recoverable"; break;
+    case fatal: severity_s = "fatal"; break;
+    }
+
+    sstr << (is == 0 ? "<null>" : is->get_name()) << "@" << off
+	 << ":" << severity_s << ":" << e.to_string() << ":" << explanation;
+
+    return sstr.str();
   }
 
 } // namespace IPFIX
