@@ -524,16 +524,20 @@ public:
     register_placement_template(csv_template);
   }
   
-  void start_placement(const PlacementTemplate* tmpl) {
+  std::shared_ptr<ErrorContext>
+      start_placement(const PlacementTemplate* tmpl) {
+    LIBFC_RETURN_OK();
   }
 
-  void end_placement(const PlacementTemplate* tmpl) {
+  std::shared_ptr<ErrorContext>
+      end_placement(const PlacementTemplate* tmpl) {
     for (unsigned int i = 0; i < n_ies; ++i) {
       if (i > 0)
         std::cout << ';';
       ie_values[i].renderer(std::cout, ie_values[i].type, ie_values[i].val);
     }
     std::cout << std::endl;
+    LIBFC_RETURN_OK();
   }
 
   ~CSVCollector() {

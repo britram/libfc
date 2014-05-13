@@ -61,10 +61,13 @@ public:
     templates.insert(t->tmpl);
   }
 
-  void start_placement(const IPFIX::PlacementTemplate* tmpl) {
+  std::shared_ptr<IPFIX::ErrorContext>
+      start_placement(const IPFIX::PlacementTemplate* tmpl) {
+    LIBFC_RETURN_OK();
   }
 
-  void end_placement(const IPFIX::PlacementTemplate* t) {
+  std::shared_ptr<IPFIX::ErrorContext>
+      end_placement(const IPFIX::PlacementTemplate* t) {
     // I wonder if this is portable?  --neuhaust
     const ipfix_template_t* this_template 
       = reinterpret_cast<const ipfix_template_t*>(
@@ -72,6 +75,9 @@ public:
 	  - offsetof(struct ipfix_template_t, tmpl));
     if (this_template != 0)
       this_template->callback(this_template);
+    /* TODO: Adapt callback() so that it too can return an
+     * error object */
+    LIBFC_RETURN_OK();
   }
 };
 
