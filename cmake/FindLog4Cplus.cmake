@@ -39,14 +39,16 @@ find_path(Log4CPlus_INCLUDE_DIR
           HINTS ${_Log4CPlus_INCLUDE_DIR_})
 
 find_library(Log4CPlus_LIBRARY
-             NAMES liblog4cplus.a
+             NAMES log4cplus liblog4cplus
              PATHS /opt/log4cplus/lib
              HINTS ${_Log4CPlus_LIB_DIR_})
 
 
-message (STATUS "Log4cplus include ${Log4CPlus_INCLUDE_DIR}")
+set(Log4CPlus_LIBRARIES ${Log4CPlus_LIBRARY})
+set(Log4CPlus_INCLUDE_DIRS ${Log4CPlus_INCLUDE_DIR})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Log4CPlus DEFAULT_MSG
                                   Log4CPlus_LIBRARY Log4CPlus_INCLUDE_DIR) 
-mark_as_advanced(Log4CPlus_INCLUDE_DIR Log4CPlus_LIBRARY )
+mark_as_advanced(Log4CPlus_INCLUDE_DIR Log4CPlus_LIBRARY)
+

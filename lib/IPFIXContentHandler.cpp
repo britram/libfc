@@ -301,7 +301,7 @@ namespace IPFIX {
                         << " registered wire templates");
         unsigned int n = 1;
         for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
-          LOG4CPLUS_TRACE(logger, "  " << n++ << " " << (*i)->toIESpec();
+          LOG4CPLUS_TRACE(logger, "  " << n++ << " " << (*i)->toIESpec());
       }
 #endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }

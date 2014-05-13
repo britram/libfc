@@ -33,6 +33,8 @@
 #ifndef _LIBFC_FILEINPUTSOURCE_H_
 #  define _LIBFC_FILEINPUTSOURCE_H_
 
+#  include <string>
+
 #  include "InputSource.h"
 
 namespace IPFIX {
@@ -44,7 +46,7 @@ namespace IPFIX {
      * @param fd the file descriptor belonging to an IPFIX data file
      * @param name the name you want this file to be known to diagnostics
      */
-    FileInputSource(int fd, const char* name);
+    FileInputSource(int fd, std::string name);
     ~FileInputSource();
 
     ssize_t read(uint8_t* buf, uint16_t len);
@@ -57,7 +59,7 @@ namespace IPFIX {
     int fd;
     size_t message_offset;
     size_t current_offset;
-    const char* name;
+    std::string name;
   };
 
 } // namespace IPFIX
