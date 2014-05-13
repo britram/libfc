@@ -103,7 +103,7 @@ void ftrace_destroy(libftrace_t *ft);
 /** Create a libftrace uniflow structure for reading uniflows */
 libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft);
 
-/** Destroy a uniflow structure created by ftrace_create_uniflow */
+/** Stop reading from a uniflow context *//
 void ftrace_destroy_uniflow(libftrace_uniflow_t *uf);
 
 /** Read the next uniflow from a libftrace reader. 

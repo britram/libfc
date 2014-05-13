@@ -57,14 +57,16 @@ namespace IPFIX {
      *
      * @param template placement template for current placements
      */
-    virtual void start_placement(const PlacementTemplate* tmpl) = 0;
+    virtual std::shared_ptr<ErrorContext>
+      start_placement(const PlacementTemplate* tmpl) = 0;
 
     /** Signals that placement of values has ended. 
      *
      * @param template placement template for current placements
      * @return If <= 0, stop processing.
      */
-    virtual void end_placement(const PlacementTemplate* tmpl) = 0;
+    virtual std::shared_ptr<ErrorContext>
+      end_placement(const PlacementTemplate* tmpl) = 0;
 
   protected:
     /** Registers a placement template.

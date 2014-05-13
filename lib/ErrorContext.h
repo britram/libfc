@@ -61,7 +61,7 @@ namespace IPFIX {
       std::stringstream ss;                                           \
                                                                       \
       ss << message_stream;                                           \
-      return std::shared_ptr<ErrorContext>(                           \
+      return std::shared_ptr<::IPFIX::ErrorContext>(                  \
         new ErrorContext(ErrorContext::severity, Error(Error::error), \
                          system_errno, ss.str().c_str(), is, message, \
 			 size, off));				      \
@@ -70,7 +70,7 @@ namespace IPFIX {
   /** Returns an ErrorContext signaling success. */
 #  define LIBFC_RETURN_OK()			\
     do {					\
-      return std::shared_ptr<ErrorContext>(0);	\
+      return std::shared_ptr<::IPFIX::ErrorContext>(0);	\
     } while (0)
 
   /** An error context.

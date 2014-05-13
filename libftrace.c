@@ -49,9 +49,12 @@ struct libftrace_st {
     pthread_cond_t          wok;
     /** read ready */
     pthread_cond_t          rok;
+    /** reader thread */
+    pthread_t               rt;
     /* storage for uniflow */
     libftrace_uniflow_t     uf;
-
+    /* abort flag */
+    int                     terminate;
 }
 
 /** Open a libftrace source on an IPFIX/PDU file */
@@ -91,6 +94,7 @@ err:
 /** Close a libftrace source */
 void ftrace_destroy(libftrace_t *ft)
 {
+    /* FIXME need to destroy uniflow if currently reading */
     if (ft) {
         pthread_cond_destroy(&ft->wok);
         pthread_cond_destroy(&ft->rok);
@@ -100,33 +104,39 @@ void ftrace_destroy(libftrace_t *ft)
     }
 }
 
-static void _ftrace_semcb_inner(const libftrace_t *ft)
+static int _ftrace_semcb_inner(const libftrace_t *ft)
 {
+    /* check terminate signal */
+    if (ft->terminate) return 0;
+
     /* signal read ready, outer thread will now return a record */
     pthread_cond_signal(&ft->rok);
 
     /* wait write ready, since next placement will happen after return */
     pthread_cond_wait(&ft->wok);
+
+    /* tell placement collector to keep going */
+    return 1;
 }
 
-static void _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
+static int _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
     libftrace_t *ft = (libftrace_t *)vpft;
 
     /* set version */
     ft->uf.ip_ver = 4;
 
     /* signal flow ready */
-    _ftrace_semcb_inner(ft)
+    return _ftrace_semcb_inner(ft)
 }
 
-static void _ftrace_semcb_v6(const struct ipfix_template_t *t, void *vpft) {
+static int _ftrace_semcb_v6(const struct ipfix_template_t *t, void *vpft) {
     libftrace_t *ft = (libftrace_t *)vpft;
 
     /* set version */
     ft->uf.ip_ver = 6;
 
     /* signal flow ready */
-    _ftrace_semcb_inner(ft)
+    return _ftrace_semcb_inner(ft)
 }
 
 void _ftrace_rthread(void *vpft) {
@@ -200,14 +210,24 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
     /* FIXME more templates */
 
     /* then start the reader thread */
-    pthread_create(ft->rt, NULL, _ftrace_rthread, ft);
+    if (pthread_create(&ft->rt, NULL, _ftrace_rthread, ft) != 0) {
+        /* FIXME error */
+    }
 
     return &ft->uf;
 }
 
-/** Destroy a uniflow structure created by ftrace_create_uniflow */
+/** Stop reading a uniflow source */
 void ftrace_destroy_uniflow(libftrace_uniflow_t *uf) {
-    /* FIXME we need a way to signal the inner ipfix to stop reading */
+    if (!uf->terminate) {
+        /* signal inner uniflow to stop reading unless eof */
+        uf->terminate++;
+        pthread_cond_signal(&uf->_ft.wok);
+    }
+
+    if (pthread_join(ft->rt, NULL) != 0) {
+        /* FIXME error */
+    }
 }
 
 /** Read the next uniflow from a libftrace reader. 

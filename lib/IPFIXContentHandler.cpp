@@ -485,9 +485,11 @@ namespace IPFIX {
     assert(callback != callbacks.end());
 
     while (cur < buf_end && length >= min_length) {
-      callback->second->start_placement(placement_template);
+      CH_REPORT_CALLBACK_ERROR(
+        callback->second->start_placement(placement_template));
       uint16_t consumed = plan.execute(cur, length);
-      callback->second->end_placement(placement_template);
+      CH_REPORT_CALLBACK_ERROR(
+        callback->second->end_placement(placement_template));
       cur += consumed;
       length -= consumed;
     }

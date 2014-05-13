@@ -62,17 +62,23 @@ public:
     templates.insert(t->tmpl);
   }
 
-  void start_placement(const IPFIX::PlacementTemplate* tmpl) {
+  std::shared_ptr<IPFIX::ErrorContext>
+      start_placement(const IPFIX::PlacementTemplate* tmpl) {
+    LIBFC_RETURN_OK();
   }
 
-  void end_placement(const IPFIX::PlacementTemplate* t) {
-    // I wonder if this is portable?  --neuhaust
+  std::shared_ptr<IPFIX::ErrorContext>
+      end_placement(const IPFIX::PlacementTemplate* t) {
+    /* INSANE HACK which probably works -- get template from object */
     const ipfix_template_t* this_template = 
           reinterpret_cast<const ipfix_template_t*>(
             reinterpret_cast<const unsigned char*>(t) -
             offsetof(struct ipfix_template_t, tmpl));
     if (this_template != 0)
-      this_template->callback(this_template, this_template->vparg);
+      if (this_template->callback(this_template, this_template->vparg) <= 0) {
+        LIBFC_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", errno, null, 0, 0, 0);
+      }
+    LIBFC_RETURN_OK();
   }
 };
 

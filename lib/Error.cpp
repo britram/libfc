@@ -37,6 +37,7 @@ namespace IPFIX {
     switch (e) {
     case no_error: return "no error"; break;
     case parse_while_parsing: return "call to parse() while parsing"; break;
+    case aborted_by_user: return "aborted by user"; break;
     case system_error: return "system error"; break;
     case short_header: return "short message header"; break;
     case short_body: return "short message body"; break;
