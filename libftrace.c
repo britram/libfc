@@ -100,7 +100,7 @@ void ftrace_destroy(libftrace_t *ft)
     }
 }
 
-void _ftrace_semcb_inner(const libftrace_t *ft)
+static void _ftrace_semcb_inner(const libftrace_t *ft)
 {
     /* signal read ready, outer thread will now return a record */
     pthread_cond_signal(&ft->rok);
@@ -109,7 +109,7 @@ void _ftrace_semcb_inner(const libftrace_t *ft)
     pthread_cond_wait(&ft->wok);
 }
 
-void _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
+static void _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
     libftrace_t *ft = (libftrace_t *)vpft;
 
     /* set version */
@@ -119,7 +119,7 @@ void _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
     _ftrace_semcb_inner(ft)
 }
 
-void _ftrace_semcb_v6(const struct ipfix_template_t *t, void *vpft) {
+static void _ftrace_semcb_v6(const struct ipfix_template_t *t, void *vpft) {
     libftrace_t *ft = (libftrace_t *)vpft;
 
     /* set version */

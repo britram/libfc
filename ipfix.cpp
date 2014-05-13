@@ -40,7 +40,7 @@ static bool infomodel_initialized = false;
 
 struct ipfix_template_t {
   IPFIX::PlacementTemplate* tmpl;
-  void (*callback) (const ipfix_template_t* t);
+  int (*callback) (const ipfix_template_t* t, void *vp);
   void *vparg;
 };
 
@@ -67,10 +67,10 @@ public:
 
   void end_placement(const IPFIX::PlacementTemplate* t) {
     // I wonder if this is portable?  --neuhaust
-    const ipfix_template_t* this_template 
-      = reinterpret_cast<const ipfix_template_t*>(
-	  reinterpret_cast<const unsigned char*>(t) 
-	  - offsetof(struct ipfix_template_t, tmpl));
+    const ipfix_template_t* this_template = 
+          reinterpret_cast<const ipfix_template_t*>(
+            reinterpret_cast<const unsigned char*>(t) -
+            offsetof(struct ipfix_template_t, tmpl));
     if (this_template != 0)
       this_template->callback(this_template, this_template->vparg);
   }
@@ -114,7 +114,7 @@ extern int ipfix_register_placement(struct ipfix_template_t* t,
 }
 
 extern void ipfix_register_callback(struct ipfix_template_t* t,
-                                    void (*c) (const struct ipfix_template_t*, 
+                                    int (*c) (const struct ipfix_template_t*, 
                                                void *),
                                     void *vparg) {
   t->callback = c;

@@ -60,6 +60,7 @@ namespace IPFIX {
     /** Signals that placement of values has ended. 
      *
      * @param template placement template for current placements
+     * @return If <= 0, stop processing.
      */
     virtual void end_placement(const PlacementTemplate* tmpl) = 0;
 
