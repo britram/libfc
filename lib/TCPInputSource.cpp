@@ -52,7 +52,7 @@ namespace IPFIX {
     return true;
   }
 
-  size_t TCPInputSource::get_message_offset() {
+  size_t TCPInputSource::get_message_offset() const {
     return message_offset;
   }
 

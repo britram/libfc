@@ -1,11 +1,33 @@
 cmake_minimum_required(VERSION 2.8)
 project(libfc)
 
-# Use log4cplus?
-#
-#add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)
-#include_directories(/opt/log4cplus/include)
-#link_directories(/opt/log4cplus/lib)
+set (CMAKE_MODULE_PATH 
+     "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+find_package(Log4CPlus)
+if (Log4CPlus_FOUND)
+  include_directories(${Log4CPlus_INCLUDE_DIRS}) 
+  link_directories(${Log4CPlus_LIB_DIRS}) 
+  add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)
+else(Log4CPlus_FOUND)
+  set(Log4CPlus_LIBRARIES "")
+endif(Log4CPlus_FOUND)
+
+find_package(Wandio)
+if (Wandio_FOUND)
+  include_directories(${Wandio_INCLUDE_DIRS}) 
+  link_directories(${Wandio_LIB_DIRS}) 
+else(Wandio_FOUND)
+  set(Wandio_LIBRARIES "")
+endif(Wandio_FOUND)
+
+find_package(Boost 1.42 COMPONENTS unit_test_framework REQUIRED)
+if (Boost_FOUND)
+  include_directories (${Boost_INCLUDE_DIRS})
+else(Boost_FOUND)
+  set(Boost_LIBRARIES "")
+endif(Boost_FOUND)
+
 
 # debuggery
 if ($ENV{CLANG}) 
@@ -23,14 +45,8 @@ else ($ENV{CLANG})
   else (CMAKE_BUILD_TYPE STREQUAL "Debug")
   endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
   include_directories(lib)
- endif($ENV{CLANG})
+endif($ENV{CLANG})
 include_directories(.)
-
-# include boost
-find_package(Boost 1.42 COMPONENTS unit_test_framework REQUIRED)
-if (Boost_FOUND)
-  include_directories (${Boost_INCLUDE_DIRS})
-endif()
 
 
 # core objects; library classes begin with a upper-case letter,
@@ -56,8 +72,9 @@ file (GLOB EXCEPTIONS_OBJ "lib/exceptions/*.cpp")
 add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 
 add_executable(ipfix2csv ipfix2csv.cpp)
-target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES} pcap)
-#target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES} pcap log4cplus)
+target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES}
+                                ${Wandio_LIBRARIES}
+                                ${Log4CPlus_LIBRARIES} pcap)
 
 add_executable(cbinding cbinding.c)
 target_link_libraries(cbinding fc)
@@ -65,8 +82,7 @@ target_link_libraries(cbinding fc)
 if ($ENV{CLANG}) 
   target_link_libraries (fc c++)
 else ($ENV{CLANG})
-  target_link_libraries (fc)
-  #target_link_libraries (fc log4cplus)
+  target_link_libraries (fc ${Log4CPlus_LIBRARIES})
 endif($ENV{CLANG})
 
 if ($ENV{CLANG})
@@ -74,10 +90,9 @@ if ($ENV{CLANG})
 else ($ENV{CLANG})
   file (GLOB UT_OBJ test/Test*.cpp)
   add_executable(fctest ${UT_OBJ})
-  target_link_libraries(fctest pcap)
-  if (Boost_FOUND)
-    target_link_libraries(fctest fc ${Boost_LIBRARIES})
-  endif()
+  target_link_libraries(fctest fc ${Boost_LIBRARIES}
+                                ${Wandio_LIBRARIES}
+                               ${Log4CPlus_LIBRARIES} pcap)
 endif()
 
 if ($ENV{CLANG})
@@ -93,5 +108,7 @@ endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Profile")
   add_executable(fcprof fcprof.cpp test/TestCommon.cpp)
-  target_link_libraries(fcprof fc ${Boost_LIBRARIES} pcap)
+  target_link_libraries(fcprof fc ${Boost_LIBRARIES}
+                                ${Wandio_LIBRARIES} 
+                               ${Log4CPlus_LIBRARIES} pcap)
 endif()  

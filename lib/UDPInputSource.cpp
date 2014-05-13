@@ -46,7 +46,7 @@ namespace IPFIX {
     return true;
   }
 
-  size_t UDPInputSource::get_message_offset() {
+  size_t UDPInputSource::get_message_offset() const {
     return 0;
   }
 

@@ -47,7 +47,7 @@ namespace IPFIX {
 
     ssize_t read(uint8_t* buf, uint16_t len);
     bool resync();
-    size_t get_message_offset();
+    size_t get_message_offset() const;
     void advance_message_offset();
     const char* get_name() const;
 
