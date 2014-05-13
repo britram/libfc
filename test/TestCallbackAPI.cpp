@@ -40,21 +40,22 @@
 #include "FileInputSource.h"
 #include "Constants.h"
 #include "ContentHandler.h"
-#include "ErrorHandler.h"
-#include "MessageStreamParser.h"
+#include "IPFIXMessageStreamParser.h"
 
 using namespace IPFIX;
 
-class PrintHandler : public ContentHandler, public ErrorHandler {
-  void start_session() {
+class PrintHandler : public ContentHandler {
+  std::shared_ptr<ErrorContext> start_session() {
     std::cerr << "Session starts" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_session() {
+  std::shared_ptr<ErrorContext> end_session() {
     std::cerr << "Session ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_message(uint16_t version,
+  std::shared_ptr<ErrorContext> start_message(uint16_t version,
                      uint16_t length,
                      uint32_t export_time,
                      uint32_t sequence_number,
@@ -75,67 +76,77 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
               << ", domain=" << observation_domain
 	      << ", basetime=" << base_time
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_message() {
+  std::shared_ptr<ErrorContext> end_message() {
     std::cerr << "  Message ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_template_set(uint16_t set_id,
+  std::shared_ptr<ErrorContext> start_template_set(uint16_t set_id,
 			  uint16_t set_length,
 			  const uint8_t* buf) {
     std::cerr << "    Template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_template_set() {
+  std::shared_ptr<ErrorContext> end_template_set() {
     std::cerr << "    Template set ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_template_record(uint16_t template_id,
+  std::shared_ptr<ErrorContext> start_template_record(uint16_t template_id,
                              uint16_t field_count) {
     std::cerr << "      Template record: id=" << template_id
               << ", fields=" << field_count
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_template_record() {
+  std::shared_ptr<ErrorContext> end_template_record() {
     std::cerr << "      Template record ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_option_template_set(uint16_t set_id,
+  std::shared_ptr<ErrorContext> start_options_template_set(uint16_t set_id,
                                  uint16_t set_length,
 				 const uint8_t* buf) {
     std::cerr << "    Option template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_option_template_set() {
+  std::shared_ptr<ErrorContext> end_options_template_set() {
     std::cerr << "    Option template set ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_option_template_record(uint16_t template_id,
+  std::shared_ptr<ErrorContext> start_options_template_record(uint16_t template_id,
                                     uint16_t field_count,
                                     uint16_t scope_field_count) {
     std::cerr << "      Option template record: id=" << template_id
               << ", fields=" << field_count
               << ", scope-fields=" << scope_field_count
               << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void end_option_template_record() {
+  std::shared_ptr<ErrorContext> end_options_template_record() {
     std::cerr << "      Option template record ends" << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void field_specifier(bool enterprise,
+  std::shared_ptr<ErrorContext> field_specifier(bool enterprise,
                        uint16_t ie_id,
                        uint16_t ie_length,
                        uint32_t enterprise_number) {
     std::cerr << "        Field specifier: id=" << ie_id
               << ", length=";
-    if (ie_length == kVarlen) 
+    if (ie_length == kIpfixVarlen) 
       std::cerr << "Varlen";
     else
       std::cerr << ie_length;
@@ -145,38 +156,20 @@ class PrintHandler : public ContentHandler, public ErrorHandler {
     else 
       std::cerr << ", IETF IE";
     std::cerr << std::endl;
+    LIBFC_RETURN_OK();
   }
 
-  void start_data_set(uint16_t id, uint16_t length, const uint8_t* buf) {
+  std::shared_ptr<ErrorContext> start_data_set(uint16_t id, uint16_t length, const uint8_t* buf) {
     std::cerr << "    Data set: template-id=" << id
               << ", length=" << length
               << std::endl;
+    LIBFC_RETURN_OK();
   }
   
-  void end_data_set() {
+  std::shared_ptr<ErrorContext> end_data_set() {
     std::cerr << "    Data set ends"
               << std::endl;
-  }
-
-  void error(Error error, const char* message) {
-    std::cerr << "Error: " << error;
-    if (message != 0)
-      std::cerr << ": " << message;
-    std::cerr << std::endl;
-  }
-
-  void fatal(Error error, const char* message) {
-    std::cerr << "Fatal: " << error;
-    if (message != 0)
-      std::cerr << ": " << message;
-    std::cerr << std::endl;
-  }
-
-  void warning(Error error, const char* message) {
-    std::cerr << "Warning: " << error;
-    if (message != 0)
-      std::cerr << ": " << message;
-    std::cerr << std::endl;
+    LIBFC_RETURN_OK();
   }
 
 };
@@ -190,10 +183,9 @@ BOOST_AUTO_TEST_CASE(BasicCallback) {
     0x00,0x0a,0x00,0x56,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x18,0x03,0xe9,0x00,0x04,0x01,0x36,0x00,0x04,0x00,0x52,0xff,0xff,0x01,0x37,0x00,0x08,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x2e,0x10,0x20,0x30,0x40,0x04,0x65,0x74,0x68,0x30,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65 };
 
   PrintHandler ph;
-  MessageStreamParser ir;
+  IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&ph);
-  ir.set_error_handler(&ph);
 
   {
     BufferInputSource is(msg01, sizeof(msg01));
@@ -210,14 +202,13 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
   const char* filename = "dahlem-01.ipfix";
 
   PrintHandler ph;
-  MessageStreamParser ir;
+  IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&ph);
-  ir.set_error_handler(&ph);
 
   int fd = open(filename, O_RDONLY);
   if (fd >= 0) {
-    FileInputSource is(fd);
+    FileInputSource is(fd, filename);
     ir.parse(is);
     (void) close(fd);
   }

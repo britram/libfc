@@ -77,7 +77,6 @@
 #include "FileInputSource.h"
 #include "InfoElement.h"
 #include "InfoModel.h"
-#include "OctetArray.h"
 #include "PlacementCollector.h"
 #include "PlacementTemplate.h"
 
@@ -580,7 +579,7 @@ int main(int argc, char* const* argv) {
 
   print_csv_header(std::cout);
 
-  FileInputSource is(0); // 0 == stdin
+  FileInputSource is(0, "<stdin>"); // 0 == stdin
   try {
     cc.collect(is);
   } catch (FormatError e) {
