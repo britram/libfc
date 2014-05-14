@@ -5,28 +5,22 @@ set (CMAKE_MODULE_PATH
      "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(Log4CPlus)
-if (Log4CPlus_FOUND)
-  include_directories(${Log4CPlus_INCLUDE_DIRS}) 
-  link_directories(${Log4CPlus_LIB_DIRS}) 
-  add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)
-else(Log4CPlus_FOUND)
+if (LOG4CPLUS_FOUND)
+  #include_directories(${Log4CPlus_INCLUDE_DIRS}) 
+  #add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)
+else(LOG4CPLUS_FOUND)
   set(Log4CPlus_LIBRARIES "")
-endif(Log4CPlus_FOUND)
-
-find_package(Wandio)
-if (Wandio_FOUND)
-  include_directories(${Wandio_INCLUDE_DIRS}) 
-  link_directories(${Wandio_LIB_DIRS}) 
-else(Wandio_FOUND)
-  set(Wandio_LIBRARIES "")
-endif(Wandio_FOUND)
+endif(LOG4CPLUS_FOUND)
 
 find_package(Boost 1.42 COMPONENTS unit_test_framework REQUIRED)
 if (Boost_FOUND)
   include_directories (${Boost_INCLUDE_DIRS})
-else(Boost_FOUND)
-  set(Boost_LIBRARIES "")
 endif(Boost_FOUND)
+ 
+find_package(Wandio REQUIRED)
+if (WANDIO_FOUND)
+  include_directories(${Wandio_INCLUDE_DIRS}) 
+endif(WANDIO_FOUND)
 
 
 # debuggery
@@ -35,7 +29,6 @@ if ($ENV{CLANG})
   set(CMAKE_CXX_FLAGS "-g -Wall --std=c++0x --stdlib=libc++ -O3")
   set(CMAKE_CXX_FLAGS_PROFILE "-g -Wall --std=c++0x --stdlib=libc++ -O0 -pg")
   set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall --std=c++0x --stdlib=libc++ -O0")
-
 else ($ENV{CLANG})
   set(CMAKE_CXX_FLAGS "-g -Wall --std=c++0x -O3")
   set(CMAKE_CXX_FLAGS_PROFILE "-g -Wall --std=c++0x -O0 -pg")
@@ -91,8 +84,8 @@ else ($ENV{CLANG})
   file (GLOB UT_OBJ test/Test*.cpp)
   add_executable(fctest ${UT_OBJ})
   target_link_libraries(fctest fc ${Boost_LIBRARIES}
-                                ${Wandio_LIBRARIES}
-                               ${Log4CPlus_LIBRARIES} pcap)
+                                  ${Wandio_LIBRARIES}
+                                  ${Log4CPlus_LIBRARIES} pcap)
 endif()
 
 if ($ENV{CLANG})

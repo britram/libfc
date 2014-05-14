@@ -30,7 +30,7 @@
 
 namespace IPFIX {
 
-  FileInputSource::FileInputSource(int fd, const char* name)
+  FileInputSource::FileInputSource(int fd, std::string name)
     : fd(fd),
       message_offset(0),
       current_offset(0),
@@ -63,7 +63,7 @@ namespace IPFIX {
   }
 
   const char* FileInputSource::get_name() const {
-    return name;
+    return name.c_str();
   }
 
 } // namespace IPFIX

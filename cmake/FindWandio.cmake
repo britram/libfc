@@ -31,20 +31,27 @@
 #
 
 set (_Wandio_INCLUDE_DIR_ "${Wandio_ROOT}/include")
-set (_Wandio_LIB_DIR_ "${Wandio_ROOT}/lib")
+set (_Wandio_LIBRARY_DIR_ "${Wandio_ROOT}/lib")
 
 find_path(Wandio_INCLUDE_DIR 
           NAMES wandio.h
           PATHS /opt/libtrace/include
           HINTS ${_Wandio_INCLUDE_DIR_})
 
+find_path(Wandio_LIBRARY_DIR 
+          NAMES libwandio.a
+          PATHS /opt/libtrace/lib
+          HINTS ${_Wandio_LIBRARY_DIR_})
+
 find_library(Wandio_LIBRARY
-             NAMES libwandio.a
+             NAMES wandio libwandio
              PATHS /opt/libtrace/lib
              HINTS ${_Wandio_LIB_DIR_})
 
+set(Wandio_LIBRARIES ${Wandio_LIBRARY})
+set(Wandio_INCLUDE_DIRS ${Wandio_INCLUDE_DIR})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Wandio DEFAULT_MSG
                                   Wandio_LIBRARY Wandio_INCLUDE_DIR) 
-mark_as_advanced(Wandio_INCLUDE_DIR Wandio_LIBRARY )
+mark_as_advanced(Wandio_INCLUDE_DIR Wandio_LIBRARY Wandio_LIBRARY_DIR)
