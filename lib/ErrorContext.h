@@ -35,6 +35,8 @@
 #ifndef _LIBFC_ERRORCONTEXT_H_
 #  define _LIBFC_ERRORCONTEXT_H_
 
+#  include <sstream>
+
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
@@ -65,7 +67,7 @@ namespace IPFIX {
        * between '<' and ':'.  Some people thought it would	      \
        * be funny to invent an abomination called a trigraph.	      \
        * Using trigraphs, '<:' is actually synonymous with	      \
-       * ']'.  Yeah, I know.					      \
+       * '['.  Yeah, I know.					      \
        */							      \
       return std::shared_ptr< ::IPFIX::ErrorContext>(                 \
         new ErrorContext(ErrorContext::severity, Error(Error::error), \
@@ -80,7 +82,7 @@ namespace IPFIX {
        * between '<' and ':'.  Some people thought it would	\
        * be funny to invent an abomination called a trigraph.	\
        * Using trigraphs, '<:' is actually synonymous with	\
-       * ']'.  Yeah, I know.					\
+       * '['.  Yeah, I know.					\
        */							\
       return std::shared_ptr< ::IPFIX::ErrorContext>(0);	\
     } while (0)
