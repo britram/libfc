@@ -41,6 +41,7 @@
 
 #  include "Error.h"
 #  include "InputSource.h"
+#  include <sstream>
 
 namespace IPFIX {
 
