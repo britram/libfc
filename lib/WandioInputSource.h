@@ -24,21 +24,34 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "WandioInputSource.h"
-#include <wandio.h>
+/**
+ * @file
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ */
+
+#ifndef IPFIX_WANDIOINPUTSOURCE_H
+#  define IPFIX_WANDIOINPUTSOURCE_H
+
+#  include "InputSource.h"
+#  include <wandio.h>
 
 namespace IPFIX {
 
-  WandioInputSource::WandioInputSource(wio_t *wio)
-    : wio(wio) {
-  }
+class WandioInputSource : public InputSource {
+  public:
+    /** Creates a TCP input source from a file descriptor.
+     *
+     * @param fd the file descriptor belonging to an IPFIX data file
+     */
+    WandioInputSource(io_t *wio);
+    ~WandioInputSource();
 
-  WandioInputSource::~WandioInputSource() {
-    (void) wandio_destroy(wio); // FIXME: Error handling?
-  }
+    ssize_t read(uint8_t* buf, size_t len);
 
-  ssize_t FileInputSource::read(uint8_t* buf, size_t len) {
-    return wandio_read(wio, buf, len);
-  }
+  private:
+    io_t *wio;
+  };
 
-}
+} // namespace IPFIX
+
+#endif // IPFIX_WANDIOINPUTSOURCE_H

@@ -28,25 +28,28 @@
 
 #include <cstddef>
 
-#include "ipfix.h"
+#include "libfc.h"
 
 #include "InfoModel.h"
 #include "PlacementTemplate.h"
 #include "PlacementCollector.h"
 #include "FileInputSource.h"
+#include "WandioInputSource.h"
 #include "exceptions/FormatError.h"
+
+using namespace IPFIX;
 
 static bool infomodel_initialized = false;
 
 struct ipfix_template_t {
-  IPFIX::PlacementTemplate* tmpl;
+  PlacementTemplate* tmpl;
   int (*callback) (const ipfix_template_t* t, void *vp);
   void *vparg;
 };
 
-class CBinding : public IPFIX::PlacementCollector {
+class CBinding : public PlacementCollector {
 private:
-  std::set<IPFIX::PlacementTemplate*> templates;
+  std::set<PlacementTemplate*> templates;
 
 public:
   CBinding() {
@@ -62,13 +65,13 @@ public:
     templates.insert(t->tmpl);
   }
 
-  std::shared_ptr<IPFIX::ErrorContext>
-      start_placement(const IPFIX::PlacementTemplate* tmpl) {
+  std::shared_ptr<ErrorContext>
+      start_placement(const PlacementTemplate* tmpl) {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<IPFIX::ErrorContext>
-      end_placement(const IPFIX::PlacementTemplate* t) {
+  std::shared_ptr<ErrorContext>
+      end_placement(const PlacementTemplate* t) {
     /* INSANE HACK which probably works -- get template from object */
     const ipfix_template_t* this_template = 
           reinterpret_cast<const ipfix_template_t*>(
@@ -76,7 +79,7 @@ public:
             offsetof(struct ipfix_template_t, tmpl));
     if (this_template != 0)
       if (this_template->callback(this_template, this_template->vparg) <= 0) {
-        LIBFC_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", errno, null, 0, 0, 0);
+        LIBFC_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", 0, 0, 0, 0, 0);
       }
     LIBFC_RETURN_OK();
   }
@@ -88,7 +91,7 @@ struct ipfix_template_set_t {
 
 extern struct ipfix_template_set_t* ipfix_template_set_new() {
   if (!infomodel_initialized)
-    IPFIX::InfoModel::instance().defaultIPFIX();
+    InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
 
   struct ipfix_template_set_t* ret = new ipfix_template_set_t;
@@ -99,12 +102,12 @@ extern struct ipfix_template_set_t* ipfix_template_set_new() {
 extern struct ipfix_template_t* ipfix_template_new(
     struct ipfix_template_set_t* s) {
   if (!infomodel_initialized)
-    IPFIX::InfoModel::instance().defaultIPFIX();
+    InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
 
   struct ipfix_template_t* ret = new ipfix_template_t;
   ret->callback = 0;
-  ret->tmpl = new IPFIX::PlacementTemplate;
+  ret->tmpl = new PlacementTemplate;
   s->binding->add_template(ret);
   return ret;
 }
@@ -116,7 +119,7 @@ extern void ipfix_template_set_delete(struct ipfix_template_set_t* s) {
 extern int ipfix_register_placement(struct ipfix_template_t* t,
                                     const char* ie_name, void* p, size_t size) {
   return t->tmpl->register_placement(
-           IPFIX::InfoModel::instance().lookupIE(ie_name), p, size);
+           InfoModel::instance().lookupIE(ie_name), p, size);
 }
 
 extern void ipfix_register_callback(struct ipfix_template_t* t,
@@ -131,10 +134,10 @@ extern int ipfix_collect_from_file(int fd, const char* name,
 				   struct ipfix_template_set_t* t) {
   int ret = 1;
 
-  IPFIX::FileInputSource is(fd, name);
+  FileInputSource is(fd, name);
   try {
     t->binding->collect(is);
-  } catch (IPFIX::FormatError e) {
+  } catch (FormatError e) {
     std::cerr << "Format error: " << e.what() << std::endl;
     ret = 0;
   }
@@ -145,10 +148,10 @@ extern int ipfix_collect_from_file(int fd, const char* name,
 extern int ipfix_collect_from_wandio(io_t *wio, struct ipfix_template_set_t* t) {
   int ret = 1;
 
-  IPFIX::WandioInputSource is(wio);
+  WandioInputSource is(wio);
   try {
     t->binding->collect(is);
-  } catch (IPFIX::FormatError e) {
+  } catch (FormatError e) {
     std::cerr << "Format error: " << e.what() << std::endl;
     ret = 0;
   }

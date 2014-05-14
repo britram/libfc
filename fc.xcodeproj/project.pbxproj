@@ -63,6 +63,11 @@
 		D354E8191923550800C45B70 /* TCPInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7E11923550800C45B70 /* TCPInputSource.h */; };
 		D354E81A1923550800C45B70 /* UDPInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7E21923550800C45B70 /* UDPInputSource.cpp */; };
 		D354E81B1923550800C45B70 /* UDPInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7E31923550800C45B70 /* UDPInputSource.h */; };
+		D354E81E19235BD300C45B70 /* libfc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E81C19235BD300C45B70 /* libfc.cpp */; };
+		D354E81F19235BD300C45B70 /* libfc.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E81D19235BD300C45B70 /* libfc.h */; };
+		D354E82119235D2000C45B70 /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
+		D354E8241923961300C45B70 /* WandioInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E8221923961300C45B70 /* WandioInputSource.cpp */; };
+		D354E8251923961300C45B70 /* WandioInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E8231923961300C45B70 /* WandioInputSource.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -122,6 +127,11 @@
 		D354E7E11923550800C45B70 /* TCPInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TCPInputSource.h; path = lib/TCPInputSource.h; sourceTree = "<group>"; };
 		D354E7E21923550800C45B70 /* UDPInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UDPInputSource.cpp; path = lib/UDPInputSource.cpp; sourceTree = "<group>"; };
 		D354E7E31923550800C45B70 /* UDPInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UDPInputSource.h; path = lib/UDPInputSource.h; sourceTree = "<group>"; };
+		D354E81C19235BD300C45B70 /* libfc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = libfc.cpp; path = lib/libfc.cpp; sourceTree = "<group>"; };
+		D354E81D19235BD300C45B70 /* libfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libfc.h; path = lib/libfc.h; sourceTree = "<group>"; };
+		D354E82019235D2000C45B70 /* libwandio.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwandio.1.dylib; path = ../../opt/lib/libwandio.1.dylib; sourceTree = "<group>"; };
+		D354E8221923961300C45B70 /* WandioInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WandioInputSource.cpp; path = lib/WandioInputSource.cpp; sourceTree = "<group>"; };
+		D354E8231923961300C45B70 /* WandioInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WandioInputSource.h; path = lib/WandioInputSource.h; sourceTree = "<group>"; };
 		D37BC242192352A8009555FF /* libfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -130,6 +140,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D354E82119235D2000C45B70 /* libwandio.1.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +150,10 @@
 		D354E7AA192354D200C45B70 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				D354E8221923961300C45B70 /* WandioInputSource.cpp */,
+				D354E8231923961300C45B70 /* WandioInputSource.h */,
+				D354E81C19235BD300C45B70 /* libfc.cpp */,
+				D354E81D19235BD300C45B70 /* libfc.h */,
 				D354E7AB1923550800C45B70 /* BasicOctetArray.cpp */,
 				D354E7AC1923550800C45B70 /* BasicOctetArray.h */,
 				D354E7AD1923550800C45B70 /* BufferInputSource.cpp */,
@@ -211,6 +226,7 @@
 		D37BC239192352A8009555FF = {
 			isa = PBXGroup;
 			children = (
+				D354E82019235D2000C45B70 /* libwandio.1.dylib */,
 				D354E7AA192354D200C45B70 /* lib */,
 				D37BC243192352A8009555FF /* Products */,
 			);
@@ -243,6 +259,7 @@
 				D354E8021923550800C45B70 /* IEType.h in Headers */,
 				D354E8071923550800C45B70 /* InputSource.h in Headers */,
 				D354E7F11923550800C45B70 /* ErrorContext.h in Headers */,
+				D354E8251923961300C45B70 /* WandioInputSource.h in Headers */,
 				D354E7F31923550800C45B70 /* Exception.h in Headers */,
 				D354E7F71923550800C45B70 /* FormatError.h in Headers */,
 				D354E7F51923550800C45B70 /* ExportError.h in Headers */,
@@ -260,6 +277,7 @@
 				D354E8141923550800C45B70 /* PlacementExporter.h in Headers */,
 				D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */,
 				D354E80E1923550800C45B70 /* MatchTemplate.h in Headers */,
+				D354E81F19235BD300C45B70 /* libfc.h in Headers */,
 				D354E8061923550800C45B70 /* InfoModel.h in Headers */,
 				D354E8171923550800C45B70 /* pointer_checks.h in Headers */,
 			);
@@ -316,6 +334,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D354E8241923961300C45B70 /* WandioInputSource.cpp in Sources */,
 				D354E8091923550800C45B70 /* IPFIXContentHandler.cpp in Sources */,
 				D354E7E41923550800C45B70 /* BasicOctetArray.cpp in Sources */,
 				D354E8131923550800C45B70 /* PlacementExporter.cpp in Sources */,
@@ -332,6 +351,7 @@
 				D354E8031923550800C45B70 /* InfoElement.cpp in Sources */,
 				D354E8111923550800C45B70 /* PlacementCollector.cpp in Sources */,
 				D354E7F61923550800C45B70 /* FormatError.cpp in Sources */,
+				D354E81E19235BD300C45B70 /* libfc.cpp in Sources */,
 				D354E8051923550800C45B70 /* InfoModel.cpp in Sources */,
 				D354E80B1923550800C45B70 /* IPFIXMessageStreamParser.cpp in Sources */,
 				D354E7F21923550800C45B70 /* Exception.cpp in Sources */,
@@ -421,6 +441,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(HOME)/opt/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/brian/opt/lib,
+				);
 				PRODUCT_NAME = fc;
 			};
 			name = Debug;
@@ -429,6 +458,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(HOME)/opt/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/brian/opt/lib,
+				);
 				PRODUCT_NAME = fc;
 			};
 			name = Release;

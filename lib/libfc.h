@@ -178,7 +178,8 @@
 extern "C" {
 #  endif /* defined(__cplusplus) */
 
-#  include <stdlib.h>
+#include <stdlib.h>
+#include <wandio.h>
 
   /** An IPFIX template set.
    *
@@ -264,7 +265,6 @@ extern void ipfix_register_callback(struct ipfix_template_t* t,
   extern int ipfix_collect_from_file(int fd, const char* name,
                                      struct ipfix_template_set_t* t);
 
-#if ENABLE_WANDIO
   /** Collect IPFIX data from a wandio stream.
    *
    * @param fd a valid file descriptor, such as you'd get back from a
@@ -274,7 +274,6 @@ extern void ipfix_register_callback(struct ipfix_template_t* t,
    * @return non-zero on success and 0 on error
    */
 extern int ipfix_collect_from_wandio(io_t wio, struct ipfix_template_set_t* s);
-#endif
    
 #  if defined(__cplusplus)
 }
