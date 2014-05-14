@@ -122,7 +122,7 @@
 		D354E7E11923550800C45B70 /* TCPInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TCPInputSource.h; path = lib/TCPInputSource.h; sourceTree = "<group>"; };
 		D354E7E21923550800C45B70 /* UDPInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UDPInputSource.cpp; path = lib/UDPInputSource.cpp; sourceTree = "<group>"; };
 		D354E7E31923550800C45B70 /* UDPInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UDPInputSource.h; path = lib/UDPInputSource.h; sourceTree = "<group>"; };
-		D37BC242192352A8009555FF /* liblibfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblibfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D37BC242192352A8009555FF /* libfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -219,7 +219,7 @@
 		D37BC243192352A8009555FF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D37BC242192352A8009555FF /* liblibfc.dylib */,
+				D37BC242192352A8009555FF /* libfc.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -268,9 +268,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D37BC241192352A8009555FF /* libfc */ = {
+		D37BC241192352A8009555FF /* fc */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D37BC246192352A8009555FF /* Build configuration list for PBXNativeTarget "libfc" */;
+			buildConfigurationList = D37BC246192352A8009555FF /* Build configuration list for PBXNativeTarget "fc" */;
 			buildPhases = (
 				D37BC23E192352A8009555FF /* Sources */,
 				D37BC23F192352A8009555FF /* Frameworks */,
@@ -280,9 +280,9 @@
 			);
 			dependencies = (
 			);
-			name = libfc;
+			name = fc;
 			productName = libfc;
-			productReference = D37BC242192352A8009555FF /* liblibfc.dylib */;
+			productReference = D37BC242192352A8009555FF /* libfc.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -294,7 +294,7 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Brian Trammell";
 			};
-			buildConfigurationList = D37BC23D192352A8009555FF /* Build configuration list for PBXProject "libfc" */;
+			buildConfigurationList = D37BC23D192352A8009555FF /* Build configuration list for PBXProject "fc" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -306,7 +306,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D37BC241192352A8009555FF /* libfc */,
+				D37BC241192352A8009555FF /* fc */,
 			);
 		};
 /* End PBXProject section */
@@ -421,7 +421,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = fc;
 			};
 			name = Debug;
 		};
@@ -429,14 +429,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = fc;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D37BC23D192352A8009555FF /* Build configuration list for PBXProject "libfc" */ = {
+		D37BC23D192352A8009555FF /* Build configuration list for PBXProject "fc" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D37BC244192352A8009555FF /* Debug */,
@@ -445,7 +445,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D37BC246192352A8009555FF /* Build configuration list for PBXNativeTarget "libfc" */ = {
+		D37BC246192352A8009555FF /* Build configuration list for PBXNativeTarget "fc" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D37BC247192352A8009555FF /* Debug */,
