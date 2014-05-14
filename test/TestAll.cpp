@@ -26,8 +26,31 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  */
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  include <log4cplus/configurator.h>
+#else
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE FC Test
+#define BOOST_TEST_NO_MAIN
 #include <boost/test/unit_test.hpp>
+
+/* This code mostly copied from <boost/test/unit_test.hpp> (I
+ * can't come up with code like that.)  Added code to initialize the
+ * logging subsystem.  Boost: the default init_unit_test_suite is
+ * great, but I just needed a hook.  Could you provide one in a
+ * future version, please? */
+int 
+main( int argc, char* argv[] )
+{
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+  log4cplus::PropertyConfigurator config("log4cplus.properties");
+  config.configure();
+#else
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+  return ::boost::unit_test::unit_test_main( &init_unit_test, argc, argv );
+}
 

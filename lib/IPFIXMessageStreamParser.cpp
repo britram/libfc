@@ -61,7 +61,12 @@
 namespace IPFIX {
 
   IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
-    : offset(0) {
+    : offset(0)
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+               ,
+    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("IPFIXMessageStreamParser")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+ {
   }
 
   std::shared_ptr<ErrorContext>

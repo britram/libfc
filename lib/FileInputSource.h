@@ -46,7 +46,7 @@ namespace IPFIX {
      * @param fd the file descriptor belonging to an IPFIX data file
      * @param name the name you want this file to be known to diagnostics
      */
-    FileInputSource(int fd, std::string name);
+    FileInputSource(int fd, std::string file_name);
     ~FileInputSource();
 
     ssize_t read(uint8_t* buf, uint16_t len);
@@ -59,7 +59,8 @@ namespace IPFIX {
     int fd;
     size_t message_offset;
     size_t current_offset;
-    std::string name;
+    std::string file_name;
+    mutable const char* name;
   };
 
 } // namespace IPFIX

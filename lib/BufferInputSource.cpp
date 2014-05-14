@@ -82,10 +82,10 @@ namespace IPFIX {
 
   const char* BufferInputSource::get_name() const {
     if (name == 0) {
-      static const char* prefix = "Buffer@0x";
       std::ostringstream sstr;
 
-      sstr << prefix << static_cast<const void*>(buf) << '[' << len << ']';
+      sstr << "Buffer(address=0x" << static_cast<const void*>(buf) 
+	   << ",length=" << len << ')';
       std::string s = sstr.str();
 
       name = new char[s.length() + 1];

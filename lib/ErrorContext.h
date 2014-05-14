@@ -61,16 +61,28 @@ namespace IPFIX {
       std::stringstream ss;                                           \
                                                                       \
       ss << message_stream;                                           \
-      return std::shared_ptr<::IPFIX::ErrorContext>(                  \
+      /* If you edit this macro, please preserve the space	      \
+       * between '<' and ':'.  Some people thought it would	      \
+       * be funny to invent an abomination called a trigraph.	      \
+       * Using trigraphs, '<:' is actually synonymous with	      \
+       * ']'.  Yeah, I know.					      \
+       */							      \
+      return std::shared_ptr< ::IPFIX::ErrorContext>(                 \
         new ErrorContext(ErrorContext::severity, Error(Error::error), \
                          system_errno, ss.str().c_str(), is, message, \
 			 size, off));				      \
     } while (0)
 
   /** Returns an ErrorContext signaling success. */
-#  define LIBFC_RETURN_OK()			\
-    do {					\
-      return std::shared_ptr<::IPFIX::ErrorContext>(0);	\
+#  define LIBFC_RETURN_OK()			 		\
+  do {								\
+      /* If you edit this macro, please preserve the space      \
+       * between '<' and ':'.  Some people thought it would	\
+       * be funny to invent an abomination called a trigraph.	\
+       * Using trigraphs, '<:' is actually synonymous with	\
+       * ']'.  Yeah, I know.					\
+       */							\
+      return std::shared_ptr< ::IPFIX::ErrorContext>(0);	\
     } while (0)
 
   /** An error context.
