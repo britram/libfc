@@ -34,13 +34,16 @@
 
 #  include <string>
 
-namespace IPFIX {
+namespace LIBFC {
 
   class Error {
   public:
     enum error_t {
       /** No error occurred. */
       no_error,
+
+      /** Input stream can't peek(). */
+      input_source_cant_peek,
 
       /** Calling parse() while another parse is in progress. */
       parse_while_parsing,
@@ -88,6 +91,6 @@ namespace IPFIX {
     error_t e;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_ERROR_H_

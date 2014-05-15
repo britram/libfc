@@ -36,7 +36,7 @@
 
 #include "ErrorContext.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   ErrorContext::ErrorContext(error_severity_t severity,
 			     Error e,
@@ -130,4 +130,4 @@ namespace IPFIX {
     return sstr.str();
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

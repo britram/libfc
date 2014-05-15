@@ -35,7 +35,7 @@
 #include "BasicOctetArray.h"
 #include "PlacementTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   class PlacementTemplate::PlacementInfo {
   public:
@@ -217,4 +217,4 @@ namespace IPFIX {
     return ies.end();
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

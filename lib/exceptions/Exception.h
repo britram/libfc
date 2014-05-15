@@ -31,7 +31,7 @@
 #  include <stdexcept>
 #  include <string>
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Exception base class.
    */
@@ -44,6 +44,6 @@ namespace IPFIX {
     std::string message;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif /* IPFIX_EXCEPTION_H */

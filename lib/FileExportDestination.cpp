@@ -35,7 +35,7 @@
 #include "Constants.h"
 #include "FileExportDestination.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   FileExportDestination::FileExportDestination(int _fd)
     : fd(_fd)
@@ -77,4 +77,4 @@ namespace IPFIX {
 
 
 
-} // namespace IPFIX
+} // namespace LIBFC

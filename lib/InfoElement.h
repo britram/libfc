@@ -45,7 +45,7 @@
 #include "IEType.h"
 #include "InfoModel.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
 /** An IPFIX Information Element.
  *

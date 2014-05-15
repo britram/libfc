@@ -29,7 +29,7 @@
 
 #include "BufferInputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   BufferInputSource::BufferInputSource(const uint8_t* buf, size_t len) 
     : buf(new uint8_t[len]), 
@@ -93,5 +93,9 @@ namespace IPFIX {
     }
     
     return name;
+  }
+
+  bool BufferInputSource::can_peek() const {
+    return false;
   }
 }

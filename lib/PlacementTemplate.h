@@ -44,7 +44,7 @@
 #  include "InfoElement.h"
 #  include "MatchTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Association between IEs and memory locations.
    *
@@ -150,7 +150,7 @@ namespace IPFIX {
    * @code
    * uint32_t sip;
    * uint32_t dip;
-   * IPFIX::InfoModel& model = IPFIX::InfoModel::instance();
+   * LIBFC::InfoModel& model = IPFIX::InfoModel::instance();
    *
    * PlacementTemplate* my_flow_template = new PlacementTemplate();
    * 
@@ -383,5 +383,5 @@ namespace IPFIX {
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 #endif // _LIBFC_PLACEMENTTEMPLATE_H_

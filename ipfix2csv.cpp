@@ -87,7 +87,7 @@
 #  include <log4cplus/loggingmacros.h>
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-using namespace IPFIX;
+using namespace LIBFC;
 
 static const char* spec_file_name = 0;
 static int verbose_flag = false;
@@ -392,7 +392,7 @@ print_csv_header(std::ostream& os) {
 class CSVCollector : public PlacementCollector {
 public:
   CSVCollector() {
-    InfoModel& model = IPFIX::InfoModel::instance();
+    InfoModel& model = LIBFC::InfoModel::instance();
 
     csv_template = new PlacementTemplate();
     n_ies = ie_names.size();

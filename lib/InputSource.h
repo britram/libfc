@@ -37,7 +37,7 @@
 
 #  include <unistd.h>
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Abstract base class for IPFIX input sources.
    *
@@ -97,8 +97,14 @@ namespace IPFIX {
      * @return a name for this input source.
      */
     virtual const char* get_name() const = 0;
+
+    /** Returns whether this input source supports peek().
+     *
+     * @return true if this input source supports peek(), false if not.
+     */
+    virtual bool can_peek() const = 0;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_INPUTSOURCE_H_

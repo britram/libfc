@@ -48,7 +48,7 @@
 #  include "MatchTemplate.h"
 #  include "PlacementTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   class PlacementCollector;
 
@@ -278,6 +278,6 @@ namespace IPFIX {
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
  };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_IPFIXCONTENTHANDLER_H_

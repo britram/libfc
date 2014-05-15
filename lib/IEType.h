@@ -47,7 +47,7 @@
 
 #include "Constants.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
 
 class IEType {

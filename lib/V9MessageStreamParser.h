@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,49 +25,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <unistd.h>
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
 
-#include "TCPInputSource.h"
+#ifndef _LIBFC_V9MESSAGESTREAMPARSER_H_
+#  define _LIBFC_V9MESSAGESTREAMPARSER_H_
+
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+#  include "MessageStreamParser.h"
 
 namespace LIBFC {
 
-  TCPInputSource::TCPInputSource(int fd)
-    : fd(fd),
-      message_offset(0),
-      current_offset(0) {
-  }
+  /** Parse a V9 message stream. */
+  class V9MessageStreamParser : public MessageStreamParser {
+  public:
+    V9MessageStreamParser();
+    std::shared_ptr<ErrorContext> parse(InputSource& is);
 
-  TCPInputSource::~TCPInputSource() {
-    (void) close(fd); // FIXME: Error handling?
-  }
+  private:
+    /** The current message. */
+    uint8_t message[kMaxMessageLen];
 
-  ssize_t TCPInputSource::read(uint8_t* buf, uint16_t len) {
-    ssize_t ret = ::read(fd, buf, len);
-    if (ret > 0)
-      current_offset += message_offset;
-    return ret;
-  }
+    /** The current offset into the message stream. Used for error
+     * reporting, and for error reporting @em{only}. */
+    size_t offset;
 
-  bool TCPInputSource::resync() {
-    // TODO
-    return true;
-  }
-
-  size_t TCPInputSource::get_message_offset() const {
-    return message_offset;
-  }
-
-  void TCPInputSource::advance_message_offset() {
-    message_offset += current_offset;
-    current_offset = 0;
-  }
-
-  const char* TCPInputSource::get_name() const {
-    return "<TCP socket>";
-  }
-
-  bool TCPInputSource::can_peek() const {
-    return false;
-  }
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+  };
 
 } // namespace LIBFC
+
+#endif // _LIBFC_V9MESSAGESTREAMPARSER_H_

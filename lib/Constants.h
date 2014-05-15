@@ -42,8 +42,7 @@
 #  include <cstring>
 #  include <cstdint>
 
-namespace IPFIX {
-    
+namespace LIBFC {
   /** IPFIX framing constant: message header version */
   static const size_t kIpfixVersion = 10;
 
@@ -91,9 +90,25 @@ namespace IPFIX {
   /** Set this bit in enterprise-specific IEs */
   static const uint16_t kIpfixEnterpriseBit = 0x8000;
 
+
+    
+  /** IPFIX framing constant: message header version */
+  static const size_t kV9Version = 9;
+
+  /** IPFIX framing constant: message header length */
+  static const size_t kV9MessageHeaderLen = 20;
+
+  /** IPFIX framing constant: set header length */
+  static const size_t kV9SetHeaderLen = 4;
+
+  /** IPFIX framing constant: offset into set header of set length field */
+  static const size_t kV9SetLenOffset = 2;
+
+
+
   /** Maximum length of @em{any} message that we want to parse. 
    *
-   * please make this the maximum of any kXXXMaxMessageLen-s defined
+   * Please make this the maximum of any kXXXMaxMessageLen-s defined
    * above.  I tried to make your life easier and say
    *
    * @code

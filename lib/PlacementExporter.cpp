@@ -67,7 +67,7 @@ public:
    * @param placement_template a placement template from which we
    *   encode a data record.
    */
-  EncodePlan(const IPFIX::PlacementTemplate* placementTemplate);
+  EncodePlan(const LIBFC::PlacementTemplate* placementTemplate);
 
   /** Executes this plan.
    *
@@ -176,11 +176,11 @@ static void report_error(const char* message, ...) {
     buf[buf_size - 1] = '\0';   // Shouldn't be necessary
   }
 
-  throw IPFIX::ExportError(buf);
+  throw LIBFC::ExportError(buf);
 }
 
 /* See DataSetDecoder::DecodePlan::DecodePlan. */
-EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
+EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
   : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("EncodePlan")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
@@ -237,8 +237,8 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
     d.address = location;
 
     switch ((*ie)->ietype()->number()) {
-    case IPFIX::IEType::kOctetArray: 
-      if (size == IPFIX::kIpfixVarlen) {
+    case LIBFC::IEType::kOctetArray: 
+      if (size == LIBFC::kIpfixVarlen) {
         d.type = Decision::encode_varlen;
       } else {
         d.type = Decision::encode_fixlen_octets;
@@ -246,7 +246,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       }
       break;
 
-    case IPFIX::IEType::kUnsigned8:
+    case LIBFC::IEType::kUnsigned8:
       assert(size <= sizeof(uint8_t));
 
       d.type = Decision::encode_fixlen;
@@ -254,7 +254,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kUnsigned16:
+    case LIBFC::IEType::kUnsigned16:
       assert(size <= sizeof(uint16_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -262,7 +262,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kUnsigned32:
+    case LIBFC::IEType::kUnsigned32:
       assert(size <= sizeof(uint32_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -270,7 +270,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kUnsigned64:
+    case LIBFC::IEType::kUnsigned64:
       assert(size <= sizeof(uint64_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -278,7 +278,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kSigned8:
+    case LIBFC::IEType::kSigned8:
       assert(size <= sizeof(int8_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -286,7 +286,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kSigned16:
+    case LIBFC::IEType::kSigned16:
       assert(size <= sizeof(int16_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -294,7 +294,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kSigned32:
+    case LIBFC::IEType::kSigned32:
       assert(size <= sizeof(int32_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -302,7 +302,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kSigned64:
+    case LIBFC::IEType::kSigned64:
       assert(size <= sizeof(int64_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -310,7 +310,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kFloat32:
+    case LIBFC::IEType::kFloat32:
       /* Can't use reduced-length encoding on float; see RFC 5101,
        * Chapter 6, Verse 2. */
       assert(size == sizeof(uint32_t));
@@ -320,7 +320,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = sizeof(uint32_t);
       break;
 
-    case IPFIX::IEType::kFloat64:
+    case LIBFC::IEType::kFloat64:
       assert(size == sizeof(uint32_t)
              || size == sizeof(uint64_t));
 
@@ -332,7 +332,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
         d.type = encode_fixlen_maybe_endianness;
       break;
 
-    case IPFIX::IEType::kBoolean:
+    case LIBFC::IEType::kBoolean:
       assert(size == sizeof(uint8_t));
 
       d.type = Decision::encode_boolean;
@@ -340,7 +340,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case IPFIX::IEType::kMacAddress:
+    case LIBFC::IEType::kMacAddress:
       /* RFC 5101 says to treat MAC addresses as 6-byte integers,
        * but Brian Trammell says that this is wrong and that the
        * RFC will be changed.  If for some reason this does not
@@ -353,8 +353,8 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case IPFIX::IEType::kString:
-      if (size == IPFIX::kIpfixVarlen) {
+    case LIBFC::IEType::kString:
+      if (size == LIBFC::kIpfixVarlen) {
         d.type = Decision::encode_varlen;
       } else {
         d.type = Decision::encode_fixlen_octets;
@@ -362,7 +362,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       }
       break;
 
-    case IPFIX::IEType::kDateTimeSeconds:
+    case LIBFC::IEType::kDateTimeSeconds:
       /* Must be encoded as a "32-bit integer"; see RFC 5101, Chapter
        * 6, Verse 1.7.
        *
@@ -379,7 +379,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case IPFIX::IEType::kDateTimeMilliseconds:
+    case LIBFC::IEType::kDateTimeMilliseconds:
       /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
        * 6, Verse 1.8.
        *
@@ -393,7 +393,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case IPFIX::IEType::kDateTimeMicroseconds:
+    case LIBFC::IEType::kDateTimeMicroseconds:
       /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
        * 6, Verse 1.9. See dateTimeMilliseconds above. */
       assert(size == sizeof(uint64_t));
@@ -403,7 +403,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case IPFIX::IEType::kDateTimeNanoseconds:
+    case LIBFC::IEType::kDateTimeNanoseconds:
       /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
        * 6, Verse 1.10.  See dateTimeMicroseconds above. */
       assert(size == sizeof(uint64_t));
@@ -413,7 +413,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
                 
-    case IPFIX::IEType::kIpv4Address:
+    case LIBFC::IEType::kIpv4Address:
       /* RFC 5101 says to treat all addresses as integers. This
        * would mean endianness conversion for all of these address
        * types, including MAC addresses and IPv6 addresses. But the
@@ -434,7 +434,7 @@ EncodePlan::EncodePlan(const IPFIX::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case IPFIX::IEType::kIpv6Address:
+    case LIBFC::IEType::kIpv6Address:
       /* See comment on kIpv4Address. */
       assert(size == 16*sizeof(uint8_t));
 
@@ -552,8 +552,8 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
 
     case Decision::encode_fixlen_octets:
       {
-        const IPFIX::BasicOctetArray* src
-          = static_cast<const IPFIX::BasicOctetArray*>(i->address);
+        const LIBFC::BasicOctetArray* src
+          = static_cast<const LIBFC::BasicOctetArray*>(i->address);
         const size_t bytes_to_copy
           = std::min(src->get_length(), i->encoded_length);
 
@@ -577,8 +577,8 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
        * below; this is a const member function which allows the
        * compiler to optimise away all but one call to it. ---neuhaus */
       {
-        const IPFIX::BasicOctetArray* src
-          = static_cast<const IPFIX::BasicOctetArray*>(i->address);
+        const LIBFC::BasicOctetArray* src
+          = static_cast<const LIBFC::BasicOctetArray*>(i->address);
         LOG4CPLUS_TRACE(logger,
                         "  encoding varlen length " << src->get_length());
         uint16_t memcpy_offset = src->get_length() < 255 ? 1 : 3;
@@ -630,7 +630,7 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
 }
 
 
-namespace IPFIX {
+namespace LIBFC {
 
   static const unsigned int message_header_index = 0;
   static const unsigned int template_set_index = 1;
@@ -936,4 +936,4 @@ namespace IPFIX {
     assert(n_message_octets <= kMaxMessageLen);
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

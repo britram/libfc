@@ -42,7 +42,7 @@
 #include "ContentHandler.h"
 #include "IPFIXMessageStreamParser.h"
 
-using namespace IPFIX;
+using namespace LIBFC;
 
 class PrintHandler : public ContentHandler {
   std::shared_ptr<ErrorContext> start_session() {

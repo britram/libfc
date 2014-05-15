@@ -28,7 +28,7 @@
 
 #include "WandioInputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   WandioInputSource::WandioInputSource(io_t* io, std::string name)
     : io(io),
@@ -67,4 +67,8 @@ namespace IPFIX {
     return name.c_str();
   }
 
-} // namespace IPFIX
+  bool WandioInputSource::can_peek() const {
+    return true;
+  }
+
+} // namespace LIBFC

@@ -48,7 +48,7 @@
 
 // FIXME enforce thread safety on changes to the infomodel
 
-namespace IPFIX {
+namespace LIBFC {
 
   class InfoElement;
 
@@ -239,6 +239,6 @@ namespace IPFIX {
     mutable std::recursive_mutex lock;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // idem hack

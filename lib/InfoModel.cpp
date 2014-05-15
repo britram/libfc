@@ -36,7 +36,7 @@
 
 #include "exceptions/IESpecError.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   InfoModel& InfoModel::instance() {
     static InfoModel instance_;
@@ -646,4 +646,4 @@ namespace IPFIX {
     add("reverseTcpSequenceNumber(29305/184)<unsigned32>[4]");
   }
 
-} /* namespace IPFIX */
+} /* namespace LIBFC */

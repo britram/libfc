@@ -44,7 +44,7 @@
 #  include "ErrorContext.h"
 #  include "InputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Parse a message stream.
    *
@@ -86,6 +86,6 @@ namespace IPFIX {
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif /* _LIBFC_MESSAGESTREAMPARSER_H_ */

@@ -39,7 +39,7 @@
 
 #  include "MessageStreamParser.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Parse an IPFIX message stream. */
   class IPFIXMessageStreamParser : public MessageStreamParser {
@@ -57,11 +57,11 @@ namespace IPFIX {
     size_t offset;
 
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_IPFIXMESSAGESTREAMPARSER_H_

@@ -47,7 +47,7 @@
 
 #include "exceptions/FormatError.h"
 
-using namespace IPFIX;
+using namespace LIBFC;
 
 BOOST_AUTO_TEST_SUITE(PlacementInterface)
 

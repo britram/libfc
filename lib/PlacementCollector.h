@@ -37,7 +37,7 @@
 #  include "IPFIXMessageStreamParser.h"
 #  include "PlacementTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Interface for collector with the placement interface. */
   class PlacementCollector {
@@ -79,6 +79,6 @@ namespace IPFIX {
     IPFIXMessageStreamParser ir;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_PLACEMENTCALLBACK_H_

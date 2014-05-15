@@ -29,7 +29,7 @@
 #include <sstream>
 
 #include "Constants.h"
-#include "IPFIXMessageStreamParser.h"
+#include "V9MessageStreamParser.h"
 
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/logger.h>
@@ -60,26 +60,31 @@
 
 namespace LIBFC {
 
-  IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
+  V9MessageStreamParser::V9MessageStreamParser() 
     : offset(0)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                ,
-    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("IPFIXMessageStreamParser")))
+    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
  {
   }
 
   std::shared_ptr<ErrorContext>
-  IPFIXMessageStreamParser::parse(InputSource& is) {
+  V9MessageStreamParser::parse(InputSource& is) {
     LOG4CPLUS_TRACE(logger, "ENTER parse()");
 
     /* Use assert() instead of error handler since this must (and
      * will) be caught in testing. */
     assert(content_handler != 0);
 
+    /* Why do we need this? Read the long comment below and find out. */
+    if (!is.can_peek())
+      LIBFC_RETURN_ERROR(fatal, input_source_cant_peek, 
+			 "V9 messages can only be parsed with "
+			 "peekable input streams", 0, &is, 0, 0, 0);
+
     /* I would normally declare the message_size further down, but
-     * it's needed for the expansion of the
-     * LIBFC_RETURN_CALLBACK_ERROR macro. */
+     * it's needed for the expansion of LIBFC_RETURN_CALLBACK_ERROR. */
     uint16_t message_size = 0;
 
     LIBFC_RETURN_CALLBACK_ERROR(start_session());
@@ -103,12 +108,24 @@ namespace LIBFC {
 	LIBFC_RETURN_ERROR(recoverable, short_header, 
 			   "Wanted " 
 			   << kIpfixMessageHeaderLen
-			   << " bytes for IPFIX message header, got only "
+			   << " bytes for V9 message header, got only "
 			   << nbytes,
 			   0, &is, message, nbytes, 0);
       }
       assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
 
+      /* Via Brian and demux_statdat.c: the v9 format does not have
+       * the message size (in bytes) in the header, but rather the
+       * number of records.  Since records are in sets and since we
+       * can only see the set headers but not count the records
+       * without actually going through them one by one, this record
+       * count is totally useless.
+       *
+       * So, in order JUST to get the message size, we need to iterate
+       * over the message, set by set, stopping only when we see the
+       * next message header, or EOF.  You can ONLY do this when you
+       * have an input stream that can peek.  Hence the test above.
+       */
       message_size = decode_uint16(cur +  2);
       LIBFC_RETURN_CALLBACK_ERROR(
         start_message(decode_uint16(cur +  0),

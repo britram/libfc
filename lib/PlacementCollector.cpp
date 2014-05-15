@@ -26,7 +26,7 @@
 
 #include "PlacementCollector.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   PlacementCollector::PlacementCollector() {
     ir.set_content_handler(&d);
@@ -41,4 +41,4 @@ namespace IPFIX {
     d.register_placement_template(placement, this);
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

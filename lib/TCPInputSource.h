@@ -34,7 +34,7 @@
 
 #  include "InputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   class TCPInputSource : public InputSource {
   public:
@@ -50,6 +50,7 @@ namespace IPFIX {
     size_t get_message_offset() const;
     void advance_message_offset();
     const char* get_name() const;
+    bool can_peek() const;
 
   private:
     int fd;
@@ -57,6 +58,6 @@ namespace IPFIX {
     size_t current_offset;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_TCPINPUTSOURCE_H_

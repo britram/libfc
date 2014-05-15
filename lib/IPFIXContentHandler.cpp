@@ -47,7 +47,7 @@
 #include "IPFIXContentHandler.h"
 #include "PlacementCollector.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
 #define CH_REPORT_ERROR(error, message_stream)				   \
   do {									   \
@@ -520,4 +520,4 @@ namespace IPFIX {
     return min;
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

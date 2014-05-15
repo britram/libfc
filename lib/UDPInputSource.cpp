@@ -29,7 +29,7 @@
 
 #include "UDPInputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   UDPInputSource::UDPInputSource(const struct sockaddr* _sa, size_t _sa_len,
                                  int _fd) 
@@ -57,5 +57,9 @@ namespace IPFIX {
     return "<UDP socket>";
   }
 
+  bool UDPInputSource::can_peek() const {
+    return false;
+  }
 
-} // namespace IPFIX
+
+} // namespace LIBFC
