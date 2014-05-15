@@ -67,7 +67,7 @@ add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 add_executable(ipfix2csv ipfix2csv.cpp)
 target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES}
                                 ${Wandio_LIBRARIES}
-                                ${Log4CPlus_LIBRARIES} pcap)
+                                ${Log4CPlus_LIBRARIES})
 
 add_executable(cbinding cbinding.c)
 target_link_libraries(cbinding fc)
@@ -85,7 +85,7 @@ else ($ENV{CLANG})
   add_executable(fctest ${UT_OBJ})
   target_link_libraries(fctest fc ${Boost_LIBRARIES}
                                   ${Wandio_LIBRARIES}
-                                  ${Log4CPlus_LIBRARIES} pcap)
+                                  ${Log4CPlus_LIBRARIES})
 endif()
 
 if ($ENV{CLANG})
@@ -103,5 +103,5 @@ if (CMAKE_BUILD_TYPE STREQUAL "Profile")
   add_executable(fcprof fcprof.cpp test/TestCommon.cpp)
   target_link_libraries(fcprof fc ${Boost_LIBRARIES}
                                 ${Wandio_LIBRARIES} 
-                               ${Log4CPlus_LIBRARIES} pcap)
+                               ${Log4CPlus_LIBRARIES})
 endif()  
