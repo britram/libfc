@@ -30,24 +30,28 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_FILEINPUTSOURCE_H_
-#  define _LIBFC_FILEINPUTSOURCE_H_
+#ifndef _LIBFC_WANDIOINPUTSOURCE_H_
+#  define _LIBFC_WANDIOINPUTSOURCE_H_
 
 #  include <string>
+
+extern "C" {
+#  include <wandio.h>
+}
 
 #  include "InputSource.h"
 
 namespace IPFIX {
 
-  class FileInputSource : public InputSource {
+  class WandioInputSource : public InputSource {
   public:
     /** Creates a TCP input source from a file descriptor.
      *
      * @param fd the file descriptor belonging to an IPFIX data file
      * @param name the name you want this file to be known to diagnostics
      */
-    FileInputSource(int fd, std::string file_name);
-    ~FileInputSource();
+    WandioInputSource(io_t* io, std::string name);
+    ~WandioInputSource();
 
     ssize_t read(uint8_t* buf, uint16_t len);
     bool resync();
@@ -56,13 +60,12 @@ namespace IPFIX {
     const char* get_name() const;
 
   private:
-    int fd;
+    io_t* io;
     size_t message_offset;
     size_t current_offset;
-    std::string file_name;
-    mutable const char* name;
+    std::string name;
   };
 
 } // namespace IPFIX
 
-#endif // _LIBFC_FILEINPUTSOURCE_H_
+#endif // _LIBFC_WANDIOINPUTSOURCE_H_
