@@ -11,5 +11,25 @@
 *.la
 *.a
 
-# Cmake build directories
+# Cmake/Xcode build directories
 build/
+
+# OS X temp files
+.DS_Store
+.Trashes
+*.swp
+*.lock
+
+# Xcode temp files
+*~.nib
+DerivedData/
+
+# Xcode user files
+*.pbxuser
+*.perspective
+*.perspectivev3
+*.mode1v3
+*.mode2v3
+xcuserdata
+
+
