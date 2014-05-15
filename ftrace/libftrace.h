@@ -36,6 +36,17 @@
 #ifndef _LIBFTRACE_H_ /* idem */
 #define _LIBFTRACE_H_ /* hack */
 
+#include <stdint.h>
+#include <stdio.h>
+
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include "libfc.h"
+
 /** Opaque structure representing a libftrace source */
 struct libftrace_st;
 typedef struct libftrace_st libftrace_t;
@@ -103,12 +114,12 @@ void ftrace_destroy(libftrace_t *ft);
 /** Create a libftrace uniflow structure for reading uniflows */
 libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft);
 
-/** Stop reading from a uniflow context *//
+/** Stop reading from a uniflow context */
 void ftrace_destroy_uniflow(libftrace_uniflow_t *uf);
 
 /** Read the next uniflow from a libftrace reader. 
     Skips records in the stream which do not match uniflows. */
-int ftrace_next_uniflow(libftrace_t *ft, libftrace_uniflow_t *uf);
+int ftrace_next_uniflow(libftrace_uniflow_t *uf);
 
 
 #endif /* idem hack */

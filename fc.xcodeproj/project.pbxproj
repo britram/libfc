@@ -65,7 +65,13 @@
 		D354E81B1923550800C45B70 /* UDPInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7E31923550800C45B70 /* UDPInputSource.h */; };
 		D354E81E19235BD300C45B70 /* libfc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E81C19235BD300C45B70 /* libfc.cpp */; };
 		D354E81F19235BD300C45B70 /* libfc.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E81D19235BD300C45B70 /* libfc.h */; };
-		D354E82119235D2000C45B70 /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
+		F5CDC4C419250EE800CBE87D /* WandioInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */; };
+		F5CDC4C519250EE800CBE87D /* WandioInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CDC4C319250EE800CBE87D /* WandioInputSource.h */; };
+		F5CDC4C619250FC500CBE87D /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
+		F5CDC4D31925115E00CBE87D /* libftrace.c in Sources */ = {isa = PBXBuildFile; fileRef = F5CDC4D01925115E00CBE87D /* libftrace.c */; };
+		F5CDC4D41925115E00CBE87D /* libftrace.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CDC4D11925115E00CBE87D /* libftrace.h */; };
+		F5CDC4D61925122200CBE87D /* libfc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D37BC242192352A8009555FF /* libfc.dylib */; };
+		F5CDC4D71925122B00CBE87D /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -129,6 +135,11 @@
 		D354E81D19235BD300C45B70 /* libfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libfc.h; path = lib/libfc.h; sourceTree = "<group>"; };
 		D354E82019235D2000C45B70 /* libwandio.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwandio.1.dylib; path = ../../opt/lib/libwandio.1.dylib; sourceTree = "<group>"; };
 		D37BC242192352A8009555FF /* libfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WandioInputSource.cpp; path = lib/WandioInputSource.cpp; sourceTree = "<group>"; };
+		F5CDC4C319250EE800CBE87D /* WandioInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WandioInputSource.h; path = lib/WandioInputSource.h; sourceTree = "<group>"; };
+		F5CDC4CB192510D800CBE87D /* libftrace.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libftrace.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5CDC4D01925115E00CBE87D /* libftrace.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = libftrace.c; path = ftrace/libftrace.c; sourceTree = "<group>"; };
+		F5CDC4D11925115E00CBE87D /* libftrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libftrace.h; path = ftrace/libftrace.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,7 +147,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D354E82119235D2000C45B70 /* libwandio.1.dylib in Frameworks */,
+				F5CDC4C619250FC500CBE87D /* libwandio.1.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F5CDC4C8192510D800CBE87D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F5CDC4D61925122200CBE87D /* libfc.dylib in Frameworks */,
+				F5CDC4D71925122B00CBE87D /* libwandio.1.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,6 +166,8 @@
 		D354E7AA192354D200C45B70 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */,
+				F5CDC4C319250EE800CBE87D /* WandioInputSource.h */,
 				D354E81C19235BD300C45B70 /* libfc.cpp */,
 				D354E81D19235BD300C45B70 /* libfc.h */,
 				D354E7AB1923550800C45B70 /* BasicOctetArray.cpp */,
@@ -222,6 +244,7 @@
 			children = (
 				D354E82019235D2000C45B70 /* libwandio.1.dylib */,
 				D354E7AA192354D200C45B70 /* lib */,
+				F5CDC4D51925116400CBE87D /* ftrace */,
 				D37BC243192352A8009555FF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -230,8 +253,18 @@
 			isa = PBXGroup;
 			children = (
 				D37BC242192352A8009555FF /* libfc.dylib */,
+				F5CDC4CB192510D800CBE87D /* libftrace.dylib */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F5CDC4D51925116400CBE87D /* ftrace */ = {
+			isa = PBXGroup;
+			children = (
+				F5CDC4D01925115E00CBE87D /* libftrace.c */,
+				F5CDC4D11925115E00CBE87D /* libftrace.h */,
+			);
+			name = ftrace;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -253,6 +286,7 @@
 				D354E8021923550800C45B70 /* IEType.h in Headers */,
 				D354E8071923550800C45B70 /* InputSource.h in Headers */,
 				D354E7F11923550800C45B70 /* ErrorContext.h in Headers */,
+				F5CDC4C519250EE800CBE87D /* WandioInputSource.h in Headers */,
 				D354E7F31923550800C45B70 /* Exception.h in Headers */,
 				D354E7F71923550800C45B70 /* FormatError.h in Headers */,
 				D354E7F51923550800C45B70 /* ExportError.h in Headers */,
@@ -276,6 +310,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F5CDC4C9192510D800CBE87D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F5CDC4D41925115E00CBE87D /* libftrace.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -294,6 +336,23 @@
 			name = fc;
 			productName = libfc;
 			productReference = D37BC242192352A8009555FF /* libfc.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		F5CDC4CA192510D800CBE87D /* ftrace */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F5CDC4CC192510D800CBE87D /* Build configuration list for PBXNativeTarget "ftrace" */;
+			buildPhases = (
+				F5CDC4C7192510D800CBE87D /* Sources */,
+				F5CDC4C8192510D800CBE87D /* Frameworks */,
+				F5CDC4C9192510D800CBE87D /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ftrace;
+			productName = ftrace;
+			productReference = F5CDC4CB192510D800CBE87D /* libftrace.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -318,6 +377,7 @@
 			projectRoot = "";
 			targets = (
 				D37BC241192352A8009555FF /* fc */,
+				F5CDC4CA192510D800CBE87D /* ftrace */,
 			);
 		};
 /* End PBXProject section */
@@ -327,6 +387,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5CDC4C419250EE800CBE87D /* WandioInputSource.cpp in Sources */,
 				D354E8091923550800C45B70 /* IPFIXContentHandler.cpp in Sources */,
 				D354E7E41923550800C45B70 /* BasicOctetArray.cpp in Sources */,
 				D354E8131923550800C45B70 /* PlacementExporter.cpp in Sources */,
@@ -353,6 +414,14 @@
 				D354E8151923550800C45B70 /* PlacementTemplate.cpp in Sources */,
 				D354E7F01923550800C45B70 /* ErrorContext.cpp in Sources */,
 				D354E7E61923550800C45B70 /* BufferInputSource.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F5CDC4C7192510D800CBE87D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F5CDC4D31925115E00CBE87D /* libftrace.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -441,6 +510,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/brian/opt/lib,
+					/Users/briant/opt/lib,
 				);
 				PRODUCT_NAME = fc;
 			};
@@ -458,8 +528,47 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/brian/opt/lib,
+					/Users/briant/opt/lib,
 				);
 				PRODUCT_NAME = fc;
+			};
+			name = Release;
+		};
+		F5CDC4CD192510D800CBE87D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(HOME)/opt/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/briant/opt/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F5CDC4CE192510D800CBE87D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(HOME)/opt/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/briant/opt/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -483,6 +592,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		F5CDC4CC192510D800CBE87D /* Build configuration list for PBXNativeTarget "ftrace" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F5CDC4CD192510D800CBE87D /* Debug */,
+				F5CDC4CE192510D800CBE87D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};

@@ -145,10 +145,10 @@ extern int ipfix_collect_from_file(int fd, const char* name,
   return ret;
 }
 
-extern int ipfix_collect_from_wandio(io_t *wio, struct ipfix_template_set_t* t) {
+extern int ipfix_collect_from_wandio(io_t *wio, const char *name, struct ipfix_template_set_t* t) {
   int ret = 1;
 
-  WandioInputSource is(wio);
+  WandioInputSource is(wio, name);
   try {
     t->binding->collect(is);
   } catch (FormatError e) {
