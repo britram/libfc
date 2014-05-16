@@ -47,6 +47,17 @@ namespace LIBFC {
   }
 
   ssize_t BufferInputSource::read(uint8_t* result_buf, uint16_t result_len) {
+    ssize_t ret = peek(result_buf, result_len);
+
+    if (ret >= 0) {
+      off += ret;
+      current_offset += ret;
+    }
+
+    return ret;
+  }
+
+  ssize_t BufferInputSource::peek(uint8_t* result_buf, uint16_t result_len) {
     assert(off <= len);
 
     size_t bytes_to_copy = off + result_len > len ? len - off : result_len;
@@ -60,8 +71,6 @@ namespace LIBFC {
     assert(bytes_to_copy <= UINT16_MAX);
 
     memcpy(result_buf, buf + off, bytes_to_copy);
-    off += bytes_to_copy;
-    current_offset += bytes_to_copy;
 
     return static_cast<ssize_t>(bytes_to_copy);
   }
@@ -96,6 +105,7 @@ namespace LIBFC {
   }
 
   bool BufferInputSource::can_peek() const {
-    return false;
+    return true;
   }
-}
+
+} // namespace LIBFC

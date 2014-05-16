@@ -40,24 +40,6 @@
 
 #include "decode_util.h"
 
-/** Augments the error context from a callback and returns it.
- *
- * This macro calls a callback, examines the result, and, if the
- * result is an error, augments the error with the current message and
- * adjusts the offset.
- */
-#define LIBFC_RETURN_CALLBACK_ERROR(call) \
-    do { \
-      /* Make sure call is evaluated only once */			\
-      std::shared_ptr<ErrorContext> err = content_handler->call;	\
-      if (err != 0) {							\
-	err->set_input_source(&is);					\
-        err->set_message(message, message_size);			\
-        err->set_offset(err->get_offset() + offset);			\
-        return err;							\
-      }									\
-    } while (0)
-
 namespace LIBFC {
 
   V9MessageStreamParser::V9MessageStreamParser() 
@@ -89,6 +71,7 @@ namespace LIBFC {
 
     LIBFC_RETURN_CALLBACK_ERROR(start_session());
 
+    /* Take care when changing message from an array to a pointer. */
     memset(message, '\0', sizeof(message));
 
     /* Member `offset' initialised here as well as in the constructor
@@ -98,21 +81,21 @@ namespace LIBFC {
     /** The number of bytes available after the latest read operation,
      * or -1 if a read error occurred. */
     errno = 0;
-    ssize_t nbytes = is.read(message, kIpfixMessageHeaderLen);
+    ssize_t nbytes = is.read(message, kV9MessageHeaderLen);
 
     while (nbytes > 0) {
       uint8_t* cur = message;
 
       /* Decode message header */
-      if (static_cast<size_t>(nbytes) < kIpfixMessageHeaderLen) {
+      if (static_cast<size_t>(nbytes) < kV9MessageHeaderLen) {
 	LIBFC_RETURN_ERROR(recoverable, short_header, 
 			   "Wanted " 
-			   << kIpfixMessageHeaderLen
+			   << kV9MessageHeaderLen
 			   << " bytes for V9 message header, got only "
 			   << nbytes,
 			   0, &is, message, nbytes, 0);
       }
-      assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
+      assert(static_cast<size_t>(nbytes) == kV9MessageHeaderLen);
 
       /* Via Brian and demux_statdat.c: the v9 format does not have
        * the message size (in bytes) in the header, but rather the
@@ -123,21 +106,86 @@ namespace LIBFC {
        *
        * So, in order JUST to get the message size, we need to iterate
        * over the message, set by set, stopping only when we see the
-       * next message header, or EOF.  You can ONLY do this when you
-       * have an input stream that can peek.  Hence the test above.
+       * next message header, or EOF.  Don't you like v9 already?
        */
-      message_size = decode_uint16(cur +  2);
+      message_size = 0;
+      
+      /* Take care when changing message from an array to a pointer. */
+      assert(cur + kV9SetHeaderLen <= message + sizeof(message));
+      nbytes = is.peek(cur, kV9SetHeaderLen);
+
+      unsigned int set_no = 1;
+
+      while (nbytes == kV9SetHeaderLen) {
+	LOG4CPLUS_TRACE(logger, "Set number " << set_no);
+
+	uint16_t id = decode_uint16(cur + 0);
+	if (id == kV9Version || id == kV5Version)
+	  break;
+
+	/* Please leave this assert in. It *ought* to be always true,
+	 * and in thie case, the compiler should be able to optimize
+	 * it away. */
+	assert(kV9SetLenOffset + sizeof(uint16_t) <= kV9SetHeaderLen);
+	uint16_t set_length = decode_uint16(cur + kV9SetLenOffset);
+
+	LOG4CPLUS_TRACE(logger, "Is a set of size " << set_length);
+
+	/* Take care when changing message from an array to a pointer. */
+	if (cur + set_length > message + sizeof(message))
+	  LIBFC_RETURN_ERROR(recoverable, long_set, 
+			     "While scanning V9 message, set size " 
+			     << set_length << " exceeds message space",
+			     0, &is, message, cur - message,
+			     message_size);
+	  
+	/* Take care when changing message from an array to a pointer. */
+	assert(cur + set_length <= message + sizeof(message));
+	ssize_t read_bytes = is.read(cur, set_length);
+	
+	if (read_bytes != set_length)
+	  LIBFC_RETURN_ERROR(recoverable, short_body, 
+			     "While scanning V9 message, wanted " 
+			     << set_length << " bytes for set, got " 
+			     << read_bytes,
+			     errno, &is, message, cur - message,
+			     message_size);
+
+	assert(read_bytes == set_length);
+	cur += set_length;
+	message_size += set_length;
+
+	/* Take care when changing message from an array to a pointer. */
+	assert(cur + kV9SetHeaderLen <= message + sizeof(message));
+	nbytes = is.peek(cur, kV9SetHeaderLen);
+
+	set_no++;
+      }
+
+      /* Basetime computation as per email from Brian:
+       *
+       * (2) The header in general is different, crucially containing
+       * information from which a basetime (router start time) can be
+       * derived, since the timestamps in the message are all relative
+       * to the basetime. The uncorrected basetime in epoch
+       * milliseconds is given by:
+       *
+       *   uint64_t basetime_ms = (uint64_t)ntohl(hdr->export_s) * 1000 
+       *     - ntohl(hdr->sysuptime_ms);
+       */
       LIBFC_RETURN_CALLBACK_ERROR(
-        start_message(decode_uint16(cur +  0),
+        start_message(decode_uint16(message +  0),
 		      message_size,
-		      decode_uint32(cur +  4),
-		      decode_uint32(cur +  8),
-		      decode_uint32(cur + 12),
-		      0));
+		      decode_uint32(message +  8),
+		      decode_uint32(message + 12),
+		      decode_uint32(message + 16),
+		      static_cast<uint64_t>(decode_uint32(message + 8))*1000 
+		      - static_cast<uint64_t>(decode_uint32(message + 4))));
       
       const uint8_t* message_end = message + message_size;
 
-      cur += nbytes;
+      /* Start over again, this time decoding sets. */
+      cur = message + kV9MessageHeaderLen;
       assert (cur <= message_end);
 
       offset += kIpfixMessageHeaderLen;

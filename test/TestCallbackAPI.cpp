@@ -41,138 +41,9 @@
 #include "Constants.h"
 #include "ContentHandler.h"
 #include "IPFIXMessageStreamParser.h"
+#include "PrintContentHandler.h"
 
 using namespace LIBFC;
-
-class PrintHandler : public ContentHandler {
-  std::shared_ptr<ErrorContext> start_session() {
-    std::cerr << "Session starts" << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> end_session() {
-    std::cerr << "Session ends" << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> start_message(uint16_t version,
-                     uint16_t length,
-                     uint32_t export_time,
-                     uint32_t sequence_number,
-                     uint32_t observation_domain,
-		     uint64_t base_time) {
-    time_t e = export_time;
-    char* e_string = asctime(localtime(&e));
-
-    assert(e_string != 0 && strlen(e_string) > 0);
-
-    // Remove terminating \n. Who comes up with these crap APIS?
-    e_string[strlen(e_string) - 1] = '\0';
-
-    std::cerr << "  Message: version=" << std::hex << std::showbase << version
-              << ", length=" << std::dec << std::noshowbase << length
-              << ", extime=" << e_string
-              << ", seq=" << sequence_number
-              << ", domain=" << observation_domain
-	      << ", basetime=" << base_time
-              << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> end_message() {
-    std::cerr << "  Message ends" << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> start_template_set(uint16_t set_id,
-			  uint16_t set_length,
-			  const uint8_t* buf) {
-    std::cerr << "    Template set: id=" << set_id
-              << ", length=" << set_length
-              << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> end_template_set() {
-    std::cerr << "    Template set ends" << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> start_template_record(uint16_t template_id,
-                             uint16_t field_count) {
-    std::cerr << "      Template record: id=" << template_id
-              << ", fields=" << field_count
-              << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> end_template_record() {
-    std::cerr << "      Template record ends" << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> start_options_template_set(uint16_t set_id,
-                                 uint16_t set_length,
-				 const uint8_t* buf) {
-    std::cerr << "    Option template set: id=" << set_id
-              << ", length=" << set_length
-              << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> end_options_template_set() {
-    std::cerr << "    Option template set ends" << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> start_options_template_record(uint16_t template_id,
-                                    uint16_t field_count,
-                                    uint16_t scope_field_count) {
-    std::cerr << "      Option template record: id=" << template_id
-              << ", fields=" << field_count
-              << ", scope-fields=" << scope_field_count
-              << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> end_options_template_record() {
-    std::cerr << "      Option template record ends" << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> field_specifier(bool enterprise,
-                       uint16_t ie_id,
-                       uint16_t ie_length,
-                       uint32_t enterprise_number) {
-    std::cerr << "        Field specifier: id=" << ie_id
-              << ", length=";
-    if (ie_length == kIpfixVarlen) 
-      std::cerr << "Varlen";
-    else
-      std::cerr << ie_length;
-
-    if (enterprise)
-      std::cerr << ", enterprise=" << enterprise_number;
-    else 
-      std::cerr << ", IETF IE";
-    std::cerr << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-  std::shared_ptr<ErrorContext> start_data_set(uint16_t id, uint16_t length, const uint8_t* buf) {
-    std::cerr << "    Data set: template-id=" << id
-              << ", length=" << length
-              << std::endl;
-    LIBFC_RETURN_OK();
-  }
-  
-  std::shared_ptr<ErrorContext> end_data_set() {
-    std::cerr << "    Data set ends"
-              << std::endl;
-    LIBFC_RETURN_OK();
-  }
-
-};
 
 BOOST_AUTO_TEST_SUITE(CallbackInterface)
 
@@ -182,7 +53,7 @@ BOOST_AUTO_TEST_CASE(BasicCallback) {
   static const unsigned char msg02[] = {
     0x00,0x0a,0x00,0x56,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x18,0x03,0xe9,0x00,0x04,0x01,0x36,0x00,0x04,0x00,0x52,0xff,0xff,0x01,0x37,0x00,0x08,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x2e,0x10,0x20,0x30,0x40,0x04,0x65,0x74,0x68,0x30,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65 };
 
-  PrintHandler ph;
+  PrintContentHandler ph{kIpfixVersion};
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&ph);
@@ -201,7 +72,7 @@ BOOST_AUTO_TEST_CASE(BasicCallback) {
 BOOST_AUTO_TEST_CASE(FileDataSet) {
   const char* filename = "dahlem-01.ipfix";
 
-  PrintHandler ph;
+  PrintContentHandler ph{kIpfixVersion};
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&ph);
