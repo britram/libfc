@@ -108,19 +108,23 @@ namespace LIBFC {
        * over the message, set by set, stopping only when we see the
        * next message header, or EOF.  Don't you like v9 already?
        */
-      message_size = 0;
+      message_size = kV9MessageHeaderLen;
       
       /* Take care when changing message from an array to a pointer. */
       assert(cur + kV9SetHeaderLen <= message + sizeof(message));
+      cur = message + message_size;
+
+      errno = 0;
       nbytes = is.peek(cur, kV9SetHeaderLen);
 
       unsigned int set_no = 1;
+      uint16_t current_set_id = 0;
 
       while (nbytes == kV9SetHeaderLen) {
 	LOG4CPLUS_TRACE(logger, "Set number " << set_no);
 
-	uint16_t id = decode_uint16(cur + 0);
-	if (id == kV9Version || id == kV5Version)
+	current_set_id = decode_uint16(cur + 0);
+	if (current_set_id == kV9Version || current_set_id == kV5Version)
 	  break;
 
 	/* Please leave this assert in. It *ought* to be always true,
@@ -129,7 +133,8 @@ namespace LIBFC {
 	assert(kV9SetLenOffset + sizeof(uint16_t) <= kV9SetHeaderLen);
 	uint16_t set_length = decode_uint16(cur + kV9SetLenOffset);
 
-	LOG4CPLUS_TRACE(logger, "Is a set of size " << set_length);
+	LOG4CPLUS_TRACE(logger, "Is a set with ID " << current_set_id 
+			<< ", of size " << set_length);
 
 	/* Take care when changing message from an array to a pointer. */
 	if (cur + set_length > message + sizeof(message))
@@ -141,6 +146,7 @@ namespace LIBFC {
 	  
 	/* Take care when changing message from an array to a pointer. */
 	assert(cur + set_length <= message + sizeof(message));
+	errno = 0;
 	ssize_t read_bytes = is.read(cur, set_length);
 	
 	if (read_bytes != set_length)
@@ -152,15 +158,23 @@ namespace LIBFC {
 			     message_size);
 
 	assert(read_bytes == set_length);
-	cur += set_length;
 	message_size += set_length;
+	cur = message + message_size;
 
 	/* Take care when changing message from an array to a pointer. */
 	assert(cur + kV9SetHeaderLen <= message + sizeof(message));
+	errno = 0;
 	nbytes = is.peek(cur, kV9SetHeaderLen);
 
 	set_no++;
       }
+
+      if (nbytes < 0) 
+	LIBFC_RETURN_ERROR(fatal, system_error, "read error", errno,
+			   &is, message, 0, 0);
+
+      if (current_set_id == kV9Version || current_set_id == kV5Version)
+	LOG4CPLUS_TRACE(logger, "Message ends at set no. " << (set_no - 1));
 
       /* Basetime computation as per email from Brian:
        *
@@ -181,117 +195,78 @@ namespace LIBFC {
 		      decode_uint32(message + 16),
 		      static_cast<uint64_t>(decode_uint32(message + 8))*1000 
 		      - static_cast<uint64_t>(decode_uint32(message + 4))));
-      
+
+      /* This assert should be true since message_size is a uint16_t. */
+      assert(message_size <= sizeof(message));
       const uint8_t* message_end = message + message_size;
 
-      /* Start over again, this time decoding sets. */
+      /* Now the message is read. Start over again, this time decoding sets. */
+      offset = kV9MessageHeaderLen;
       cur = message + kV9MessageHeaderLen;
       assert (cur <= message_end);
-
-      offset += kIpfixMessageHeaderLen;
-
-      errno = 0;
-      nbytes = is.read(cur, message_size - kIpfixMessageHeaderLen);
-      if (nbytes < 0) {
-        LIBFC_RETURN_ERROR(fatal, system_error, 
-			   "Wanted to read " 
-			   << message_size - kIpfixMessageHeaderLen
-			   << " bytes, got a read error", errno, &is,
-			   message, message_size, offset);
-      } else if (static_cast<size_t>(nbytes) 
-                 != message_size - kIpfixMessageHeaderLen) {
-        LIBFC_RETURN_ERROR(recoverable, short_body, 
-			   "Wanted " << message_size - kIpfixMessageHeaderLen
-			   << " bytes for message body, got " << nbytes,
-			   0, &is, message, message_size, offset);
-      }
       
+      LOG4CPLUS_TRACE(logger, "Start decoding sets");
+
       /* Decode sets.
        *
-       * Note to prospective debuggers of the code below: I am aware
-       * that the various comparisons of pointers to message
-       * boundaries with "<=" instead of "<" look wrong.  After all,
-       * we all write "while (p < end) p++;". But, gentle reader,
-       * please be assured that these comparisons have all been
-       * meticulously checked and found to be correct.  There are two
-       * reasons for the use of "<=" over "<":
-       *
-       * (1) In one case, I check whether there are still N bytes left
-       * in the buffer. In this case, if "end" points to just beyond
-       * the buffer boundary, "cur + N <= end" is the correct
-       * comparison. (Think about it.)
-       *
-       * (2) In the other case, I check that "cur" hasn't been
-       * incremented to the point where it's already beyond the end of
-       * the buffer, but where it's OK if it's just one byte past
-       * (because that will be checked on the next iteration
-       * anyway). In this case too, "cur <= end" is the correct test.
-       *
-       * -- Stephan Neuhaus
+       * If you don't like the pointer comparisons using <=, please
+       * read the corresponding comment in IPFIXMessageStreamParser.cpp.
        */
-      while (cur + kIpfixSetHeaderLen <= message_end) {
+      set_no = 1;
+      while (cur + kV9SetHeaderLen <= message_end) {
         /* Decode set header. */
         uint16_t set_id = decode_uint16(cur + 0);
         uint16_t set_length = decode_uint16(cur + 2);
         const uint8_t* set_end = cur + set_length;
         
-        if (set_end > message_end) {
-          std::stringstream sstr;
-          sstr << "set_len=" << set_length 
-               << ",set_end=" << static_cast<const void*>(set_end) 
-               << ",message_len=" << message_size
-               << ",message_end=" << static_cast<const void*>(message_end);
+	LOG4CPLUS_TRACE(logger, "Decoding set no. " << set_no);
+
+        if (set_end > message_end)
 	  LIBFC_RETURN_ERROR(recoverable, long_set, 
 			     "Long set: set_len=" << set_length 
 			     << ",set_end=" << static_cast<const void*>(set_end) 
 			     << ",message_len=" << message_size
 			     << ",message_end=" << static_cast<const void*>(message_end),
 			     0, &is, message, message_size, offset);
-        }
 
-        cur += kIpfixSetHeaderLen;
+        cur += kV9SetHeaderLen;
 
-        if (set_id == kIpfixTemplateSetID) {
+        if (set_id == kV9TemplateSetID) {
 	  LIBFC_RETURN_CALLBACK_ERROR(
 	    start_template_set(
-              set_id, set_length - kIpfixSetHeaderLen, cur));
-	  cur += set_length - kIpfixSetHeaderLen;
+              set_id, set_length - kV9SetHeaderLen, cur));
+	  cur += set_length - kV9SetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(end_template_set());
-        } else if (set_id == kIpfixOptionTemplateSetID) {
+        } else if (set_id == kV9OptionTemplateSetID) {
 	  LIBFC_RETURN_CALLBACK_ERROR(
             start_options_template_set(
-              set_id, set_length - kIpfixSetHeaderLen, cur));
-          cur += set_length - kIpfixSetHeaderLen;
+              set_id, set_length - kV9SetHeaderLen, cur));
+          cur += set_length - kV9SetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(
             end_options_template_set());
         } else {
           LIBFC_RETURN_CALLBACK_ERROR(
             start_data_set(
-              set_id, set_length - kIpfixSetHeaderLen, cur));
-          cur += set_length - kIpfixSetHeaderLen;
+              set_id, set_length - kV9SetHeaderLen, cur));
+          cur += set_length - kV9SetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(end_data_set());
         }
 
         assert(cur == set_end);
         assert(cur <= message_end);
+
+	set_no++;
       }
+
+      LOG4CPLUS_TRACE(logger, "Got " << (set_no - 1) << " sets");
 
       LIBFC_RETURN_CALLBACK_ERROR(end_message());
 
       offset += nbytes;
       memset(message, '\0', sizeof(message));
-      errno = 0;
-      nbytes = is.read(message, kIpfixMessageHeaderLen);
+      nbytes = is.read(message, kV9MessageHeaderLen);
     }
 
-    if (nbytes < 0) {
-        LIBFC_RETURN_ERROR(fatal, system_error, 
-			   "Wanted to read " 
-			   << kIpfixMessageHeaderLen
-			   << " bytes, got a read error", errno, &is,
-			   0, 0, 0);
-    }
-    assert(nbytes == 0);
 
     /* This is important, don't remove it!  Otherwise, if
      * end_session() gives an error, message_size bytes may be copied

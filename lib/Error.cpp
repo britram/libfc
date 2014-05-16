@@ -48,6 +48,7 @@ namespace LIBFC {
     case short_message: return "short message"; break;
     case ipfix_basetime: return "got basetime in IPFIX message"; break;
     case format_error: return "format error"; break;
+    case inconsistent_state: return "inconsistent internal state"; break;
     }
     // This fall-through cannot happen if the switch above contains
     // all enum values and the object has been initialised properly.

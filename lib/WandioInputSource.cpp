@@ -49,6 +49,11 @@ namespace LIBFC {
     return static_cast<ssize_t>(ret);
   }
 
+  ssize_t WandioInputSource::peek(uint8_t* buf, uint16_t len) {
+    off_t ret = wandio_peek(io, buf, len);
+    return static_cast<ssize_t>(ret);
+  }
+
   bool WandioInputSource::resync() {
     // TODO
     return true;

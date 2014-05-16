@@ -76,10 +76,11 @@ namespace LIBFC {
 
   /** IPFIX framing constant: length of options template record header */
   static const size_t kIpfixOptionsTemplateHeaderLen = 6;
-  /** Set ID for template sets */
+
+  /** Set ID for IPFIX template sets */
   static const uint16_t kIpfixTemplateSetID = 2;
 
-  /** Set ID for options template sets */
+  /** Set ID for IPFIX options template sets */
   static const uint16_t kIpfixOptionTemplateSetID = 3;
 
   /** Minimum Set ID for data sets */
@@ -113,6 +114,11 @@ namespace LIBFC {
   /** V9 framing constant: offset into set header of set length field */
   static const size_t kV9SetLenOffset = 2;
 
+  /** Set ID for V9 template sets */
+  static const uint16_t kV9TemplateSetID = 2;
+
+  /** Set ID for V9 options template sets */
+  static const uint16_t kV9OptionTemplateSetID = 3;
 
 
   /** Maximum length of @em{any} message that we want to parse. 

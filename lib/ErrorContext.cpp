@@ -127,6 +127,9 @@ namespace LIBFC {
     sstr << (is == 0 ? "<null>" : is->get_name()) << "@" << off
 	 << ":" << severity_s << ":" << e.to_string() << ":" << explanation;
 
+    if (system_errno != 0)
+      sstr << ':' << strerror(system_errno);
+
     return sstr.str();
   }
 

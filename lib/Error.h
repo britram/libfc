@@ -82,6 +82,9 @@ namespace LIBFC {
 
       /** General format error. */
       format_error,
+
+      /** Internal inconsistency. */
+      inconsistent_state,
     };
 
     Error(error_t e);

@@ -87,7 +87,7 @@ namespace LIBFC {
     char* export_t = make_local_time(export_time);
     char* base_t =  make_local_time(base_time/1000);
     
-    std::cerr << "  Message: version=0x" << std::hex << std::showbase << version
+    std::cerr << "  Message: version=" << std::hex << std::showbase << version
               << ", length=" << std::dec << std::noshowbase << length
               << ", extime=" << export_t
               << ", seq=" << sequence_number
