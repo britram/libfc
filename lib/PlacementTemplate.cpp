@@ -23,6 +23,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <climits>
 
 #include <arpa/inet.h>
 
@@ -119,7 +120,8 @@ namespace LIBFC {
       }
     }
     LOG4CPLUS_TRACE(logger, "  all found -> return " << placements.size());
-    return placements.size();
+    assert(placements.size() <= UINT_MAX);
+    return static_cast<unsigned int>(placements.size());
   }
 
   void PlacementTemplate::wire_template(

@@ -721,7 +721,7 @@ namespace LIBFC {
   bool PlacementExporter::flush() {
     LOG4CPLUS_TRACE(logger, "ENTER flush");
     /** Return value. */
-    int ret = 0;
+    ssize_t ret = 0;
 
     /* Only write something if we have anything nontrivial to write. */
     if (n_message_octets > kIpfixMessageHeaderLen) {

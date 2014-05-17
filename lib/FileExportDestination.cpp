@@ -60,7 +60,7 @@ namespace LIBFC {
     LOG4CPLUS_TRACE(logger, "total=" << total);
 #endif /*  defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
-    return ::writev(fd, iovecs.data(), iovecs.size());
+    return ::writev(fd, iovecs.data(), static_cast<int>(iovecs.size()));
   }
 
   int FileExportDestination::flush() {
