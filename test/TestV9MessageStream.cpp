@@ -83,8 +83,36 @@ BOOST_AUTO_TEST_CASE(Basic) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(File) {
+BOOST_AUTO_TEST_CASE(File01) {
   const char* name = "/zp0/statdat/test/19991_00098798_1398816000.dat.bz2";
+  io_t* io = wandio_create(name);
+
+  if (io != 0) {
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger 
+      = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser"));
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+    WandioInputSource is{io, name};
+    PrintContentHandler ph{kV9Version};
+    V9MessageStreamParser ir;
+
+    ir.set_content_handler(&ph);
+    std::shared_ptr<ErrorContext> e = ir.parse(is);
+    if (e != 0) {
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+      LOG4CPLUS_ERROR(logger, e->to_string());
+#else /* !_LIBFC_HAVE_LOG4CPLUS_ */
+      std::cerr << "Error: " << e->to_string() << std::endl;
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+    }
+  }
+
+  wandio_destroy(io);
+}
+
+BOOST_AUTO_TEST_CASE(File02) {
+  const char* name = "m.gz";
   io_t* io = wandio_create(name);
 
   if (io != 0) {

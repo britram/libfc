@@ -182,13 +182,19 @@ namespace LIBFC {
           cur += set_length - kIpfixSetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(
             end_options_template_set());
-        } else {
+        } else  if (set_id >= kIpfixMinDataSetId) {
           LIBFC_RETURN_CALLBACK_ERROR(
             start_data_set(
               set_id, set_length - kIpfixSetHeaderLen, cur));
           cur += set_length - kIpfixSetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(end_data_set());
-        }
+        } else
+	  LIBFC_RETURN_ERROR(recoverable, format_error,
+			     "Set has ID " << set_id << ", which is not "
+			     "an IPFIX template, options template or data "
+			     "set ID",
+			     0, &is, message, message_size, offset);
+
 
         assert(cur == set_end);
         assert(cur <= message_end);

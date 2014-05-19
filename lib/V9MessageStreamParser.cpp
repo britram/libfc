@@ -244,13 +244,17 @@ namespace LIBFC {
           cur += set_length - kV9SetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(
             end_options_template_set());
-        } else {
+        } else if (set_id >= kV9MinDataSetId) {
           LIBFC_RETURN_CALLBACK_ERROR(
             start_data_set(
               set_id, set_length - kV9SetHeaderLen, cur));
           cur += set_length - kV9SetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(end_data_set());
-        }
+        } else
+	  LIBFC_RETURN_ERROR(recoverable, format_error,
+			     "Set has ID " << set_id << ", which is not "
+			     "a V9 template, options template or data set ID",
+			     0, &is, message, message_size, offset);
 
         assert(cur == set_end);
         assert(cur <= message_end);

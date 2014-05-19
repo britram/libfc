@@ -84,7 +84,7 @@ namespace LIBFC {
   static const uint16_t kIpfixOptionTemplateSetID = 3;
 
   /** Minimum Set ID for data sets */
-  static const uint16_t kIpfixMinSetID = 0x0100;
+  static const uint16_t kIpfixMinDataSetId = 0x0100;
 
   /** Size of field specifier */
   static const size_t kIpfixFieldSpecifierLen = 4;
@@ -115,11 +115,13 @@ namespace LIBFC {
   static const size_t kV9SetLenOffset = 2;
 
   /** Set ID for V9 template sets */
-  static const uint16_t kV9TemplateSetID = 2;
+  static const uint16_t kV9TemplateSetID = 0;
 
   /** Set ID for V9 options template sets */
-  static const uint16_t kV9OptionTemplateSetID = 3;
+  static const uint16_t kV9OptionTemplateSetID = 1;
 
+  /** Minimum Set ID for data sets */
+  static const uint16_t kV9MinDataSetId = 0x0100;
 
   /** Maximum length of @em{any} message that we want to parse. 
    *
