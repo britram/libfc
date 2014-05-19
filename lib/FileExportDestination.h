@@ -39,7 +39,7 @@
 
 #  include "ExportDestination.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** IPFIX file outputs. */
   class FileExportDestination : public ExportDestination {
@@ -63,6 +63,6 @@ namespace IPFIX {
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_FILEEXPORTDESTINATION_H_

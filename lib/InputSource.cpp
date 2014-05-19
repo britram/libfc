@@ -23,50 +23,15 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cerrno>
 
-#include <unistd.h>
-
-#include "TCPInputSource.h"
+#include "InputSource.h"
 
 namespace LIBFC {
 
-  TCPInputSource::TCPInputSource(int fd)
-    : fd(fd),
-      message_offset(0),
-      current_offset(0) {
-  }
-
-  TCPInputSource::~TCPInputSource() {
-    (void) close(fd); // FIXME: Error handling?
-  }
-
-  ssize_t TCPInputSource::read(uint8_t* buf, uint16_t len) {
-    ssize_t ret = ::read(fd, buf, len);
-    if (ret > 0)
-      current_offset += message_offset;
-    return ret;
-  }
-
-  bool TCPInputSource::resync() {
-    // TODO
-    return true;
-  }
-
-  size_t TCPInputSource::get_message_offset() const {
-    return message_offset;
-  }
-
-  void TCPInputSource::advance_message_offset() {
-    message_offset += current_offset;
-    current_offset = 0;
-  }
-
-  const char* TCPInputSource::get_name() const {
-    return "<TCP socket>";
-  }
-
-  bool TCPInputSource::can_peek() const {
-    return false;
+  ssize_t InputSource::peek(uint8_t* buf, uint16_t len) {
+    errno = EINVAL;
+    return -1;
   }
 
 } // namespace LIBFC

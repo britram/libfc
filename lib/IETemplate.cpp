@@ -33,7 +33,7 @@
 
 #include "IETemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   IETemplate::IETemplate()
     : minlen_(0) {
@@ -99,4 +99,4 @@ namespace IPFIX {
     index_map_[ie] = ies_.size()-1;
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

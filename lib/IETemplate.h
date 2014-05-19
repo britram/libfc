@@ -49,7 +49,7 @@
 
 #  include "InfoElement.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   typedef std::vector<const InfoElement *>::const_iterator IETemplateIter;
   typedef std::map<const InfoElement *, size_t> IEIndexMap;
@@ -171,6 +171,6 @@ namespace IPFIX {
     size_t minlen_;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif

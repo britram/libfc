@@ -26,7 +26,7 @@
 
 #include "Exception.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   Exception::Exception(const std::string& _message) : message(_message) {}
 
@@ -36,4 +36,4 @@ namespace IPFIX {
     return message.c_str();
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

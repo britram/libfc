@@ -41,7 +41,7 @@ extern "C" {
 
 #  include "InputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   class WandioInputSource : public InputSource {
   public:
@@ -54,10 +54,12 @@ namespace IPFIX {
     ~WandioInputSource();
 
     ssize_t read(uint8_t* buf, uint16_t len);
+    ssize_t peek(uint8_t* buf, uint16_t len);
     bool resync();
     size_t get_message_offset() const;
     void advance_message_offset();
     const char* get_name() const;
+    bool can_peek() const;
 
   private:
     io_t* io;
@@ -66,6 +68,6 @@ namespace IPFIX {
     std::string name;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_WANDIOINPUTSOURCE_H_

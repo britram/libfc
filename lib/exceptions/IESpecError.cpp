@@ -26,7 +26,7 @@
 
 #include "IESpecError.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   IESpecError::IESpecError(const std::string& additional_info) 
     : Exception(std::string("IE specification error")
@@ -34,4 +34,4 @@ namespace IPFIX {
                 + additional_info) {
   }
   
-} // namespace IPFIX
+} // namespace LIBFC

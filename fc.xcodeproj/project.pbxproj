@@ -63,9 +63,12 @@
 		D354E8191923550800C45B70 /* TCPInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7E11923550800C45B70 /* TCPInputSource.h */; };
 		D354E81A1923550800C45B70 /* UDPInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7E21923550800C45B70 /* UDPInputSource.cpp */; };
 		D354E81B1923550800C45B70 /* UDPInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7E31923550800C45B70 /* UDPInputSource.h */; };
-		D354E81E19235BD300C45B70 /* libfc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E81C19235BD300C45B70 /* libfc.cpp */; };
-		D354E81F19235BD300C45B70 /* libfc.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E81D19235BD300C45B70 /* libfc.h */; };
-		D354E82119235D2000C45B70 /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
+		F21C2C541927AB5300D2E4CD /* ipfix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F21C2C521927AB5300D2E4CD /* ipfix.cpp */; };
+		F21C2C551927AB5300D2E4CD /* ipfix.h in Headers */ = {isa = PBXBuildFile; fileRef = F21C2C531927AB5300D2E4CD /* ipfix.h */; };
+		F21C2C571927AB7000D2E4CD /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F21C2C561927AB7000D2E4CD /* libwandio.1.dylib */; };
+		F21C2C591927AB9F00D2E4CD /* libboost_unit_test_framework.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F21C2C581927AB9F00D2E4CD /* libboost_unit_test_framework.dylib */; };
+		F21C2C5B1927ABCC00D2E4CD /* liblog4cplus-1.1.5.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F21C2C5A1927ABCC00D2E4CD /* liblog4cplus-1.1.5.dylib */; };
+		F21C2C611927AF4B00D2E4CD /* InputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F21C2C601927AF4B00D2E4CD /* InputSource.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -125,10 +128,13 @@
 		D354E7E11923550800C45B70 /* TCPInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TCPInputSource.h; path = lib/TCPInputSource.h; sourceTree = "<group>"; };
 		D354E7E21923550800C45B70 /* UDPInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UDPInputSource.cpp; path = lib/UDPInputSource.cpp; sourceTree = "<group>"; };
 		D354E7E31923550800C45B70 /* UDPInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UDPInputSource.h; path = lib/UDPInputSource.h; sourceTree = "<group>"; };
-		D354E81C19235BD300C45B70 /* libfc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = libfc.cpp; path = lib/libfc.cpp; sourceTree = "<group>"; };
-		D354E81D19235BD300C45B70 /* libfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libfc.h; path = lib/libfc.h; sourceTree = "<group>"; };
-		D354E82019235D2000C45B70 /* libwandio.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwandio.1.dylib; path = ../../opt/lib/libwandio.1.dylib; sourceTree = "<group>"; };
 		D37BC242192352A8009555FF /* libfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F21C2C521927AB5300D2E4CD /* ipfix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipfix.cpp; path = lib/ipfix.cpp; sourceTree = "<group>"; };
+		F21C2C531927AB5300D2E4CD /* ipfix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ipfix.h; path = lib/ipfix.h; sourceTree = "<group>"; };
+		F21C2C561927AB7000D2E4CD /* libwandio.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwandio.1.dylib; path = ../../../../../opt/libtrace/lib/libwandio.1.dylib; sourceTree = "<group>"; };
+		F21C2C581927AB9F00D2E4CD /* libboost_unit_test_framework.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_unit_test_framework.dylib; path = ../../../../../opt/boost/boost_1_51_0/stage/lib/libboost_unit_test_framework.dylib; sourceTree = "<group>"; };
+		F21C2C5A1927ABCC00D2E4CD /* liblog4cplus-1.1.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "liblog4cplus-1.1.5.dylib"; path = "../../../../../opt/log4cplus/lib/liblog4cplus-1.1.5.dylib"; sourceTree = "<group>"; };
+		F21C2C601927AF4B00D2E4CD /* InputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputSource.cpp; path = lib/InputSource.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,7 +142,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D354E82119235D2000C45B70 /* libwandio.1.dylib in Frameworks */,
+				F21C2C5B1927ABCC00D2E4CD /* liblog4cplus-1.1.5.dylib in Frameworks */,
+				F21C2C571927AB7000D2E4CD /* libwandio.1.dylib in Frameworks */,
+				F21C2C591927AB9F00D2E4CD /* libboost_unit_test_framework.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,8 +154,9 @@
 		D354E7AA192354D200C45B70 /* lib */ = {
 			isa = PBXGroup;
 			children = (
-				D354E81C19235BD300C45B70 /* libfc.cpp */,
-				D354E81D19235BD300C45B70 /* libfc.h */,
+				F21C2C601927AF4B00D2E4CD /* InputSource.cpp */,
+				F21C2C521927AB5300D2E4CD /* ipfix.cpp */,
+				F21C2C531927AB5300D2E4CD /* ipfix.h */,
 				D354E7AB1923550800C45B70 /* BasicOctetArray.cpp */,
 				D354E7AC1923550800C45B70 /* BasicOctetArray.h */,
 				D354E7AD1923550800C45B70 /* BufferInputSource.cpp */,
@@ -220,7 +229,9 @@
 		D37BC239192352A8009555FF = {
 			isa = PBXGroup;
 			children = (
-				D354E82019235D2000C45B70 /* libwandio.1.dylib */,
+				F21C2C5A1927ABCC00D2E4CD /* liblog4cplus-1.1.5.dylib */,
+				F21C2C581927AB9F00D2E4CD /* libboost_unit_test_framework.dylib */,
+				F21C2C561927AB7000D2E4CD /* libwandio.1.dylib */,
 				D354E7AA192354D200C45B70 /* lib */,
 				D37BC243192352A8009555FF /* Products */,
 			);
@@ -270,7 +281,7 @@
 				D354E8141923550800C45B70 /* PlacementExporter.h in Headers */,
 				D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */,
 				D354E80E1923550800C45B70 /* MatchTemplate.h in Headers */,
-				D354E81F19235BD300C45B70 /* libfc.h in Headers */,
+				F21C2C551927AB5300D2E4CD /* ipfix.h in Headers */,
 				D354E8061923550800C45B70 /* InfoModel.h in Headers */,
 				D354E8171923550800C45B70 /* pointer_checks.h in Headers */,
 			);
@@ -303,7 +314,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0510;
-				ORGANIZATIONNAME = "Brian Trammell";
+				ORGANIZATIONNAME = "ETH Zurich/ZHAW";
 			};
 			buildConfigurationList = D37BC23D192352A8009555FF /* Build configuration list for PBXProject "fc" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -343,11 +354,12 @@
 				D354E8031923550800C45B70 /* InfoElement.cpp in Sources */,
 				D354E8111923550800C45B70 /* PlacementCollector.cpp in Sources */,
 				D354E7F61923550800C45B70 /* FormatError.cpp in Sources */,
-				D354E81E19235BD300C45B70 /* libfc.cpp in Sources */,
 				D354E8051923550800C45B70 /* InfoModel.cpp in Sources */,
 				D354E80B1923550800C45B70 /* IPFIXMessageStreamParser.cpp in Sources */,
+				F21C2C541927AB5300D2E4CD /* ipfix.cpp in Sources */,
 				D354E7F21923550800C45B70 /* Exception.cpp in Sources */,
 				D354E8181923550800C45B70 /* TCPInputSource.cpp in Sources */,
+				F21C2C611927AF4B00D2E4CD /* InputSource.cpp in Sources */,
 				D354E81A1923550800C45B70 /* UDPInputSource.cpp in Sources */,
 				D354E7FF1923550800C45B70 /* IETemplate.cpp in Sources */,
 				D354E8151923550800C45B70 /* PlacementTemplate.cpp in Sources */,
@@ -440,7 +452,9 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/Users/brian/opt/lib,
+					/opt/libtrace/lib,
+					/opt/boost/boost_1_51_0/stage/lib,
+					/opt/log4cplus/lib,
 				);
 				PRODUCT_NAME = fc;
 			};
@@ -457,7 +471,9 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/Users/brian/opt/lib,
+					/opt/libtrace/lib,
+					/opt/boost/boost_1_51_0/stage/lib,
+					/opt/log4cplus/lib,
 				);
 				PRODUCT_NAME = fc;
 			};

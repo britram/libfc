@@ -40,25 +40,8 @@
 
 #include "decode_util.h"
 
-/** Augments the error context from a callback and returns it.
- *
- * This macro calls a callback, examines the result, and, if the
- * result is an error, augments the error with the current message and
- * adjusts the offset.
- */
-#define LIBFC_RETURN_CALLBACK_ERROR(call) \
-    do { \
-      /* Make sure call is evaluated only once */			\
-      std::shared_ptr<ErrorContext> err = content_handler->call;	\
-      if (err != 0) {							\
-	err->set_input_source(&is);					\
-        err->set_message(message, message_size);			\
-        err->set_offset(err->get_offset() + offset);			\
-        return err;							\
-      }									\
-    } while (0)
 
-namespace IPFIX {
+namespace LIBFC {
 
   IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
     : offset(0)
@@ -239,4 +222,4 @@ namespace IPFIX {
     LIBFC_RETURN_OK();
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

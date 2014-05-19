@@ -42,7 +42,7 @@
 /* For ssize_t and size_t */
 #  include <unistd.h>
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Abstract base class for IPFIX outputs.
    *
@@ -116,6 +116,6 @@ namespace IPFIX {
     virtual size_t preferred_maximum_message_size() const = 0;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_EXPORTDESTINATION_H_

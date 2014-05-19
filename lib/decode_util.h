@@ -36,7 +36,7 @@
 #  include <cstdint>
 #  include <string>
 
-namespace IPFIX {
+namespace LIBFC {
   /** Decodes a 16-bit value from a buffer.
    *
    * Values are transported on the wire in network byte order (=
@@ -77,6 +77,6 @@ namespace IPFIX {
    */
   extern void report_error(const std::string message, ...);
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif /* _LIBFC_DECODE_UTIL_H_ */

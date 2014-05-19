@@ -7,7 +7,7 @@
  *    * Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *    * Neither the name of ETH Zürich, nor the names of its contributors 
+ *    * The name of ETH Zürich nor the names of other contributors 
  *      may be used to endorse or promote products derived from this software 
  *      without specific prior written permission.
  *
@@ -25,9 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  */
 
-#include <fcntl.h>
-
 #define BOOST_TEST_DYN_LINK
+#include <boost/test/parameterized_test.hpp>
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -35,89 +34,81 @@
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
-#  define LOG4CPLUS_DEBUG(logger, expr)
+#  define LOG4CPLUS_TRACE(logger, expr)
+#  define LOG4CPLUS_ERROR(logger, expr)
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
+#include <cstdio>
+#include <ctime>
+#include <iostream>
+
+#include <fcntl.h>
 
 #include "BufferInputSource.h"
-#include "IPFIXContentHandler.h"
-#include "FileInputSource.h"
-#include "IPFIXMessageStreamParser.h"
-#include "InfoModel.h"
-#include "PlacementCollector.h"
-
-#include "exceptions/FormatError.h"
-
+#include "Constants.h"
+#include "PrintContentHandler.h"
+#include "V9MessageStreamParser.h"
+#include "WandioInputSource.h"
+  
 using namespace LIBFC;
 
-BOOST_AUTO_TEST_SUITE(PlacementInterface)
+BOOST_AUTO_TEST_SUITE(V9MessageStream)
 
-BOOST_AUTO_TEST_CASE(SkipDataSet) {
-  static const unsigned char msg[] = {
+BOOST_AUTO_TEST_CASE(Basic) {
+  static const unsigned char msg01[] = {
+    0x00,0x0a,0x00,0x21,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x0c,0x03,0xe9,0x00,0x01,0x00,0x04,0x00,0x01,0x03,0xe9,0x00,0x05,0x0 };
+#if 0
+  static const unsigned char msg02[] = {
     0x00,0x0a,0x00,0x56,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x18,0x03,0xe9,0x00,0x04,0x01,0x36,0x00,0x04,0x00,0x52,0xff,0xff,0x01,0x37,0x00,0x08,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x2e,0x10,0x20,0x30,0x40,0x04,0x65,0x74,0x68,0x30,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65 };
+#endif
 
-  IPFIXContentHandler dsr;
-  IPFIXMessageStreamParser ir;
+  PrintContentHandler ph{kV9Version};
+  V9MessageStreamParser ir;
 
-  ir.set_content_handler(&dsr);
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger 
+      = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser"));
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-  BufferInputSource is(msg, sizeof(msg));
-  ir.parse(is);
+  ir.set_content_handler(&ph);
 
+  BufferInputSource is(msg01, sizeof(msg01));
+  std::shared_ptr<ErrorContext> e = ir.parse(is);
+  if (e != 0) {
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+    LOG4CPLUS_ERROR(logger, e->to_string());
+#else /* !_LIBFC_HAVE_LOG4CPLUS_ */
+    std::cerr << "Error: " << e->to_string() << std::endl;
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+  }
 }
 
-BOOST_AUTO_TEST_CASE(FileDataSet) {
-  const char* filename = "dahlem-01.ipfix";
+BOOST_AUTO_TEST_CASE(File) {
+  const char* name = "/zp0/statdat/test/19991_00098798_1398816000.dat.bz2";
+  io_t* io = wandio_create(name);
 
-  class MyCollector : public PlacementCollector {
-  public:
-    MyCollector()
+  if (io != 0) {
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
-                                    :
-      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+    log4cplus::Logger logger 
+      = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser"));
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
-    {
-      PlacementTemplate* my_template = new PlacementTemplate();
 
-      const InfoElement* sipv4a
-        = InfoModel::instance().lookupIE("sourceIPv4Address");
-      assert(sipv4a != 0);
-      my_template->register_placement(sipv4a, &source_ipv4_address, 0);
+    WandioInputSource is{io, name};
+    PrintContentHandler ph{kV9Version};
+    V9MessageStreamParser ir;
 
-      register_placement_template(my_template);
-    }
-
-    std::shared_ptr<ErrorContext>
-        start_placement(const PlacementTemplate* tmpl) {
-      LOG4CPLUS_DEBUG(logger, "MyCollector: START placement");
-      LIBFC_RETURN_OK();
-    }
-
-    std::shared_ptr<ErrorContext>
-        end_placement(const PlacementTemplate* tmpl) {
-      LOG4CPLUS_DEBUG(logger, "MyCollector: END placement, address="
-                      << std::hex << source_ipv4_address);
-      LIBFC_RETURN_OK();
-    }
-
-  private:
+    ir.set_content_handler(&ph);
+    std::shared_ptr<ErrorContext> e = ir.parse(is);
+    if (e != 0) {
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
-    log4cplus::Logger logger;
+      LOG4CPLUS_ERROR(logger, e->to_string());
+#else /* !_LIBFC_HAVE_LOG4CPLUS_ */
+      std::cerr << "Error: " << e->to_string() << std::endl;
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
-    uint32_t source_ipv4_address;
-  };
-
-  MyCollector cb;
-
-  int fd = open(filename, O_RDONLY);
-  if (fd >= 0) {
-    FileInputSource is(fd, filename);
-    try {
-      cb.collect(is);
-    } catch (FormatError e) {
-      BOOST_FAIL("Format error: " << e.what());
     }
-    (void) close(fd);
   }
+
+  wandio_destroy(io);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

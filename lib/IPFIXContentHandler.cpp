@@ -47,7 +47,7 @@
 #include "IPFIXContentHandler.h"
 #include "PlacementCollector.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
 #define CH_REPORT_ERROR(error, message_stream)				   \
   do {									   \
@@ -137,19 +137,9 @@ namespace IPFIX {
 		      "Expected base_time 0, got 0x"
 		      << std::hex << std::setw(4) << base_time);
 
-    /* RFC 5101, Chapter 3, Verse 0: "An IPFIX Message consists of a
-     * Message Header, followed by one or more Sets."  That means
-     * that an IPFIX message must contain the message header, and at
-     * least one set header, which in turn means that a valid IPFIX
-     * message must be at least 16 + 4 = 20 bytes long (message header
-     * length, see Chapter 3 Verse 1; set header length see Chapter
-     * 3, Verse 3.2).  */
-    static const size_t min_message_length 
-      = kIpfixMessageHeaderLen + kIpfixSetHeaderLen;
-
-    if (length < min_message_length)
+    if (length < kIpfixMinMessageLength)
       CH_REPORT_ERROR(short_message,
-		      "must be at least " << min_message_length
+		      "must be at least " << kIpfixMinMessageLength
 		      << " bytes long, got only " << length);
 
     this->observation_domain = observation_domain;
@@ -520,4 +510,4 @@ namespace IPFIX {
     return min;
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

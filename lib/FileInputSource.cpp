@@ -30,7 +30,7 @@
 
 #include "FileInputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   FileInputSource::FileInputSource(int fd, std::string file_name)
     : fd(fd),
@@ -79,4 +79,8 @@ namespace IPFIX {
     return name;
   }
 
-} // namespace IPFIX
+  bool FileInputSource::can_peek() const {
+    return false;
+  }
+
+} // namespace LIBFC

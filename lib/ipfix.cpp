@@ -39,13 +39,13 @@
 static bool infomodel_initialized = false;
 
 struct ipfix_template_t {
-  IPFIX::PlacementTemplate* tmpl;
+  LIBFC::PlacementTemplate* tmpl;
   void (*callback) (const ipfix_template_t* t);
 };
 
-class CBinding : public IPFIX::PlacementCollector {
+class CBinding : public LIBFC::PlacementCollector {
 private:
-  std::set<IPFIX::PlacementTemplate*> templates;
+  std::set<LIBFC::PlacementTemplate*> templates;
 
 public:
   CBinding() {
@@ -61,13 +61,13 @@ public:
     templates.insert(t->tmpl);
   }
 
-  std::shared_ptr<IPFIX::ErrorContext>
-      start_placement(const IPFIX::PlacementTemplate* tmpl) {
+  std::shared_ptr<LIBFC::ErrorContext>
+      start_placement(const LIBFC::PlacementTemplate* tmpl) {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<IPFIX::ErrorContext>
-      end_placement(const IPFIX::PlacementTemplate* t) {
+  std::shared_ptr<LIBFC::ErrorContext>
+      end_placement(const LIBFC::PlacementTemplate* t) {
     // I wonder if this is portable?  --neuhaust
     const ipfix_template_t* this_template 
       = reinterpret_cast<const ipfix_template_t*>(
@@ -87,7 +87,7 @@ struct ipfix_template_set_t {
 
 extern struct ipfix_template_set_t* ipfix_template_set_new() {
   if (!infomodel_initialized)
-    IPFIX::InfoModel::instance().defaultIPFIX();
+    LIBFC::InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
 
   struct ipfix_template_set_t* ret = new ipfix_template_set_t;
@@ -98,12 +98,12 @@ extern struct ipfix_template_set_t* ipfix_template_set_new() {
 extern struct ipfix_template_t* ipfix_template_new(
     struct ipfix_template_set_t* s) {
   if (!infomodel_initialized)
-    IPFIX::InfoModel::instance().defaultIPFIX();
+    LIBFC::InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
 
   struct ipfix_template_t* ret = new ipfix_template_t;
   ret->callback = 0;
-  ret->tmpl = new IPFIX::PlacementTemplate;
+  ret->tmpl = new LIBFC::PlacementTemplate;
   s->binding->add_template(ret);
   return ret;
 }
@@ -115,7 +115,7 @@ extern void ipfix_template_set_delete(struct ipfix_template_set_t* s) {
 extern int ipfix_register_placement(struct ipfix_template_t* t,
                                     const char* ie_name, void* p, size_t size) {
   return t->tmpl->register_placement(
-           IPFIX::InfoModel::instance().lookupIE(ie_name), p, size);
+           LIBFC::InfoModel::instance().lookupIE(ie_name), p, size);
 }
 
 extern void ipfix_register_callback(struct ipfix_template_t* t,
@@ -127,10 +127,10 @@ extern int ipfix_collect_from_file(int fd, const char* name,
 				   struct ipfix_template_set_t* t) {
   int ret = 1;
 
-  IPFIX::FileInputSource is(fd, name);
+  LIBFC::FileInputSource is(fd, name);
   try {
     t->binding->collect(is);
-  } catch (IPFIX::FormatError e) {
+  } catch (LIBFC::FormatError e) {
     std::cerr << "Format error: " << e.what() << std::endl;
     ret = 0;
   }

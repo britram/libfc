@@ -37,7 +37,26 @@
 
 #  include <unistd.h>
 
-namespace IPFIX {
+namespace LIBFC {
+
+/** Augments the error context from a callback and returns it.
+ *
+ * This macro calls a callback, examines the result, and, if the
+ * result is an error, augments the error with the current message and
+ * adjusts the offset.
+ */
+#  define LIBFC_RETURN_CALLBACK_ERROR(call) \
+    do { \
+      /* Make sure call is evaluated only once */			\
+      std::shared_ptr<ErrorContext> err = content_handler->call;	\
+      if (err != 0) {							\
+	err->set_input_source(&is);					\
+        err->set_message(message, message_size);			\
+        err->set_offset(err->get_offset() + offset);			\
+        return err;							\
+      }									\
+    } while (0)
+
 
   /** Abstract base class for IPFIX input sources.
    *
@@ -46,7 +65,8 @@ namespace IPFIX {
    */
   class InputSource {
   public:
-    /** Reads a number of bytes from the input source into a buffer.
+    /** Reads a number of bytes from the input source into a buffer,
+     *    advancing the offset.
      *
      * @param buf the buffer in which to put the bytes
      * @param len the number of bytes to read
@@ -55,6 +75,22 @@ namespace IPFIX {
      *     -1 on error.
      */
     virtual ssize_t read(uint8_t* buf, uint16_t len) = 0;
+
+    /** Reads a number of bytes from the input source into a buffer,
+     *   but does not advance the offset.
+     *
+     * Not all InputSource-s support peek(); check can_peek() to see
+     * if it does.  In case an InputSource does not support it, it
+     * will return -1 and set errno to EINVAL.  If a class does not
+     * override this method, this is the default behaviour.
+     *
+     * @param buf the buffer in which to put the bytes
+     * @param len the number of bytes to read
+     *
+     * @return the number of bytes read (0 indicates end of file), or
+     *     -1 on error.
+     */
+    virtual ssize_t peek(uint8_t* buf, uint16_t len);
 
     /** Attempts to re-synchronise the stream to the beginning of a valid
      * message.
@@ -97,8 +133,14 @@ namespace IPFIX {
      * @return a name for this input source.
      */
     virtual const char* get_name() const = 0;
+
+    /** Returns whether this input source supports peek().
+     *
+     * @return true if this input source supports peek(), false if not.
+     */
+    virtual bool can_peek() const = 0;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_INPUTSOURCE_H_

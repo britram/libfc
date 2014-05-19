@@ -102,5 +102,6 @@ endif()
 if (CMAKE_BUILD_TYPE STREQUAL "Profile")
   add_executable(fcprof fcprof.cpp test/TestCommon.cpp)
   target_link_libraries(fcprof fc ${Boost_LIBRARIES}
-    ${Wandio_LIBRARIES} ${Log4CPlus_LIBRARIES})
+                                ${Wandio_LIBRARIES} 
+                               ${Log4CPlus_LIBRARIES})
 endif()  

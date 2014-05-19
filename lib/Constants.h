@@ -42,8 +42,8 @@
 #  include <cstring>
 #  include <cstdint>
 
-namespace IPFIX {
-    
+namespace LIBFC {
+
   /** IPFIX framing constant: message header version */
   static const size_t kIpfixVersion = 10;
 
@@ -55,13 +55,6 @@ namespace IPFIX {
 
   /** IPFIX framing constant: offset into set header of set length field */
   static const size_t kIpfixSetLenOffset = 2;
-
-  /** IPFIX framing constant: length of template record header */
-  static const size_t kIpfixTemplateHeaderLen = 4;
-
-  /** IPFIX framing constant: length of options template record header */
-  static const size_t kIpfixOptionsTemplateHeaderLen = 6;
-
     
   /** Maximum length of an IPFIX message */
   static const size_t kIpfixMaxMessageLen = 65535;
@@ -69,10 +62,25 @@ namespace IPFIX {
   /** Maximum length of an IPFIX set */
   static const size_t kIpfixMaxSetLen = 65519;
     
-  /** Set ID for template sets */
+  /* RFC 5101, Chapter 3, Verse 0: "An IPFIX Message consists of a
+   * Message Header, followed by one or more Sets."  That means
+   * that an IPFIX message must contain the message header, and at
+   * least one set header, which in turn means that a valid IPFIX
+   * message must be at least 16 + 4 = 20 bytes long (message header
+   * length, see Chapter 3 Verse 1; set header length see Chapter
+   * 3, Verse 3.2).  */
+  static const size_t kIpfixMinMessageLength = 20;
+
+  /** IPFIX framing constant: length of template record header */
+  static const size_t kIpfixTemplateHeaderLen = 4;
+
+  /** IPFIX framing constant: length of options template record header */
+  static const size_t kIpfixOptionsTemplateHeaderLen = 6;
+
+  /** Set ID for IPFIX template sets */
   static const uint16_t kIpfixTemplateSetID = 2;
 
-  /** Set ID for options template sets */
+  /** Set ID for IPFIX options template sets */
   static const uint16_t kIpfixOptionTemplateSetID = 3;
 
   /** Minimum Set ID for data sets */
@@ -81,19 +89,41 @@ namespace IPFIX {
   /** Size of field specifier */
   static const size_t kIpfixFieldSpecifierLen = 4;
 
-  /** Size of enterprose number field */
+  /** Size of enterprise number field */
   static const size_t kIpfixEnterpriseLen = 4;
 
-  
-  /** The special IE length value signifying a variable-length IE */
-  static const uint16_t kIpfixVarlen = 65535;
-    
   /** Set this bit in enterprise-specific IEs */
   static const uint16_t kIpfixEnterpriseBit = 0x8000;
 
+  /** The special IE length value signifying a variable-length IE */
+  static const uint16_t kIpfixVarlen = 65535;    
+
+
+  /** V9 framing constant: message header version */
+  static const size_t kV9Version = 9;
+
+  /** V5 framing constant: message header version */
+  static const size_t kV5Version = 5;
+
+  /** V9 framing constant: message header length */
+  static const size_t kV9MessageHeaderLen = 20;
+
+  /** V9 framing constant: set header length */
+  static const size_t kV9SetHeaderLen = 4;
+
+  /** V9 framing constant: offset into set header of set length field */
+  static const size_t kV9SetLenOffset = 2;
+
+  /** Set ID for V9 template sets */
+  static const uint16_t kV9TemplateSetID = 2;
+
+  /** Set ID for V9 options template sets */
+  static const uint16_t kV9OptionTemplateSetID = 3;
+
+
   /** Maximum length of @em{any} message that we want to parse. 
    *
-   * please make this the maximum of any kXXXMaxMessageLen-s defined
+   * Please make this the maximum of any kXXXMaxMessageLen-s defined
    * above.  I tried to make your life easier and say
    *
    * @code
@@ -111,7 +141,7 @@ namespace IPFIX {
    * despite my (probably erroneous) reasoning that the maximum of two
    * constants is also a constant.
    */
-  static const size_t kMaxMessageLen = kIpfixMaxMessageLen;
+  static const size_t kMaxMessageLen = 65535;
 }
 
 #endif // _LIBFC_CONSTANTS_H_

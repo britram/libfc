@@ -33,7 +33,7 @@
 
 #include "BasicOctetArray.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   BasicOctetArray::BasicOctetArray() 
     : buf(0), length(0), capacity(0) {
@@ -68,4 +68,4 @@ namespace IPFIX {
     return std::string(reinterpret_cast<const char*>(buf), length);
   }
 
-} // namespace IPFIX
+} // namespace LIBFC
