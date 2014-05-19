@@ -38,11 +38,6 @@ find_path(Wandio_INCLUDE_DIR
           PATHS /opt/libtrace/include
           HINTS ${_Wandio_INCLUDE_DIR_})
 
-find_path(Wandio_LIBRARY_DIR 
-          NAMES libwandio.a
-          PATHS /opt/libtrace/lib
-          HINTS ${_Wandio_LIBRARY_DIR_})
-
 find_library(Wandio_LIBRARY
              NAMES wandio libwandio
              PATHS /opt/libtrace/lib
