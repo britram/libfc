@@ -120,21 +120,21 @@ namespace LIBFC {
       unsigned int set_no = 1;
       uint16_t current_set_id = 0;
 
-      while (nbytes == kV9SetHeaderLen) {
-	LOG4CPLUS_TRACE(logger, "Set number " << set_no);
-
+      while (nbytes > 0 && static_cast<size_t>(nbytes) == kV9SetHeaderLen) {
 	current_set_id = decode_uint16(cur + 0);
-	if (current_set_id == kV9Version || current_set_id == kV5Version)
+	if (current_set_id == kV9Version)
 	  break;
+	else if (current_set_id == kV5Version) {
+	  LOG4CPLUS_WARN(logger, "V5 set ID encountered in V9 stream "
+			 << is.get_name());
+	  break;
+	}
 
 	/* Please leave this assert in. It *ought* to be always true,
 	 * and in thie case, the compiler should be able to optimize
 	 * it away. */
 	assert(kV9SetLenOffset + sizeof(uint16_t) <= kV9SetHeaderLen);
 	uint16_t set_length = decode_uint16(cur + kV9SetLenOffset);
-
-	LOG4CPLUS_TRACE(logger, "Is a set with ID " << current_set_id 
-			<< ", of size " << set_length);
 
 	/* Take care when changing message from an array to a pointer. */
 	if (cur + set_length > message + sizeof(message))
@@ -173,9 +173,6 @@ namespace LIBFC {
 	LIBFC_RETURN_ERROR(fatal, system_error, "read error", errno,
 			   &is, message, 0, 0);
 
-      if (current_set_id == kV9Version || current_set_id == kV5Version)
-	LOG4CPLUS_TRACE(logger, "Message ends at set no. " << (set_no - 1));
-
       /* Basetime computation as per email from Brian:
        *
        * (2) The header in general is different, crucially containing
@@ -196,7 +193,9 @@ namespace LIBFC {
 		      static_cast<uint64_t>(decode_uint32(message + 8))*1000 
 		      - static_cast<uint64_t>(decode_uint32(message + 4))));
 
-      /* This assert should be true since message_size is a uint16_t. */
+      /* This assert should be true since message_size is a uint16_t
+       * and message is a static buffer of size 65535. But beware if
+       * you change message to a pointer. */
       assert(message_size <= sizeof(message));
       const uint8_t* message_end = message + message_size;
 
@@ -205,8 +204,6 @@ namespace LIBFC {
       cur = message + kV9MessageHeaderLen;
       assert (cur <= message_end);
       
-      LOG4CPLUS_TRACE(logger, "Start decoding sets");
-
       /* Decode sets.
        *
        * If you don't like the pointer comparisons using <=, please
@@ -219,8 +216,6 @@ namespace LIBFC {
         uint16_t set_length = decode_uint16(cur + 2);
         const uint8_t* set_end = cur + set_length;
         
-	LOG4CPLUS_TRACE(logger, "Decoding set no. " << set_no);
-
         if (set_end > message_end)
 	  LIBFC_RETURN_ERROR(recoverable, long_set, 
 			     "Long set: set_len=" << set_length 
