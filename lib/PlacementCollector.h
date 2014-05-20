@@ -33,7 +33,7 @@
 #ifndef _LIBFC_PLACEMENTCALLBACK_H_
 #  define _LIBFC_PLACEMENTCALLBACK_H_
 
-#  include "IPFIXContentHandler.h"
+#  include "PlacementContentHandler.h"
 #  include "IPFIXMessageStreamParser.h"
 #  include "PlacementTemplate.h"
 
@@ -75,7 +75,7 @@ namespace LIBFC {
     void register_placement_template(const PlacementTemplate*);
 
   private:
-    IPFIXContentHandler d;
+    PlacementContentHandler d;
     IPFIXMessageStreamParser ir;
   };
 

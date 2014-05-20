@@ -71,11 +71,11 @@ namespace LIBFC {
    * 3, Verse 3.2).  */
   static const size_t kIpfixMinMessageLength = 20;
 
-  /** IPFIX framing constant: length of template record header */
-  static const size_t kIpfixTemplateHeaderLen = 4;
+  /** Framing constant: length of template record header */
+  static const size_t kTemplateHeaderLen = 4;
 
-  /** IPFIX framing constant: length of options template record header */
-  static const size_t kIpfixOptionsTemplateHeaderLen = 6;
+  /** Framing constant: length of options template record header */
+  static const size_t kOptionsTemplateHeaderLen = 6;
 
   /** Set ID for IPFIX template sets */
   static const uint16_t kIpfixTemplateSetID = 2;
@@ -84,16 +84,16 @@ namespace LIBFC {
   static const uint16_t kIpfixOptionTemplateSetID = 3;
 
   /** Minimum Set ID for data sets */
-  static const uint16_t kIpfixMinDataSetId = 0x0100;
+  static const uint16_t kMinDataSetId = 0x0100;
 
   /** Size of field specifier */
-  static const size_t kIpfixFieldSpecifierLen = 4;
+  static const size_t kFieldSpecifierLen = 4;
 
   /** Size of enterprise number field */
-  static const size_t kIpfixEnterpriseLen = 4;
+  static const size_t kEnterpriseLen = 4;
 
   /** Set this bit in enterprise-specific IEs */
-  static const uint16_t kIpfixEnterpriseBit = 0x8000;
+  static const uint16_t kEnterpriseBit = 0x8000;
 
   /** The special IE length value signifying a variable-length IE */
   static const uint16_t kIpfixVarlen = 65535;    
@@ -102,7 +102,13 @@ namespace LIBFC {
   /** V9 framing constant: message header version */
   static const size_t kV9Version = 9;
 
-  /** V5 framing constant: message header version */
+  /** Minimum V9 message length. FIXME: Is this correct? */
+  static const size_t kV9MinMessageLength = 24;
+
+  /** Minimum V5 message length. FIXME: Is this correct? */
+  static const size_t kV5MinMessageLength = 24;
+
+ /** V5 framing constant: message header version */
   static const size_t kV5Version = 5;
 
   /** V9 framing constant: message header length */

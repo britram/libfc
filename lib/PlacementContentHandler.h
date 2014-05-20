@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_IPFIXCONTENTHANDLER_H_
-#  define _LIBFC_IPFIXCONTENTHANDLER_H_
+#ifndef _LIBFC_PLACEMENTCONTENTHANDLER_H_
+#  define _LIBFC_PLACEMENTCONTENTHANDLER_H_
 
 #  include <list>
 #  include <map>
@@ -57,10 +57,16 @@ namespace LIBFC {
    * more in-depth treatment, see the documentation on
    * PlacementTemplate.
    */
-  class IPFIXContentHandler : public ContentHandler {
+  class PlacementContentHandler : public ContentHandler {
   public:
-    IPFIXContentHandler();
-    ~IPFIXContentHandler();
+    enum Protocol {
+      ipfix,
+      v9,
+      v5
+    };
+
+    PlacementContentHandler(Protocol protocol);
+    ~PlacementContentHandler();
 
     /* From ContentHandler */
     std::shared_ptr<ErrorContext> start_session();
@@ -164,7 +170,7 @@ namespace LIBFC {
 
     /** Computes the minimal length of a template.
      *
-     * IPFIX messages may have padding in their data sets, but that
+     * Placement messages may have padding in their data sets, but that
      * padding must not be larger than the smallest data set that
      * could conceivably been sent. Therefore, this method computes
      * the smallest data set that could be sent using a certain
@@ -273,6 +279,9 @@ namespace LIBFC {
      */
     bool parse_is_good;
 
+    /** Protocol parameters. Struct is resolved in accompanying .cpp file. */
+    const struct protocol_parameters_t* parameters;
+
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
@@ -280,4 +289,4 @@ namespace LIBFC {
 
 } // namespace LIBFC
 
-#endif // _LIBFC_IPFIXCONTENTHANDLER_H_
+#endif // _LIBFC_PLACEMENTCONTENTHANDLER_H_

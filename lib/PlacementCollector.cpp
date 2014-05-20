@@ -28,7 +28,8 @@
 
 namespace LIBFC {
 
-  PlacementCollector::PlacementCollector() {
+  PlacementCollector::PlacementCollector() 
+    : d(PlacementContentHandler::ipfix) {
     ir.set_content_handler(&d);
   }
 

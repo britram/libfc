@@ -44,7 +44,7 @@
 
 #include "BasicOctetArray.h"
 #include "DecodePlan.h"
-#include "IPFIXContentHandler.h"
+#include "PlacementContentHandler.h"
 #include "PlacementCollector.h"
 
 namespace LIBFC {
@@ -67,20 +67,60 @@ namespace LIBFC {
 #define CH_HEX(width) \
   "0x" << std::hex << std::setw(width) << std::setfill('0')
 
+  enum {
+    IPFIX_PARAMETERS = 0,
+    V9_PARAMETERS,
+    V5_PARAMETERS,
+  };
 
-  IPFIXContentHandler::IPFIXContentHandler()
+  static const struct protocol_parameters_t {
+    /** The version we expect to see in the header. */
+    uint16_t expected_version;
+
+    /** The minimum message length. */
+    uint16_t min_message_length;
+
+    /** The length of a template header. */
+    uint16_t template_header_length;
+
+    /** The length of an options template header. */
+    uint16_t options_template_header_length;
+  } protocol_parameters[] = {
+    /** IPFIX parameters. */
+    {
+      kIpfixVersion,
+      kIpfixMinMessageLength,
+    },
+    /** V9 parameters. */
+    {
+      kV9Version,
+      kV9MinMessageLength,
+    },
+    /** V5 parameters. */
+    {
+      kV9Version,
+      kV9MinMessageLength,
+    },
+  };
+
+  PlacementContentHandler::PlacementContentHandler(Protocol protocol)
     : info_model(InfoModel::instance()),
       use_matched_template_cache(false),
       current_wire_template(0),
       parse_is_good(true)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                          ,
-      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("IPFIXContentHandler")))
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementContentHandler")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
+    switch (protocol) {
+    case ipfix: parameters = &protocol_parameters[IPFIX_PARAMETERS];
+    case v9: parameters = &protocol_parameters[V9_PARAMETERS];
+    case v5: parameters = &protocol_parameters[V5_PARAMETERS];
+    }
   }
 
-  IPFIXContentHandler::~IPFIXContentHandler() {
+  PlacementContentHandler::~PlacementContentHandler() {
     if (parse_is_good) { /* Check assertions only when no exception. */
       assert (current_wire_template == 0);
     }
@@ -100,17 +140,17 @@ namespace LIBFC {
   }
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_session() {
+  std::shared_ptr<ErrorContext> PlacementContentHandler::start_session() {
     LOG4CPLUS_TRACE(logger, "Session starts");
     return std::shared_ptr<ErrorContext>(0);
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_session() {
+  std::shared_ptr<ErrorContext> PlacementContentHandler::end_session() {
     LOG4CPLUS_TRACE(logger, "Session ends");
     return std::shared_ptr<ErrorContext>(0);
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_message(
+  std::shared_ptr<ErrorContext> PlacementContentHandler::start_message(
       uint16_t version,
       uint16_t length,
       uint32_t export_time,
@@ -127,19 +167,20 @@ namespace LIBFC {
 		    << ", base_time=" << base_time);
     assert(current_wire_template == 0);
 
-    if (version != kIpfixVersion)
+    if (version != parameters->expected_version)
       CH_REPORT_ERROR(message_version_number, 
-		      "Expected message version " << CH_HEX(4) << kIpfixVersion 
+		      "Expected message version " 
+		      << CH_HEX(4) << parameters->expected_version 
 		      << ", got " << CH_HEX(4) << version);
 
-    if (base_time != 0)
+    if (version == kIpfixVersion && base_time != 0)
       CH_REPORT_ERROR(ipfix_basetime,
-		      "Expected base_time 0, got 0x"
+		      "Expected base_time 0 for IPFIX, got 0x"
 		      << std::hex << std::setw(4) << base_time);
 
-    if (length < kIpfixMinMessageLength)
+    if (length < parameters->min_message_length)
       CH_REPORT_ERROR(short_message,
-		      "must be at least " << kIpfixMinMessageLength
+		      "must be at least " << parameters->min_message_length
 		      << " bytes long, got only " << length);
 
     this->observation_domain = observation_domain;
@@ -147,14 +188,14 @@ namespace LIBFC {
     return std::shared_ptr<ErrorContext>(0);
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_message() {
+  std::shared_ptr<ErrorContext> PlacementContentHandler::end_message() {
     LOG4CPLUS_TRACE(logger, "ENTER end_message");
     assert(current_wire_template == 0);
     LOG4CPLUS_TRACE(logger, "LEAVE end_message");
     return std::shared_ptr<ErrorContext>(0);
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::process_template_set(
+  std::shared_ptr<ErrorContext> PlacementContentHandler::process_template_set(
       uint16_t set_id,
       uint16_t set_length,
       const uint8_t* buf,
@@ -162,8 +203,8 @@ namespace LIBFC {
     const uint8_t* cur = buf;
     const uint8_t* set_end = buf + set_length;
     const uint16_t header_length 
-      = is_options_set ? kIpfixOptionsTemplateHeaderLen 
-                       : kIpfixTemplateHeaderLen;
+      = is_options_set ? kOptionsTemplateHeaderLen
+                       : kTemplateHeaderLen;
 
     while (CHECK_POINTER_WITHIN_I(cur + header_length, cur, set_end)) {
       /* Decode template record */
@@ -176,7 +217,7 @@ namespace LIBFC {
       cur += header_length;
       
       for (unsigned int field = 0; field < field_count; field++) {
-	if (!CHECK_POINTER_WITHIN_I(cur + kIpfixFieldSpecifierLen,
+	if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen,
 				    cur, set_end)) {
 	  LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
 			     "Field specifier partly outside template record", 
@@ -190,8 +231,8 @@ namespace LIBFC {
 	
 	uint32_t enterprise_number = 0;
 	if (enterprise) {
-	  if (!CHECK_POINTER_WITHIN_I(cur + kIpfixFieldSpecifierLen
-				      + kIpfixEnterpriseLen, cur,
+	  if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen
+				      + kEnterpriseLen, cur,
 				      set_end)) {
 	    LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
 			       "Field specifier partly outside template "
@@ -214,7 +255,7 @@ namespace LIBFC {
 						   ie_length,
 						   enterprise_number));
 	
-	cur += kIpfixFieldSpecifierLen + (enterprise ? kIpfixEnterpriseLen : 0);
+	cur += kFieldSpecifierLen + (enterprise ? kEnterpriseLen : 0);
 	assert (cur <= set_end);
       }
       
@@ -223,7 +264,7 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_template_set(uint16_t set_id,
+  std::shared_ptr<ErrorContext> PlacementContentHandler::start_template_set(uint16_t set_id,
 					       uint16_t set_length,
 					       const uint8_t* buf) {
     LOG4CPLUS_TRACE(logger, "ENTER start_template_set"
@@ -235,16 +276,16 @@ namespace LIBFC {
     return std::shared_ptr<ErrorContext>(0);
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_template_set() {
+  std::shared_ptr<ErrorContext> PlacementContentHandler::end_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_set");
     return std::shared_ptr<ErrorContext>(0);
   }
 
-  uint64_t IPFIXContentHandler::make_template_key(uint16_t tid) const {
+  uint64_t PlacementContentHandler::make_template_key(uint16_t tid) const {
     return (static_cast<uint64_t>(observation_domain) << 16) + tid;
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_template_record(
+  std::shared_ptr<ErrorContext> PlacementContentHandler::start_template_record(
       uint16_t template_id,
       uint16_t field_count) {
     LOG4CPLUS_TRACE(logger,
@@ -264,7 +305,7 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_template_record() {
+  std::shared_ptr<ErrorContext> PlacementContentHandler::end_template_record() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_record");
     if (current_wire_template->size() > 0) {
 #if defined(_LIBFC_HAVE_LOG4CPLUS_)
@@ -306,7 +347,7 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_options_template_set(
+  std::shared_ptr<ErrorContext> PlacementContentHandler::start_options_template_set(
       uint16_t set_id,
       uint16_t set_length,
       const uint8_t* buf) {
@@ -319,12 +360,12 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_options_template_set() {
+  std::shared_ptr<ErrorContext> PlacementContentHandler::end_options_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_set");
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::field_specifier(
+  std::shared_ptr<ErrorContext> PlacementContentHandler::field_specifier(
       bool enterprise,
       uint16_t ie_id,
       uint16_t ie_length,
@@ -372,7 +413,7 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::scope_field_specifier(
+  std::shared_ptr<ErrorContext> PlacementContentHandler::scope_field_specifier(
       bool enterprise,
       uint16_t ie_id,
       uint16_t ie_length,
@@ -387,7 +428,7 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::options_field_specifier(
+  std::shared_ptr<ErrorContext> PlacementContentHandler::options_field_specifier(
       bool enterprise,
       uint16_t ie_id,
       uint16_t ie_length,
@@ -404,14 +445,14 @@ namespace LIBFC {
 
 
   const MatchTemplate*
-  IPFIXContentHandler::find_wire_template(uint16_t id) const {
+  PlacementContentHandler::find_wire_template(uint16_t id) const {
     std::map<uint64_t, const MatchTemplate*>::const_iterator i
       = wire_templates.find(make_template_key(id));
     return i == wire_templates.end() ? 0 : i->second;
   }
 
   const PlacementTemplate*
-  IPFIXContentHandler::match_placement_template(const MatchTemplate* wire_template) const {
+  PlacementContentHandler::match_placement_template(const MatchTemplate* wire_template) const {
     LOG4CPLUS_TRACE(logger, "ENTER match_placement_template");
 
     /* This strategy: return first match. Other strategies are also
@@ -437,7 +478,7 @@ namespace LIBFC {
       return m->second;
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::start_data_set(uint16_t id,
+  std::shared_ptr<ErrorContext> PlacementContentHandler::start_data_set(uint16_t id,
                                       uint16_t length,
                                       const uint8_t* buf) {
     LOG4CPLUS_TRACE(logger,
@@ -487,20 +528,20 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
-  std::shared_ptr<ErrorContext> IPFIXContentHandler::end_data_set() {
+  std::shared_ptr<ErrorContext> PlacementContentHandler::end_data_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_data_set");
     LOG4CPLUS_TRACE(logger, "LEAVE end_data_set");
     LIBFC_RETURN_OK();
   }
 
-  void IPFIXContentHandler::register_placement_template(
+  void PlacementContentHandler::register_placement_template(
       const PlacementTemplate* placement_template,
       PlacementCollector* callback) {
     placement_templates.push_back(placement_template);
     callbacks[placement_template] = callback;
   }
 
-  uint16_t IPFIXContentHandler::wire_template_min_length(const MatchTemplate* t) {
+  uint16_t PlacementContentHandler::wire_template_min_length(const MatchTemplate* t) {
     uint16_t min = 0;
 
     for (auto i = t->begin(); i != t->end(); ++i) {

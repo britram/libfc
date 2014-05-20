@@ -39,7 +39,7 @@
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 #include "BufferInputSource.h"
-#include "IPFIXContentHandler.h"
+#include "PlacementContentHandler.h"
 #include "FileInputSource.h"
 #include "IPFIXMessageStreamParser.h"
 #include "InfoModel.h"
@@ -61,7 +61,7 @@ static unsigned char* copy_message() {
   
 
 BOOST_AUTO_TEST_CASE(WrongMagic) {
-  IPFIXContentHandler dsr;
+  PlacementContentHandler dsr(PlacementContentHandler::ipfix);
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&dsr);
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(WrongMagic) {
 }
 
 BOOST_AUTO_TEST_CASE(ShortMsg) {
-  IPFIXContentHandler dsr;
+  PlacementContentHandler dsr(PlacementContentHandler::ipfix);
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&dsr);

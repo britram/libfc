@@ -182,7 +182,7 @@ namespace LIBFC {
           cur += set_length - kIpfixSetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(
             end_options_template_set());
-        } else  if (set_id >= kIpfixMinDataSetId) {
+        } else  if (set_id >= kMinDataSetId) {
           LIBFC_RETURN_CALLBACK_ERROR(
             start_data_set(
               set_id, set_length - kIpfixSetHeaderLen, cur));
