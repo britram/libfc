@@ -55,6 +55,7 @@ namespace LIBFC {
   class MessageStreamParser {
   public:
     MessageStreamParser();
+    virtual ~MessageStreamParser();
 
     /** Parses an IPFIX message stream from an input source.
      *

@@ -29,13 +29,20 @@
  *
  * From Brian's ipfix2csv Python utility.
  *
- * Syntax: ipfix2csv -s [iespec-file] [ienames...] [ipfix-stream]
+ * Syntax: ipfix2csv [--version={5|9|10}|-v {5|9|10} [-s iespec-file] \
+ *     [ienames...] [message-stream]
  *
  * E.g. ./ipfix2csv -s qof.iespec \
- *     sourceIPv4Address destinationIPv4Address \
- *     meanTcpRttMilliseconds reverseMeanTcpRttMilliseconds
+ *     sourceIPv4Address destinationIPv4Address 
  *   < ../qof/test/qof-test.ipfix \
  *   > qof-test-rtt-nocmin.csv
+ *
+ * Or:
+ *
+ * ./ipfix2csv --message-version=9 \
+ *     --input=/zp0/statdat/test/19991_00098798_1398816000.dat.bz2 \
+ *     sourceIPv4Address destinationIPv4Address		    \
+ *     meanTcpRttMilliseconds reverseMeanTcpRttMilliseconds
  *
  * Or:
  *
@@ -79,6 +86,7 @@
 #include "InfoModel.h"
 #include "PlacementCollector.h"
 #include "PlacementTemplate.h"
+#include "WandioInputSource.h"
 
 #include "exceptions/FormatError.h"
 
@@ -92,8 +100,9 @@ using namespace LIBFC;
 static const char* spec_file_name = 0;
 static int verbose_flag = false;
 static int help_flag = false;
+static int message_version = 10;
 static std::list<const char*> ie_names;
-  
+static std::string filename;
 
 /* Code patterned after http://www.gnu.org/software/libc/
  * manual/html_node/Getopt-Long-Option-Example.html
@@ -103,14 +112,16 @@ static void parse_options(int argc, char* const* argv) {
   while (1) {
     static struct option options[] = {
       { "help", no_argument, &help_flag, 1 },
+      { "input", required_argument, 0, 'i' },
       { "verbose", no_argument, &verbose_flag, 1 },
+      { "message-version", required_argument, 0, 'm' },
       { "specfile", required_argument, 0, 's' },
       { 0, 0, 0, 0 },
     };
 
     int option_index = 0;
 
-    int c = getopt_long(argc, argv, "hs:v", options, &option_index);
+    int c = getopt_long(argc, argv, "hi:m:s:v", options, &option_index);
 
     if (c == -1)
       break;
@@ -123,6 +134,18 @@ static void parse_options(int argc, char* const* argv) {
       if (optarg)
         std::cerr << " with arg \"" << optarg << "\"";
       std::cerr << std::endl;
+      break;
+    case 'i':
+      filename = optarg;
+      break;
+    case 'm':
+      message_version = atoi(optarg);
+      if (message_version != 9 && message_version != 10) {
+	std::cerr << "Message version " << optarg 
+		  << " is either unsupported or has a syntax error"
+		  << " (only 9 and 10 are allowed)" << std::endl;
+	exit(EXIT_FAILURE);
+      }
       break;
     case 's':
       spec_file_name = optarg;
@@ -391,7 +414,8 @@ print_csv_header(std::ostream& os) {
 
 class CSVCollector : public PlacementCollector {
 public:
-  CSVCollector() {
+  CSVCollector(PlacementCollector::Protocol protocol) 
+    : PlacementCollector(protocol) {
     InfoModel& model = LIBFC::InfoModel::instance();
 
     csv_template = new PlacementTemplate();
@@ -567,8 +591,23 @@ int main(int argc, char* const* argv) {
   config.configure();
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-  InfoModel::instance().default5103();
+  LIBFC::PlacementCollector::Protocol protocol;
+  InputSource* is = 0;
+
   parse_options(argc, argv);
+
+  if (message_version == 10) {
+    InfoModel::instance().default5103();
+    protocol = LIBFC::PlacementCollector::ipfix;
+    is = new FileInputSource(0, "<stdin>"); // 0 == stdin
+  } else if (message_version == 9) {
+    InfoModel::instance().defaultV9();
+    protocol = LIBFC::PlacementCollector::netflowv9;
+    is = new WandioInputSource(filename);
+  } else {
+    std::cerr << "Unsupported message version " << message_version << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
   add_ies_from_spec_file();
 
@@ -579,17 +618,16 @@ int main(int argc, char* const* argv) {
 
   std::cout.fill('0');
 
-  CSVCollector cc;
+  CSVCollector cc{protocol};
 
   print_csv_header(std::cout);
 
-  FileInputSource is(0, "<stdin>"); // 0 == stdin
-  try {
-    cc.collect(is);
-  } catch (FormatError e) {
-    std::cerr << "Format error: " << e.what() << std::endl;
+  std::shared_ptr<ErrorContext> e = cc.collect(*is);
+  if (e != 0) {
+    std::cerr << e->to_string() << std::endl;
     return EXIT_FAILURE;
   }
 
+  delete is;
   return EXIT_SUCCESS;
 }

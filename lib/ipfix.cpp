@@ -48,7 +48,8 @@ private:
   std::set<LIBFC::PlacementTemplate*> templates;
 
 public:
-  CBinding() {
+  CBinding() 
+    : PlacementCollector(PlacementCollector::ipfix) {
   }
 
   virtual ~CBinding() {

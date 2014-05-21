@@ -29,6 +29,9 @@
 
 namespace LIBFC {
 
+  InputSource::~InputSource() {
+  }
+
   ssize_t InputSource::peek(uint8_t* buf, uint16_t len) {
     errno = EINVAL;
     return -1;

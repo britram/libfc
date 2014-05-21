@@ -34,9 +34,26 @@
 #  define _LIBFC_DECODE_UTIL_H_
 
 #  include <cstdint>
+#  include <iomanip>
 #  include <string>
 
 namespace LIBFC {
+
+  /** Makes outout come out in hex, with leading zeroes.
+   *
+   * This macro is supposed to be used like this:
+   *
+   * @code
+   * std::stringstream s;
+   *
+   * s << LIBFC_HEX(4) << 13;
+   * @endcode
+   *
+   * This would result in the stream s containing "0x000d".
+   */
+#  define LIBFC_HEX(width) \
+  "0x" << std::hex << std::setw(width) << std::setfill('0')
+
   /** Decodes a 16-bit value from a buffer.
    *
    * Values are transported on the wire in network byte order (=

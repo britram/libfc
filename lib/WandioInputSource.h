@@ -45,12 +45,19 @@ namespace LIBFC {
 
   class WandioInputSource : public InputSource {
   public:
-    /** Creates a TCP input source from a file descriptor.
+    /** Creates a wandio input source from an io_t.
      *
-     * @param fd the file descriptor belonging to an IPFIX data file
+     * @param io the io_t pointer belonging to a data file
      * @param name the name you want this file to be known to diagnostics
      */
     WandioInputSource(io_t* io, std::string name);
+
+    /** Creates a wandio input source from a file name.
+     *
+     * @param name the file name
+     */
+    WandioInputSource(std::string name);
+
     ~WandioInputSource();
 
     ssize_t read(uint8_t* buf, uint16_t len);
@@ -66,6 +73,7 @@ namespace LIBFC {
     size_t message_offset;
     size_t current_offset;
     std::string name;
+    bool io_belongs_to_me;
   };
 
 } // namespace LIBFC

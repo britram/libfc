@@ -64,46 +64,7 @@ namespace LIBFC {
     } while (0)
 
 
-#define CH_HEX(width) \
-  "0x" << std::hex << std::setw(width) << std::setfill('0')
-
-  enum {
-    IPFIX_PARAMETERS = 0,
-    V9_PARAMETERS,
-    V5_PARAMETERS,
-  };
-
-  static const struct protocol_parameters_t {
-    /** The version we expect to see in the header. */
-    uint16_t expected_version;
-
-    /** The minimum message length. */
-    uint16_t min_message_length;
-
-    /** The length of a template header. */
-    uint16_t template_header_length;
-
-    /** The length of an options template header. */
-    uint16_t options_template_header_length;
-  } protocol_parameters[] = {
-    /** IPFIX parameters. */
-    {
-      kIpfixVersion,
-      kIpfixMinMessageLength,
-    },
-    /** V9 parameters. */
-    {
-      kV9Version,
-      kV9MinMessageLength,
-    },
-    /** V5 parameters. */
-    {
-      kV9Version,
-      kV9MinMessageLength,
-    },
-  };
-
-  PlacementContentHandler::PlacementContentHandler(Protocol protocol)
+  PlacementContentHandler::PlacementContentHandler()
     : info_model(InfoModel::instance()),
       use_matched_template_cache(false),
       current_wire_template(0),
@@ -113,11 +74,6 @@ namespace LIBFC {
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementContentHandler")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
-    switch (protocol) {
-    case ipfix: parameters = &protocol_parameters[IPFIX_PARAMETERS];
-    case v9: parameters = &protocol_parameters[V9_PARAMETERS];
-    case v5: parameters = &protocol_parameters[V5_PARAMETERS];
-    }
   }
 
   PlacementContentHandler::~PlacementContentHandler() {
@@ -167,20 +123,22 @@ namespace LIBFC {
 		    << ", base_time=" << base_time);
     assert(current_wire_template == 0);
 
-    if (version != parameters->expected_version)
-      CH_REPORT_ERROR(message_version_number, 
-		      "Expected message version " 
-		      << CH_HEX(4) << parameters->expected_version 
-		      << ", got " << CH_HEX(4) << version);
-
+    /* At this point, we can be sure that the version is correct for
+     * the underlying MessageStreamParser class.  In other words, if
+     * the MessageStreamParser that calls this method is an
+     * IPFIXMessageStreamParser, then version will be equal to 10, and
+     * so on.  But still, some things don't make sense for IPFIX, for
+     * example a nonzero base time. */
     if (version == kIpfixVersion && base_time != 0)
       CH_REPORT_ERROR(ipfix_basetime,
 		      "Expected base_time 0 for IPFIX, got 0x"
 		      << std::hex << std::setw(4) << base_time);
 
-    if (length < parameters->min_message_length)
+    /* TODO: Figure out (and check for) minimal message lengths for v9
+     * and v5. */
+    if (version == kIpfixVersion && length < kIpfixMinMessageLen)
       CH_REPORT_ERROR(short_message,
-		      "must be at least " << parameters->min_message_length
+		      "must be at least " << kIpfixMinMessageLen
 		      << " bytes long, got only " << length);
 
     this->observation_domain = observation_domain;
@@ -273,17 +231,18 @@ namespace LIBFC {
     assert(current_wire_template == 0);
 
     process_template_set(set_id, set_length, buf, false);
-    return std::shared_ptr<ErrorContext>(0);
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_set");
-    return std::shared_ptr<ErrorContext>(0);
+    LIBFC_RETURN_OK();
   }
 
   uint64_t PlacementContentHandler::make_template_key(uint16_t tid) const {
     return (static_cast<uint64_t>(observation_domain) << 16) + tid;
   }
+
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::start_template_record(
       uint16_t template_id,

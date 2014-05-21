@@ -37,6 +37,7 @@
 #    include <log4cplus/logger.h>
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
+#  include "InfoModel.h"
 #  include "ContentHandler.h"
 
 namespace LIBFC {
@@ -86,6 +87,16 @@ namespace LIBFC {
 						  uint32_t enterprise_number);
 
   private:
+    std::shared_ptr<ErrorContext> process_template_set(
+      uint16_t set_id,
+      uint16_t set_length,
+      const uint8_t* buf,
+      bool is_options_set);
+
+    /** The cached InfoModel instance. */
+    InfoModel& info_model;
+    
+    /** The version we expect to see in message headers. */
     uint16_t expected_version;
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_

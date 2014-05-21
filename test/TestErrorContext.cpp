@@ -61,7 +61,7 @@ static unsigned char* copy_message() {
   
 
 BOOST_AUTO_TEST_CASE(WrongMagic) {
-  PlacementContentHandler dsr(PlacementContentHandler::ipfix);
+  PlacementContentHandler dsr;
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&dsr);
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(WrongMagic) {
 }
 
 BOOST_AUTO_TEST_CASE(ShortMsg) {
-  PlacementContentHandler dsr(PlacementContentHandler::ipfix);
+  PlacementContentHandler dsr;
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&dsr);

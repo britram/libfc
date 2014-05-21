@@ -44,6 +44,9 @@ namespace LIBFC {
   {
   }
 
+  MessageStreamParser::~MessageStreamParser() {
+  }
+
   void MessageStreamParser::set_content_handler(ContentHandler* handler) {
     content_handler = handler;
   }

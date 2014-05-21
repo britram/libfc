@@ -65,6 +65,9 @@ namespace LIBFC {
    */
   class InputSource {
   public:
+    /** Destroys an InputSource. */
+    virtual ~InputSource() = 0;
+
     /** Reads a number of bytes from the input source into a buffer,
      *    advancing the offset.
      *

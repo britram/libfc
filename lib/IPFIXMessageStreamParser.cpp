@@ -29,6 +29,7 @@
 #include <sstream>
 
 #include "Constants.h"
+#include "ErrorContext.h"
 #include "IPFIXMessageStreamParser.h"
 
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
@@ -81,7 +82,6 @@ namespace LIBFC {
     while (nbytes > 0) {
       uint8_t* cur = message;
 
-      /* Decode message header */
       if (static_cast<size_t>(nbytes) < kIpfixMessageHeaderLen) {
 	LIBFC_RETURN_ERROR(recoverable, short_header, 
 			   "Wanted " 
@@ -92,9 +92,17 @@ namespace LIBFC {
       }
       assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
 
+      uint16_t version = decode_uint16(cur +  0);
+      if (version != kIpfixVersion)
+	LIBFC_RETURN_ERROR(recoverable, message_version_number, 
+			   "Expected message version " 
+			   << LIBFC_HEX(4) << kIpfixVersion
+			   << ", got " << LIBFC_HEX(4) << version,
+			   0, &is, message, nbytes, 0);
+
       message_size = decode_uint16(cur +  2);
       LIBFC_RETURN_CALLBACK_ERROR(
-        start_message(decode_uint16(cur +  0),
+        start_message(version,
 		      message_size,
 		      decode_uint32(cur +  4),
 		      decode_uint32(cur +  8),

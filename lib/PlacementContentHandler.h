@@ -59,13 +59,7 @@ namespace LIBFC {
    */
   class PlacementContentHandler : public ContentHandler {
   public:
-    enum Protocol {
-      ipfix,
-      v9,
-      v5
-    };
-
-    PlacementContentHandler(Protocol protocol);
+    PlacementContentHandler();
     ~PlacementContentHandler();
 
     /* From ContentHandler */
@@ -278,9 +272,6 @@ namespace LIBFC {
      * well).
      */
     bool parse_is_good;
-
-    /** Protocol parameters. Struct is resolved in accompanying .cpp file. */
-    const struct protocol_parameters_t* parameters;
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

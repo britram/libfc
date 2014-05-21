@@ -38,12 +38,25 @@
 #include <iostream>
 
 #include "Constants.h"
+#include "InfoElement.h"
 #include "PrintContentHandler.h"
+
+#include "decode_util.h"
+#include "pointer_checks.h"
+
+#define PH_RETURN_CALLBACK_ERROR(call)					\
+  do {									\
+    /* Make sure call is evaluated only once */				\
+    std::shared_ptr<ErrorContext> err = call;				\
+    if (err != 0) 							\
+      return err;							\
+  } while (0)
 
 namespace LIBFC {
 
   PrintContentHandler::PrintContentHandler(uint16_t expected_version)
-    : expected_version(expected_version)
+    : info_model(InfoModel::instance()),
+      expected_version(expected_version)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                                         , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
@@ -117,8 +130,88 @@ namespace LIBFC {
     std::cerr << "    Template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
+    process_template_set(set_id, set_length, buf, false);
     LIBFC_RETURN_OK();
   }
+
+  std::shared_ptr<ErrorContext> PrintContentHandler::process_template_set(
+      uint16_t set_id,
+      uint16_t set_length,
+      const uint8_t* buf,
+      bool is_options_set) {
+    const uint8_t* cur = buf;
+    const uint8_t* set_end = buf + set_length;
+    const uint16_t header_length 
+      = is_options_set ? kOptionsTemplateHeaderLen
+                       : kTemplateHeaderLen;
+
+    while (CHECK_POINTER_WITHIN_I(cur + header_length, cur, set_end)) {
+      /* Decode template record */
+      uint16_t set_id = decode_uint16(cur + 0); 
+      uint16_t field_count = decode_uint16(cur + 2);
+      uint16_t scope_field_count = is_options_set ? decode_uint16(cur + 4) : 0;
+      
+      PH_RETURN_CALLBACK_ERROR(start_template_record(set_id, field_count));
+      
+      cur += header_length;
+      
+      for (unsigned int field = 0; field < field_count; field++) {
+	if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen,
+				    cur, set_end)) {
+	  LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
+			     "Field specifier partly outside template record", 
+			     0, 0, 0, 0, cur - buf);
+	}
+	
+	uint16_t ie_id = decode_uint16(cur + 0);
+	uint16_t ie_length = decode_uint16(cur + 2);
+	bool enterprise = ie_id & 0x8000;
+	ie_id &= 0x7fff;
+	
+	uint32_t enterprise_number = 0;
+	if (enterprise) {
+	  if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen
+				      + kEnterpriseLen, cur,
+				      set_end)) {
+	    LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
+			       "Field specifier partly outside template "
+			       "record (enterprise)", 
+			       0, 0, 0, 0, cur - buf);
+	  }
+	  enterprise_number = decode_uint32(cur + 4);
+	}
+	
+	std::cerr << "        ";
+	if (is_options_set && field < scope_field_count)
+	  std::cerr << "Scope field";
+	else if (is_options_set)
+	  std::cerr << "Options field";
+	else /* !is_options_set */
+	  std::cerr << "Field specifier";
+	
+	const InfoElement* ie 
+	  = info_model.lookupIE(enterprise_number, ie_id, ie_length);
+
+	if (ie != 0) 
+	  std::cerr << ", name=" << ie->name();
+	else {
+	  std::cerr << ( enterprise ? ", enterprise" : "" )
+		    << ", ie_id=" << ie_id
+		    << ", ie_length=" << ie_length;
+	  if (enterprise)
+	    std::cerr << ", enterprise_number=" << enterprise_number;
+	}
+	std::cerr << std::endl;
+
+	cur += kFieldSpecifierLen + (enterprise ? kEnterpriseLen : 0);
+	assert (cur <= set_end);
+      }
+      
+      PH_RETURN_CALLBACK_ERROR(end_template_record());
+    }
+    LIBFC_RETURN_OK();
+  }
+
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_template_set() {
     std::cerr << "    Template set ends" << std::endl;

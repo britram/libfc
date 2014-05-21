@@ -34,12 +34,23 @@ namespace LIBFC {
     : io(io),
       message_offset(0),
       current_offset(0),
-      name(name) {
+      name(name),
+      io_belongs_to_me(false) {
+  }
+
+  WandioInputSource::WandioInputSource(std::string name)
+    : io(0),
+      message_offset(0),
+      current_offset(0),
+      name(name),
+      io_belongs_to_me(true) {
+    io = wandio_create(name.c_str());
   }
 
   WandioInputSource::~WandioInputSource() {
-    /* Do not "delete io;"! The io pointer belongs to the guy who
-       created the WandioInputSource! */
+    /* Do not destroy io if it doesn't belong to me! */
+    if (io_belongs_to_me)
+      wandio_destroy(io);
   }
 
   ssize_t WandioInputSource::read(uint8_t* buf, uint16_t len) {

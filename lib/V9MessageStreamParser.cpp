@@ -86,7 +86,6 @@ namespace LIBFC {
     while (nbytes > 0) {
       uint8_t* cur = message;
 
-      /* Decode message header */
       if (static_cast<size_t>(nbytes) < kV9MessageHeaderLen) {
 	LIBFC_RETURN_ERROR(recoverable, short_header, 
 			   "Wanted " 
@@ -96,6 +95,14 @@ namespace LIBFC {
 			   0, &is, message, nbytes, 0);
       }
       assert(static_cast<size_t>(nbytes) == kV9MessageHeaderLen);
+
+      uint16_t version = decode_uint16(cur +  0);
+      if (version != kV9Version)
+	LIBFC_RETURN_ERROR(recoverable, message_version_number, 
+			   "Expected message version " 
+			   << LIBFC_HEX(4) << kV9Version 
+			   << ", got " << LIBFC_HEX(4) << version,
+			   0, &is, message, nbytes, 0);
 
       /* Via Brian and demux_statdat.c: the v9 format does not have
        * the message size (in bytes) in the header, but rather the
@@ -185,13 +192,13 @@ namespace LIBFC {
        *     - ntohl(hdr->sysuptime_ms);
        */
       LIBFC_RETURN_CALLBACK_ERROR(
-        start_message(decode_uint16(message +  0),
+        start_message(version,
 		      message_size,
 		      decode_uint32(message +  8),
 		      decode_uint32(message + 12),
 		      decode_uint32(message + 16),
 		      static_cast<uint64_t>(decode_uint32(message + 8))*1000 
-		      - static_cast<uint64_t>(decode_uint32(message + 4))));
+		        - static_cast<uint64_t>(decode_uint32(message + 4))));
 
       /* This assert should be true since message_size is a uint16_t
        * and message is a static buffer of size 65535. But beware if

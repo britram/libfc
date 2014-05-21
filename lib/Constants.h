@@ -69,7 +69,7 @@ namespace LIBFC {
    * message must be at least 16 + 4 = 20 bytes long (message header
    * length, see Chapter 3 Verse 1; set header length see Chapter
    * 3, Verse 3.2).  */
-  static const size_t kIpfixMinMessageLength = 20;
+  static const size_t kIpfixMinMessageLen = 20;
 
   /** Framing constant: length of template record header */
   static const size_t kTemplateHeaderLen = 4;
