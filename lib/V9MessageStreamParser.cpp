@@ -114,6 +114,11 @@ namespace LIBFC {
        * So, in order JUST to get the message size, we need to iterate
        * over the message, set by set, stopping only when we see the
        * next message header, or EOF.  Don't you like v9 already?
+       *
+       * TODO: Optimisation idea: we COULD save the offsets to
+       * the sets in order to save us the offset computation the
+       * second time around.  Should deframing turn out to be a
+       * performance problem, we should try that.
        */
       message_size = kV9MessageHeaderLen;
       
@@ -131,11 +136,11 @@ namespace LIBFC {
 	current_set_id = decode_uint16(cur + 0);
 	if (current_set_id == kV9Version)
 	  break;
-	else if (current_set_id == kV5Version) {
-	  LOG4CPLUS_WARN(logger, "V5 set ID encountered in V9 stream "
-			 << is.get_name());
-	  break;
-	}
+	else if (current_set_id == kV5Version)
+          LIBFC_RETURN_ERROR(recoverable, message_version_number, 
+                             "Wanted " << kV9Version
+                             << " as version number, but got " << kV5Version,
+                             0, &is, message, nbytes, 0);
 
 	/* Please leave this assert in. It *ought* to be always true,
 	 * and in thie case, the compiler should be able to optimize
