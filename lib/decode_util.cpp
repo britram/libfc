@@ -31,7 +31,7 @@
 
 #include "exceptions/FormatError.h"
 
-namespace IPFIX {
+namespace LIBFC {
   uint16_t decode_uint16(const uint8_t* buf) {
     return (static_cast<uint16_t>(buf[0]) << 8) 
       | (static_cast<uint16_t>(buf[1]) << 0);
@@ -62,6 +62,6 @@ namespace IPFIX {
       buf[buf_size - 1] = '\0';   // Shouldn't be necessary
     }
 
-    throw IPFIX::FormatError(buf);
+    throw LIBFC::FormatError(buf);
   }
-} // namespace IPFIX
+} // namespace LIBFC

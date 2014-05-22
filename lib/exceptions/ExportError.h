@@ -30,7 +30,7 @@
 
 #  include "Exception.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** IPFIX Export Errors.
    *
@@ -45,6 +45,6 @@ namespace IPFIX {
     explicit ExportError(const std::string& message);
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif /* IPFIX_EXPORTERROR_H */

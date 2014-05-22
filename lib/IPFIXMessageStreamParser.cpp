@@ -29,6 +29,7 @@
 #include <sstream>
 
 #include "Constants.h"
+#include "ErrorContext.h"
 #include "IPFIXMessageStreamParser.h"
 
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
@@ -40,25 +41,8 @@
 
 #include "decode_util.h"
 
-/** Augments the error context from a callback and returns it.
- *
- * This macro calls a callback, examines the result, and, if the
- * result is an error, augments the error with the current message and
- * adjusts the offset.
- */
-#define LIBFC_RETURN_CALLBACK_ERROR(call) \
-    do { \
-      /* Make sure call is evaluated only once */			\
-      std::shared_ptr<ErrorContext> err = content_handler->call;	\
-      if (err != 0) {							\
-	err->set_input_source(&is);					\
-        err->set_message(message, message_size);			\
-        err->set_offset(err->get_offset() + offset);			\
-        return err;							\
-      }									\
-    } while (0)
 
-namespace IPFIX {
+namespace LIBFC {
 
   IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
     : offset(0)
@@ -98,7 +82,6 @@ namespace IPFIX {
     while (nbytes > 0) {
       uint8_t* cur = message;
 
-      /* Decode message header */
       if (static_cast<size_t>(nbytes) < kIpfixMessageHeaderLen) {
 	LIBFC_RETURN_ERROR(recoverable, short_header, 
 			   "Wanted " 
@@ -109,9 +92,17 @@ namespace IPFIX {
       }
       assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
 
+      uint16_t version = decode_uint16(cur +  0);
+      if (version != kIpfixVersion)
+	LIBFC_RETURN_ERROR(recoverable, message_version_number, 
+			   "Expected message version " 
+			   << LIBFC_HEX(4) << kIpfixVersion
+			   << ", got " << LIBFC_HEX(4) << version,
+			   0, &is, message, nbytes, 0);
+
       message_size = decode_uint16(cur +  2);
       LIBFC_RETURN_CALLBACK_ERROR(
-        start_message(decode_uint16(cur +  0),
+        start_message(version,
 		      message_size,
 		      decode_uint32(cur +  4),
 		      decode_uint32(cur +  8),
@@ -199,13 +190,19 @@ namespace IPFIX {
           cur += set_length - kIpfixSetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(
             end_options_template_set());
-        } else {
+        } else  if (set_id >= kMinDataSetId) {
           LIBFC_RETURN_CALLBACK_ERROR(
             start_data_set(
               set_id, set_length - kIpfixSetHeaderLen, cur));
           cur += set_length - kIpfixSetHeaderLen;
 	  LIBFC_RETURN_CALLBACK_ERROR(end_data_set());
-        }
+        } else
+	  LIBFC_RETURN_ERROR(recoverable, format_error,
+			     "Set has ID " << set_id << ", which is not "
+			     "an IPFIX template, options template or data "
+			     "set ID",
+			     0, &is, message, message_size, offset);
+
 
         assert(cur == set_end);
         assert(cur <= message_end);
@@ -239,4 +236,4 @@ namespace IPFIX {
     LIBFC_RETURN_OK();
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

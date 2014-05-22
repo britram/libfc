@@ -50,7 +50,7 @@
 
 class EncodePlan;
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Interface for exporter with the placement interface.
    *
@@ -190,6 +190,6 @@ namespace IPFIX {
     void finish_current_data_set();
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_PLACEMENTEXPORTER_H_

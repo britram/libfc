@@ -41,31 +41,41 @@ extern "C" {
 
 #  include "InputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   class WandioInputSource : public InputSource {
   public:
-    /** Creates a TCP input source from a file descriptor.
+    /** Creates a wandio input source from an io_t.
      *
-     * @param fd the file descriptor belonging to an IPFIX data file
+     * @param io the io_t pointer belonging to a data file
      * @param name the name you want this file to be known to diagnostics
      */
     WandioInputSource(io_t* io, std::string name);
+
+    /** Creates a wandio input source from a file name.
+     *
+     * @param name the file name
+     */
+    WandioInputSource(std::string name);
+
     ~WandioInputSource();
 
     ssize_t read(uint8_t* buf, uint16_t len);
+    ssize_t peek(uint8_t* buf, uint16_t len);
     bool resync();
     size_t get_message_offset() const;
     void advance_message_offset();
     const char* get_name() const;
+    bool can_peek() const;
 
   private:
     io_t* io;
     size_t message_offset;
     size_t current_offset;
     std::string name;
+    bool io_belongs_to_me;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_WANDIOINPUTSOURCE_H_

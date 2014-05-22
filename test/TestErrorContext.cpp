@@ -39,7 +39,7 @@
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
 #include "BufferInputSource.h"
-#include "IPFIXContentHandler.h"
+#include "PlacementContentHandler.h"
 #include "FileInputSource.h"
 #include "IPFIXMessageStreamParser.h"
 #include "InfoModel.h"
@@ -47,7 +47,7 @@
 
 #include "exceptions/FormatError.h"
 
-using namespace IPFIX;
+using namespace LIBFC;
 
 BOOST_AUTO_TEST_SUITE(ErrorContext)
 
@@ -61,7 +61,7 @@ static unsigned char* copy_message() {
   
 
 BOOST_AUTO_TEST_CASE(WrongMagic) {
-  IPFIXContentHandler dsr;
+  PlacementContentHandler dsr;
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&dsr);
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(WrongMagic) {
 
   /* Use good_msg for sizeof, not msg! */
   BufferInputSource is(msg, sizeof good_msg);
-  std::shared_ptr<IPFIX::ErrorContext> err = ir.parse(is);
+  std::shared_ptr<LIBFC::ErrorContext> err = ir.parse(is);
 
   BOOST_CHECK(err != 0);
 
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(WrongMagic) {
 }
 
 BOOST_AUTO_TEST_CASE(ShortMsg) {
-  IPFIXContentHandler dsr;
+  PlacementContentHandler dsr;
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&dsr);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(ShortMsg) {
 
   /* Use good_msg for sizeof, not msg! */
   BufferInputSource is(msg, sizeof good_msg);
-  std::shared_ptr<IPFIX::ErrorContext> err = ir.parse(is);
+  std::shared_ptr<LIBFC::ErrorContext> err = ir.parse(is);
 
   BOOST_CHECK(err != 0);
 

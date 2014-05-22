@@ -45,7 +45,7 @@
 #  include "InputSource.h"
 #  include <sstream>
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Returns a shared pointer to an ErrorContext object.
    *
@@ -70,7 +70,7 @@ namespace IPFIX {
        * Using trigraphs, '<:' is actually synonymous with	      \
        * '['.  Yeah, I know.					      \
        */							      \
-      return std::shared_ptr< ::IPFIX::ErrorContext>(                 \
+      return std::shared_ptr< ::LIBFC::ErrorContext>(                 \
         new ErrorContext(ErrorContext::severity, Error(Error::error), \
                          system_errno, ss.str().c_str(), is, message, \
 			 size, off));				      \
@@ -85,7 +85,7 @@ namespace IPFIX {
        * Using trigraphs, '<:' is actually synonymous with	\
        * '['.  Yeah, I know.					\
        */							\
-      return std::shared_ptr< ::IPFIX::ErrorContext>(0);	\
+      return std::shared_ptr< ::LIBFC::ErrorContext>(0);	\
     } while (0)
 
   /** An error context.
@@ -314,6 +314,6 @@ namespace IPFIX {
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif /* _LIBFC_ERRORCONTEXT_H_ */

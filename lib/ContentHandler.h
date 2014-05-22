@@ -38,7 +38,7 @@
 
 #  include <ErrorContext.h>
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Abstract base class for classes that handle IPFIX messages. 
    * 
@@ -173,6 +173,6 @@ namespace IPFIX {
     virtual std::shared_ptr<ErrorContext> end_data_set() = 0;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_CONTENTHANDLER_H_

@@ -37,7 +37,7 @@
 #include "WandioInputSource.h"
 #include "exceptions/FormatError.h"
 
-using namespace IPFIX;
+using namespace LIBFC;
 
 static bool infomodel_initialized = false;
 
@@ -52,7 +52,8 @@ private:
   std::set<PlacementTemplate*> templates;
 
 public:
-  CBinding() {
+  CBinding() 
+    : PlacementCollector(PlacementCollector::ipfix) {
   }
 
   virtual ~CBinding() {

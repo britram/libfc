@@ -29,7 +29,7 @@
 
 #include "BufferInputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   BufferInputSource::BufferInputSource(const uint8_t* buf, size_t len) 
     : buf(new uint8_t[len]), 
@@ -47,6 +47,17 @@ namespace IPFIX {
   }
 
   ssize_t BufferInputSource::read(uint8_t* result_buf, uint16_t result_len) {
+    ssize_t ret = peek(result_buf, result_len);
+
+    if (ret >= 0) {
+      off += ret;
+      current_offset += ret;
+    }
+
+    return ret;
+  }
+
+  ssize_t BufferInputSource::peek(uint8_t* result_buf, uint16_t result_len) {
     assert(off <= len);
 
     size_t bytes_to_copy = off + result_len > len ? len - off : result_len;
@@ -60,8 +71,6 @@ namespace IPFIX {
     assert(bytes_to_copy <= UINT16_MAX);
 
     memcpy(result_buf, buf + off, bytes_to_copy);
-    off += bytes_to_copy;
-    current_offset += bytes_to_copy;
 
     return static_cast<ssize_t>(bytes_to_copy);
   }
@@ -94,4 +103,9 @@ namespace IPFIX {
     
     return name;
   }
-}
+
+  bool BufferInputSource::can_peek() const {
+    return true;
+  }
+
+} // namespace LIBFC

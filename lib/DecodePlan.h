@@ -42,7 +42,7 @@
 #  include "PlacementTemplate.h"
 #  include "MatchTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Decode plans describe how a data record is to be decoded.
    *
@@ -189,4 +189,4 @@ namespace IPFIX {
   
 #endif /* _LIBFC_DECODEPLAN_H_ */
 
-} /* namespace IPFIX */
+} /* namespace LIBFC */

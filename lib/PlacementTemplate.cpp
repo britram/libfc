@@ -23,6 +23,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <climits>
 
 #include <arpa/inet.h>
 
@@ -35,7 +36,7 @@
 #include "BasicOctetArray.h"
 #include "PlacementTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   class PlacementTemplate::PlacementInfo {
   public:
@@ -119,7 +120,8 @@ namespace IPFIX {
       }
     }
     LOG4CPLUS_TRACE(logger, "  all found -> return " << placements.size());
-    return placements.size();
+    assert(placements.size() <= UINT_MAX);
+    return static_cast<unsigned int>(placements.size());
   }
 
   void PlacementTemplate::wire_template(
@@ -217,4 +219,4 @@ namespace IPFIX {
     return ies.end();
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

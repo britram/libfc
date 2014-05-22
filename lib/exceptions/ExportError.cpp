@@ -26,9 +26,9 @@
 
 #include "ExportError.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   ExportError::ExportError(const std::string& message)
     : Exception("ExportError: " + message) {}
 
-} // namespace IPFIX
+} // namespace LIBFC

@@ -28,24 +28,40 @@
 
 #include "WandioInputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   WandioInputSource::WandioInputSource(io_t* io, std::string name)
     : io(io),
       message_offset(0),
       current_offset(0),
-      name(name) {
+      name(name),
+      io_belongs_to_me(false) {
+  }
+
+  WandioInputSource::WandioInputSource(std::string name)
+    : io(0),
+      message_offset(0),
+      current_offset(0),
+      name(name),
+      io_belongs_to_me(true) {
+    io = wandio_create(name.c_str());
   }
 
   WandioInputSource::~WandioInputSource() {
-    /* Do not "delete io;"! The io pointer belongs to the guy who
-       created the WandioInputSource! */
+    /* Do not destroy io if it doesn't belong to me! */
+    if (io_belongs_to_me)
+      wandio_destroy(io);
   }
 
   ssize_t WandioInputSource::read(uint8_t* buf, uint16_t len) {
     off_t ret = wandio_read(io, buf, len);
     if (ret > 0)
       current_offset += ret;
+    return static_cast<ssize_t>(ret);
+  }
+
+  ssize_t WandioInputSource::peek(uint8_t* buf, uint16_t len) {
+    off_t ret = wandio_peek(io, buf, len);
     return static_cast<ssize_t>(ret);
   }
 
@@ -67,4 +83,8 @@ namespace IPFIX {
     return name.c_str();
   }
 
-} // namespace IPFIX
+  bool WandioInputSource::can_peek() const {
+    return true;
+  }
+
+} // namespace LIBFC

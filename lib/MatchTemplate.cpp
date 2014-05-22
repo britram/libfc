@@ -32,7 +32,7 @@
 
 #include "MatchTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   MatchTemplate::MatchTemplate() {
   }
@@ -52,4 +52,4 @@ namespace IPFIX {
     }        
   }
 
-} // namespace IPFIX
+} // namespace LIBFC

@@ -48,7 +48,7 @@
 
 // FIXME enforce thread safety on changes to the infomodel
 
-namespace IPFIX {
+namespace LIBFC {
 
   class InfoElement;
 
@@ -71,13 +71,6 @@ namespace IPFIX {
      * defaultIPFIX(), or default5103().
      */
     static InfoModel& instance();
-  
-    /** Initialises the info model with NetFlow v9 information elements.
-     *
-     * Initializes this InfoModel for NetFlowV9 only. NetFlowV9 applications
-     * should call this method once on the default instance.
-     */
-    void defaultV9();
     
     /** Initialises the info model with IPFIX information elements.
      *
@@ -239,6 +232,6 @@ namespace IPFIX {
     mutable std::recursive_mutex lock;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // idem hack

@@ -24,16 +24,35 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "IPFIXMessageStreamParser.h"
 #include "PlacementCollector.h"
+#include "V9MessageStreamParser.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
-  PlacementCollector::PlacementCollector() {
-    ir.set_content_handler(&d);
+  PlacementCollector::PlacementCollector(Protocol protocol) {
+    switch (protocol) {
+    case ipfix:
+      ir = new IPFIXMessageStreamParser();
+      break;
+    case netflowv9:
+      ir = new V9MessageStreamParser();
+      break;
+    case netflowv5:
+      ir = 0;
+      break;
+    }
+
+    if (ir != 0)
+      ir->set_content_handler(&d);
+  }
+
+  PlacementCollector::~PlacementCollector() {
+    delete ir;
   }
 
   std::shared_ptr<ErrorContext> PlacementCollector::collect(InputSource& is) {
-    return ir.parse(is);
+    return ir->parse(is);
   }
 
   void PlacementCollector::register_placement_template(
@@ -41,4 +60,4 @@ namespace IPFIX {
     d.register_placement_template(placement, this);
   }
 
-} // namespace IPFIX
+} // namespace LIBFC
