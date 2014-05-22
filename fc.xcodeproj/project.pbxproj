@@ -44,8 +44,6 @@
 		D354E8061923550800C45B70 /* InfoModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7CE1923550800C45B70 /* InfoModel.h */; };
 		D354E8071923550800C45B70 /* InputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7CF1923550800C45B70 /* InputSource.h */; };
 		D354E8081923550800C45B70 /* ipfix_endian.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7D01923550800C45B70 /* ipfix_endian.h */; };
-		D354E8091923550800C45B70 /* IPFIXContentHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7D11923550800C45B70 /* IPFIXContentHandler.cpp */; };
-		D354E80A1923550800C45B70 /* IPFIXContentHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7D21923550800C45B70 /* IPFIXContentHandler.h */; };
 		D354E80B1923550800C45B70 /* IPFIXMessageStreamParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7D31923550800C45B70 /* IPFIXMessageStreamParser.cpp */; };
 		D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7D41923550800C45B70 /* IPFIXMessageStreamParser.h */; };
 		D354E80D1923550800C45B70 /* MatchTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7D51923550800C45B70 /* MatchTemplate.cpp */; };
@@ -65,6 +63,13 @@
 		D354E81B1923550800C45B70 /* UDPInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7E31923550800C45B70 /* UDPInputSource.h */; };
 		D354E81E19235BD300C45B70 /* libfc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E81C19235BD300C45B70 /* libfc.cpp */; };
 		D354E81F19235BD300C45B70 /* libfc.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E81D19235BD300C45B70 /* libfc.h */; };
+		F559604C192E0496003754C8 /* InputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559604B192E0496003754C8 /* InputSource.cpp */; };
+		F5596053192E04C4003754C8 /* PlacementContentHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */; };
+		F5596054192E04C4003754C8 /* PlacementContentHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F559604E192E04C4003754C8 /* PlacementContentHandler.h */; };
+		F5596055192E04C4003754C8 /* PrintContentHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559604F192E04C4003754C8 /* PrintContentHandler.cpp */; };
+		F5596056192E04C4003754C8 /* PrintContentHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5596050192E04C4003754C8 /* PrintContentHandler.h */; };
+		F5596057192E04C4003754C8 /* V9MessageStreamParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5596051192E04C4003754C8 /* V9MessageStreamParser.cpp */; };
+		F5596058192E04C4003754C8 /* V9MessageStreamParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5596052192E04C4003754C8 /* V9MessageStreamParser.h */; };
 		F5CDC4C419250EE800CBE87D /* WandioInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */; };
 		F5CDC4C519250EE800CBE87D /* WandioInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CDC4C319250EE800CBE87D /* WandioInputSource.h */; };
 		F5CDC4C619250FC500CBE87D /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
@@ -112,8 +117,6 @@
 		D354E7CE1923550800C45B70 /* InfoModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InfoModel.h; path = lib/InfoModel.h; sourceTree = "<group>"; };
 		D354E7CF1923550800C45B70 /* InputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputSource.h; path = lib/InputSource.h; sourceTree = "<group>"; };
 		D354E7D01923550800C45B70 /* ipfix_endian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ipfix_endian.h; path = lib/ipfix_endian.h; sourceTree = "<group>"; };
-		D354E7D11923550800C45B70 /* IPFIXContentHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IPFIXContentHandler.cpp; path = lib/IPFIXContentHandler.cpp; sourceTree = "<group>"; };
-		D354E7D21923550800C45B70 /* IPFIXContentHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IPFIXContentHandler.h; path = lib/IPFIXContentHandler.h; sourceTree = "<group>"; };
 		D354E7D31923550800C45B70 /* IPFIXMessageStreamParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IPFIXMessageStreamParser.cpp; path = lib/IPFIXMessageStreamParser.cpp; sourceTree = "<group>"; };
 		D354E7D41923550800C45B70 /* IPFIXMessageStreamParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IPFIXMessageStreamParser.h; path = lib/IPFIXMessageStreamParser.h; sourceTree = "<group>"; };
 		D354E7D51923550800C45B70 /* MatchTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MatchTemplate.cpp; path = lib/MatchTemplate.cpp; sourceTree = "<group>"; };
@@ -135,6 +138,13 @@
 		D354E81D19235BD300C45B70 /* libfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libfc.h; path = lib/libfc.h; sourceTree = "<group>"; };
 		D354E82019235D2000C45B70 /* libwandio.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwandio.1.dylib; path = ../../opt/lib/libwandio.1.dylib; sourceTree = "<group>"; };
 		D37BC242192352A8009555FF /* libfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F559604B192E0496003754C8 /* InputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputSource.cpp; path = lib/InputSource.cpp; sourceTree = "<group>"; };
+		F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlacementContentHandler.cpp; path = lib/PlacementContentHandler.cpp; sourceTree = "<group>"; };
+		F559604E192E04C4003754C8 /* PlacementContentHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlacementContentHandler.h; path = lib/PlacementContentHandler.h; sourceTree = "<group>"; };
+		F559604F192E04C4003754C8 /* PrintContentHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PrintContentHandler.cpp; path = lib/PrintContentHandler.cpp; sourceTree = "<group>"; };
+		F5596050192E04C4003754C8 /* PrintContentHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrintContentHandler.h; path = lib/PrintContentHandler.h; sourceTree = "<group>"; };
+		F5596051192E04C4003754C8 /* V9MessageStreamParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = V9MessageStreamParser.cpp; path = lib/V9MessageStreamParser.cpp; sourceTree = "<group>"; };
+		F5596052192E04C4003754C8 /* V9MessageStreamParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = V9MessageStreamParser.h; path = lib/V9MessageStreamParser.h; sourceTree = "<group>"; };
 		F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WandioInputSource.cpp; path = lib/WandioInputSource.cpp; sourceTree = "<group>"; };
 		F5CDC4C319250EE800CBE87D /* WandioInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WandioInputSource.h; path = lib/WandioInputSource.h; sourceTree = "<group>"; };
 		F5CDC4CB192510D800CBE87D /* libftrace.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libftrace.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -166,6 +176,13 @@
 		D354E7AA192354D200C45B70 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */,
+				F559604E192E04C4003754C8 /* PlacementContentHandler.h */,
+				F559604F192E04C4003754C8 /* PrintContentHandler.cpp */,
+				F5596050192E04C4003754C8 /* PrintContentHandler.h */,
+				F5596051192E04C4003754C8 /* V9MessageStreamParser.cpp */,
+				F5596052192E04C4003754C8 /* V9MessageStreamParser.h */,
+				F559604B192E0496003754C8 /* InputSource.cpp */,
 				F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */,
 				F5CDC4C319250EE800CBE87D /* WandioInputSource.h */,
 				D354E81C19235BD300C45B70 /* libfc.cpp */,
@@ -200,8 +217,6 @@
 				D354E7CE1923550800C45B70 /* InfoModel.h */,
 				D354E7CF1923550800C45B70 /* InputSource.h */,
 				D354E7D01923550800C45B70 /* ipfix_endian.h */,
-				D354E7D11923550800C45B70 /* IPFIXContentHandler.cpp */,
-				D354E7D21923550800C45B70 /* IPFIXContentHandler.h */,
 				D354E7D31923550800C45B70 /* IPFIXMessageStreamParser.cpp */,
 				D354E7D41923550800C45B70 /* IPFIXMessageStreamParser.h */,
 				D354E7D51923550800C45B70 /* MatchTemplate.cpp */,
@@ -276,8 +291,10 @@
 			files = (
 				D354E7FA1923550800C45B70 /* ExportDestination.h in Headers */,
 				D354E7FC1923550800C45B70 /* FileExportDestination.h in Headers */,
+				F5596054192E04C4003754C8 /* PlacementContentHandler.h in Headers */,
 				D354E7E71923550800C45B70 /* BufferInputSource.h in Headers */,
 				D354E8041923550800C45B70 /* InfoElement.h in Headers */,
+				F5596056192E04C4003754C8 /* PrintContentHandler.h in Headers */,
 				D354E7EB1923550800C45B70 /* decode_util.h in Headers */,
 				D354E7F91923550800C45B70 /* IESpecError.h in Headers */,
 				D354E81B1923550800C45B70 /* UDPInputSource.h in Headers */,
@@ -300,12 +317,12 @@
 				D354E7EF1923550800C45B70 /* Error.h in Headers */,
 				D354E8101923550800C45B70 /* MessageStreamParser.h in Headers */,
 				D354E8081923550800C45B70 /* ipfix_endian.h in Headers */,
-				D354E80A1923550800C45B70 /* IPFIXContentHandler.h in Headers */,
 				D354E8141923550800C45B70 /* PlacementExporter.h in Headers */,
 				D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */,
 				D354E80E1923550800C45B70 /* MatchTemplate.h in Headers */,
 				D354E81F19235BD300C45B70 /* libfc.h in Headers */,
 				D354E8061923550800C45B70 /* InfoModel.h in Headers */,
+				F5596058192E04C4003754C8 /* V9MessageStreamParser.h in Headers */,
 				D354E8171923550800C45B70 /* pointer_checks.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -388,12 +405,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F5CDC4C419250EE800CBE87D /* WandioInputSource.cpp in Sources */,
-				D354E8091923550800C45B70 /* IPFIXContentHandler.cpp in Sources */,
 				D354E7E41923550800C45B70 /* BasicOctetArray.cpp in Sources */,
 				D354E8131923550800C45B70 /* PlacementExporter.cpp in Sources */,
 				D354E80F1923550800C45B70 /* MessageStreamParser.cpp in Sources */,
 				D354E80D1923550800C45B70 /* MatchTemplate.cpp in Sources */,
 				D354E7FD1923550800C45B70 /* FileInputSource.cpp in Sources */,
+				F5596053192E04C4003754C8 /* PlacementContentHandler.cpp in Sources */,
 				D354E7F81923550800C45B70 /* IESpecError.cpp in Sources */,
 				D354E7EE1923550800C45B70 /* Error.cpp in Sources */,
 				D354E7EA1923550800C45B70 /* decode_util.cpp in Sources */,
@@ -407,13 +424,16 @@
 				D354E81E19235BD300C45B70 /* libfc.cpp in Sources */,
 				D354E8051923550800C45B70 /* InfoModel.cpp in Sources */,
 				D354E80B1923550800C45B70 /* IPFIXMessageStreamParser.cpp in Sources */,
+				F5596055192E04C4003754C8 /* PrintContentHandler.cpp in Sources */,
 				D354E7F21923550800C45B70 /* Exception.cpp in Sources */,
 				D354E8181923550800C45B70 /* TCPInputSource.cpp in Sources */,
+				F559604C192E0496003754C8 /* InputSource.cpp in Sources */,
 				D354E81A1923550800C45B70 /* UDPInputSource.cpp in Sources */,
 				D354E7FF1923550800C45B70 /* IETemplate.cpp in Sources */,
 				D354E8151923550800C45B70 /* PlacementTemplate.cpp in Sources */,
 				D354E7F01923550800C45B70 /* ErrorContext.cpp in Sources */,
 				D354E7E61923550800C45B70 /* BufferInputSource.cpp in Sources */,
+				F5596057192E04C4003754C8 /* V9MessageStreamParser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -600,6 +620,7 @@
 				F5CDC4CE192510D800CBE87D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

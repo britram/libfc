@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <cassert>
 #include <iostream>
 
 #include "Constants.h"
@@ -74,7 +75,7 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
   
-  static char* make_local_time(uint32_t t_arg) {
+  static char* make_local_time(uint64_t t_arg) {
     /* From asctime(1): The asctime_r() function does the same [as
      * asctime], but stores the string in a user-supplied buffer which
      * should have room for at least 26 bytes. */
@@ -96,7 +97,7 @@ namespace LIBFC {
                      uint32_t export_time,
                      uint32_t sequence_number,
                      uint32_t observation_domain,
-		     uint64_t base_time) {
+		             uint64_t base_time) {
     char* export_t = make_local_time(export_time);
     char* base_t =  make_local_time(base_time/1000);
     
