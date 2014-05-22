@@ -67,7 +67,27 @@
 		F21C2C591927AB9F00D2E4CD /* libboost_unit_test_framework.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F21C2C581927AB9F00D2E4CD /* libboost_unit_test_framework.dylib */; };
 		F21C2C5B1927ABCC00D2E4CD /* liblog4cplus-1.1.5.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F21C2C5A1927ABCC00D2E4CD /* liblog4cplus-1.1.5.dylib */; };
 		F21C2C611927AF4B00D2E4CD /* InputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F21C2C601927AF4B00D2E4CD /* InputSource.cpp */; };
+		F559603D192DFB8B003754C8 /* ipfix2csv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559603C192DFB8B003754C8 /* ipfix2csv.cpp */; };
+		F559603E192DFB9B003754C8 /* libfc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D37BC242192352A8009555FF /* libfc.dylib */; };
+		F5596045192DFC41003754C8 /* PrintContentHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559603F192DFC41003754C8 /* PrintContentHandler.cpp */; };
+		F5596046192DFC41003754C8 /* PrintContentHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5596040192DFC41003754C8 /* PrintContentHandler.h */; };
+		F5596047192DFC41003754C8 /* V9MessageStreamParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5596041192DFC41003754C8 /* V9MessageStreamParser.cpp */; };
+		F5596048192DFC41003754C8 /* V9MessageStreamParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5596042192DFC41003754C8 /* V9MessageStreamParser.h */; };
+		F5596049192DFC41003754C8 /* WandioInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5596043192DFC41003754C8 /* WandioInputSource.cpp */; };
+		F559604A192DFC41003754C8 /* WandioInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = F5596044192DFC41003754C8 /* WandioInputSource.h */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F5596031192DFB68003754C8 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		D354E7AB1923550800C45B70 /* BasicOctetArray.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BasicOctetArray.cpp; path = lib/BasicOctetArray.cpp; sourceTree = "<group>"; };
@@ -131,6 +151,14 @@
 		F21C2C581927AB9F00D2E4CD /* libboost_unit_test_framework.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_unit_test_framework.dylib; path = ../../../../../opt/boost/boost_1_51_0/stage/lib/libboost_unit_test_framework.dylib; sourceTree = "<group>"; };
 		F21C2C5A1927ABCC00D2E4CD /* liblog4cplus-1.1.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "liblog4cplus-1.1.5.dylib"; path = "../../../../../opt/log4cplus/lib/liblog4cplus-1.1.5.dylib"; sourceTree = "<group>"; };
 		F21C2C601927AF4B00D2E4CD /* InputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputSource.cpp; path = lib/InputSource.cpp; sourceTree = "<group>"; };
+		F5596033192DFB68003754C8 /* ipfix2csv */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipfix2csv; sourceTree = BUILT_PRODUCTS_DIR; };
+		F559603C192DFB8B003754C8 /* ipfix2csv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ipfix2csv.cpp; sourceTree = SOURCE_ROOT; };
+		F559603F192DFC41003754C8 /* PrintContentHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PrintContentHandler.cpp; path = lib/PrintContentHandler.cpp; sourceTree = "<group>"; };
+		F5596040192DFC41003754C8 /* PrintContentHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrintContentHandler.h; path = lib/PrintContentHandler.h; sourceTree = "<group>"; };
+		F5596041192DFC41003754C8 /* V9MessageStreamParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = V9MessageStreamParser.cpp; path = lib/V9MessageStreamParser.cpp; sourceTree = "<group>"; };
+		F5596042192DFC41003754C8 /* V9MessageStreamParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = V9MessageStreamParser.h; path = lib/V9MessageStreamParser.h; sourceTree = "<group>"; };
+		F5596043192DFC41003754C8 /* WandioInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WandioInputSource.cpp; path = lib/WandioInputSource.cpp; sourceTree = "<group>"; };
+		F5596044192DFC41003754C8 /* WandioInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WandioInputSource.h; path = lib/WandioInputSource.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,12 +172,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F5596030192DFB68003754C8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F559603E192DFB9B003754C8 /* libfc.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		D354E7AA192354D200C45B70 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				F559603F192DFC41003754C8 /* PrintContentHandler.cpp */,
+				F5596040192DFC41003754C8 /* PrintContentHandler.h */,
+				F5596041192DFC41003754C8 /* V9MessageStreamParser.cpp */,
+				F5596042192DFC41003754C8 /* V9MessageStreamParser.h */,
+				F5596043192DFC41003754C8 /* WandioInputSource.cpp */,
+				F5596044192DFC41003754C8 /* WandioInputSource.h */,
 				F21C2C601927AF4B00D2E4CD /* InputSource.cpp */,
 				F21C2C521927AB5300D2E4CD /* ipfix.cpp */,
 				F21C2C531927AB5300D2E4CD /* ipfix.h */,
@@ -227,6 +269,7 @@
 				F21C2C581927AB9F00D2E4CD /* libboost_unit_test_framework.dylib */,
 				F21C2C561927AB7000D2E4CD /* libwandio.1.dylib */,
 				D354E7AA192354D200C45B70 /* lib */,
+				F5596034192DFB68003754C8 /* ipfix2csv */,
 				D37BC243192352A8009555FF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -235,8 +278,17 @@
 			isa = PBXGroup;
 			children = (
 				D37BC242192352A8009555FF /* libfc.dylib */,
+				F5596033192DFB68003754C8 /* ipfix2csv */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F5596034192DFB68003754C8 /* ipfix2csv */ = {
+			isa = PBXGroup;
+			children = (
+				F559603C192DFB8B003754C8 /* ipfix2csv.cpp */,
+			);
+			path = ipfix2csv;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -263,6 +315,7 @@
 				D354E7F51923550800C45B70 /* ExportError.h in Headers */,
 				D354E7E81923550800C45B70 /* Constants.h in Headers */,
 				D354E8161923550800C45B70 /* PlacementTemplate.h in Headers */,
+				F5596046192DFC41003754C8 /* PrintContentHandler.h in Headers */,
 				D354E7E91923550800C45B70 /* ContentHandler.h in Headers */,
 				D354E8001923550800C45B70 /* IETemplate.h in Headers */,
 				D354E8121923550800C45B70 /* PlacementCollector.h in Headers */,
@@ -271,9 +324,11 @@
 				D354E7EF1923550800C45B70 /* Error.h in Headers */,
 				D354E8101923550800C45B70 /* MessageStreamParser.h in Headers */,
 				D354E8081923550800C45B70 /* ipfix_endian.h in Headers */,
+				F559604A192DFC41003754C8 /* WandioInputSource.h in Headers */,
 				D354E8141923550800C45B70 /* PlacementExporter.h in Headers */,
 				D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */,
 				D354E80E1923550800C45B70 /* MatchTemplate.h in Headers */,
+				F5596048192DFC41003754C8 /* V9MessageStreamParser.h in Headers */,
 				F21C2C551927AB5300D2E4CD /* ipfix.h in Headers */,
 				D354E8061923550800C45B70 /* InfoModel.h in Headers */,
 				D354E8171923550800C45B70 /* pointer_checks.h in Headers */,
@@ -300,6 +355,23 @@
 			productReference = D37BC242192352A8009555FF /* libfc.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
+		F5596032192DFB68003754C8 /* ipfix2csv */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F559603B192DFB68003754C8 /* Build configuration list for PBXNativeTarget "ipfix2csv" */;
+			buildPhases = (
+				F559602F192DFB68003754C8 /* Sources */,
+				F5596030192DFB68003754C8 /* Frameworks */,
+				F5596031192DFB68003754C8 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ipfix2csv;
+			productName = ipfix2csv;
+			productReference = F5596033192DFB68003754C8 /* ipfix2csv */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -322,6 +394,7 @@
 			projectRoot = "";
 			targets = (
 				D37BC241192352A8009555FF /* fc */,
+				F5596032192DFB68003754C8 /* ipfix2csv */,
 			);
 		};
 /* End PBXProject section */
@@ -338,6 +411,7 @@
 				D354E7FD1923550800C45B70 /* FileInputSource.cpp in Sources */,
 				D354E7F81923550800C45B70 /* IESpecError.cpp in Sources */,
 				D354E7EE1923550800C45B70 /* Error.cpp in Sources */,
+				F5596047192DFC41003754C8 /* V9MessageStreamParser.cpp in Sources */,
 				D354E7EA1923550800C45B70 /* decode_util.cpp in Sources */,
 				D354E7EC1923550800C45B70 /* DecodePlan.cpp in Sources */,
 				D354E7F41923550800C45B70 /* ExportError.cpp in Sources */,
@@ -352,11 +426,21 @@
 				D354E7F21923550800C45B70 /* Exception.cpp in Sources */,
 				D354E8181923550800C45B70 /* TCPInputSource.cpp in Sources */,
 				F21C2C611927AF4B00D2E4CD /* InputSource.cpp in Sources */,
+				F5596045192DFC41003754C8 /* PrintContentHandler.cpp in Sources */,
 				D354E81A1923550800C45B70 /* UDPInputSource.cpp in Sources */,
 				D354E7FF1923550800C45B70 /* IETemplate.cpp in Sources */,
 				D354E8151923550800C45B70 /* PlacementTemplate.cpp in Sources */,
+				F5596049192DFC41003754C8 /* WandioInputSource.cpp in Sources */,
 				D354E7F01923550800C45B70 /* ErrorContext.cpp in Sources */,
 				D354E7E61923550800C45B70 /* BufferInputSource.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F559602F192DFB68003754C8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F559603D192DFB8B003754C8 /* ipfix2csv.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -471,6 +555,24 @@
 			};
 			name = Release;
 		};
+		F5596039192DFB68003754C8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F559603A192DFB68003754C8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -491,6 +593,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		F559603B192DFB68003754C8 /* Build configuration list for PBXNativeTarget "ipfix2csv" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F5596039192DFB68003754C8 /* Debug */,
+				F559603A192DFB68003754C8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};

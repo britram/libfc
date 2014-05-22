@@ -601,7 +601,7 @@ int main(int argc, char* const* argv) {
     protocol = LIBFC::PlacementCollector::ipfix;
     is = new FileInputSource(0, "<stdin>"); // 0 == stdin
   } else if (message_version == 9) {
-    InfoModel::instance().defaultV9();
+    InfoModel::instance().default5103();
     protocol = LIBFC::PlacementCollector::netflowv9;
     is = new WandioInputSource(filename);
   } else {

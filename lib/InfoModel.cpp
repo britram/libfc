@@ -373,7 +373,8 @@ namespace LIBFC {
     registerIEType(IEType::ipv6Address());
   }
 
-  void InfoModel::defaultV9() {
+
+  void InfoModel::defaultIPFIX() {
     std::lock_guard<std::recursive_mutex> locker(lock);
 
       add("octetDeltaCount(1)<unsigned64>[8]");
@@ -418,6 +419,8 @@ namespace LIBFC {
       add("destinationIPv4Prefix(45)<ipv4Address>[4]");
       add("mplsTopLabelType(46)<unsigned8>[1]");
       add("mplsTopLabelIPv4Address(47)<ipv4Address>[4]");
+      add("samplerId(48)<unsigned8>");
+      add("classId(51)<unsigned8>");
       add("minimumTTL(52)<unsigned8>[1]");
       add("maximumTTL(53)<unsigned8>[1]");
       add("fragmentIdentification(54)<unsigned32>[4]");
@@ -456,12 +459,6 @@ namespace LIBFC {
       add("postIpDiffServCodePoint(98)<unsigned8>[1]");
       add("multicastReplicationFactor(99)<unsigned32>[4]");
       add("classificationEngineId(101)<unsigned8>[1]");
-  }
-
-  void InfoModel::defaultIPFIX() {
-    std::lock_guard<std::recursive_mutex> locker(lock);
-
-    defaultV9();
       add("bgpNextAdjacentAsNumber(128)<unsigned32>[4]");
       add("bgpPrevAdjacentAsNumber(129)<unsigned32>[4]");
       add("exporterIPv4Address(130)<ipv4Address>[4]");
