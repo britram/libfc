@@ -263,8 +263,9 @@ namespace LIBFC {
   const InfoElement* InfoModel::add_unknown(uint32_t pen, uint16_t number, uint16_t len) {
     std::lock_guard<std::recursive_mutex> locker(lock);
 
-    std::string name = "_unknown_" + std::to_string(pen) + 
-      "_" + std::to_string(number);
+    /* Naming convention from Brian's Python code. */
+    std::string name = "__ipfix_(" + std::to_string(pen) + 
+      ")_(" + std::to_string(number) + ")";
 
     InfoElement ie(name, pen, number, lookupIEType("octetArray"), len);
 

@@ -347,18 +347,30 @@ namespace LIBFC {
     const InfoElement* ie
       = info_model.lookupIE(enterprise_number, ie_id, ie_length);
 
+    /* There used to be an assert here:
+     *
+     *   assert ((enterprise && enterprise_number != 0) || ie != 0);
+     *
+     * The idea was that it was OK if private IEs were not in the
+     * information model, but "official" ones, i.e., those that did
+     * not have the enterprise bit set, needed to be present.
+     *
+     * But it has now been decided that unknown IEs should be inserted
+     * into the information model, no matter whether they have the
+     * enterprise bit set or not.
+     *
+     * But it's still true that iff the enterprise bit is set, then
+     * enterprise_number must be nonzero. So:
+     */
     assert(enterprise || enterprise_number == 0);
-    assert ((enterprise && enterprise_number != 0) || ie != 0);
+    assert(!enterprise || enterprise_number != 0);
+
 
     if (ie == 0) {
-      if (enterprise)
-        LOG4CPLUS_TRACE(logger,
-                        "  if unknown, enter "
-                        << " (" << enterprise_number
-                        << "/" << ie_id
-                        << ")<sometype>[" << ie_length
-                        << "]");
-
+      LOG4CPLUS_TRACE(logger, "  IE (" << enterprise_number
+		      << "/" << ie_id
+		      << ")<sometype>[" << ie_length
+		      << "] unknown, entering into information model");
       ie = info_model.add_unknown(enterprise_number, ie_id, ie_length);
     }
 
