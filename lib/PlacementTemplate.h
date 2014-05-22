@@ -35,7 +35,7 @@
 
 #  include <list>
 #  include <map>
-#  include <list>
+#  include <set>
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
@@ -314,6 +314,18 @@ namespace LIBFC {
      */
     unsigned int is_match(const MatchTemplate* t) const;
 
+    /** Gives unmatched IEs.
+     *
+     * This method returns the set of IEs that were in this template,
+     * but not in the matching template used in the last is_match()
+     * call.  In other words, this set contains the columns that you
+     * will drop when reading data using the matched template.
+     *
+     * @warning{Call this method only after a successful call to
+     * is_match()!}
+     */
+    const std::set<const InfoElement*>& unmatched_ies() const;
+
     /** Creates a wire template suitable to represent this template
      * on the wire in a template record.
      *
@@ -377,6 +389,10 @@ namespace LIBFC {
 
     /** The template ID for the wire representation of this template. */
     mutable uint16_t template_id;
+
+    /** The set of IEs that were unmatched by the last call to
+     * is_match(). */
+    mutable std::set<const InfoElement*> unmatched;
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

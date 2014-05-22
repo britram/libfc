@@ -110,18 +110,37 @@ namespace LIBFC {
 
   unsigned int PlacementTemplate::is_match(const MatchTemplate* t) const {
     LOG4CPLUS_TRACE(logger, "ENTER is_match");
+    
+    unmatched.clear();
+    bool found = true;
 
     for (auto i = placements.begin(); i != placements.end(); ++i) {
       LOG4CPLUS_TRACE(logger, "  looking up IE " << i->first->toIESpec());
       auto p = t->find(i->first);
       if (p == t->end()) {
         LOG4CPLUS_TRACE(logger, "    not found -> false");
-        return 0;
+        found = false;
+	break;
       }
     }
-    LOG4CPLUS_TRACE(logger, "  all found -> return " << placements.size());
-    assert(placements.size() <= UINT_MAX);
-    return static_cast<unsigned int>(placements.size());
+
+    if (found) {
+      LOG4CPLUS_TRACE(logger, "  all found -> return " << placements.size());
+      assert(placements.size() <= UINT_MAX);
+
+      for (auto i = t->begin(); i != t->end(); ++t) {
+	auto p = placements.find(*i);
+	if (p == placements.end())
+	  unmatched.insert(*i);
+      }
+
+      return static_cast<unsigned int>(placements.size());
+    } else
+      return 0;
+  }
+
+  const std::set<const InfoElement*>& PlacementTemplate::unmatched_ies() const {
+    return unmatched;
   }
 
   void PlacementTemplate::wire_template(

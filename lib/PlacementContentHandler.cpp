@@ -439,7 +439,17 @@ namespace LIBFC {
       for (auto i = placement_templates.begin();
            i != placement_templates.end();
            ++i) {
-        if ((*i)->is_match(wire_template)) {
+	unsigned int n_matches = (*i)->is_match(wire_template);
+        if (n_matches > 0) {
+	  assert(n_matches <= wire_template->size());
+	  if (n_matches < wire_template->size()) {
+	    /* We're losing columns, so let's warn about them. */
+	    LOG4CPLUS_WARN(logger, "  Template match incomplete; "
+			   "list of unmatched IEs follows");
+	    const std::set<const InfoElement*>& u = (*i)->unmatched_ies();
+	    for (auto k = u.begin(); k != u.end(); ++k)
+	      LOG4CPLUS_WARN(logger, "    " << (*k)->toIESpec());
+	  }
           matched_templates[wire_template] = *i;
           return *i;
         }
