@@ -172,6 +172,7 @@ private:
   const IEType* ietype_;
   uint16_t      len_;
   mutable std::map<uint16_t, std::shared_ptr<const InfoElement> > rle_;
+  mutable std::string spec;
 };
 
 }

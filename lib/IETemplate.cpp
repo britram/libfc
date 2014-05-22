@@ -39,43 +39,32 @@ namespace LIBFC {
     : minlen_(0) {
   }
    
-  IETemplate::IETemplate(size_t n_ies) 
-    : ies_(n_ies), minlen_(0) {
-  }
-  
-
   bool IETemplate::contains(const InfoElement* ie) const {
-    return index_map_.count(ie);
+    return std::find(ies_.begin(), ies_.end(), ie) != ies_.end();
   }
 
   bool IETemplate::containsAll(const IETemplate* rhs) const {
-    for (IETemplateIter iter = rhs->begin(); iter != rhs->end(); iter++) {
-      if (!contains(*iter)) return false;
+    for (auto iter = rhs->begin(); iter != rhs->end(); iter++) {
+      if (!contains(*iter)) 
+	return false;
     }
     return true;
   }
   
-  size_t IETemplate::length(const InfoElement* ie) const {
-    return ies_.at(index_map_.at(ie))->len();
-  }
-  
-  const InfoElement* IETemplate::ieFor(const InfoElement* ie) const {
-    return ies_.at(index_map_.at(ie));
-  }
-
   size_t IETemplate::minlen() const {
     return minlen_;
   } 
   
-  IETemplateIter IETemplate::begin() const {
+  std::vector<const InfoElement *>::const_iterator IETemplate::begin() const {
     return ies_.begin();
   } 
   
-  IETemplateIter IETemplate::end() const {
+  std::vector<const InfoElement *>::const_iterator IETemplate::end() const {
     return ies_.end();
   }
 
-  IETemplateIter IETemplate::find(const InfoElement* ie) const {
+  std::vector<const InfoElement *>::const_iterator 
+  IETemplate::find(const InfoElement* ie) const {
     return std::find(ies_.begin(), ies_.end(), ie);
   }
 
@@ -83,20 +72,35 @@ namespace LIBFC {
     return ies_.size();
   }
 
-  void IETemplate::dump(std::ostream& os) const {
-    dumpIdent(os);
-    os << "  count " << ies_.size() << " minlen " << minlen_ << std::endl;
-    for (unsigned i = 0; i < ies_.size(); i ++) {
-      os << "    " << ies_[i]->toIESpec() << std::endl;
-    }
-  }
-  
   void IETemplate::add_inner(const InfoElement* ie) {
-    // Add the IE to the IE vector
     ies_.push_back(ie);
-    
-    // Add the IE to the index map
-    index_map_[ie] = ies_.size()-1;
+  }
+
+  void IETemplate::add(const InfoElement* ie) {
+    add_inner(ie);
+
+    if (ie->len() == kIpfixVarlen)
+      minlen_ += 1;
+    else
+      minlen_ += ie->len();
+  }
+
+  bool IETemplate::operator==(const IETemplate& rhs) const {
+    auto l = begin();
+    auto r = rhs.begin();
+
+    while (l != end() && r != rhs.end()) {
+      if (*l != *r)
+	return false;
+      ++l;
+      ++r;
+    }
+
+    return l == end() && r == rhs.end();
+  }
+
+  bool IETemplate::operator!=(const IETemplate& rhs) const {
+    return !(*this == rhs);
   }
 
 } // namespace LIBFC

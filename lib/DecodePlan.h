@@ -40,7 +40,7 @@
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "PlacementTemplate.h"
-#  include "MatchTemplate.h"
+#  include "IETemplate.h"
 
 namespace LIBFC {
 
@@ -99,7 +99,7 @@ namespace LIBFC {
      * @param wire_template the wire template for the data set
      */
     DecodePlan(const PlacementTemplate* placement_template,
-	       const MatchTemplate* wire_template);
+	       const IETemplate* wire_template);
     
     /** Executes the plan.
      *

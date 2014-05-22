@@ -77,7 +77,7 @@ namespace LIBFC {
 
 
   DecodePlan::DecodePlan(const LIBFC::PlacementTemplate* placement_template,
-			 const LIBFC::MatchTemplate* wire_template) 
+			 const LIBFC::IETemplate* wire_template) 
     : plan(wire_template->size())
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
     ,

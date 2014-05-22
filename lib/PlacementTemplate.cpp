@@ -108,10 +108,11 @@ namespace LIBFC {
     }
   }
 
-  unsigned int PlacementTemplate::is_match(const MatchTemplate* t) const {
+  unsigned int PlacementTemplate::is_match(
+      const IETemplate* t,
+      std::set<const InfoElement*>* unmatched) const {
     LOG4CPLUS_TRACE(logger, "ENTER is_match");
     
-    unmatched.clear();
     bool found = true;
 
     for (auto i = placements.begin(); i != placements.end(); ++i) {
@@ -128,19 +129,19 @@ namespace LIBFC {
       LOG4CPLUS_TRACE(logger, "  all found -> return " << placements.size());
       assert(placements.size() <= UINT_MAX);
 
-      for (auto i = t->begin(); i != t->end(); ++t) {
-	auto p = placements.find(*i);
-	if (p == placements.end())
-	  unmatched.insert(*i);
+      if (unmatched != 0) {
+	unmatched->clear();
+
+	for (auto i = t->begin(); i != t->end(); ++i) {
+	  auto p = placements.find(*i);
+	  if (p == placements.end())
+	    unmatched->insert(*i);
+	}
       }
 
       return static_cast<unsigned int>(placements.size());
     } else
       return 0;
-  }
-
-  const std::set<const InfoElement*>& PlacementTemplate::unmatched_ies() const {
-    return unmatched;
   }
 
   void PlacementTemplate::wire_template(

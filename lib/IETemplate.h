@@ -51,12 +51,12 @@
 
 namespace LIBFC {
 
-  typedef std::vector<const InfoElement *>::const_iterator IETemplateIter;
-  typedef std::map<const InfoElement *, size_t> IEIndexMap;
-
   class IETemplate {
   public:
-  
+    
+    /** Creates an empty template. */
+    IETemplate();
+        
     /** Determines whether this template contains an instance of the
      * given IE.
      *
@@ -74,40 +74,6 @@ namespace LIBFC {
      */
     bool containsAll(const IETemplate* rhs) const;
   
-    /** Gets the offset of a given IE in this template. 
-     *
-     * Throws std::out_of_range if the template does not contain the IE.
-     * 
-     * @param ie information element to search for; must be a canonical
-     *           IE retrieved from InfoModel::instance().
-     * @return offset to IE in this template
-     */
-    size_t offset(const InfoElement* ie) const;
-    
-    /** Gets the length of a given IE in this template. 
-     *
-     * Throws std::out_of_range if the template does not contain the IE.
-     * 
-     * @param ie information element to search for; must be a canonical
-     *           IE retrieved from InfoModel::instance().
-     * @return length of IE in this template
-     */
-    size_t length(const InfoElement* ie) const;
-    
-    /** Get the IE matching a given IE in the template.
-     *
-     * Used by Exporter for external encoding.
-     * Throws std::out_of_range if the template does not contain the IE.
-     * 
-     * FIXME kind of breaks encapsulation; consider bringing record 
-     * cursor export support into WireTemplate somehow.
-     * 
-     * @param ie information element to search for; must be a canonical
-     *           IE retrieved from InfoModel::instance().
-     * @return version of the IE in the template; may differ in length
-     */
-    const InfoElement* ieFor(const InfoElement* ie) const;
-    
     /** Gets the minimum length of a record represented by this template.
      * 
      * @return minimum record length
@@ -118,13 +84,13 @@ namespace LIBFC {
      * 
      * @return begin iterator
      */
-    IETemplateIter begin() const;
+    std::vector<const InfoElement *>::const_iterator begin() const;
     
     /** Retrieves the ending iterating on the IEs in this template.
      * 
      * @return end iterator
      */
-    IETemplateIter end() const;
+    std::vector<const InfoElement *>::const_iterator end() const;
     
     /** Finds a certain IE.
      *
@@ -132,30 +98,46 @@ namespace LIBFC {
      *
      * @return iterator to found element if found, end() if not
      */
-    IETemplateIter find(const InfoElement* ie) const;
+    std::vector<const InfoElement *>::const_iterator
+      find(const InfoElement* ie) const;
     
     /** Returns number of IEs in this template.
      *
      * @return number of IEs in template
      */
     size_t size() const;
-    
-    virtual void dumpIdent(std::ostream &os) const = 0;
-    
-    void dump(std::ostream& os) const;
-    
-  protected:
-    
-    /** Creates an empty template. */
-    IETemplate();
-    
-    /** Creates an empty template with preallocated space.
+
+    /** Adds the Information Element to the template.
      *
-     * @param n_ies the number of IEs we expect to see in this template
+     * @param ie the IE to add
      */
-    IETemplate(size_t n_ies);
-    
-    /** Adds an information element to internal maps; used by subclasses.
+    void add(const InfoElement* ie);
+
+    /** Compares two IE templates for equality.
+     *
+     * Two templates are equal iff they contain the same IEs in the
+     * same sequence.
+     * 
+     * @param rhs the right-hand side of the comparison
+     *
+     * @return true if the two templates are equal, false otherwise
+     */
+    bool operator==(const IETemplate& rhs) const;
+
+    /** Compares two IE templates for equality.
+     *
+     * Two templates are equal iff they contain the same IEs in the
+     * same sequence.  This method is the exact opposite of
+     * operator==.
+     * 
+     * @param rhs the right-hand side of the comparison
+     *
+     * @return false if the two templates are equal, true otherwise
+     */
+    bool operator!=(const IETemplate& rhs) const;
+
+  private:
+    /** Adds an information element to internal maps.
      *
      * @param ie IE to add
      */
@@ -163,9 +145,6 @@ namespace LIBFC {
     
     // pointer to session containing template vector of information elements
     std::vector <const InfoElement *> ies_;
-
-    // vector of information element offsets
-    IEIndexMap index_map_;
 
     // minimum length of record represented by template
     size_t minlen_;
