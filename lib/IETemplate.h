@@ -47,6 +47,10 @@
 #  include <map>
 #  include <vector>
 
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
 #  include "InfoElement.h"
 
 namespace LIBFC {
@@ -148,6 +152,11 @@ namespace LIBFC {
 
     // minimum length of record represented by template
     size_t minlen_;
+
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+    
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+
   };
 
 } // namespace LIBFC

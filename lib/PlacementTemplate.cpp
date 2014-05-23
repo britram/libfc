@@ -117,8 +117,7 @@ namespace LIBFC {
 
     for (auto i = placements.begin(); i != placements.end(); ++i) {
       LOG4CPLUS_TRACE(logger, "  looking up IE " << i->first->toIESpec());
-      auto p = t->find(i->first);
-      if (p == t->end()) {
+      if (!t->contains(i->first)) {
         LOG4CPLUS_TRACE(logger, "    not found -> false");
         found = false;
 	break;

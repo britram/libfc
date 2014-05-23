@@ -36,7 +36,12 @@
 namespace LIBFC {
 
   IETemplate::IETemplate()
-    : minlen_(0) {
+    : minlen_(0)
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+                , 
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("IETemplate")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+  {
   }
    
   bool IETemplate::contains(const InfoElement* ie) const {
