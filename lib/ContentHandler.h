@@ -47,6 +47,8 @@ namespace LIBFC {
    */
   class ContentHandler {
   public:
+    virtual ~ContentHandler() = 0;
+
     /** Receives notification at the start of a session.
      *
      * This method will be invoked only once, before any other

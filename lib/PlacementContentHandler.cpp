@@ -66,6 +66,7 @@ namespace LIBFC {
 
   PlacementContentHandler::PlacementContentHandler()
     : info_model(InfoModel::instance()),
+      unhandled_data_set_handler(0),
       use_matched_template_cache(false),
       current_wire_template(0),
       parse_is_good(true)
@@ -515,9 +516,13 @@ namespace LIBFC {
     LOG4CPLUS_TRACE(logger, "  wire_template=" << wire_template);
 
     if (wire_template == 0) {
-      LOG4CPLUS_WARN(logger, "  No template for data set with template id "
-		     << id << "; skipping");
-      LIBFC_RETURN_OK();
+      if (unhandled_data_set_handler == 0) {
+	LOG4CPLUS_WARN(logger, "  No template for data set with template id "
+		       << id << "; skipping");
+	LIBFC_RETURN_OK();
+      } else
+	return unhandled_data_set_handler->unhandled_data_set(
+	         observation_domain, id, length, buf);
     }
 
     const PlacementTemplate* placement_template

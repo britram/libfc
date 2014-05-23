@@ -67,7 +67,7 @@ namespace LIBFC {
      *   template IEs.
      */
     PlacementContentHandler();
-    ~PlacementContentHandler();
+    virtual ~PlacementContentHandler();
 
     /* From ContentHandler */
     std::shared_ptr<ErrorContext> start_session();
@@ -106,6 +106,16 @@ namespace LIBFC {
     void register_placement_template(
         const PlacementTemplate* placement_template,
         PlacementCollector* callback);
+
+    /** Registers handler for unhandled data sets.
+     *
+     * If there is no handler for unhandled data sets, they will simply
+     * be discarded.
+     *
+     * @param callback collector to inform when there is an unhandled
+     *   data set .
+     */
+    void register_unhandled_data_set_handler(PlacementCollector* callback);
 
   private:
     /** Observation domain for this message. */
@@ -231,6 +241,9 @@ namespace LIBFC {
 
     /** Association between placement template and callback. */
     std::map<const PlacementTemplate*, PlacementCollector*> callbacks;
+
+    /** Unhandled data set handler, if any. */
+    PlacementCollector* unhandled_data_set_handler;
 
     /** Says whether to use the matched template cache. 
      *
