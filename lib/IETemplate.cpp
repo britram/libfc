@@ -78,7 +78,7 @@ namespace LIBFC {
     }
 
     for (auto i = ies_.begin(); i != ies_.end(); ++i) {
-      if ((*i)->matches(ie))
+      if ((*i)->matches(*ie))
         return i;
     }
 
