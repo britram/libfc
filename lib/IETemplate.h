@@ -154,7 +154,7 @@ namespace LIBFC {
     size_t minlen_;
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
-    
+    log4cplus::Logger logger;
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
   };
