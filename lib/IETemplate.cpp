@@ -45,13 +45,7 @@ namespace LIBFC {
   }
    
   bool IETemplate::contains(const InfoElement* ie) const {
-    if (logger.getLogLevel() <= log4cplus::TRACE_LOG_LEVEL) {
-      LOG4CPLUS_TRACE(logger, 
-                      "  test if template contains " << ie->toIESpec());
-      for (auto i = ies_.begin(); i != ies_.end(); ++i)
-        LOG4CPLUS_TRACE(logger, " --> " << (*i)->toIESpec());
-    }
-    return std::find(ies_.begin(), ies_.end(), ie) != ies_.end();
+    return find(ie) != ies_.end();
   }
 
   bool IETemplate::containsAll(const IETemplate* rhs) const {
@@ -76,7 +70,19 @@ namespace LIBFC {
 
   std::vector<const InfoElement *>::const_iterator 
   IETemplate::find(const InfoElement* ie) const {
-    return std::find(ies_.begin(), ies_.end(), ie);
+    if (logger.getLogLevel() <= log4cplus::TRACE_LOG_LEVEL) {
+      LOG4CPLUS_TRACE(logger, 
+                      "  test if template contains " << ie->toIESpec());
+      for (auto i = ies_.begin(); i != ies_.end(); ++i)
+        LOG4CPLUS_TRACE(logger, " --> " << (*i)->toIESpec());
+    }
+
+    for (auto i = ies_.begin(); i != ies_.end(); ++i) {
+      if ((*i)->matches(ie))
+        return i;
+    }
+
+    return ies_.end();
   }
 
   size_t IETemplate::size() const { 
