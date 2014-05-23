@@ -515,7 +515,8 @@ namespace LIBFC {
     LOG4CPLUS_TRACE(logger, "  wire_template=" << wire_template);
 
     if (wire_template == 0) {
-      LOG4CPLUS_TRACE(logger, "  no template for this data set; skipping");
+      LOG4CPLUS_WARN(logger, "  No template for data set with template id "
+		     << id << "; skipping");
       LIBFC_RETURN_OK();
     }
 
