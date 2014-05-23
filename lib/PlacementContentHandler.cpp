@@ -522,8 +522,9 @@ namespace LIBFC {
 
     if (wire_template == 0) {
       if (unhandled_data_set_handler == 0) {
-	LOG4CPLUS_WARN(logger, "  No template for data set with template id "
-		       << id << "; skipping");
+	LOG4CPLUS_WARN(logger, "  No template for data set with "
+                       "observation domain " << observation_domain
+                       << " and template id " << id << "; skipping");
 	LIBFC_RETURN_OK();
       } else
 	return unhandled_data_set_handler->unhandled_data_set(
