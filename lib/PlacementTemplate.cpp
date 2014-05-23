@@ -135,7 +135,7 @@ namespace LIBFC {
           for (auto k = placements.begin(); k != placements.end(); ++k) {
             if (!(k->first->matches(*(*i)))) {
               LOG4CPLUS_TRACE(logger, "  IE " << k->first->toIESpec() 
-                              << " does not match " << (*i)->toIESpec())
+                              << " does not match " << (*i)->toIESpec());
               unmatched->insert(*i);
             }
           }
