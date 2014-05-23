@@ -471,6 +471,11 @@ namespace LIBFC {
 	  = new std::set<const InfoElement*>();
 
 	unsigned int n_matches = (*i)->is_match(wire_template, unmatched);
+        LOG4CPLUS-TRACE(logger, "n_matches=" << n_matches 
+                        << ",unmatched->size()=" << unmatched->size()
+                        << ",wire_template->size()="
+                        << wire_template->size());
+
         if (n_matches > 0) {
 	  assert(n_matches <= wire_template->size());
 

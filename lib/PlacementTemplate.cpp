@@ -132,8 +132,7 @@ namespace LIBFC {
 	unmatched->clear();
 
 	for (auto i = t->begin(); i != t->end(); ++i) {
-	  auto p = placements.find(*i);
-	  if (p == placements.end())
+	  if (!placements.contains(*i))
 	    unmatched->insert(*i);
 	}
       }
