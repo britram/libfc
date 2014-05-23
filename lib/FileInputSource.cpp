@@ -23,18 +23,21 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cstring>
+#include <sstream>
 
 #include <unistd.h>
 
 #include "FileInputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
-  FileInputSource::FileInputSource(int fd, std::string name)
+  FileInputSource::FileInputSource(int fd, std::string file_name)
     : fd(fd),
       message_offset(0),
       current_offset(0),
-      name(name) {
+      file_name(file_name),
+      name(0) {
   }
 
   FileInputSource::~FileInputSource() {
@@ -63,7 +66,21 @@ namespace IPFIX {
   }
 
   const char* FileInputSource::get_name() const {
-    return name.c_str();
+    if (name == 0) {
+      std::ostringstream sstr;
+
+      sstr << "File(name=\"" << file_name << "\")";
+      std::string s = sstr.str();
+
+      name = new char[s.length() + 1];
+      std::strcpy(const_cast<char*>(name), s.c_str());
+    }
+    
+    return name;
   }
 
-} // namespace IPFIX
+  bool FileInputSource::can_peek() const {
+    return false;
+  }
+
+} // namespace LIBFC

@@ -31,15 +31,15 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_DEBUG(logger, expr)
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "BufferInputSource.h"
-#include "IPFIXContentHandler.h"
+#include "PlacementContentHandler.h"
 #include "FileInputSource.h"
 #include "IPFIXMessageStreamParser.h"
 #include "InfoModel.h"
@@ -47,7 +47,7 @@
 
 #include "exceptions/FormatError.h"
 
-using namespace IPFIX;
+using namespace LIBFC;
 
 BOOST_AUTO_TEST_SUITE(PlacementInterface)
 
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(SkipDataSet) {
   static const unsigned char msg[] = {
     0x00,0x0a,0x00,0x56,0x50,0x6a,0xce,0xbc,0x00,0x00,0x00,0x00,0x00,0x01,0xe2,0x40,0x00,0x02,0x00,0x18,0x03,0xe9,0x00,0x04,0x01,0x36,0x00,0x04,0x00,0x52,0xff,0xff,0x01,0x37,0x00,0x08,0x00,0x53,0xff,0xff,0x03,0xe9,0x00,0x2e,0x10,0x20,0x30,0x40,0x04,0x65,0x74,0x68,0x30,0x3f,0xee,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x46,0x69,0x72,0x73,0x74,0x20,0x65,0x74,0x68,0x65,0x72,0x6e,0x65,0x74,0x20,0x69,0x6e,0x74,0x65,0x72,0x66,0x61,0x63,0x65 };
 
-  IPFIXContentHandler dsr;
+  PlacementContentHandler dsr;
   IPFIXMessageStreamParser ir;
 
   ir.set_content_handler(&dsr);
@@ -71,10 +71,11 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
   class MyCollector : public PlacementCollector {
   public:
     MyCollector()
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
-                                    :
+      : PlacementCollector(PlacementCollector::ipfix)
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+      ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
     {
       PlacementTemplate* my_template = new PlacementTemplate();
 
@@ -100,9 +101,9 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
     }
 
   private:
-#ifdef _IPFIX_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
-#endif /* _IPFIX_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
     uint32_t source_ipv4_address;
   };
 

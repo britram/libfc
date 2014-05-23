@@ -26,9 +26,9 @@
 
 #include "FormatError.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   FormatError::FormatError(const std::string& message)
     : Exception("FormatError: " + message) {}
 
-} // namespace IPFIX
+} // namespace LIBFC

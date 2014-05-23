@@ -28,7 +28,7 @@
 #include <sstream>
 #include "InfoElement.h"
 
-namespace IPFIX {
+namespace LIBFC {
   
 #if 0
   InfoElement::InfoElement()

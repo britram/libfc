@@ -37,7 +37,7 @@
 #  include <cstring>
 #  include <string>
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** An array of octets, as it may appear in an IPFIX message.
    *
@@ -100,6 +100,6 @@ namespace IPFIX {
     size_t capacity;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_BASICOCTETARRAY_H_

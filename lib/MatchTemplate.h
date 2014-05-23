@@ -43,7 +43,7 @@
 #ifndef _LIBFC_MATCHTEMPLATE_H_ // idem
 #  define _LIBFC_MATCHTEMPLATE_H_ // hack
 
-namespace IPFIX {
+namespace LIBFC {
 
   class MatchTemplate : public IETemplate {
   public:
@@ -52,6 +52,6 @@ namespace IPFIX {
     void dumpIdent(std::ostream &os) const;    
     void add(const InfoElement* ie);
   };
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif

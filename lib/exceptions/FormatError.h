@@ -30,7 +30,7 @@
 
 #  include "Exception.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** IPFIX Format Errors.
    *
@@ -45,6 +45,6 @@ namespace IPFIX {
     explicit FormatError(const std::string& message);
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif /* IPFIX_FORMATERROR_H */

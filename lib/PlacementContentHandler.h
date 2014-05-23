@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_IPFIXCONTENTHANDLER_H_
-#  define _LIBFC_IPFIXCONTENTHANDLER_H_
+#ifndef _LIBFC_PLACEMENTCONTENTHANDLER_H_
+#  define _LIBFC_PLACEMENTCONTENTHANDLER_H_
 
 #  include <list>
 #  include <map>
@@ -48,7 +48,7 @@
 #  include "MatchTemplate.h"
 #  include "PlacementTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   class PlacementCollector;
 
@@ -57,10 +57,10 @@ namespace IPFIX {
    * more in-depth treatment, see the documentation on
    * PlacementTemplate.
    */
-  class IPFIXContentHandler : public ContentHandler {
+  class PlacementContentHandler : public ContentHandler {
   public:
-    IPFIXContentHandler();
-    ~IPFIXContentHandler();
+    PlacementContentHandler();
+    ~PlacementContentHandler();
 
     /* From ContentHandler */
     std::shared_ptr<ErrorContext> start_session();
@@ -164,7 +164,7 @@ namespace IPFIX {
 
     /** Computes the minimal length of a template.
      *
-     * IPFIX messages may have padding in their data sets, but that
+     * Placement messages may have padding in their data sets, but that
      * padding must not be larger than the smallest data set that
      * could conceivably been sent. Therefore, this method computes
      * the smallest data set that could be sent using a certain
@@ -278,6 +278,6 @@ namespace IPFIX {
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
  };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
-#endif // _LIBFC_IPFIXCONTENTHANDLER_H_
+#endif // _LIBFC_PLACEMENTCONTENTHANDLER_H_

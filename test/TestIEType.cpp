@@ -33,84 +33,88 @@
 BOOST_AUTO_TEST_SUITE(Basics)
 BOOST_AUTO_TEST_SUITE(IEType)
 
+/* Numerical values taken from IANA at https://www.iana.org/assignments/
+ * ipfix/ipfix.xhtml#ipfix-information-element-data-types independently
+ * of the implementation. */ 
+
 BOOST_AUTO_TEST_CASE(OctetArray) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::octetArray(), IPFIX::IEType::octetArray());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::octetArray()->number(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(Unsigned8) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::unsigned8(), IPFIX::IEType::unsigned8());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::unsigned8()->number(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(Unsigned16) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::unsigned16(), IPFIX::IEType::unsigned16());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::unsigned16()->number(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(Unsigned32) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::unsigned32(), IPFIX::IEType::unsigned32());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::unsigned32()->number(), 3);
 }
 
 BOOST_AUTO_TEST_CASE(Unsigned64) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::unsigned64(), IPFIX::IEType::unsigned64());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::unsigned64()->number(), 4);
 }
 
 BOOST_AUTO_TEST_CASE(Signed8) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::signed8(), IPFIX::IEType::signed8());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::signed8()->number(), 5);
 }
 
 BOOST_AUTO_TEST_CASE(Signed16) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::signed16(), IPFIX::IEType::signed16());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::signed16()->number(), 6);
 }
 
 BOOST_AUTO_TEST_CASE(Signed32) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::signed32(), IPFIX::IEType::signed32());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::signed32()->number(), 7);
 }
 
 BOOST_AUTO_TEST_CASE(Signed64) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::signed64(), IPFIX::IEType::signed64());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::signed64()->number(), 8);
 }
 
 BOOST_AUTO_TEST_CASE(Float32) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::float32(), IPFIX::IEType::float32());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::float32()->number(), 9);
 }
 
 BOOST_AUTO_TEST_CASE(Float64) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::float64(), IPFIX::IEType::float64());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::float64()->number(), 10);
 }
 
 BOOST_AUTO_TEST_CASE(Boolean) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::boolean(), IPFIX::IEType::boolean());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::boolean()->number(), 11);
 }
 
 BOOST_AUTO_TEST_CASE(Macaddress) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::macAddress(), IPFIX::IEType::macAddress());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::macAddress()->number(), 12);
 }
 
 BOOST_AUTO_TEST_CASE(String) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::string(), IPFIX::IEType::string());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::string()->number(), 13);
 }
  
 BOOST_AUTO_TEST_CASE(Datetimeseconds) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::dateTimeSeconds(), IPFIX::IEType::dateTimeSeconds());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::dateTimeSeconds()->number(), 14);
 }
 
 BOOST_AUTO_TEST_CASE(Datetimemilliseconds) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::dateTimeMilliseconds(), IPFIX::IEType::dateTimeMilliseconds());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::dateTimeMilliseconds()->number(), 15);
 }
 
 BOOST_AUTO_TEST_CASE(Datetimemicroseconds) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::dateTimeMicroseconds(), IPFIX::IEType::dateTimeMicroseconds());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::dateTimeMicroseconds()->number(), 16);
 }
 
 BOOST_AUTO_TEST_CASE(Datetimenanoseconds) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::dateTimeNanoseconds(), IPFIX::IEType::dateTimeNanoseconds());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::dateTimeNanoseconds()->number(), 17);
 }
 
 BOOST_AUTO_TEST_CASE(Ipv4address) {
-  BOOST_CHECK_EQUAL(IPFIX::IEType::ipv4Address(), IPFIX::IEType::ipv4Address());
+  BOOST_CHECK_EQUAL(LIBFC::IEType::ipv4Address()->number(), 18);
 }
 
 BOOST_AUTO_TEST_CASE(Ipv6address) {
-    BOOST_CHECK_EQUAL(IPFIX::IEType::ipv6Address(), IPFIX::IEType::ipv6Address());
+    BOOST_CHECK_EQUAL(LIBFC::IEType::ipv6Address()->number(), 19);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

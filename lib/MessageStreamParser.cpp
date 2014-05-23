@@ -33,7 +33,7 @@
 
 #include "MessageStreamParser.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   MessageStreamParser::MessageStreamParser() 
     : content_handler(0)
@@ -44,9 +44,12 @@ namespace IPFIX {
   {
   }
 
+  MessageStreamParser::~MessageStreamParser() {
+  }
+
   void MessageStreamParser::set_content_handler(ContentHandler* handler) {
     content_handler = handler;
   }
 
 
-} // namespace IPFIX
+} // namespace LIBFC

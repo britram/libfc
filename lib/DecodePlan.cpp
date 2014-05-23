@@ -42,7 +42,7 @@
 #include "exceptions/FormatError.h"
 
 
-namespace IPFIX {
+namespace LIBFC {
 
   std::string DecodePlan::Decision::to_string() const {
     std::stringstream sstr;
@@ -76,8 +76,8 @@ namespace IPFIX {
   }
 
 
-  DecodePlan::DecodePlan(const IPFIX::PlacementTemplate* placement_template,
-			 const IPFIX::MatchTemplate* wire_template) 
+  DecodePlan::DecodePlan(const LIBFC::PlacementTemplate* placement_template,
+			 const LIBFC::MatchTemplate* wire_template) 
     : plan(wire_template->size())
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
     ,
@@ -134,8 +134,8 @@ namespace IPFIX {
 	 * maintenance costs, I'd like to keep each IE type separate,
 	 * until this code has been fully debugged. */
 	switch ((*ie)->ietype()->number()) {
-	case IPFIX::IEType::kOctetArray: 
-	  if ((*ie)->len() == IPFIX::kIpfixVarlen) {
+	case LIBFC::IEType::kOctetArray: 
+	  if ((*ie)->len() == LIBFC::kIpfixVarlen) {
 	    d.type = Decision::transfer_varlen;
 	  } else {
 	    d.type = Decision::transfer_fixlen_octets;
@@ -143,7 +143,7 @@ namespace IPFIX {
 	  }
 	  break;
 
-	case IPFIX::IEType::kUnsigned8:
+	case LIBFC::IEType::kUnsigned8:
 	  d.type = Decision::transfer_fixlen;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(uint8_t);
@@ -152,7 +152,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kUnsigned16:
+	case LIBFC::IEType::kUnsigned16:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(uint16_t);
@@ -161,7 +161,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kUnsigned32:
+	case LIBFC::IEType::kUnsigned32:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(uint32_t);
@@ -170,7 +170,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kUnsigned64:
+	case LIBFC::IEType::kUnsigned64:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(uint64_t);
@@ -179,7 +179,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kSigned8:
+	case LIBFC::IEType::kSigned8:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(int8_t);
@@ -188,7 +188,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kSigned16:
+	case LIBFC::IEType::kSigned16:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(int16_t);
@@ -197,7 +197,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kSigned32:
+	case LIBFC::IEType::kSigned32:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(int32_t);
@@ -206,7 +206,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kSigned64:
+	case LIBFC::IEType::kSigned64:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(int64_t);
@@ -215,7 +215,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kFloat32:
+	case LIBFC::IEType::kFloat32:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(float);
@@ -224,7 +224,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kFloat64:
+	case LIBFC::IEType::kFloat64:
 	  assert((*ie)->len() == sizeof(float)
 		 || d.length == sizeof(double));
 	  d.length = (*ie)->len();
@@ -238,7 +238,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kBoolean:
+	case LIBFC::IEType::kBoolean:
 	  d.type = Decision::transfer_boolean;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(uint8_t); 
@@ -247,7 +247,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
 
-	case IPFIX::IEType::kMacAddress:
+	case LIBFC::IEType::kMacAddress:
 	  /* RFC 5101 says to treat MAC addresses as 6-byte integers,
 	   * but Brian Trammell says that this is wrong and that the
 	   * RFC will be changed.  If for some reason this does not
@@ -260,8 +260,8 @@ namespace IPFIX {
 	    report_error("MAC IE not 6 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
 	  break;
         
-	case IPFIX::IEType::kString:
-	  if ((*ie)->len() == IPFIX::kIpfixVarlen) {
+	case LIBFC::IEType::kString:
+	  if ((*ie)->len() == LIBFC::kIpfixVarlen) {
 	    d.type = Decision::transfer_varlen;
 	  } else {
 	    d.type = Decision::transfer_fixlen_octets;
@@ -269,7 +269,7 @@ namespace IPFIX {
 	  }
 	  break;
 
-	case IPFIX::IEType::kDateTimeSeconds:
+	case LIBFC::IEType::kDateTimeSeconds:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(uint32_t);
@@ -278,7 +278,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
         
-	case IPFIX::IEType::kDateTimeMilliseconds:
+	case LIBFC::IEType::kDateTimeMilliseconds:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  d.length = (*ie)->len();
 	  d.destination_size = sizeof(uint64_t);
@@ -287,18 +287,7 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
         
-	case IPFIX::IEType::kDateTimeMicroseconds:
-	  d.type = transfer_fixlen_maybe_endianness;
-	  // RFC 5101, Chapter 6, Verse 2
-	  assert((*ie)->len() == sizeof(uint64_t));
-	  d.length = (*ie)->len();
-	  d.destination_size = sizeof(uint64_t);
-	  if (d.length > d.destination_size)
-	    report_error("IE %s length %zu greater than native size %zu",
-			 ie_spec.c_str(), d.length, d.destination_size);
-	  break;
-        
-	case IPFIX::IEType::kDateTimeNanoseconds:
+	case LIBFC::IEType::kDateTimeMicroseconds:
 	  d.type = transfer_fixlen_maybe_endianness;
 	  // RFC 5101, Chapter 6, Verse 2
 	  assert((*ie)->len() == sizeof(uint64_t));
@@ -309,7 +298,18 @@ namespace IPFIX {
 			 ie_spec.c_str(), d.length, d.destination_size);
 	  break;
         
-	case IPFIX::IEType::kIpv4Address:
+	case LIBFC::IEType::kDateTimeNanoseconds:
+	  d.type = transfer_fixlen_maybe_endianness;
+	  // RFC 5101, Chapter 6, Verse 2
+	  assert((*ie)->len() == sizeof(uint64_t));
+	  d.length = (*ie)->len();
+	  d.destination_size = sizeof(uint64_t);
+	  if (d.length > d.destination_size)
+	    report_error("IE %s length %zu greater than native size %zu",
+			 ie_spec.c_str(), d.length, d.destination_size);
+	  break;
+        
+	case LIBFC::IEType::kIpv4Address:
 	  /* RFC 5101 says to treat all addresses as integers. This
 	   * would mean endianness conversion for all of these address
 	   * types, including MAC addresses and IPv6 addresses. But the
@@ -324,7 +324,7 @@ namespace IPFIX {
 	    report_error("IPv4 Address IE not 4 octets long (c.f. RFC 5101, Chapter 6, Verse 2");
 	  break;
         
-	case IPFIX::IEType::kIpv6Address:
+	case LIBFC::IEType::kIpv6Address:
 	  /* RFC 5101 says to treat IPv6 addresses as 16-byte integers,
 	   * but Brian Trammell says that this is wrong and that the
 	   * RFC will be changed.  If for some reason this does not
@@ -343,7 +343,7 @@ namespace IPFIX {
 	}
       } else {                    /* Encode skip decision */
 	LOG4CPLUS_TRACE(logger, "    not found -> skip");
-	if ((*ie)->len() == IPFIX::kIpfixVarlen) {
+	if ((*ie)->len() == LIBFC::kIpfixVarlen) {
 	  d.type = Decision::skip_varlen;
 	} else {
 	  d.type = Decision::skip_fixlen;
@@ -541,8 +541,8 @@ namespace IPFIX {
       case Decision::transfer_fixlen_octets:
 	assert(cur + i->length <= buf_end);
 	{ 
-	  IPFIX::BasicOctetArray* p
-	    = reinterpret_cast<IPFIX::BasicOctetArray*>(i->p);
+	  LIBFC::BasicOctetArray* p
+	    = reinterpret_cast<LIBFC::BasicOctetArray*>(i->p);
 	  p->copy_content(cur, i->length);
 	}
 
@@ -589,8 +589,8 @@ namespace IPFIX {
 	  LOG4CPLUS_TRACE(logger, "  varlen length " << varlen_length);
 	  assert(cur + varlen_length <= buf_end);
       
-	  IPFIX::BasicOctetArray* p
-	    = reinterpret_cast<IPFIX::BasicOctetArray*>(i->p);
+	  LIBFC::BasicOctetArray* p
+	    = reinterpret_cast<LIBFC::BasicOctetArray*>(i->p);
 	  p->copy_content(cur, varlen_length);
 
 	  cur += varlen_length;
@@ -603,4 +603,4 @@ namespace IPFIX {
     return static_cast<uint16_t>(cur - buf);
   }
 
-} /* namespace IPFIX */
+} /* namespace LIBFC */

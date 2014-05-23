@@ -249,7 +249,7 @@ extern "C" {
    * @param vparg an optional argument to pass to the callback
    */
 extern void ipfix_register_callback(struct ipfix_template_t* t,
-                                    void (*c) (const struct ipfix_template_t*, 
+                                    int (*c) (const struct ipfix_template_t*,
                                                void *),
                                     void *vparg);
   /** Collect IPFIX data from a file.
@@ -273,7 +273,7 @@ extern void ipfix_register_callback(struct ipfix_template_t* t,
    *
    * @return non-zero on success and 0 on error
    */
-extern int ipfix_collect_from_wandio(io_t wio, struct ipfix_template_set_t* s);
+extern int ipfix_collect_from_wandio(io_t *wio, const char *name, struct ipfix_template_set_t* s);
    
 #  if defined(__cplusplus)
 }

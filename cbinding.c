@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "ipfix.h"
+#include "libfc.h"
 
 static uint32_t sip;
 static uint32_t dip;

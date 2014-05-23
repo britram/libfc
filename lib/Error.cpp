@@ -27,7 +27,7 @@
 
 #include "Error.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   Error::Error(error_t e)
     : e(e) {
@@ -37,6 +37,7 @@ namespace IPFIX {
     switch (e) {
     case no_error: return "no error"; break;
     case parse_while_parsing: return "call to parse() while parsing"; break;
+    case input_source_cant_peek: return "input source can't peek"; break;
     case aborted_by_user: return "aborted by user"; break;
     case system_error: return "system error"; break;
     case short_header: return "short message header"; break;
@@ -47,6 +48,7 @@ namespace IPFIX {
     case short_message: return "short message"; break;
     case ipfix_basetime: return "got basetime in IPFIX message"; break;
     case format_error: return "format error"; break;
+    case inconsistent_state: return "inconsistent internal state"; break;
     }
     // This fall-through cannot happen if the switch above contains
     // all enum values and the object has been initialised properly.
@@ -56,4 +58,4 @@ namespace IPFIX {
     return "unknown error";
  }
 
-} // namespace IPFIX
+} // namespace LIBFC

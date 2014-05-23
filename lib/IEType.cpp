@@ -26,7 +26,7 @@
 
 #include "IEType.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   size_t IEType::ieTypeCount() {
     return kIETypeCount;

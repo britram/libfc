@@ -33,17 +33,29 @@
 #ifndef _LIBFC_PLACEMENTCALLBACK_H_
 #  define _LIBFC_PLACEMENTCALLBACK_H_
 
-#  include "IPFIXContentHandler.h"
-#  include "IPFIXMessageStreamParser.h"
+#  include "PlacementContentHandler.h"
+#  include "MessageStreamParser.h"
 #  include "PlacementTemplate.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   /** Interface for collector with the placement interface. */
   class PlacementCollector {
   public:
+    /** The protocol which we want to collect for. */
+    enum Protocol {
+      /** Expect an IPFIX message stream. */
+      ipfix,
+      /** Expect a Netflow V9 message stream. */
+      netflowv9,
+      /** Expect a Netflow V5 message stream. */
+      netflowv5,
+    };
+
     /** Creates a callback. */
-    PlacementCollector();
+    PlacementCollector(Protocol protocol);
+
+    ~PlacementCollector();
 
     /** Collects information elements from an input stream. 
      *
@@ -76,10 +88,10 @@ namespace IPFIX {
     void register_placement_template(const PlacementTemplate*);
 
   private:
-    IPFIXContentHandler d;
-    IPFIXMessageStreamParser ir;
+    PlacementContentHandler d;
+    MessageStreamParser* ir;
   };
 
-} // namespace IPFIX
+} // namespace LIBFC
 
 #endif // _LIBFC_PLACEMENTCALLBACK_H_

@@ -34,13 +34,13 @@
 BOOST_AUTO_TEST_SUITE(Basics)
 
 BOOST_AUTO_TEST_CASE(InfoModel) {
-    IPFIX::InfoModel& m = IPFIX::InfoModel::instance();
+    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
 
     // we're going to do default info model stuff
     m.defaultIPFIX();
     
     // make sure we only have one instance
-    IPFIX::InfoModel& mcheck = IPFIX::InfoModel::instance();
+    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
     BOOST_CHECK_EQUAL(&m, &mcheck);
 
     // check a few IEs that should be there
@@ -53,11 +53,11 @@ BOOST_AUTO_TEST_CASE(InfoModel) {
 }
 
 BOOST_AUTO_TEST_CASE(InfoElement01) {
-  IPFIX::InfoModel& m = IPFIX::InfoModel::instance();
+  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
 
   m.defaultIPFIX();
     
-  const IPFIX::InfoElement* e = m.lookupIE("octetDeltaCount");
+  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
   BOOST_REQUIRE(e != 0);
 
   BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");

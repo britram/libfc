@@ -27,11 +27,14 @@
  */
 
 #include "libftrace.h"
-#include "ipfix.h"
+#include "libfc.h"
 
 #include <wandio.h>
-
 #include <pthread.h>
+
+#include <string.h>
+#include <errno.h>
+
 
 /**
  * @file libftrace.c
@@ -43,19 +46,25 @@
 struct libftrace_st {
     /** libwandio source */
     io_t                    *wio;
+    /** source name */
+    const char              *filename;
     /** template set for callbacks */
-    ipfix_template_set_t    *ts;
+    struct ipfix_template_set_t    *ts;
     /** write ready */
     pthread_cond_t          wok;
+    pthread_mutex_t         wmx;
     /** read ready */
     pthread_cond_t          rok;
+    pthread_mutex_t         rmx;
     /** reader thread */
     pthread_t               rt;
     /* storage for uniflow */
     libftrace_uniflow_t     uf;
+    /** valid record flag */
+    int                     valid;
     /* abort flag */
     int                     terminate;
-}
+};
 
 /** Open a libftrace source on an IPFIX/PDU file */
 libftrace_t *ftrace_create(const char *filename)
@@ -65,13 +74,27 @@ libftrace_t *ftrace_create(const char *filename)
     /* create structure */
     ft = malloc(sizeof(*ft));
     memset(ft, 0, sizeof(*ft));
+    ft->filename = filename;
 
-    /* create condition variables */
-    if (!(pthread_cont_init(&ft->wok, NULL))) {
-        fprintf(stderr, "couldn't init pthreads: %s\n", strerror(errno));
+    /* create condition variables and mutexes */
+    if (!(pthread_cond_init(&ft->wok, NULL))) {
+        fprintf(stderr, "couldn't init pthread wok: %s\n", strerror(errno));
+        goto err;
     }
-    if (!(pthread_cont_init(&ft->rok, NULL))) {
-        fprintf(stderr, "couldn't init pthreads: %s\n", strerror(errno));
+    
+    if (!(pthread_mutex_init(&ft->wmx, NULL))) {
+        fprintf(stderr, "couldn't init pthread wmx: %s\n", strerror(errno));
+        goto err;
+    }
+
+    if (!(pthread_cond_init(&ft->rok, NULL))) {
+        fprintf(stderr, "couldn't init pthread rok: %s\n", strerror(errno));
+        goto err;
+    }
+    
+    if (!(pthread_mutex_init(&ft->rmx, NULL))) {
+        fprintf(stderr, "couldn't init pthread rmx: %s\n", strerror(errno));
+        goto err;
     }
 
     /* open underlying source */
@@ -89,6 +112,7 @@ libftrace_t *ftrace_create(const char *filename)
 
 err:
     ftrace_destroy(ft);
+    return NULL;
 }
 
 /** Close a libftrace source */
@@ -97,24 +121,31 @@ void ftrace_destroy(libftrace_t *ft)
     /* FIXME need to destroy uniflow if currently reading */
     if (ft) {
         pthread_cond_destroy(&ft->wok);
+        pthread_mutex_destroy(&ft->wmx);
         pthread_cond_destroy(&ft->rok);
+        pthread_mutex_destroy(&ft->rmx);
+
         if (ft->ts) ipfix_template_set_delete(ft->ts);
         if (ft->wio) wandio_destroy(ft->wio);
         free(ft);
     }
 }
 
-static int _ftrace_semcb_inner(const libftrace_t *ft)
+static int _ftrace_semcb_inner(libftrace_t *ft)
 {
     /* check terminate signal */
     if (ft->terminate) return 0;
 
     /* signal read ready, outer thread will now return a record */
+    pthread_mutex_lock(&ft->rmx);
     pthread_cond_signal(&ft->rok);
-
+    pthread_mutex_unlock(&ft->rmx);
+    
     /* wait write ready, since next placement will happen after return */
-    pthread_cond_wait(&ft->wok);
-
+    pthread_mutex_lock(&ft->wmx);
+    pthread_cond_wait(&ft->wok, &ft->wmx);
+    pthread_mutex_unlock(&ft->wmx);
+    
     /* tell placement collector to keep going */
     return 1;
 }
@@ -126,7 +157,7 @@ static int _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
     ft->uf.ip_ver = 4;
 
     /* signal flow ready */
-    return _ftrace_semcb_inner(ft)
+    return _ftrace_semcb_inner(ft);
 }
 
 static int _ftrace_semcb_v6(const struct ipfix_template_t *t, void *vpft) {
@@ -136,30 +167,35 @@ static int _ftrace_semcb_v6(const struct ipfix_template_t *t, void *vpft) {
     ft->uf.ip_ver = 6;
 
     /* signal flow ready */
-    return _ftrace_semcb_inner(ft)
+    return _ftrace_semcb_inner(ft);
 }
 
-void _ftrace_rthread(void *vpft) {
+void *_ftrace_rthread(void *vpft) {
     libftrace_t *ft = (libftrace_t *)vpft;
     int rv;
 
     /* signal valid content */
-    ft->_valid = 1;
+    ft->valid = 1;
 
     /* run the placement collector in the subordinate thread */
-    rv = ipfix_collect_from_wandio(io_t wio, struct ipfix_template_t* t));
+    rv = ipfix_collect_from_wandio(ft->wio, ft->filename, ft->ts);
 
     /* set valid flag based on rv */
     if (rv) {
-        ft->_valid = 0; /* eof */
+        ft->valid = 0; /* eof */
     } else {
-        ft->_valid = -1; /* error */
+        ft->valid = -1; /* error */
     }
+    
+    /* we don't care about the return */
+    return NULL;
 }
 
 /** Start reading uniflows from a libftrace source */
 libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
 {
+    struct ipfix_template_t *t;
+    
     /* check to see if we've already registered a uniflow */
     if (ft->uf._ft == ft) return &ft->uf;
 
@@ -176,7 +212,7 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
     ipfix_register_placement(t, "sourceIPv4Address", 
         &ft->uf.ip.v4.src, sizeof(ft->uf.ip.v4.src));
     ipfix_register_placement(t, "destinationIPv4Address", 
-        &ft->uf.ip.v4.dst, sizeof(ft->uf.ip.v4.dst);
+        &ft->uf.ip.v4.dst, sizeof(ft->uf.ip.v4.dst));
     ipfix_register_placement(t, "sourceTransportPort",
         &ft->uf.port_src, sizeof(ft->uf.port_src));
     ipfix_register_placement(t, "destinationTransportPort",
@@ -198,7 +234,7 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
     ipfix_register_placement(t, "sourceIPv6Address", 
         &ft->uf.ip.v4.src, sizeof(ft->uf.ip.v4.src));
     ipfix_register_placement(t, "destinationIPv6Address", 
-        &ft->uf.ip.v4.dst, sizeof(ft->uf.ip.v4.dst);
+        &ft->uf.ip.v4.dst, sizeof(ft->uf.ip.v4.dst));
     ipfix_register_placement(t, "sourceTransportPort",
         &ft->uf.port_src, sizeof(ft->uf.port_src));
     ipfix_register_placement(t, "destinationTransportPort",
@@ -219,13 +255,15 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
 
 /** Stop reading a uniflow source */
 void ftrace_destroy_uniflow(libftrace_uniflow_t *uf) {
-    if (!uf->terminate) {
+    if (!uf->_ft->terminate) {
         /* signal inner uniflow to stop reading unless eof */
-        uf->terminate++;
-        pthread_cond_signal(&uf->_ft.wok);
+        pthread_mutex_lock(&uf->_ft->wmx);
+        uf->_ft->terminate++;
+        pthread_cond_signal(&uf->_ft->wok);
+        pthread_mutex_unlock(&uf->_ft->wmx);
     }
 
-    if (pthread_join(ft->rt, NULL) != 0) {
+    if (pthread_join(uf->_ft->rt, NULL) != 0) {
         /* FIXME error */
     }
 }
@@ -235,11 +273,15 @@ void ftrace_destroy_uniflow(libftrace_uniflow_t *uf) {
 int ftrace_next_uniflow(libftrace_uniflow_t *uf) {
 
     /* signal write ready */
-    pthread_cond_signal(&uf->_ft.wok);
+    pthread_mutex_lock(&uf->_ft->wmx);
+    pthread_cond_signal(&uf->_ft->wok);
+    pthread_mutex_unlock(&uf->_ft->wmx);
 
     /* wait read ready */
-    pthread_cond_wait(&uf->_ft.rok);
+    pthread_mutex_lock(&uf->_ft->rmx);
+    pthread_cond_wait(&uf->_ft->rok, &uf->_ft->rmx);
+    pthread_mutex_unlock(&uf->_ft->rmx);
 
     /* check valid */
-    return uf->_valid;
+    return uf->_ft->valid;
 }

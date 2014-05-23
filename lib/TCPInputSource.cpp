@@ -28,7 +28,7 @@
 
 #include "TCPInputSource.h"
 
-namespace IPFIX {
+namespace LIBFC {
 
   TCPInputSource::TCPInputSource(int fd)
     : fd(fd),
@@ -65,4 +65,8 @@ namespace IPFIX {
     return "<TCP socket>";
   }
 
-} // namespace IPFIX
+  bool TCPInputSource::can_peek() const {
+    return false;
+  }
+
+} // namespace LIBFC
