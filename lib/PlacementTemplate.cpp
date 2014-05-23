@@ -137,6 +137,7 @@ namespace LIBFC {
               LOG4CPLUS_TRACE(logger, "  IE " << k->first->toIESpec() 
                               << " does not match " << (*i)->toIESpec());
               unmatched->insert(*i);
+              break;
             }
           }
 	}
