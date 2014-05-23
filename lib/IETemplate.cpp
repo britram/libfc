@@ -45,6 +45,12 @@ namespace LIBFC {
   }
    
   bool IETemplate::contains(const InfoElement* ie) const {
+    if (logger.getLogLevel() <= log4cplus::TRACE_LOG_LEVEL) {
+      LOG4CPLUS_TRACE(logger, 
+                      "  test if template contains " << ie->toIESpec());
+      for (auto i = ies_.begin(); i != ies_.end(); ++i)
+        LOG4CPLUS_TRACE(logger, " --> " << (*i)->toIESpec());
+    }
     return std::find(ies_.begin(), ies_.end(), ie) != ies_.end();
   }
 
