@@ -29,6 +29,8 @@
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
+#  define LOG4CPLUS_WARN(logger, expr)
+#  define LOG4CPLUS_INFO(logger, expr)
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "IETemplate.h"
@@ -70,12 +72,14 @@ namespace LIBFC {
 
   std::vector<const InfoElement *>::const_iterator 
   IETemplate::find(const InfoElement* ie) const {
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
     if (logger.getLogLevel() <= log4cplus::TRACE_LOG_LEVEL) {
       LOG4CPLUS_TRACE(logger, 
                       "  test if template contains " << ie->toIESpec());
       for (auto i = ies_.begin(); i != ies_.end(); ++i)
         LOG4CPLUS_TRACE(logger, " --> " << (*i)->toIESpec());
     }
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
     for (auto i = ies_.begin(); i != ies_.end(); ++i) {
       if ((*i)->matches(*ie))
