@@ -247,7 +247,7 @@ extern "C" {
    * @param c the callback to call
    * @param vparg an optional argument to pass to the callback
    */
-extern void ipfix_register_callback(struct libfc_template_t* t,
+extern void libfc_register_callback(struct libfc_template_t* t,
                                     int (*c) (const struct libfc_template_t*,
                                                void *),
                                     void *vparg);
@@ -261,7 +261,7 @@ extern void ipfix_register_callback(struct libfc_template_t* t,
    *
    * @return non-zero on success and 0 on error
    */
-  extern int ipfix_collect_from_file(int fd, const char* name,
+  extern int libfc_collect_from_file(int fd, const char* name,
                                      struct libfc_template_set_t* t);
 
   /** Collect IPFIX data from a wandio stream.

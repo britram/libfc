@@ -123,7 +123,7 @@ extern int libfc_register_placement(struct libfc_template_t* t,
            InfoModel::instance().lookupIE(ie_name), p, size);
 }
 
-extern void ipfix_register_callback(struct libfc_template_t* t,
+extern void libfc_register_callback(struct libfc_template_t* t,
                                     int (*c) (const struct libfc_template_t*, 
                                                void *),
                                     void *vparg) {

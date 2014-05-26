@@ -219,7 +219,7 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
         &ft->uf.port_dst, sizeof(ft->uf.port_dst));
     ipfix_register_placement(t, "protocolIdentifier",
         &ft->uf.ip_proto, sizeof(ft->uf.ip_proto));
-    ipfix_register_callback(t, _ftrace_semcb_v4, ft);
+    libfc_register_callback(t, _ftrace_semcb_v4, ft);
 
     /* register base template v6 */
     t = ipfix_template_new(ft->ts);
@@ -241,7 +241,7 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
         &ft->uf.port_dst, sizeof(ft->uf.port_dst));
     ipfix_register_placement(t, "protocolIdentifier",
         &ft->uf.ip_proto, sizeof(ft->uf.ip_proto));
-    ipfix_register_callback(t, _ftrace_semcb_v6, ft);
+    libfc_register_callback(t, _ftrace_semcb_v6, ft);
 
     /* FIXME more templates */
 
