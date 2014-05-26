@@ -35,7 +35,6 @@
  */
 
 #include <stdio.h>
-#include <getopt.h>
 
 #include "libftrace.h"
 
@@ -47,51 +46,6 @@ static int help_flag = false;
 static int message_version = 10;
 static const char* filename = 0;
 
-/* Code patterned after http://www.gnu.org/software/libc/
- * manual/html_node/Getopt-Long-Option-Example.html
- * #Getopt-Long-Option-Example */
-static void parse_options(int argc, char* const* argv) {
-
-    static struct option options[] = {
-        { "help", no_argument, &help_flag, 1 },
-        { "input", required_argument, 0, 'i' },
-        { "verbose", no_argument, &verbose_flag, 1 },
-        { "message-version", required_argument, 0, 'm' },
-        { "specfile", required_argument, 0, 's' },
-        { 0, 0, 0, 0 },
-    };
-    
-    
-    while (1) {
-
-        int option_index = 0;
-        int c = getopt_long(argc, argv, "hi:m:s:v", options, &option_index);
-        if (c == -1)
-            break;
-        
-        switch(c) {
-            case 0:
-                break;
-            case 'i':
-                filename = optarg;
-                break;
-            case 'm':
-                message_version = atoi(optarg);
-                if (message_version != 9 && message_version != 10) {
-                    fprintf("Message version %s not supported\n", optarg);
-                    exit(EXIT_FAILURE);
-                }
-                break;
-            case 's':
-                spec_file_name = optarg;
-                break;
-            default:
-                fprintf(stderr, "Unrecognised option character %c, terminating.\n", c);
-                exit(EXIT_FAILURE);
-        }
-    }
-}
-
 static uint64_t hash_addr4(int addr4) {
     
     /* FIXME need a way to pass this in */
@@ -102,8 +56,8 @@ static uint64_t hash_addr4(int addr4) {
     
     sha256_init(&sha);
     sha256_process(&sha, salt, 8);
-    sha256_process(&sha, &addr4, sizeof(addr4));
-    sha256_done(&sha, &sha_out);
+    sha256_process(&sha, (uint8_t*)&addr4, sizeof(addr4));
+    sha256_done(&sha, (uint8_t*)&sha_out);
     return sha_out[0];
 }
 
@@ -132,9 +86,7 @@ int main (int argc, char *argv[]) {
     
     int rv;
     
-    parse_options(argc, argv);
-    
-    ft = ftrace_create(filename, message_version);
+    ft = ftrace_create(argv[1], 10);
 
     if (spec_file_name) (void)ftrace_add_specfile(ft, spec_file_name);
     
@@ -144,16 +96,23 @@ int main (int argc, char *argv[]) {
         
         /* short-circuit: ensure it's a real port 443 TCP/IPv4 
            flow with at least three packets */
-        if (uf->ip_ver != 4 ||
-            uf->ip_proto != 6 ||
+        if (uf->ip_proto != 6 ||
             uf->port_src != 443 ||
             uf->packets < 3) {
             continue;
         }
         
         /* Hash the addresses */
-        srcid = hash_addr4(uf->ip.v4.src);
-        dstid = hash_addr4(uf->ip.v4.dst);
+        if (uf->ip_proto == 4) {
+            srcid = hash_addr4(uf->ip.v4.src);
+            dstid = hash_addr4(uf->ip.v4.dst);
+        } else if (uf->ip_proto == 6) {
+            srcid = hash_addr6(uf->ip.v6.src);
+            dstid = hash_addr6(uf->ip.v6.dst);
+        } else {
+            srcid = 0ULL;
+            dstid = 0ULL;
+        }
         
         /* Offset the time */
         if (!basetime) {

@@ -70,30 +70,31 @@ struct libftrace_st {
 libftrace_t *ftrace_create(const char *filename, int version)
 {
     libftrace_t *ft = NULL;
-
+    int pterrno = 0;
+    
     /* create structure */
     ft = malloc(sizeof(*ft));
     memset(ft, 0, sizeof(*ft));
     ft->filename = filename;
 
     /* create condition variables and mutexes */
-    if (!(pthread_cond_init(&ft->wok, NULL))) {
-        fprintf(stderr, "couldn't init pthread wok: %s\n", strerror(errno));
+    if ((pterrno = pthread_cond_init(&ft->wok, NULL)) != 0) {
+        fprintf(stderr, "couldn't init pthread wok: %s\n", strerror(pterrno));
         goto err;
     }
     
-    if (!(pthread_mutex_init(&ft->wmx, NULL))) {
-        fprintf(stderr, "couldn't init pthread wmx: %s\n", strerror(errno));
+    if ((pterrno = pthread_mutex_init(&ft->wmx, NULL)) != 0) {
+        fprintf(stderr, "couldn't init pthread wmx: %s\n", strerror(pterrno));
         goto err;
     }
 
-    if (!(pthread_cond_init(&ft->rok, NULL))) {
-        fprintf(stderr, "couldn't init pthread rok: %s\n", strerror(errno));
+    if ((pterrno = pthread_cond_init(&ft->rok, NULL)) != 0) {
+        fprintf(stderr, "couldn't init pthread rok: %s\n", strerror(pterrno));
         goto err;
     }
     
-    if (!(pthread_mutex_init(&ft->rmx, NULL))) {
-        fprintf(stderr, "couldn't init pthread rmx: %s\n", strerror(errno));
+    if ((pterrno = pthread_mutex_init(&ft->rmx, NULL)) != 0) {
+        fprintf(stderr, "couldn't init pthread rmx: %s\n", strerror(pterrno));
         goto err;
     }
 
@@ -194,11 +195,12 @@ void *_ftrace_rthread(void *vpft) {
 /** Start reading uniflows from a libftrace source */
 libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
 {
+    int pterrno = 0;
     struct libfc_template_t *t;
     
     /* check to see if we've already registered a uniflow */
     if (ft->uf._ft == ft) return &ft->uf;
-
+    
     /* register base template v4 */
     t = libfc_template_new(ft->tg);
     libfc_register_placement(t, "flowStartMilliseconds", 
@@ -245,9 +247,13 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
 
     /* FIXME more templates */
 
+    /* make the reference circular so we know we started a uniflow */
+    ft->uf._ft = ft;
+    
     /* then start the reader thread */
-    if (pthread_create(&ft->rt, NULL, _ftrace_rthread, ft) != 0) {
-        /* FIXME error */
+    if ((pterrno = pthread_create(&ft->rt, NULL, _ftrace_rthread, ft)) != 0) {
+        fprintf(stderr, "couldn't start reader thread: %s\n", strerror(pterrno));
+        return NULL;
     }
 
     return &ft->uf;

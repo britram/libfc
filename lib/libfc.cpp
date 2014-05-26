@@ -103,8 +103,10 @@ extern struct libfc_template_group_t* libfc_template_group_new(int version) {
   switch (version) {
     case 9:
       protocol = PlacementCollector::netflowv9;
+      break;
     case 10:
       protocol = PlacementCollector::ipfix;
+      break;
     default:
       return nullptr;
   }
