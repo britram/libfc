@@ -222,7 +222,7 @@ namespace LIBFC {
      *
      * @return the error that occurred
      */
-    const Error& get_error() const;
+    const Error::error_t get_error() const;
 
     /** Returns the value of errno when the error occurred.
      *

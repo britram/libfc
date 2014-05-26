@@ -530,7 +530,7 @@ namespace LIBFC {
 	std::shared_ptr<ErrorContext> e 
 	  = unhandled_data_set_handler->unhandled_data_set(
 	      observation_domain, id, length, buf);
-	if (e->get_error().get_error() == Error::again) {
+	if (e->get_error() == Error::again) {
 	  wire_template = find_wire_template(id);
 	  if (wire_template == 0) {
 	    LOG4CPLUS_WARN(logger, "  No placement for data set with "

@@ -72,8 +72,8 @@ namespace LIBFC {
       delete explanation;
   }
 
-  const Error& ErrorContext::get_error() const {
-    return e;
+  const Error::error_t ErrorContext::get_error() const {
+    return e.get_error();
   }
 
   const int ErrorContext::get_system_errno() const {
