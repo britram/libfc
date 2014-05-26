@@ -85,9 +85,16 @@ namespace LIBFC {
 
       /** Internal inconsistency. */
       inconsistent_state,
+
+      /** The operation was not successful, but the caller should try
+       * the operation again.  This is not an error code like the
+       * others. */
+      again,
     };
 
     Error(error_t e);
+
+    error_t get_error() const;
     const std::string to_string() const;
 
   private:

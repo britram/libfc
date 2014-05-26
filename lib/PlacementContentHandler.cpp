@@ -522,14 +522,28 @@ namespace LIBFC {
 
     if (wire_template == 0) {
       if (unhandled_data_set_handler == 0) {
-	LOG4CPLUS_WARN(logger, "  No template for data set with "
+	LOG4CPLUS_WARN(logger, "  No placement for data set with "
                        "observation domain " << observation_domain
                        << " and template id " << id << "; skipping");
 	LIBFC_RETURN_OK();
-      } else
-	return unhandled_data_set_handler->unhandled_data_set(
-	         observation_domain, id, length, buf);
+      } else {
+	std::shared_ptr<ErrorContext> e 
+	  = unhandled_data_set_handler->unhandled_data_set(
+	      observation_domain, id, length, buf);
+	if (e->get_error().get_error() == Error::again) {
+	  wire_template = find_wire_template(id);
+	  if (wire_template == 0) {
+	    LOG4CPLUS_WARN(logger, "  No placement for data set with "
+			   "observation domain " << observation_domain
+			   << " and template id " << id 
+			   << "; skipping after second chance");
+	    LIBFC_RETURN_OK();
+	  }
+	}
+      }
     }
+
+    assert(wire_template != 0);
 
     const PlacementTemplate* placement_template
       = match_placement_template(id, wire_template);
