@@ -49,7 +49,7 @@ struct libftrace_st {
     /** source name */
     const char              *filename;
     /** template set for callbacks */
-    struct libfc_template_set_t    *ts;
+    struct libfc_template_group_t    *tg;
     /** write ready */
     pthread_cond_t          wok;
     pthread_mutex_t         wmx;
@@ -67,7 +67,7 @@ struct libftrace_st {
 };
 
 /** Open a libftrace source on an IPFIX/PDU file */
-libftrace_t *ftrace_create(const char *filename)
+libftrace_t *ftrace_create(const char *filename, int version)
 {
     libftrace_t *ft = NULL;
 
@@ -105,7 +105,7 @@ libftrace_t *ftrace_create(const char *filename)
     }
 
     /* create a template set -- this will be populated once we decide what to collect */
-    ft->ts = ipfix_template_set_new();
+    ft->tg = libfc_template_group_new(version);
 
     /* all done */
     return ft;
@@ -125,7 +125,7 @@ void ftrace_destroy(libftrace_t *ft)
         pthread_cond_destroy(&ft->rok);
         pthread_mutex_destroy(&ft->rmx);
 
-        if (ft->ts) ipfix_template_set_delete(ft->ts);
+        if (ft->tg) libfc_template_group_delete(ft->tg);
         if (ft->wio) wandio_destroy(ft->wio);
         free(ft);
     }
@@ -178,7 +178,7 @@ void *_ftrace_rthread(void *vpft) {
     ft->valid = 1;
 
     /* run the placement collector in the subordinate thread */
-    rv = ipfix_collect_from_wandio(ft->wio, ft->filename, ft->ts);
+    rv = libfc_collect_from_wandio(ft->wio, ft->filename, ft->tg);
 
     /* set valid flag based on rv */
     if (rv) {
@@ -200,46 +200,46 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
     if (ft->uf._ft == ft) return &ft->uf;
 
     /* register base template v4 */
-    t = ipfix_template_new(ft->ts);
-    ipfix_register_placement(t, "flowStartMilliseconds", 
+    t = libfc_template_new(ft->tg);
+    libfc_register_placement(t, "flowStartMilliseconds", 
         &ft->uf.time_start, sizeof(ft->uf.time_start));
-    ipfix_register_placement(t, "flowEndMilliseconds", 
+    libfc_register_placement(t, "flowEndMilliseconds", 
         &ft->uf.time_end, sizeof(ft->uf.time_end));
-    ipfix_register_placement(t, "packetDeltaCount", 
+    libfc_register_placement(t, "packetDeltaCount", 
         &ft->uf.packets, sizeof(ft->uf.packets));
-    ipfix_register_placement(t, "octetDeltaCount", 
+    libfc_register_placement(t, "octetDeltaCount", 
         &ft->uf.octets, sizeof(ft->uf.octets));
-    ipfix_register_placement(t, "sourceIPv4Address", 
+    libfc_register_placement(t, "sourceIPv4Address", 
         &ft->uf.ip.v4.src, sizeof(ft->uf.ip.v4.src));
-    ipfix_register_placement(t, "destinationIPv4Address", 
+    libfc_register_placement(t, "destinationIPv4Address", 
         &ft->uf.ip.v4.dst, sizeof(ft->uf.ip.v4.dst));
-    ipfix_register_placement(t, "sourceTransportPort",
+    libfc_register_placement(t, "sourceTransportPort",
         &ft->uf.port_src, sizeof(ft->uf.port_src));
-    ipfix_register_placement(t, "destinationTransportPort",
+    libfc_register_placement(t, "destinationTransportPort",
         &ft->uf.port_dst, sizeof(ft->uf.port_dst));
-    ipfix_register_placement(t, "protocolIdentifier",
+    libfc_register_placement(t, "protocolIdentifier",
         &ft->uf.ip_proto, sizeof(ft->uf.ip_proto));
     libfc_register_callback(t, _ftrace_semcb_v4, ft);
 
     /* register base template v6 */
-    t = ipfix_template_new(ft->ts);
-    ipfix_register_placement(t, "flowStartMilliseconds", 
+    t = libfc_template_new(ft->tg);
+    libfc_register_placement(t, "flowStartMilliseconds", 
         &ft->uf.time_start, sizeof(ft->uf.time_start));
-    ipfix_register_placement(t, "flowEndMilliseconds", 
+    libfc_register_placement(t, "flowEndMilliseconds", 
         &ft->uf.time_end, sizeof(ft->uf.time_end));
-    ipfix_register_placement(t, "packetDeltaCount", 
+    libfc_register_placement(t, "packetDeltaCount", 
         &ft->uf.packets, sizeof(ft->uf.packets));
-    ipfix_register_placement(t, "octetDeltaCount", 
+    libfc_register_placement(t, "octetDeltaCount", 
         &ft->uf.octets, sizeof(ft->uf.octets));
-    ipfix_register_placement(t, "sourceIPv6Address", 
+    libfc_register_placement(t, "sourceIPv6Address", 
         &ft->uf.ip.v4.src, sizeof(ft->uf.ip.v4.src));
-    ipfix_register_placement(t, "destinationIPv6Address", 
+    libfc_register_placement(t, "destinationIPv6Address", 
         &ft->uf.ip.v4.dst, sizeof(ft->uf.ip.v4.dst));
-    ipfix_register_placement(t, "sourceTransportPort",
+    libfc_register_placement(t, "sourceTransportPort",
         &ft->uf.port_src, sizeof(ft->uf.port_src));
-    ipfix_register_placement(t, "destinationTransportPort",
+    libfc_register_placement(t, "destinationTransportPort",
         &ft->uf.port_dst, sizeof(ft->uf.port_dst));
-    ipfix_register_placement(t, "protocolIdentifier",
+    libfc_register_placement(t, "protocolIdentifier",
         &ft->uf.ip_proto, sizeof(ft->uf.ip_proto));
     libfc_register_callback(t, _ftrace_semcb_v6, ft);
 
@@ -284,4 +284,8 @@ int ftrace_next_uniflow(libftrace_uniflow_t *uf) {
 
     /* check valid */
     return uf->_ft->valid;
+}
+
+int ftrace_add_specfile(libftrace_t *ft, const char *specfilename) {
+    return libfc_add_specfile(specfilename);
 }

@@ -105,8 +105,11 @@ typedef struct libftrace_uniflow_st {
   uint8_t         tcp_flags;
 } libftrace_uniflow_t;
 
+/** Add IESpecs from a specfile to the information model */
+int ftrace_add_specfile(libftrace_t *ft, const char *specfilename);
+
 /** Open a libftrace reader on an IPFIX/PDU file */
-libftrace_t *ftrace_create(const char *filename);
+libftrace_t *ftrace_create(const char *filename, int version);
 
 /** Close a libftrace reader */
 void ftrace_destroy(libftrace_t *ft);

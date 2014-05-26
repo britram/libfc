@@ -153,7 +153,7 @@
  *   if (fd < 0)
  *     exit(1);
  *
- *   struct libfc_template_set_t* s = libfc_template_set_new();
+ *   struct libfc_template_group_t* s = libfc_template_group_new();
  *   struct libfc_template_t* t = libfc_template_new(s);
  *   libfc_register_placement(t, "sourceIPv4Address", &sip, 0);
  *   libfc_register_placement(t, "destinationIPv4Address", &dip, 0);
@@ -163,7 +163,7 @@
  *   if (close(fd) < 0)
  *     exit(1);
  *
- *   libfc_template_set_delete(s);
+ *   libfc_template_group_delete(s);
  *
  *   return 0;
  * }
@@ -185,7 +185,7 @@ extern "C" {
    * This is an opaque struct, and you should only ever handle a
    * pointer to it.
    */
-  struct libfc_template_set_t;
+  struct libfc_template_group_t;
 
   /** An libfc template.
    *
@@ -196,9 +196,10 @@ extern "C" {
 
   /** Creates a new libfc template set.
    *
+   * @param version 9 to read NetFlow V9, 10 to read IPFIX; anything else returns a null pointer.
    * @return a new libfc template set.
    */
-  extern struct libfc_template_set_t* libfc_template_set_new();
+  extern struct libfc_template_group_t* libfc_template_group_new(int version);
 
   /** Creates a new libfc template within a template set.
    *
@@ -206,16 +207,16 @@ extern "C" {
    * @return a new libfc template.
    */
   extern struct libfc_template_t* libfc_template_new(
-    struct libfc_template_set_t* s);
+    struct libfc_template_group_t* s);
 
   /** Destroys an libfc template set.
    *
    * This also destroys all templates in the template set.
    *
    * @param s libfc template set, previously created by
-   * libfc_template_set_new().
+   * libfc_template_group_new().
    */
-  extern void libfc_template_set_delete(struct libfc_template_set_t* s);
+  extern void libfc_template_group_delete(struct libfc_template_group_t* s);
 
   /** Registers IE name/address association for .
    *
@@ -261,8 +262,8 @@ extern void libfc_register_callback(struct libfc_template_t* t,
    *
    * @return non-zero on success and 0 on error
    */
-  extern int libfc_collect_from_file(int fd, const char* name,
-                                     struct libfc_template_set_t* t);
+extern int libfc_collect_from_file(int fd, const char* name,
+                                     struct libfc_template_group_t* t);
 
   /** Collect IPFIX data from a wandio stream.
    *
@@ -272,9 +273,17 @@ extern void libfc_register_callback(struct libfc_template_t* t,
    *
    * @return non-zero on success and 0 on error
    */
-extern int ipfix_collect_from_wandio(io_t *wio, const char *name,
-                                     struct libfc_template_set_t* s);
-   
+extern int libfc_collect_from_wandio(io_t *wio, const char *name,
+                                     struct libfc_template_group_t* s);
+
+
+  /** Add IESpecs from a file to the information model
+   *
+   * @param specfilename path to specfile
+   * @return non-zero on success and zero on error
+   */
+extern int libfc_add_specfile(const char *specfilename);
+    
 #  if defined(__cplusplus)
 }
 #  endif /* defined(__cplusplus) */

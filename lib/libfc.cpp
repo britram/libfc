@@ -27,6 +27,8 @@
 #include <set>
 
 #include <cstddef>
+#include <iostream>
+#include <fstream>
 
 #include "libfc.h"
 
@@ -36,6 +38,7 @@
 #include "FileInputSource.h"
 #include "WandioInputSource.h"
 #include "exceptions/FormatError.h"
+#include "exceptions/IESpecError.h"
 
 using namespace LIBFC;
 
@@ -52,8 +55,8 @@ private:
   std::set<PlacementTemplate*> templates;
 
 public:
-  CBinding() 
-    : PlacementCollector(PlacementCollector::ipfix) {
+    CBinding(PlacementCollector::Protocol protocol)
+    : PlacementCollector(protocol) {
   }
 
   virtual ~CBinding() {
@@ -86,22 +89,33 @@ public:
   }
 };
 
-struct libfc_template_set_t {
+struct libfc_template_group_t {
   CBinding* binding;
 };
 
-extern struct libfc_template_set_t* libfc_template_set_new() {
+extern struct libfc_template_group_t* libfc_template_group_new(int version) {
+  PlacementCollector::Protocol protocol;
+    
   if (!infomodel_initialized)
     InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
 
-  struct libfc_template_set_t* ret = new libfc_template_set_t;
-  ret->binding = new CBinding();
+  switch (version) {
+    case 9:
+      protocol = PlacementCollector::netflowv9;
+    case 10:
+      protocol = PlacementCollector::ipfix;
+    default:
+      return nullptr;
+  }
+    
+  struct libfc_template_group_t* ret = new libfc_template_group_t;
+  ret->binding = new CBinding(protocol);
   return ret;
 }
 
 extern struct libfc_template_t* libfc_template_new(
-    struct libfc_template_set_t* s) {
+    struct libfc_template_group_t* s) {
   if (!infomodel_initialized)
     InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
@@ -113,7 +127,7 @@ extern struct libfc_template_t* libfc_template_new(
   return ret;
 }
 
-extern void libfc_template_set_delete(struct libfc_template_set_t* s) {
+extern void libfc_template_group_delete(struct libfc_template_group_t* s) {
   delete s->binding;
 }
 
@@ -132,7 +146,7 @@ extern void libfc_register_callback(struct libfc_template_t* t,
 }
 
 extern int libfc_collect_from_file(int fd, const char* name,
-				   struct libfc_template_set_t* t) {
+				   struct libfc_template_group_t* t) {
   int ret = 1;
 
   FileInputSource is(fd, name);
@@ -146,7 +160,7 @@ extern int libfc_collect_from_file(int fd, const char* name,
   return ret;
 }
 
-extern int ipfix_collect_from_wandio(io_t *wio, const char *name, struct libfc_template_set_t* t) {
+extern int libfc_collect_from_wandio(io_t *wio, const char *name, struct libfc_template_group_t* t) {
   int ret = 1;
 
   WandioInputSource is(wio, name);
@@ -159,3 +173,22 @@ extern int ipfix_collect_from_wandio(io_t *wio, const char *name, struct libfc_t
 
   return ret;
 }
+
+extern int libfc_add_specfile(const char *specfilename) {
+    int i = 0;
+    std::ifstream iespecs(specfilename);
+    if (!iespecs) return 0;
+    
+    std::string line;
+    while (std::getline(iespecs, line)) {
+        try {
+            InfoModel::instance().add(line);
+            ++i;
+        } catch (IESpecError &e) {
+            return 0;
+        }
+        iespecs.close();
+    }
+    return i;
+}
+
