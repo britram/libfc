@@ -38,8 +38,9 @@
 static uint32_t sip;
 static uint32_t dip;
 
-static void callback(const struct libfc_template_t* p) {
+static int callback(const struct libfc_template_t* p, void *ign) {
   printf("Got new values %08x and %08x\n", sip, dip);
+  return 1;
 }
 
 int main() {
@@ -52,7 +53,7 @@ int main() {
   struct libfc_template_t* t = libfc_template_new(s);
   libfc_register_placement(t, "sourceIPv4Address", &sip, 4);
   libfc_register_placement(t, "destinationIPv4Address", &dip, 4);
-  libfc_register_callback(t, callback);
+  libfc_register_callback(t, callback, NULL);
   libfc_collect_from_file(fd, "test.ipfix", s);
   if (close(fd) < 0)
     exit(1);
