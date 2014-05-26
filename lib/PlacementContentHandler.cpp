@@ -38,6 +38,7 @@
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #  define LOG4CPLUS_WARN(logger, expr)
+#  define LOG4CPLUS_INFO(logger, expr)
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "decode_util.h"

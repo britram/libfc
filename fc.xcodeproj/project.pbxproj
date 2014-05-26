@@ -68,6 +68,7 @@
 		F5596056192E04C4003754C8 /* PrintContentHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5596050192E04C4003754C8 /* PrintContentHandler.h */; };
 		F5596057192E04C4003754C8 /* V9MessageStreamParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5596051192E04C4003754C8 /* V9MessageStreamParser.cpp */; };
 		F5596058192E04C4003754C8 /* V9MessageStreamParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5596052192E04C4003754C8 /* V9MessageStreamParser.h */; };
+		F55CCCA819336E47000DED44 /* ContentHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F55CCCA719336E47000DED44 /* ContentHandler.cpp */; };
 		F5CDC4C419250EE800CBE87D /* WandioInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */; };
 		F5CDC4C519250EE800CBE87D /* WandioInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CDC4C319250EE800CBE87D /* WandioInputSource.h */; };
 		F5CDC4C619250FC500CBE87D /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
@@ -141,6 +142,7 @@
 		F5596050192E04C4003754C8 /* PrintContentHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrintContentHandler.h; path = lib/PrintContentHandler.h; sourceTree = "<group>"; };
 		F5596051192E04C4003754C8 /* V9MessageStreamParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = V9MessageStreamParser.cpp; path = lib/V9MessageStreamParser.cpp; sourceTree = "<group>"; };
 		F5596052192E04C4003754C8 /* V9MessageStreamParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = V9MessageStreamParser.h; path = lib/V9MessageStreamParser.h; sourceTree = "<group>"; };
+		F55CCCA719336E47000DED44 /* ContentHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ContentHandler.cpp; path = lib/ContentHandler.cpp; sourceTree = "<group>"; };
 		F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WandioInputSource.cpp; path = lib/WandioInputSource.cpp; sourceTree = "<group>"; };
 		F5CDC4C319250EE800CBE87D /* WandioInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WandioInputSource.h; path = lib/WandioInputSource.h; sourceTree = "<group>"; };
 		F5CDC4CB192510D800CBE87D /* libftrace.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libftrace.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -172,6 +174,7 @@
 		D354E7AA192354D200C45B70 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				F55CCCA719336E47000DED44 /* ContentHandler.cpp */,
 				F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */,
 				F559604E192E04C4003754C8 /* PlacementContentHandler.h */,
 				F559604F192E04C4003754C8 /* PrintContentHandler.cpp */,
@@ -409,6 +412,7 @@
 				D354E7EC1923550800C45B70 /* DecodePlan.cpp in Sources */,
 				D354E7F41923550800C45B70 /* ExportError.cpp in Sources */,
 				D354E8011923550800C45B70 /* IEType.cpp in Sources */,
+				F55CCCA819336E47000DED44 /* ContentHandler.cpp in Sources */,
 				D354E7FB1923550800C45B70 /* FileExportDestination.cpp in Sources */,
 				D354E8031923550800C45B70 /* InfoElement.cpp in Sources */,
 				D354E8111923550800C45B70 /* PlacementCollector.cpp in Sources */,
