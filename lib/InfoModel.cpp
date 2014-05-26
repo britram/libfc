@@ -264,8 +264,7 @@ namespace LIBFC {
     std::lock_guard<std::recursive_mutex> locker(lock);
 
     /* Naming convention from Brian's Python code. */
-    std::string name = "__ipfix_(" + std::to_string(pen) + 
-      ")_(" + std::to_string(number) + ")";
+    std::string name = "__ipfix_";
 
     InfoElement ie(name, pen, number, lookupIEType("octetArray"), len);
 

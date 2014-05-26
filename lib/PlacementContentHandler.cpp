@@ -37,6 +37,7 @@
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
+#  define LOG4CPLUS_WARN(logger, expr)
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "decode_util.h"
@@ -66,6 +67,7 @@ namespace LIBFC {
 
   PlacementContentHandler::PlacementContentHandler()
     : info_model(InfoModel::instance()),
+      unhandled_data_set_handler(0),
       use_matched_template_cache(false),
       current_wire_template(0),
       parse_is_good(true)
@@ -80,6 +82,9 @@ namespace LIBFC {
     if (parse_is_good) { /* Check assertions only when no exception. */
       assert (current_wire_template == 0);
     }
+
+    for (auto i = wire_templates.begin(); i != wire_templates.end(); ++i)
+      delete i->second;
   }
 
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
@@ -142,6 +147,7 @@ namespace LIBFC {
 		      << " bytes long, got only " << length);
 
     this->observation_domain = observation_domain;
+
     LOG4CPLUS_TRACE(logger, "LEAVE start_message");
     return std::shared_ptr<ErrorContext>(0);
   }
@@ -259,30 +265,51 @@ namespace LIBFC {
      * that. FIXME this has changed! --neuhaust */
     current_field_count = field_count;
     current_field_no = 0;
-    current_wire_template = new MatchTemplate();
+    current_wire_template = new IETemplate();
 
     LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_template_record() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_record");
+    assert(current_wire_template != 0);
+
     if (current_wire_template->size() > 0) {
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
-      {
-        std::map<uint64_t, const MatchTemplate*>::const_iterator i
-          = wire_templates.find(make_template_key(current_template_id));
-        if (i != wire_templates.end())
-          LOG4CPLUS_TRACE(logger, "  overwriting template for id "
-                          << std::hex
-                          << make_template_key(current_template_id));
+
+      const IETemplate *my_wire_template 
+	= find_wire_template(current_template_id);
+      if (my_wire_template != 0 
+	  && *my_wire_template != *current_wire_template) {
+	LOG4CPLUS_WARN(logger, "  Overwriting template for domain " 
+		       << observation_domain 
+		       << ", ID "
+		       << current_template_id);
+
+	warned_template_ids.erase(current_template_id);
+
+	delete wire_templates[make_template_key(current_template_id)];
+	wire_templates[make_template_key(current_template_id)]
+	  = current_wire_template;
+
+	matched_templates.erase(my_wire_template);
+      } else if (my_wire_template == 0) {
+	LOG4CPLUS_INFO(logger, "  New template for domain " 
+		       << observation_domain 
+		       << ", ID " << current_template_id);
+	wire_templates[make_template_key(current_template_id)]
+	  = current_wire_template;
+      } else {
+	assert (my_wire_template != 0 
+		&& *my_wire_template == *current_wire_template);
+	LOG4CPLUS_TRACE(logger, "  Duplicate template for domain " 
+		       << observation_domain 
+		       << ", ID "
+		       << current_template_id);
       }
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
-      wire_templates[make_template_key(current_template_id)]
-        = current_wire_template;
 
 #if defined(_LIBFC_HAVE_LOG4CPLUS_)
-      if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
+      if (logger.getLogLevel() <= log4cplus::TRACE_LOG_LEVEL) {
         LOG4CPLUS_TRACE(logger,
                         "  current wire template has "
                         << current_wire_template->size()
@@ -296,11 +323,11 @@ namespace LIBFC {
 #endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }
 
-      if (current_field_count != current_field_no)
-	CH_REPORT_ERROR(format_error, 
-			"Template field mismatch: expected "
-			<< current_field_count << " fields, got " 
-			<< current_field_no);
+    if (current_field_count != current_field_no)
+      CH_REPORT_ERROR(format_error, 
+		      "Template field mismatch: expected "
+		      << current_field_count << " fields, got " 
+		      << current_field_no);
 
     current_wire_template = 0;
     LIBFC_RETURN_OK();
@@ -415,20 +442,22 @@ namespace LIBFC {
   }
 
 
-  const MatchTemplate*
+  const IETemplate*
   PlacementContentHandler::find_wire_template(uint16_t id) const {
-    std::map<uint64_t, const MatchTemplate*>::const_iterator i
+    std::map<uint64_t, const IETemplate*>::const_iterator i
       = wire_templates.find(make_template_key(id));
     return i == wire_templates.end() ? 0 : i->second;
   }
 
   const PlacementTemplate*
-  PlacementContentHandler::match_placement_template(const MatchTemplate* wire_template) const {
+  PlacementContentHandler::match_placement_template(
+      uint16_t id,
+      const IETemplate* wire_template) const {
     LOG4CPLUS_TRACE(logger, "ENTER match_placement_template");
 
     /* This strategy: return first match. Other strategies are also
      * possible, such as "return match with most IEs". */
-    std::map<const MatchTemplate*, const PlacementTemplate*>::const_iterator m;
+    std::map<const IETemplate*, const PlacementTemplate*>::const_iterator m;
 
     if (use_matched_template_cache)
       m = matched_templates.find(wire_template);
@@ -439,7 +468,36 @@ namespace LIBFC {
       for (auto i = placement_templates.begin();
            i != placement_templates.end();
            ++i) {
-        if ((*i)->is_match(wire_template)) {
+	std::set<const InfoElement*>* unmatched 
+	  = new std::set<const InfoElement*>();
+
+	unsigned int n_matches = (*i)->is_match(wire_template, unmatched);
+        LOG4CPLUS_TRACE(logger, "n_matches=" << n_matches 
+                        << ",unmatched->size()=" << unmatched->size()
+                        << ",wire_template->size()="
+                        << wire_template->size());
+
+        if (n_matches > 0) {
+	  assert(n_matches <= wire_template->size());
+
+	  if (n_matches < wire_template->size()) {
+	    /* We're losing columns, so let's warn about them. */
+	    assert(unmatched->size() == wire_template->size() - n_matches);
+
+	    if (warned_template_ids.count(make_template_key(id)) == 0) {
+	      LOG4CPLUS_WARN(logger, "  Template match on wire template "
+			     "for domain " << observation_domain
+			     << " and template ID " << id 
+			     << " successful, but incomplete");
+
+	      LOG4CPLUS_WARN(logger, "  List of unmatched IEs follows:");
+	      for (auto k = unmatched->begin(); k != unmatched->end(); ++k)
+		LOG4CPLUS_WARN(logger, "    " << (*k)->toIESpec());
+	      warned_template_ids.insert(make_template_key(id));
+	    }
+	  }
+	  delete unmatched;
+
           matched_templates[wire_template] = *i;
           return *i;
         }
@@ -449,26 +507,47 @@ namespace LIBFC {
       return m->second;
   }
 
-  std::shared_ptr<ErrorContext> PlacementContentHandler::start_data_set(uint16_t id,
-                                      uint16_t length,
-                                      const uint8_t* buf) {
+  std::shared_ptr<ErrorContext> PlacementContentHandler::start_data_set(
+      uint16_t id,
+      uint16_t length,
+      const uint8_t* buf) {
     LOG4CPLUS_TRACE(logger,
                     "ENTER start_data_set"
                     << ", id=" << id
                     << ", length=" << length);
 
     // Find out who is interested in data from this data set
-    const MatchTemplate* wire_template = find_wire_template(id);
+    const IETemplate* wire_template = find_wire_template(id);
 
     LOG4CPLUS_TRACE(logger, "  wire_template=" << wire_template);
 
     if (wire_template == 0) {
-      LOG4CPLUS_TRACE(logger, "  no template for this data set; skipping");
-      LIBFC_RETURN_OK();
+      if (unhandled_data_set_handler == 0) {
+	LOG4CPLUS_WARN(logger, "  No placement for data set with "
+                       "observation domain " << observation_domain
+                       << " and template id " << id << "; skipping");
+	LIBFC_RETURN_OK();
+      } else {
+	std::shared_ptr<ErrorContext> e 
+	  = unhandled_data_set_handler->unhandled_data_set(
+	      observation_domain, id, length, buf);
+	if (e->get_error() == Error::again) {
+	  wire_template = find_wire_template(id);
+	  if (wire_template == 0) {
+	    LOG4CPLUS_WARN(logger, "  No placement for data set with "
+			   "observation domain " << observation_domain
+			   << " and template id " << id 
+			   << "; skipping after second chance");
+	    LIBFC_RETURN_OK();
+	  }
+	}
+      }
     }
 
+    assert(wire_template != 0);
+
     const PlacementTemplate* placement_template
-      = match_placement_template(wire_template);
+      = match_placement_template(id, wire_template);
 
     LOG4CPLUS_TRACE(logger, "  placement_template=" << placement_template);
 
@@ -512,7 +591,7 @@ namespace LIBFC {
     callbacks[placement_template] = callback;
   }
 
-  uint16_t PlacementContentHandler::wire_template_min_length(const MatchTemplate* t) {
+  uint16_t PlacementContentHandler::wire_template_min_length(const IETemplate* t) {
     uint16_t min = 0;
 
     for (auto i = t->begin(); i != t->end(); ++i) {

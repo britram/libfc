@@ -26,17 +26,17 @@
  * DAMAGE.
  */
 /**
- * @file ipfix.h
- * @brief C binding for IPFIX collection and export.
+ * @file libfc.h
+ * @brief C binding for libfc collection and export.
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  *
  * This file contains the struct definitions and function declarations
  * that are necessary to use libfc from C.
  *
  * This library supports reading (collection) and writing (export) of
- * IPFIX messages.  IPFIX is a data format (some say it is a protocol)
- * for exchanging computer network measurement data; it is defined in
- * RFC 5101 and others.
+ * LIBFC messages (IPFIX, NetFlow v9, and NetFlow v5).  These are data
+ * formats (some say it is a protocol) for exchanging computer network
+ * measurement data; IPFIX is defined in RFC 5101 and others.
  *
  * The following text is taken from the documentation for the
  * PlacementTemplate class; it is replicated here for better
@@ -44,7 +44,7 @@
  * in order to understand the following text.
  *
  * IPFIX is sometimes called a <em>self-describing format</em>.  In
- * order to self-describe, an IPFIX message contains <em>template
+ * order to self-describe, an LIBFC message contains <em>template
  * records</em> that describe the format of the <em>data
  * records</em>, which contain the content.  A template record
  * basically says, "Hi, I'm a template record with the identifying
@@ -144,7 +144,7 @@
  * static uint32_t sip;
  * static uint32_t dip;
  *
- * static void callback(const struct ipfix_template_t* p) {
+ * static void callback(const struct libfc_template_t* p) {
  *   printf("Got new values %08x and %08x\n", sip, dip);
  * }
  *
@@ -153,26 +153,25 @@
  *   if (fd < 0)
  *     exit(1);
  *
- *   struct ipfix_template_set_t* s = ipfix_template_set_new();
- *
- *   struct ipfix_template_t* t = ipfix_template_new(s);
- *   ipfix_register_placement(t, "sourceIPv4Address", &sip, 4);
- *   ipfix_register_placement(t, "destinationIPv4Address", &dip, 4);
- *   ipfix_register_callback(s, callback);
- *   ipfix_collect_from_file(fd, "test.ipfix", s);
+ *   struct libfc_template_set_t* s = libfc_template_set_new();
+ *   struct libfc_template_t* t = libfc_template_new(s);
+ *   libfc_register_placement(t, "sourceIPv4Address", &sip, 0);
+ *   libfc_register_placement(t, "destinationIPv4Address", &dip, 0);
+ *   libfc_register_callback(s, callback);
+ *   libfc_collect_from_file(fd, "test.ipfix", s);
  *
  *   if (close(fd) < 0)
  *     exit(1);
- *    
- *   ipfix_template_set_delete(s);
- * 
+ *
+ *   libfc_template_set_delete(s);
+ *
  *   return 0;
  * }
  * @endcode
  */
 
-#ifndef _LIBFC_IPFIX_H_
-#  define _LIBFC_IPFIX_H_
+#ifndef _LIBFC_LIBFC_H_
+#  define _LIBFC_LIBFC_H_
 
 #  if defined(__cplusplus)
 extern "C" {
@@ -181,47 +180,47 @@ extern "C" {
 #include <stdlib.h>
 #include <wandio.h>
 
-  /** An IPFIX template set.
+  /** An libfc template set.
    *
    * This is an opaque struct, and you should only ever handle a
    * pointer to it.
    */
-  struct ipfix_template_set_t;
+  struct libfc_template_set_t;
 
-  /** An IPFIX template.
+  /** An libfc template.
    *
    * This is an opaque struct, and you should only ever handle a
    * pointer to it.
    */
-  struct ipfix_template_t;
+  struct libfc_template_t;
 
-  /** Creates a new IPFIX template set.
+  /** Creates a new libfc template set.
    *
-   * @return a new IPFIX template set.
+   * @return a new libfc template set.
    */
-  extern struct ipfix_template_set_t* ipfix_template_set_new();
+  extern struct libfc_template_set_t* libfc_template_set_new();
 
-  /** Creates a new IPFIX template within a template set.
+  /** Creates a new libfc template within a template set.
    *
    * @param s the template set in which to create the new template
-   * @return a new IPFIX template.
+   * @return a new libfc template.
    */
-  extern struct ipfix_template_t* ipfix_template_new(
-    struct ipfix_template_set_t* s);
+  extern struct libfc_template_t* libfc_template_new(
+    struct libfc_template_set_t* s);
 
-  /** Destroys an IPFIX template set.
+  /** Destroys an libfc template set.
    *
    * This also destroys all templates in the template set.
    *
-   * @param s IPFIX template set, previously created by
-   * ipfix_template_set_new().
+   * @param s libfc template set, previously created by
+   * libfc_template_set_new().
    */
-  extern void ipfix_template_set_delete(struct ipfix_template_set_t* s);
+  extern void libfc_template_set_delete(struct libfc_template_set_t* s);
 
   /** Registers IE name/address association for .
    *
    * @param t the template in which to register the association
-   * @param ie_name name of IPFIX information element.  For the
+   * @param ie_name name of libfc information element.  For the
    *   moment, this name can only come from the standard information
    *   model, until I figure out a good way to support more
    *   information models.
@@ -234,7 +233,7 @@ extern "C" {
    * @return non-zero if the operation was successful, 0 if the
    *     given size is not appropriate for the information element.
    */
-  extern int ipfix_register_placement(struct ipfix_template_t* t,
+  extern int libfc_register_placement(struct libfc_template_t* t,
                                       const char* ie_name, void* p, size_t size);
 
   /** Registers callback for when placement is complete.
@@ -248,8 +247,8 @@ extern "C" {
    * @param c the callback to call
    * @param vparg an optional argument to pass to the callback
    */
-extern void ipfix_register_callback(struct ipfix_template_t* t,
-                                    int (*c) (const struct ipfix_template_t*,
+extern void ipfix_register_callback(struct libfc_template_t* t,
+                                    int (*c) (const struct libfc_template_t*,
                                                void *),
                                     void *vparg);
   /** Collect IPFIX data from a file.
@@ -263,7 +262,7 @@ extern void ipfix_register_callback(struct ipfix_template_t* t,
    * @return non-zero on success and 0 on error
    */
   extern int ipfix_collect_from_file(int fd, const char* name,
-                                     struct ipfix_template_set_t* t);
+                                     struct libfc_template_set_t* t);
 
   /** Collect IPFIX data from a wandio stream.
    *
@@ -273,10 +272,11 @@ extern void ipfix_register_callback(struct ipfix_template_t* t,
    *
    * @return non-zero on success and 0 on error
    */
-extern int ipfix_collect_from_wandio(io_t *wio, const char *name, struct ipfix_template_set_t* s);
+extern int ipfix_collect_from_wandio(io_t *wio, const char *name,
+                                     struct libfc_template_set_t* s);
    
 #  if defined(__cplusplus)
 }
 #  endif /* defined(__cplusplus) */
 
-#endif /* _LIBFC_IPFIX_H_ */
+#endif /* _LIBFC_LIBFC_H_ */

@@ -41,9 +41,9 @@ using namespace LIBFC;
 
 static bool infomodel_initialized = false;
 
-struct ipfix_template_t {
+struct libfc_template_t {
   PlacementTemplate* tmpl;
-  int (*callback) (const ipfix_template_t* t, void *vp);
+  int (*callback) (const libfc_template_t* t, void *vp);
   void *vparg;
 };
 
@@ -62,7 +62,7 @@ public:
     templates.clear();
   }
 
-  void add_template(ipfix_template_t* t) {
+  void add_template(libfc_template_t* t) {
     templates.insert(t->tmpl);
   }
 
@@ -74,10 +74,10 @@ public:
   std::shared_ptr<ErrorContext>
       end_placement(const PlacementTemplate* t) {
     /* INSANE HACK which probably works -- get template from object */
-    const ipfix_template_t* this_template = 
-          reinterpret_cast<const ipfix_template_t*>(
+    const libfc_template_t* this_template = 
+          reinterpret_cast<const libfc_template_t*>(
             reinterpret_cast<const unsigned char*>(t) -
-            offsetof(struct ipfix_template_t, tmpl));
+            offsetof(struct libfc_template_t, tmpl));
     if (this_template != 0)
       if (this_template->callback(this_template, this_template->vparg) <= 0) {
         LIBFC_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", 0, 0, 0, 0, 0);
@@ -86,53 +86,53 @@ public:
   }
 };
 
-struct ipfix_template_set_t {
+struct libfc_template_set_t {
   CBinding* binding;
 };
 
-extern struct ipfix_template_set_t* ipfix_template_set_new() {
+extern struct libfc_template_set_t* libfc_template_set_new() {
   if (!infomodel_initialized)
     InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
 
-  struct ipfix_template_set_t* ret = new ipfix_template_set_t;
+  struct libfc_template_set_t* ret = new libfc_template_set_t;
   ret->binding = new CBinding();
   return ret;
 }
 
-extern struct ipfix_template_t* ipfix_template_new(
-    struct ipfix_template_set_t* s) {
+extern struct libfc_template_t* libfc_template_new(
+    struct libfc_template_set_t* s) {
   if (!infomodel_initialized)
     InfoModel::instance().defaultIPFIX();
   infomodel_initialized = true;
 
-  struct ipfix_template_t* ret = new ipfix_template_t;
+  struct libfc_template_t* ret = new libfc_template_t;
   ret->callback = 0;
   ret->tmpl = new PlacementTemplate;
   s->binding->add_template(ret);
   return ret;
 }
 
-extern void ipfix_template_set_delete(struct ipfix_template_set_t* s) {
+extern void libfc_template_set_delete(struct libfc_template_set_t* s) {
   delete s->binding;
 }
 
-extern int ipfix_register_placement(struct ipfix_template_t* t,
+extern int libfc_register_placement(struct libfc_template_t* t,
                                     const char* ie_name, void* p, size_t size) {
   return t->tmpl->register_placement(
            InfoModel::instance().lookupIE(ie_name), p, size);
 }
 
-extern void ipfix_register_callback(struct ipfix_template_t* t,
-                                    int (*c) (const struct ipfix_template_t*, 
+extern void ipfix_register_callback(struct libfc_template_t* t,
+                                    int (*c) (const struct libfc_template_t*, 
                                                void *),
                                     void *vparg) {
   t->callback = c;
   t->vparg = vparg;
 }
 
-extern int ipfix_collect_from_file(int fd, const char* name,
-				   struct ipfix_template_set_t* t) {
+extern int libfc_collect_from_file(int fd, const char* name,
+				   struct libfc_template_set_t* t) {
   int ret = 1;
 
   FileInputSource is(fd, name);
@@ -146,7 +146,7 @@ extern int ipfix_collect_from_file(int fd, const char* name,
   return ret;
 }
 
-extern int ipfix_collect_from_wandio(io_t *wio, const char *name, struct ipfix_template_set_t* t) {
+extern int ipfix_collect_from_wandio(io_t *wio, const char *name, struct libfc_template_set_t* t) {
   int ret = 1;
 
   WandioInputSource is(wio, name);

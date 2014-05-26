@@ -49,7 +49,7 @@ struct libftrace_st {
     /** source name */
     const char              *filename;
     /** template set for callbacks */
-    struct ipfix_template_set_t    *ts;
+    struct libfc_template_set_t    *ts;
     /** write ready */
     pthread_cond_t          wok;
     pthread_mutex_t         wmx;
@@ -150,7 +150,7 @@ static int _ftrace_semcb_inner(libftrace_t *ft)
     return 1;
 }
 
-static int _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
+static int _ftrace_semcb_v4(const struct libfc_template_t *t, void *vpft) {
     libftrace_t *ft = (libftrace_t *)vpft;
 
     /* set version */
@@ -160,7 +160,7 @@ static int _ftrace_semcb_v4(const struct ipfix_template_t *t, void *vpft) {
     return _ftrace_semcb_inner(ft);
 }
 
-static int _ftrace_semcb_v6(const struct ipfix_template_t *t, void *vpft) {
+static int _ftrace_semcb_v6(const struct libfc_template_t *t, void *vpft) {
     libftrace_t *ft = (libftrace_t *)vpft;
 
     /* set version */
@@ -194,7 +194,7 @@ void *_ftrace_rthread(void *vpft) {
 /** Start reading uniflows from a libftrace source */
 libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
 {
-    struct ipfix_template_t *t;
+    struct libfc_template_t *t;
     
     /* check to see if we've already registered a uniflow */
     if (ft->uf._ft == ft) return &ft->uf;

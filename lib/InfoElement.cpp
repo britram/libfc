@@ -30,16 +30,6 @@
 
 namespace LIBFC {
   
-#if 0
-  InfoElement::InfoElement()
-    : name_(std::string()),
-      pen_(0), 
-      number_(0), 
-      ietype_(IEType::octetArray()),
-      len_(0) {
-  }
-#endif
-
   InfoElement::InfoElement(const InfoElement& rhs)
     : name_(rhs.name()),
       pen_(rhs.pen()),
@@ -89,13 +79,16 @@ namespace LIBFC {
   }
 
   std::string InfoElement::toIESpec() const {
-    std::ostringstream os;
+    if (spec == "") {
+      std::ostringstream os;
 
-    os << name_ << "(";
-    if (pen_) os << pen_ << "/";
-    os << number_ << ")" << "<" << ietype_->name() << ">" << "[" << len_ << "]";
-  
-    return os.str();
+      os << name_ << "(";
+      if (pen_) 
+	os << pen_ << "/";
+      os << number_ << ")" << "<" << ietype_->name() << ">" << "[" << len_ << "]";
+      spec = os.str();
+    }
+    return spec;
   };
 
   const InfoElement* InfoElement::forLen(uint16_t len) const {

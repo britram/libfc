@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(Basic) {
 }
 
 BOOST_AUTO_TEST_CASE(File01) {
-  const char* name = "/zp0/statdat/test/19991_00098798_1398816000.dat.bz2";
+  const char* name = "/zp0/statdat/test/19991_00098765_1398697200.dat.bz2";
   io_t* io = wandio_create(name);
 
   if (io != 0) {

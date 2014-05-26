@@ -35,14 +35,14 @@
 
 #  include <list>
 #  include <map>
-#  include <list>
+#  include <set>
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
 #    include <log4cplus/logger.h>
 #  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #  include "InfoElement.h"
-#  include "MatchTemplate.h"
+#  include "IETemplate.h"
 
 namespace LIBFC {
 
@@ -309,10 +309,18 @@ namespace LIBFC {
      * A template T matches this template iff T's set of IEs is a
      * subset of this template's set of IEs.
      *
+     * @param t the template to match
+     * @param unmatched pointer to a set of InfoElements; if non-null,
+     *   @emph{and} if the return value was greater than zero, this
+     *   set will contain those IEs that were in T, but not in this
+     *   template.  This will inform you about those IEs that weren't
+     *   matched (and that you will therefore miss).
+     *
      * @return if the templates match, the number of IEs in this
      *   template, 0 otherwise
      */
-    unsigned int is_match(const MatchTemplate* t) const;
+    unsigned int is_match(const IETemplate* t,
+			  std::set<const InfoElement*>* unmatched) const;
 
     /** Creates a wire template suitable to represent this template
      * on the wire in a template record.

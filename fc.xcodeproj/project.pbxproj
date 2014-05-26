@@ -46,8 +46,6 @@
 		D354E8081923550800C45B70 /* ipfix_endian.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7D01923550800C45B70 /* ipfix_endian.h */; };
 		D354E80B1923550800C45B70 /* IPFIXMessageStreamParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7D31923550800C45B70 /* IPFIXMessageStreamParser.cpp */; };
 		D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7D41923550800C45B70 /* IPFIXMessageStreamParser.h */; };
-		D354E80D1923550800C45B70 /* MatchTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7D51923550800C45B70 /* MatchTemplate.cpp */; };
-		D354E80E1923550800C45B70 /* MatchTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7D61923550800C45B70 /* MatchTemplate.h */; };
 		D354E80F1923550800C45B70 /* MessageStreamParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7D71923550800C45B70 /* MessageStreamParser.cpp */; };
 		D354E8101923550800C45B70 /* MessageStreamParser.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7D81923550800C45B70 /* MessageStreamParser.h */; };
 		D354E8111923550800C45B70 /* PlacementCollector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E7D91923550800C45B70 /* PlacementCollector.cpp */; };
@@ -119,8 +117,6 @@
 		D354E7D01923550800C45B70 /* ipfix_endian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ipfix_endian.h; path = lib/ipfix_endian.h; sourceTree = "<group>"; };
 		D354E7D31923550800C45B70 /* IPFIXMessageStreamParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IPFIXMessageStreamParser.cpp; path = lib/IPFIXMessageStreamParser.cpp; sourceTree = "<group>"; };
 		D354E7D41923550800C45B70 /* IPFIXMessageStreamParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IPFIXMessageStreamParser.h; path = lib/IPFIXMessageStreamParser.h; sourceTree = "<group>"; };
-		D354E7D51923550800C45B70 /* MatchTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MatchTemplate.cpp; path = lib/MatchTemplate.cpp; sourceTree = "<group>"; };
-		D354E7D61923550800C45B70 /* MatchTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MatchTemplate.h; path = lib/MatchTemplate.h; sourceTree = "<group>"; };
 		D354E7D71923550800C45B70 /* MessageStreamParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MessageStreamParser.cpp; path = lib/MessageStreamParser.cpp; sourceTree = "<group>"; };
 		D354E7D81923550800C45B70 /* MessageStreamParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MessageStreamParser.h; path = lib/MessageStreamParser.h; sourceTree = "<group>"; };
 		D354E7D91923550800C45B70 /* PlacementCollector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlacementCollector.cpp; path = lib/PlacementCollector.cpp; sourceTree = "<group>"; };
@@ -219,8 +215,6 @@
 				D354E7D01923550800C45B70 /* ipfix_endian.h */,
 				D354E7D31923550800C45B70 /* IPFIXMessageStreamParser.cpp */,
 				D354E7D41923550800C45B70 /* IPFIXMessageStreamParser.h */,
-				D354E7D51923550800C45B70 /* MatchTemplate.cpp */,
-				D354E7D61923550800C45B70 /* MatchTemplate.h */,
 				D354E7D71923550800C45B70 /* MessageStreamParser.cpp */,
 				D354E7D81923550800C45B70 /* MessageStreamParser.h */,
 				D354E7D91923550800C45B70 /* PlacementCollector.cpp */,
@@ -319,7 +313,6 @@
 				D354E8081923550800C45B70 /* ipfix_endian.h in Headers */,
 				D354E8141923550800C45B70 /* PlacementExporter.h in Headers */,
 				D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */,
-				D354E80E1923550800C45B70 /* MatchTemplate.h in Headers */,
 				D354E81F19235BD300C45B70 /* libfc.h in Headers */,
 				D354E8061923550800C45B70 /* InfoModel.h in Headers */,
 				F5596058192E04C4003754C8 /* V9MessageStreamParser.h in Headers */,
@@ -408,7 +401,6 @@
 				D354E7E41923550800C45B70 /* BasicOctetArray.cpp in Sources */,
 				D354E8131923550800C45B70 /* PlacementExporter.cpp in Sources */,
 				D354E80F1923550800C45B70 /* MessageStreamParser.cpp in Sources */,
-				D354E80D1923550800C45B70 /* MatchTemplate.cpp in Sources */,
 				D354E7FD1923550800C45B70 /* FileInputSource.cpp in Sources */,
 				F5596053192E04C4003754C8 /* PlacementContentHandler.cpp in Sources */,
 				D354E7F81923550800C45B70 /* IESpecError.cpp in Sources */,

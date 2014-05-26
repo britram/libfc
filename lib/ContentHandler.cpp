@@ -1,4 +1,3 @@
-/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,34 +23,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include "IETemplate.h"
-#include "InfoElement.h"
-
-/**
- * @file
- * @author Brian Trammell <trammell@tik.ee.ethz.ch>
- *
- * @section DESCRIPTION
- *
- * This file specifies the interface to MatchTemplate. A MatchTemplate
- * is an IETemplate which can only be used for minimal template matching
- * (i.e., it stores no offset information used for encoding or decoding,
- * and is not bound to a session or ID).
- */
-
-#ifndef _LIBFC_MATCHTEMPLATE_H_ // idem
-#  define _LIBFC_MATCHTEMPLATE_H_ // hack
+#include "ContentHandler.h"
 
 namespace LIBFC {
 
-  class MatchTemplate : public IETemplate {
-  public:
-    MatchTemplate();
-    
-    void dumpIdent(std::ostream &os) const;    
-    void add(const InfoElement* ie);
-  };
-} // namespace LIBFC
+  ContentHandler::~ContentHandler() {
+  }
 
-#endif
+} // namespace LIBFC

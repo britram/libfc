@@ -60,4 +60,11 @@ namespace LIBFC {
     d.register_placement_template(placement, this);
   }
 
+  std::shared_ptr<ErrorContext>
+  PlacementCollector::unhandled_data_set(
+      uint32_t observation_domain, uint16_t id,
+      uint16_t length, const uint8_t* buf) {
+    LIBFC_RETURN_OK();
+  }
+
 } // namespace LIBFC

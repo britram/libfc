@@ -45,7 +45,7 @@
 #  include "InfoElement.h"
 #  include "InfoModel.h"
 #  include "InputSource.h"
-#  include "MatchTemplate.h"
+#  include "IETemplate.h"
 #  include "PlacementTemplate.h"
 
 namespace LIBFC {
@@ -59,8 +59,15 @@ namespace LIBFC {
    */
   class PlacementContentHandler : public ContentHandler {
   public:
+    /** Creates a PlacementContentHandler.
+     *
+     * @param warn_unmatched if true, warns when there are unmatched
+     *   IEs in match_placement_template(). This can happen when the
+     *   placement template's IEs are a proper subset of the wire
+     *   template IEs.
+     */
     PlacementContentHandler();
-    ~PlacementContentHandler();
+    virtual ~PlacementContentHandler();
 
     /* From ContentHandler */
     std::shared_ptr<ErrorContext> start_session();
@@ -100,6 +107,16 @@ namespace LIBFC {
         const PlacementTemplate* placement_template,
         PlacementCollector* callback);
 
+    /** Registers handler for unhandled data sets.
+     *
+     * If there is no handler for unhandled data sets, they will simply
+     * be discarded.
+     *
+     * @param callback collector to inform when there is an unhandled
+     *   data set .
+     */
+    void register_unhandled_data_set_handler(PlacementCollector* callback);
+
   private:
     /** Observation domain for this message. */
     uint32_t observation_domain;
@@ -120,7 +137,7 @@ namespace LIBFC {
      * @return a pointer to the template belonging to this template
      *     ID, or NULL if the template isn't present.
      */
-    const MatchTemplate* find_wire_template(uint16_t id) const;
+    const IETemplate* find_wire_template(uint16_t id) const;
 
     /** Given a wire template, finds a matching placement template.
      *
@@ -146,13 +163,15 @@ namespace LIBFC {
      * - resolve remaining conflicts through addition order, where the
      *   earlier template wins.
      *
+     * @param id the template ID of the data set (used for reporting only)
      * @param wire_template the wire template to match
      *
      * @return the matching placement template, or NULL if no
      *     placement template matches
      */
     const PlacementTemplate*
-    match_placement_template(const MatchTemplate* wire_template) const;
+    match_placement_template(uint16_t id,
+			     const IETemplate* wire_template) const;
 
     /** Makes unique template key from template ID and observation domain. 
      *
@@ -177,7 +196,7 @@ namespace LIBFC {
      *
      * @return the minimum length of the template on the wire
      */
-    uint16_t wire_template_min_length(const MatchTemplate* t);
+    uint16_t wire_template_min_length(const IETemplate* t);
 
     std::shared_ptr<ErrorContext> process_template_set(
       uint16_t set_id, uint16_t set_length,
@@ -211,7 +230,7 @@ namespace LIBFC {
      *
      * This map is kept between messages.
      */
-    std::map<uint64_t, const MatchTemplate*> wire_templates;
+    std::map<uint64_t, const IETemplate*> wire_templates;
 
     /** Placement templates.
      *
@@ -222,6 +241,9 @@ namespace LIBFC {
 
     /** Association between placement template and callback. */
     std::map<const PlacementTemplate*, PlacementCollector*> callbacks;
+
+    /** Unhandled data set handler, if any. */
+    PlacementCollector* unhandled_data_set_handler;
 
     /** Says whether to use the matched template cache. 
      *
@@ -243,14 +265,14 @@ namespace LIBFC {
      * collection process down, therefore this member might not be
      * used.
      */
-    mutable std::map<const MatchTemplate*, const PlacementTemplate*>
+    mutable std::map<const IETemplate*, const PlacementTemplate*>
       matched_templates;
 
     /** The current wire template that is being assembled. 
      *
      * This pointer is set to null after every template record.
      */
-    MatchTemplate* current_wire_template;
+    IETemplate* current_wire_template;
 
     /** Id of current wire template */
     uint16_t current_template_id;
@@ -272,6 +294,9 @@ namespace LIBFC {
      * well).
      */
     bool parse_is_good;
+
+    /** The template IDs about which we've warned already. */
+    mutable std::set<uint64_t> warned_template_ids;
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;
