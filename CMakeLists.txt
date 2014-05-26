@@ -70,7 +70,7 @@ target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES}
                                 ${Log4CPlus_LIBRARIES})
 
 add_executable(cbinding cbinding.c)
-target_link_libraries(cbinding fc)
+target_link_libraries(cbinding fc ${Wandio_LIBRARIES})
 
 if ($ENV{CLANG}) 
   target_link_libraries (fc c++)

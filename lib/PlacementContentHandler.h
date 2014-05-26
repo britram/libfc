@@ -296,7 +296,10 @@ namespace LIBFC {
     bool parse_is_good;
 
     /** The template IDs about which we've warned already. */
-    mutable std::set<uint64_t> warned_template_ids;
+    mutable std::set<uint64_t> incomplete_template_ids;
+
+    /** The template IDs about which we've warned already. */
+    mutable std::set<uint64_t> unmatched_template_ids;
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

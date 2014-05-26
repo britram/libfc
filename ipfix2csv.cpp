@@ -101,6 +101,7 @@ static const char* spec_file_name = 0;
 static int verbose_flag = false;
 static int help_flag = false;
 static int message_version = 10;
+static int full_type_flag = 0;
 static std::list<const char*> ie_names;
 static std::string filename;
 
@@ -116,12 +117,13 @@ static void parse_options(int argc, char* const* argv) {
       { "verbose", no_argument, &verbose_flag, 1 },
       { "message-version", required_argument, 0, 'm' },
       { "specfile", required_argument, 0, 's' },
+      { "full-types", no_argument, &full_type_flag, 't' },
       { 0, 0, 0, 0 },
     };
 
     int option_index = 0;
 
-    int c = getopt_long(argc, argv, "hi:m:s:v", options, &option_index);
+    int c = getopt_long(argc, argv, "hi:m:s:tv", options, &option_index);
 
     if (c == -1)
       break;
@@ -169,6 +171,7 @@ static void help() {
             << "  -s file|--specfile=file" << std::endl
             << "\tuse FILE as IE spec filename" << std::endl
             << "  -h|--help\tprint this help text" << std::endl
+	    << "  -t|--full-types print full type info in columns" << std::endl
             << "  -v|--verbose\tprint verbose output" << std::endl;
 }
 
@@ -194,32 +197,52 @@ add_ies_from_spec_file() {
 static void
 print_unsigned(std::ostream& os, const IEType* type, void* v) {
   switch (type->number()) {
-  case IEType::kUnsigned8: os << *static_cast<uint8_t*>(v) << "U"; break;
-  case IEType::kUnsigned16: os << *static_cast<uint16_t*>(v) << "U"; break;
-  case IEType::kUnsigned32: os << *static_cast<uint32_t*>(v) << "UL"; break;
-  case IEType::kUnsigned64: os << *static_cast<uint64_t*>(v) << "ULL"; break;
+  case IEType::kUnsigned8: os << static_cast<int>(*static_cast<uint8_t*>(v)); break;
+  case IEType::kUnsigned16: os << *static_cast<uint16_t*>(v); break;
+  case IEType::kUnsigned32: os << *static_cast<uint32_t*>(v); break;
+  case IEType::kUnsigned64: os << *static_cast<uint64_t*>(v); break;
   default: /* Can't happen, ignore silently */ break;
+  }
+  
+  if (full_type_flag) {
+    switch (type->number()) {
+    case IEType::kUnsigned8: os << "U"; break;
+    case IEType::kUnsigned16: os << "U"; break;
+    case IEType::kUnsigned32: os << "UL"; break;
+    case IEType::kUnsigned64: os << "ULL"; break;
+    default: /* Can't happen, ignore silently */ break;
+    }
   }
 }
 
 static void
 print_signed(std::ostream& os, const IEType* type, void* v) {
   switch (type->number()) {
-  case IEType::kSigned8: os << *static_cast<int8_t*>(v); break;
+  case IEType::kSigned8: os << static_cast<int>(*static_cast<int8_t*>(v)); break;
   case IEType::kSigned16: os << *static_cast<int16_t*>(v); break;
-  case IEType::kSigned32: os << *static_cast<int32_t*>(v) << "L"; break;
-  case IEType::kSigned64: os << *static_cast<int64_t*>(v) << "LL"; break;
+  case IEType::kSigned32: os << *static_cast<int32_t*>(v); break;
+  case IEType::kSigned64: os << *static_cast<int64_t*>(v); break;
   default: /* Can't happen, ignore silently */ break;
+  }
+
+  if (full_type_flag) {
+    switch (type->number()) {
+    case IEType::kSigned8: break;
+    case IEType::kSigned16: break;
+    case IEType::kSigned32: os << "L"; break;
+    case IEType::kSigned64: os << "LL"; break;
+    default: /* Can't happen, ignore silently */ break;
+    }
   }
 }
 
 static void
 print_ipv4address(std::ostream& os, const IEType* type, void* v) {
   uint32_t val = *static_cast<uint32_t*>(v);
-  os << ((val >> 0) & 0xff) 
-     << '.' << ((val >>  8) & 0xff) 
+  os << ((val >> 24) & 0xff) 
      << '.' << ((val >> 16) & 0xff) 
-     << '.' << ((val >> 24) & 0xff);
+     << '.' << ((val >>  8) & 0xff) 
+     << '.' << ((val >>  0) & 0xff);
 }
 
 static void

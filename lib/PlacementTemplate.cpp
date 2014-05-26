@@ -95,17 +95,17 @@ namespace LIBFC {
   bool PlacementTemplate::lookup_placement(const InfoElement* ie,
                                            void** p, size_t* size) const {
     LOG4CPLUS_TRACE(logger, "ENTER lookup_placement");
-    std::map<const InfoElement*, PlacementInfo*>::const_iterator it
-      = placements.find(ie);
-    if (it == placements.end()) {
-      *p = 0;
-      return false;
-    } else {
-      *p = it->second->address;
-      if (size != 0)
-        *size = it->second->size_on_wire;
-      return true;
+    for (auto i = placements.begin(); i != placements.end(); ++i) {
+      if (i->first->matches(*ie)) {
+	*p = i->second->address;
+	if (size != 0)
+	  *size = i->second->size_on_wire;
+	return true;
+      }
     }
+
+    *p = 0;
+    return false;
   }
 
   unsigned int PlacementTemplate::is_match(

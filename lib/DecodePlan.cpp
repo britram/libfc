@@ -106,7 +106,7 @@ namespace LIBFC {
     for (auto ie = wire_template->begin(); ie != wire_template->end(); ie++) {
       assert(*ie != 0);
       LOG4CPLUS_TRACE(logger, "  decision " << (decision_number + 1)
-		      << ": looking up placement");// for " << (*ie)->toIESpec());
+		      << ": looking up placement for " << (*ie)->toIESpec());
 
       Decision d;
 
@@ -448,7 +448,37 @@ namespace LIBFC {
     for (auto i = plan.begin(); i != plan.end(); ++i) {
       assert(cur < buf_end);
 
-      LOG4CPLUS_TRACE(logger, "  decision: " << i->type);
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+      switch (i->type) {
+      case Decision::skip_fixlen:
+	LOG4CPLUS_TRACE(logger, "  decision: skip_fixlen");
+	break;
+      case Decision::skip_varlen:
+	LOG4CPLUS_TRACE(logger, "  decision: skip_varlen");
+	break;
+      case Decision::transfer_boolean:
+	LOG4CPLUS_TRACE(logger, "  decision: transfer_boolean");
+	break;
+      case Decision::transfer_fixlen:
+	LOG4CPLUS_TRACE(logger, "  decision: transfer_fixlen");
+	break;
+      case Decision::transfer_fixlen_endianness:
+	LOG4CPLUS_TRACE(logger, "  decision: transfer_fixlen_endianness");
+	break;
+      case Decision::transfer_varlen:
+	LOG4CPLUS_TRACE(logger, "  decision: transfer_varlen");
+	break;
+      case Decision::transfer_fixlen_octets:
+	LOG4CPLUS_TRACE(logger, "  decision: transfer_fixlen_octets");
+	break;
+      case Decision::transfer_float_into_double:
+	LOG4CPLUS_TRACE(logger, "  decision: transfer_float_into_double");
+	break;
+      case Decision::transfer_float_into_double_endianness:
+	LOG4CPLUS_TRACE(logger, "  decision: transfer_float_into_double_endianness");
+	break;
+      }
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
       switch (i->type) {
       case Decision::skip_fixlen:
@@ -494,7 +524,8 @@ namespace LIBFC {
 	// etc).
 	{
 	  uint8_t* q = static_cast<uint8_t*>(i->p);
-	  LOG4CPLUS_TRACE(logger, "  fixlen: q == " << static_cast<void*>(q));
+	  LOG4CPLUS_TRACE(logger, "  fixlen: q == " << static_cast<void*>(q)
+			  << ", size=" << i->destination_size);
 
 	  memset(q, '\0', i->destination_size);
 	  // Intention: right-justify value at cur in field at i->p
@@ -529,7 +560,6 @@ namespace LIBFC {
 	  uint8_t* q = static_cast<uint8_t*>(i->p);        
 	  LOG4CPLUS_TRACE(logger, "  fixlen_endianness: q == " << static_cast<void*>(q) << ", size=" << i->destination_size);
 	  memset(q, '\0', i->destination_size);
-	  LOG4CPLUS_TRACE(logger, "  memset done");
 	  // Intention: left-justify value at cur in field at i->p
 	  for (uint16_t k = 0; k < i->length; k++)
 	    q[k] = cur[i->length - (k + 1)];
