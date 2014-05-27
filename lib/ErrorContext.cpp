@@ -49,7 +49,7 @@ namespace LIBFC {
     : severity(severity),
       e(e),
       system_errno(system_errno),
-      explanation(strdup(explanation)),
+      explanation(0),
       is(is),
       message(0),
       size(message != 0 ? size : 0),
@@ -63,13 +63,16 @@ namespace LIBFC {
       this->message = new uint8_t[size];
       memcpy(const_cast<uint8_t*>(this->message), message, size);
     }
+    this->explanation = new char[strlen(explanation) + 1];
+    strncpy(const_cast<char*>(this->explanation), explanation,
+            strlen(explanation) + 1);
   }
 
   ErrorContext::~ErrorContext() {
     if (message != 0)
-      delete message;
+      delete[] message;
     if (explanation != 0)
-      delete explanation;
+      delete[] explanation;
   }
 
   const Error::error_t ErrorContext::get_error() const {
