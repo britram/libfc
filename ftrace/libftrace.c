@@ -50,12 +50,12 @@ struct libftrace_st {
     const char              *filename;
     /** template set for callbacks */
     struct libfc_template_group_t    *tg;
+    /** rw cond mutex */
+    pthread_mutex_t         mux;
     /** write ready */
     pthread_cond_t          wok;
-    pthread_mutex_t         wmx;
     /** read ready */
     pthread_cond_t          rok;
-    pthread_mutex_t         rmx;
     /** reader thread */
     pthread_t               rt;
     /* storage for uniflow */
@@ -77,24 +77,19 @@ libftrace_t *ftrace_create(const char *filename, int version, const char *lpfile
     memset(ft, 0, sizeof(*ft));
     ft->filename = filename;
 
-    /* create condition variables and mutexes */
-    if ((pterrno = pthread_cond_init(&ft->wok, NULL)) != 0) {
-        fprintf(stderr, "couldn't init pthread wok: %s\n", strerror(pterrno));
+    /* create condition variables and mutex */
+    if ((pterrno = pthread_mutex_init(&ft->mux, NULL)) != 0) {
+        fprintf(stderr, "couldn't init pthread mux: %s\n", strerror(pterrno));
         goto err;
     }
-    
-    if ((pterrno = pthread_mutex_init(&ft->wmx, NULL)) != 0) {
-        fprintf(stderr, "couldn't init pthread wmx: %s\n", strerror(pterrno));
+
+    if ((pterrno = pthread_cond_init(&ft->wok, NULL)) != 0) {
+        fprintf(stderr, "couldn't init pthread wok: %s\n", strerror(pterrno));
         goto err;
     }
 
     if ((pterrno = pthread_cond_init(&ft->rok, NULL)) != 0) {
         fprintf(stderr, "couldn't init pthread rok: %s\n", strerror(pterrno));
-        goto err;
-    }
-    
-    if ((pterrno = pthread_mutex_init(&ft->rmx, NULL)) != 0) {
-        fprintf(stderr, "couldn't init pthread rmx: %s\n", strerror(pterrno));
         goto err;
     }
     
@@ -127,9 +122,8 @@ void ftrace_destroy(libftrace_t *ft)
     /* FIXME need to destroy uniflow if currently reading */
     if (ft) {
         pthread_cond_destroy(&ft->wok);
-        pthread_mutex_destroy(&ft->wmx);
         pthread_cond_destroy(&ft->rok);
-        pthread_mutex_destroy(&ft->rmx);
+        pthread_mutex_destroy(&ft->mux);
 
         if (ft->tg) libfc_template_group_delete(ft->tg);
         if (ft->wio) wandio_destroy(ft->wio);
@@ -146,16 +140,14 @@ static int _ftrace_semcb_inner(libftrace_t *ft)
     }
 
     /* signal read ready, outer thread will now return a record */
-    pthread_mutex_lock(&ft->rmx);
+    pthread_mutex_lock(&ft->mux);
     pthread_cond_signal(&ft->rok);
-    pthread_mutex_unlock(&ft->rmx);
-    fprintf(stderr,"_ftrace_semcb_inner() signaled rok.\n");
+//    fprintf(stderr,"_ftrace_semcb_inner() signaled rok, waiting for wok.\n");
 
     /* wait write ready, since next placement will happen after return */
-    pthread_mutex_lock(&ft->wmx);
-    pthread_cond_wait(&ft->wok, &ft->wmx);
-    pthread_mutex_unlock(&ft->wmx);
-    fprintf(stderr,"_ftrace_semcb_inner() signaled wok.\n");
+    pthread_cond_wait(&ft->wok, &ft->mux);
+    pthread_mutex_unlock(&ft->mux);
+//    fprintf(stderr,"_ftrace_semcb_inner() got wok.\n");
     
     /* tell placement collector to keep going */
     return 1;
@@ -203,9 +195,9 @@ void *_ftrace_rthread(void *vpft) {
     fprintf(stderr, "reader thread exiting, return value %d\n", rv);
 
     /* signal read ready, outer thread will react to invalid record. */
-    pthread_mutex_lock(&ft->rmx);
+    pthread_mutex_lock(&ft->mux);
     pthread_cond_signal(&ft->rok);
-    pthread_mutex_unlock(&ft->rmx);
+    pthread_mutex_unlock(&ft->mux);
     fprintf(stderr,"_ftrace_rthread() signaled rok on exit.\n");
     
     /* we don't care about the return */
@@ -283,10 +275,10 @@ libftrace_uniflow_t *ftrace_start_uniflow(libftrace_t *ft)
 void ftrace_destroy_uniflow(libftrace_uniflow_t *uf) {
     if (!uf->_ft->terminate) {
         /* signal inner uniflow to stop reading unless eof */
-        pthread_mutex_lock(&uf->_ft->wmx);
+        pthread_mutex_lock(&uf->_ft->mux);
         uf->_ft->terminate++;
         pthread_cond_signal(&uf->_ft->wok);
-        pthread_mutex_unlock(&uf->_ft->wmx);
+        pthread_mutex_unlock(&uf->_ft->mux);
     }
 
     if (pthread_join(uf->_ft->rt, NULL) != 0) {
@@ -298,18 +290,16 @@ void ftrace_destroy_uniflow(libftrace_uniflow_t *uf) {
 /** Read the next uniflow from a libftrace reader. 
     Skips records in the stream which do not match uniflows. */
 int ftrace_next_uniflow(libftrace_uniflow_t *uf) {
-
+    
     /* signal write ready */
-    pthread_mutex_lock(&uf->_ft->wmx);
+    pthread_mutex_lock(&uf->_ft->mux);
     pthread_cond_signal(&uf->_ft->wok);
-    pthread_mutex_unlock(&uf->_ft->wmx);
-    fprintf(stderr,"next_uniflow() signaled wok.\n");
+//    fprintf(stderr,"next_uniflow() signaled wok, waiting for rok.\n");
 
     /* wait read ready */
-    pthread_mutex_lock(&uf->_ft->rmx);
-    pthread_cond_wait(&uf->_ft->rok, &uf->_ft->rmx);
-    pthread_mutex_unlock(&uf->_ft->rmx);
-    fprintf(stderr,"next_uniflow() got rok.\n");
+    pthread_cond_wait(&uf->_ft->rok, &uf->_ft->mux);
+    pthread_mutex_unlock(&uf->_ft->mux);
+//    fprintf(stderr,"next_uniflow() got rok.\n");
 
     /* check valid */
     return uf->_ft->valid;

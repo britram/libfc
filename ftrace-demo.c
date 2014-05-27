@@ -79,6 +79,8 @@ int main (int argc, char *argv[]) {
     uint64_t                srcid, dstid;
     uint64_t                reltime, basetime = 0;
     
+    int                     all_uniflows = 0, accepted_uniflows = 0;
+    
     int rv;
     
     ft = ftrace_create(argv[1], 10, "log4cplus.properties");
@@ -87,7 +89,7 @@ int main (int argc, char *argv[]) {
     
     while ((rv = ftrace_next_uniflow(uf)) >= 1) {
         
-        fprintf(stderr, "got a uniflow\n");
+        ++all_uniflows;
         
         /* short-circuit: ensure it's a real port 443 TCP/IPv4 
            flow with at least three packets */
@@ -113,9 +115,9 @@ int main (int argc, char *argv[]) {
         if (!basetime) {
             basetime = uf->time_start - 3600000;
         }
-        
         reltime = uf->time_start - basetime;
-        
+
+        ++accepted_uniflows;
         fprintf(stdout, "%10.3f, %016llx, %016llx\n", (float)reltime / 1000.0, srcid, dstid);
     }
     
