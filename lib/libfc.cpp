@@ -56,9 +56,9 @@ using namespace LIBFC;
 static bool infomodel_initialized = false;
 
 struct libfc_template_t {
-  PlacementTemplate* tmpl;
-  int (*callback) (const libfc_template_t* t, void *vp);
-  void *vparg;
+    PlacementTemplate tmpl;
+    int (*callback) (const libfc_template_t* t, void *vp);
+    void *vparg;
 };
 
 class CBinding : public PlacementCollector {
@@ -86,7 +86,8 @@ public:
   }
 
   void add_template(libfc_template_t* t) {
-    templates.insert(t->tmpl);
+    templates.insert(&(t->tmpl));
+    register_placement_template(&(t->tmpl));
   }
 
   std::shared_ptr<ErrorContext>
@@ -97,10 +98,12 @@ public:
   std::shared_ptr<ErrorContext>
       end_placement(const PlacementTemplate* t) {
     /* INSANE HACK which probably works -- get template from object */
-    const libfc_template_t* this_template = 
+          
+    const libfc_template_t* this_template =
           reinterpret_cast<const libfc_template_t*>(
             reinterpret_cast<const unsigned char*>(t) -
             offsetof(struct libfc_template_t, tmpl));
+
     if (this_template != 0)
       if (this_template->callback(this_template, this_template->vparg) <= 0) {
         LIBFC_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", 0, 0, 0, 0, 0);
@@ -154,7 +157,6 @@ extern struct libfc_template_t* libfc_template_new(
 
   struct libfc_template_t* ret = new libfc_template_t;
   ret->callback = 0;
-  ret->tmpl = new PlacementTemplate;
   s->binding->add_template(ret);
   return ret;
 }
@@ -165,7 +167,7 @@ extern void libfc_template_group_delete(struct libfc_template_group_t* s) {
 
 extern int libfc_register_placement(struct libfc_template_t* t,
                                     const char* ie_name, void* p, size_t size) {
-  return t->tmpl->register_placement(
+  return t->tmpl.register_placement(
            InfoModel::instance().lookupIE(ie_name), p, size);
 }
 

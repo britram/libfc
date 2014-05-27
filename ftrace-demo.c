@@ -87,7 +87,7 @@ int main (int argc, char *argv[]) {
     
     while ((rv = ftrace_next_uniflow(uf)) >= 1) {
         
-        fprintf(stderr, "got a uniflow");
+        fprintf(stderr, "got a uniflow\n");
         
         /* short-circuit: ensure it's a real port 443 TCP/IPv4 
            flow with at least three packets */
