@@ -274,10 +274,21 @@ namespace LIBFC {
       LIBFC_RETURN_CALLBACK_ERROR(end_message());
 
       offset += nbytes;
+      is.advance_message_offset();
       memset(message, '\0', sizeof(message));
+      errno = 0;
       nbytes = is.read(message, kV9MessageHeaderLen);
     }
 
+    if (nbytes < 0) {
+        LIBFC_RETURN_ERROR(fatal, system_error, 
+			   "Wanted to read " 
+			   << kV9MessageHeaderLen
+			   << " bytes, got a read error", errno, &is,
+			   0, 0, 0);
+    }
+
+    assert(nbytes == 0);
 
     /* This is important, don't remove it!  Otherwise, if
      * end_session() gives an error, message_size bytes may be copied

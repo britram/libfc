@@ -97,12 +97,21 @@ public:
 
   std::shared_ptr<ErrorContext>
       end_placement(const PlacementTemplate* t) {
-    /* INSANE HACK which probably works -- get template from object */
-          
+
+    /* INSANE HACK which probably works -- get template from object.
+     *
+     * NOTE: This code only compiles when compiled with
+     * -Wno-invalid-offsetof.  The reason is that 1998 ISO C++
+     * forbids offsetof() for use with non-POD (plain-old-data)
+     * types.  But a libfc_template_t is a non-POD only because the
+     * PlacementTemplate inside it has a constructor and a few virtual
+     * member functions. I'm fairly confident that this code is OK,
+     * even though it may not be portable or strictly conforming to a
+     * standard.  --neuhaust */
     const libfc_template_t* this_template =
-          reinterpret_cast<const libfc_template_t*>(
-            reinterpret_cast<const unsigned char*>(t) -
-            offsetof(struct libfc_template_t, tmpl));
+      reinterpret_cast<const libfc_template_t*>(
+        reinterpret_cast<const unsigned char*>(t)
+	- offsetof(struct libfc_template_t, tmpl));
 
     if (this_template != 0)
       if (this_template->callback(this_template, this_template->vparg) <= 0) {

@@ -194,10 +194,12 @@ extern "C" {
    */
   struct libfc_template_t;
 
-  /** Creates a new libfc template set.
+  /** Creates a new libfc template group.
    *
-   * @param version 9 to read NetFlow V9, 10 to read IPFIX; anything else returns a null pointer.
-   * @return a new libfc template set.
+   * @param version the only legitimate values are 9 (to read NetFlow
+   *   V9) and 10 (to read IPFIX); anything else returns NULL.
+   *
+   * @return a new libfc template group.
    */
   extern struct libfc_template_group_t* libfc_template_group_new(int version);
 

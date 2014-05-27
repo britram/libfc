@@ -127,7 +127,8 @@ namespace LIBFC {
     case fatal: severity_s = "fatal"; break;
     }
 
-    sstr << (is == 0 ? "<null>" : is->get_name()) << "@" << off
+    sstr << (is == 0 ? "<null>" : is->get_name()) << "@" 
+	 << (is == 0 ? 0 : is->get_message_offset()) + off
 	 << ":" << severity_s << ":" << e.to_string() << ":" << explanation;
 
     if (system_errno != 0)

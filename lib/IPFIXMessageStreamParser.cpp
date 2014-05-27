@@ -211,6 +211,7 @@ namespace LIBFC {
       LIBFC_RETURN_CALLBACK_ERROR(end_message());
 
       offset += nbytes;
+      is.advance_message_offset();
       memset(message, '\0', sizeof(message));
       errno = 0;
       nbytes = is.read(message, kIpfixMessageHeaderLen);
