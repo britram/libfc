@@ -76,7 +76,8 @@ public:
     logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("CBinding")))
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 {
-  }
+    give_me_unhandled_data_sets();
+}
 
   virtual ~CBinding() {
     for (auto i = templates.begin(); i != templates.end(); ++i)
