@@ -67,4 +67,15 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
+  std::shared_ptr<ErrorContext>
+  PlacementCollector::unknown_data_set(
+      uint32_t observation_domain, uint16_t id,
+      uint16_t length, const uint8_t* buf) {
+    LIBFC_RETURN_OK();
+  }
+
+  void PlacementCollector::give_me_unhandled_data_sets() {
+    d.register_unhandled_data_set_handler(this);
+  }
+
 } // namespace LIBFC

@@ -35,9 +35,9 @@
 
 #  include <vector>
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "PlacementTemplate.h"
 #  include "IETemplate.h"
@@ -182,9 +182,9 @@ namespace LIBFC {
     
     std::vector<Decision> plan;
     
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   };
   
 #endif /* _LIBFC_DECODEPLAN_H_ */

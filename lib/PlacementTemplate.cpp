@@ -27,11 +27,11 @@
 
 #include <arpa/inet.h>
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "BasicOctetArray.h"
 #include "PlacementTemplate.h"
@@ -67,9 +67,9 @@ namespace LIBFC {
       size(0),
       fixlen_data_record_size(0),
       template_id(0)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementTemplate")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   {
   }
 

@@ -33,9 +33,9 @@
 #ifndef _LIBFC_V9MESSAGESTREAMPARSER_H_
 #  define _LIBFC_V9MESSAGESTREAMPARSER_H_
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "MessageStreamParser.h"
 
@@ -55,9 +55,9 @@ namespace LIBFC {
      * reporting, and for error reporting @em{only}. */
     size_t offset;
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   };
 
 } // namespace LIBFC

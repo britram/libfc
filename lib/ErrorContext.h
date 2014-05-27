@@ -37,9 +37,9 @@
 
 #  include <sstream>
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "Error.h"
 #  include "InputSource.h"
@@ -309,9 +309,9 @@ namespace LIBFC {
     uint16_t size;
     uint16_t off;
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   };
 
 } // namespace LIBFC

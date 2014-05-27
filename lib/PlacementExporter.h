@@ -40,9 +40,9 @@
 
 #  include <sys/uio.h>
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "Constants.h"
 #  include "ExportDestination.h"
@@ -178,9 +178,9 @@ namespace LIBFC {
 
     EncodePlan* plan;
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     /** Finishes the current data set by putting the template ID and
      * set length into the set header. 
