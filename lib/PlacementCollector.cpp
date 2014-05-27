@@ -75,7 +75,7 @@ namespace LIBFC {
   }
 
   void PlacementCollector::give_me_unhandled_data_sets() {
-    d.register_unhandled_data_set_handler(this);
+    d.register_unhandled_data_set_handler(const_cast<PlacementCollector*>(this));
   }
 
 } // namespace LIBFC
