@@ -24,43 +24,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  include <log4cplus/logger.h>
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#include "MessageStreamParser.h"
 
-BOOST_AUTO_TEST_SUITE(Basics)
+namespace LIBFC {
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  MessageStreamParser::MessageStreamParser() 
+    : content_handler(0)
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+                      ,
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+  {
+  }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  MessageStreamParser::~MessageStreamParser() {
+  }
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+  void MessageStreamParser::set_content_handler(ContentHandler* handler) {
+    content_handler = handler;
+  }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
-
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+} // namespace LIBFC

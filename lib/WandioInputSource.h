@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,43 +25,57 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#ifndef _LIBFC_WANDIOINPUTSOURCE_H_
+#  define _LIBFC_WANDIOINPUTSOURCE_H_
 
-BOOST_AUTO_TEST_SUITE(Basics)
+#  include <string>
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
-
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
-
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
+extern "C" {
+#  include <wandio.h>
 }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+#  include "InputSource.h"
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+namespace LIBFC {
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
+  class WandioInputSource : public InputSource {
+  public:
+    /** Creates a wandio input source from an io_t.
+     *
+     * @param io the io_t pointer belonging to a data file
+     * @param name the name you want this file to be known to diagnostics
+     */
+    WandioInputSource(io_t* io, std::string name);
 
-BOOST_AUTO_TEST_SUITE_END()
+    /** Creates a wandio input source from a file name.
+     *
+     * @param name the file name
+     */
+    WandioInputSource(std::string name);
+
+    ~WandioInputSource();
+
+    ssize_t read(uint8_t* buf, uint16_t len);
+    ssize_t peek(uint8_t* buf, uint16_t len);
+    bool resync();
+    size_t get_message_offset() const;
+    void advance_message_offset();
+    const char* get_name() const;
+    bool can_peek() const;
+
+  private:
+    io_t* io;
+    size_t message_offset;
+    size_t current_offset;
+    std::string name;
+    bool io_belongs_to_me;
+  };
+
+} // namespace LIBFC
+
+#endif // _LIBFC_WANDIOINPUTSOURCE_H_

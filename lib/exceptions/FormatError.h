@@ -24,43 +24,27 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+/* Hi Emacs, please use -*- mode: C++; -*- */
+#ifndef IPFIX_FORMATERROR_H
+#  define IPFIX_FORMATERROR_H
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#  include "Exception.h"
 
-BOOST_AUTO_TEST_SUITE(Basics)
+namespace LIBFC {
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  /** IPFIX Format Errors.
+   *
+   * This is a runtime error thrown during decoding when a message is
+   * poorly formatted.  It usually indicates that the input stream
+   * isn't really IPFIX.
+   *
+   * FIXME make sure this gets used properly.
+   */
+  class FormatError : public Exception {
+  public:
+    explicit FormatError(const std::string& message);
+  };
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+} // namespace LIBFC
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
-
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
-
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
-
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+#endif /* IPFIX_FORMATERROR_H */

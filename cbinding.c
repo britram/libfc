@@ -33,12 +33,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "ipfix.h"
+#include "libfc.h"
 
 static uint32_t sip;
 static uint32_t dip;
 
-static void callback(const struct ipfix_template_t* p) {
+static void callback(const struct libfc_template_t* p) {
   printf("Got new values %08x and %08x\n", sip, dip);
 }
 
@@ -47,17 +47,17 @@ int main() {
   if (fd < 0)
     exit(1);
   
-  struct ipfix_template_set_t* s = ipfix_template_set_new();
+  struct libfc_template_set_t* s = libfc_template_set_new();
 
-  struct ipfix_template_t* t = ipfix_template_new(s);
-  ipfix_register_placement(t, "sourceIPv4Address", &sip, 4);
-  ipfix_register_placement(t, "destinationIPv4Address", &dip, 4);
-  ipfix_register_callback(t, callback);
-  ipfix_collect_from_file(fd, s);
+  struct libfc_template_t* t = libfc_template_new(s);
+  libfc_register_placement(t, "sourceIPv4Address", &sip, 4);
+  libfc_register_placement(t, "destinationIPv4Address", &dip, 4);
+  libfc_register_callback(t, callback);
+  libfc_collect_from_file(fd, "test.ipfix", s);
   if (close(fd) < 0)
     exit(1);
    
-  ipfix_template_set_delete(s);
+  libfc_template_set_delete(s);
 
   return 0;
 }

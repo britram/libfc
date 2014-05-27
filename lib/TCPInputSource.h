@@ -24,43 +24,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#ifndef _LIBFC_TCPINPUTSOURCE_H_
+#  define _LIBFC_TCPINPUTSOURCE_H_
 
-BOOST_AUTO_TEST_SUITE(Basics)
+#  include "InputSource.h"
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+namespace LIBFC {
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  class TCPInputSource : public InputSource {
+  public:
+    /** Creates a TCP input source from a file descriptor.
+     *
+     * @param fd the file descriptor belonging to a TCP socket
+     */
+    TCPInputSource(int fd);
+    ~TCPInputSource();
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+    ssize_t read(uint8_t* buf, uint16_t len);
+    bool resync();
+    size_t get_message_offset() const;
+    void advance_message_offset();
+    const char* get_name() const;
+    bool can_peek() const;
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  private:
+    int fd;
+    size_t message_offset;
+    size_t current_offset;
+  };
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+} // namespace LIBFC
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+#endif // _LIBFC_TCPINPUTSOURCE_H_

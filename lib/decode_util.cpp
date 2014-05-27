@@ -23,44 +23,45 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include "decode_util.h"
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#include "exceptions/FormatError.h"
 
-BOOST_AUTO_TEST_SUITE(Basics)
+namespace LIBFC {
+  uint16_t decode_uint16(const uint8_t* buf) {
+    return (static_cast<uint16_t>(buf[0]) << 8) 
+      | (static_cast<uint16_t>(buf[1]) << 0);
+  }
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  uint32_t decode_uint32(const uint8_t* buf) {
+    return (static_cast<uint32_t>(buf[0]) << 24) 
+      | (static_cast<uint32_t>(buf[1]) << 16)
+      | (static_cast<uint32_t>(buf[2]) <<  8) 
+      | (static_cast<uint32_t>(buf[3]) <<  0);
+  }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  void report_error(const std::string message, ...) {
+    static const size_t buf_size = 10240;
+    static char buf[buf_size];
+    va_list args;
+  
+    va_start(args, message);
+    int nchars = vsnprintf(buf, buf_size, message.c_str(), args);
+    va_end(args);
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+    if (nchars < 0)
+      strcpy(buf, "Error while formatting error message");
+    else if (static_cast<unsigned int>(nchars) > buf_size - 1 - 3) {
+      buf[buf_size - 4] = '.';
+      buf[buf_size - 3] = '.';
+      buf[buf_size - 2] = '.';
+      buf[buf_size - 1] = '\0';   // Shouldn't be necessary
+    }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
-
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
-
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+    throw LIBFC::FormatError(buf);
+  }
+} // namespace LIBFC

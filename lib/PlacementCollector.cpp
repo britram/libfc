@@ -24,43 +24,47 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include "IPFIXMessageStreamParser.h"
+#include "PlacementCollector.h"
+#include "V9MessageStreamParser.h"
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+namespace LIBFC {
 
-BOOST_AUTO_TEST_SUITE(Basics)
+  PlacementCollector::PlacementCollector(Protocol protocol) {
+    switch (protocol) {
+    case ipfix:
+      ir = new IPFIXMessageStreamParser();
+      break;
+    case netflowv9:
+      ir = new V9MessageStreamParser();
+      break;
+    case netflowv5:
+      ir = 0;
+      break;
+    }
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+    if (ir != 0)
+      ir->set_content_handler(&d);
+  }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  PlacementCollector::~PlacementCollector() {
+    delete ir;
+  }
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+  std::shared_ptr<ErrorContext> PlacementCollector::collect(InputSource& is) {
+    return ir->parse(is);
+  }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  void PlacementCollector::register_placement_template(
+      const PlacementTemplate* placement) {
+    d.register_placement_template(placement, this);
+  }
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+  std::shared_ptr<ErrorContext>
+  PlacementCollector::unhandled_data_set(
+      uint32_t observation_domain, uint16_t id,
+      uint16_t length, const uint8_t* buf) {
+    LIBFC_RETURN_OK();
+  }
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+} // namespace LIBFC

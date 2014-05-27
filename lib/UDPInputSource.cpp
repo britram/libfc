@@ -23,44 +23,43 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cstring>
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include <sys/socket.h>
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#include "UDPInputSource.h"
 
-BOOST_AUTO_TEST_SUITE(Basics)
+namespace LIBFC {
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  UDPInputSource::UDPInputSource(const struct sockaddr* _sa, size_t _sa_len,
+                                 int _fd) 
+    : sa_len(_sa_len), fd(_fd) {
+    memcpy(&sa, _sa, _sa_len);
+  }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  ssize_t UDPInputSource::read(uint8_t* buf, uint16_t len) {
+    // TODO
+    return 0;
+  }
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+  bool UDPInputSource::resync() {
+    return true;
+  }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  size_t UDPInputSource::get_message_offset() const {
+    return 0;
+  }
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+  void UDPInputSource::advance_message_offset() {
+  }
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
+  const char* UDPInputSource::get_name() const {
+    return "<UDP socket>";
+  }
 
-BOOST_AUTO_TEST_SUITE_END()
+  bool UDPInputSource::can_peek() const {
+    return false;
+  }
+
+
+} // namespace LIBFC

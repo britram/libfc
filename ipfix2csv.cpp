@@ -29,13 +29,20 @@
  *
  * From Brian's ipfix2csv Python utility.
  *
- * Syntax: ipfix2csv -s [iespec-file] [ienames...] [ipfix-stream]
+ * Syntax: ipfix2csv [--version={5|9|10}|-v {5|9|10} [-s iespec-file] \
+ *     [ienames...] [message-stream]
  *
  * E.g. ./ipfix2csv -s qof.iespec \
- *     sourceIPv4Address destinationIPv4Address \
- *     meanTcpRttMilliseconds reverseMeanTcpRttMilliseconds
+ *     sourceIPv4Address destinationIPv4Address 
  *   < ../qof/test/qof-test.ipfix \
  *   > qof-test-rtt-nocmin.csv
+ *
+ * Or:
+ *
+ * ./ipfix2csv --message-version=9 \
+ *     --input=/zp0/statdat/test/19991_00098798_1398816000.dat.bz2 \
+ *     sourceIPv4Address destinationIPv4Address		    \
+ *     meanTcpRttMilliseconds reverseMeanTcpRttMilliseconds
  *
  * Or:
  *
@@ -77,9 +84,9 @@
 #include "FileInputSource.h"
 #include "InfoElement.h"
 #include "InfoModel.h"
-#include "OctetArray.h"
 #include "PlacementCollector.h"
 #include "PlacementTemplate.h"
+#include "WandioInputSource.h"
 
 #include "exceptions/FormatError.h"
 
@@ -88,13 +95,15 @@
 #  include <log4cplus/loggingmacros.h>
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-using namespace IPFIX;
+using namespace LIBFC;
 
 static const char* spec_file_name = 0;
 static int verbose_flag = false;
 static int help_flag = false;
+static int message_version = 10;
+static int full_type_flag = 0;
 static std::list<const char*> ie_names;
-  
+static std::string filename;
 
 /* Code patterned after http://www.gnu.org/software/libc/
  * manual/html_node/Getopt-Long-Option-Example.html
@@ -104,14 +113,17 @@ static void parse_options(int argc, char* const* argv) {
   while (1) {
     static struct option options[] = {
       { "help", no_argument, &help_flag, 1 },
+      { "input", required_argument, 0, 'i' },
       { "verbose", no_argument, &verbose_flag, 1 },
+      { "message-version", required_argument, 0, 'm' },
       { "specfile", required_argument, 0, 's' },
+      { "full-types", no_argument, &full_type_flag, 't' },
       { 0, 0, 0, 0 },
     };
 
     int option_index = 0;
 
-    int c = getopt_long(argc, argv, "hs:v", options, &option_index);
+    int c = getopt_long(argc, argv, "hi:m:s:tv", options, &option_index);
 
     if (c == -1)
       break;
@@ -124,6 +136,18 @@ static void parse_options(int argc, char* const* argv) {
       if (optarg)
         std::cerr << " with arg \"" << optarg << "\"";
       std::cerr << std::endl;
+      break;
+    case 'i':
+      filename = optarg;
+      break;
+    case 'm':
+      message_version = atoi(optarg);
+      if (message_version != 9 && message_version != 10) {
+	std::cerr << "Message version " << optarg 
+		  << " is either unsupported or has a syntax error"
+		  << " (only 9 and 10 are allowed)" << std::endl;
+	exit(EXIT_FAILURE);
+      }
       break;
     case 's':
       spec_file_name = optarg;
@@ -147,6 +171,7 @@ static void help() {
             << "  -s file|--specfile=file" << std::endl
             << "\tuse FILE as IE spec filename" << std::endl
             << "  -h|--help\tprint this help text" << std::endl
+	    << "  -t|--full-types print full type info in columns" << std::endl
             << "  -v|--verbose\tprint verbose output" << std::endl;
 }
 
@@ -172,32 +197,52 @@ add_ies_from_spec_file() {
 static void
 print_unsigned(std::ostream& os, const IEType* type, void* v) {
   switch (type->number()) {
-  case IEType::kUnsigned8: os << *static_cast<uint8_t*>(v) << "U"; break;
-  case IEType::kUnsigned16: os << *static_cast<uint16_t*>(v) << "U"; break;
-  case IEType::kUnsigned32: os << *static_cast<uint32_t*>(v) << "UL"; break;
-  case IEType::kUnsigned64: os << *static_cast<uint64_t*>(v) << "ULL"; break;
+  case IEType::kUnsigned8: os << static_cast<int>(*static_cast<uint8_t*>(v)); break;
+  case IEType::kUnsigned16: os << *static_cast<uint16_t*>(v); break;
+  case IEType::kUnsigned32: os << *static_cast<uint32_t*>(v); break;
+  case IEType::kUnsigned64: os << *static_cast<uint64_t*>(v); break;
   default: /* Can't happen, ignore silently */ break;
+  }
+  
+  if (full_type_flag) {
+    switch (type->number()) {
+    case IEType::kUnsigned8: os << "U"; break;
+    case IEType::kUnsigned16: os << "U"; break;
+    case IEType::kUnsigned32: os << "UL"; break;
+    case IEType::kUnsigned64: os << "ULL"; break;
+    default: /* Can't happen, ignore silently */ break;
+    }
   }
 }
 
 static void
 print_signed(std::ostream& os, const IEType* type, void* v) {
   switch (type->number()) {
-  case IEType::kSigned8: os << *static_cast<int8_t*>(v); break;
+  case IEType::kSigned8: os << static_cast<int>(*static_cast<int8_t*>(v)); break;
   case IEType::kSigned16: os << *static_cast<int16_t*>(v); break;
-  case IEType::kSigned32: os << *static_cast<int32_t*>(v) << "L"; break;
-  case IEType::kSigned64: os << *static_cast<int64_t*>(v) << "LL"; break;
+  case IEType::kSigned32: os << *static_cast<int32_t*>(v); break;
+  case IEType::kSigned64: os << *static_cast<int64_t*>(v); break;
   default: /* Can't happen, ignore silently */ break;
+  }
+
+  if (full_type_flag) {
+    switch (type->number()) {
+    case IEType::kSigned8: break;
+    case IEType::kSigned16: break;
+    case IEType::kSigned32: os << "L"; break;
+    case IEType::kSigned64: os << "LL"; break;
+    default: /* Can't happen, ignore silently */ break;
+    }
   }
 }
 
 static void
 print_ipv4address(std::ostream& os, const IEType* type, void* v) {
   uint32_t val = *static_cast<uint32_t*>(v);
-  os << ((val >> 0) & 0xff) 
-     << '.' << ((val >>  8) & 0xff) 
+  os << ((val >> 24) & 0xff) 
      << '.' << ((val >> 16) & 0xff) 
-     << '.' << ((val >> 24) & 0xff);
+     << '.' << ((val >>  8) & 0xff) 
+     << '.' << ((val >>  0) & 0xff);
 }
 
 static void
@@ -392,8 +437,9 @@ print_csv_header(std::ostream& os) {
 
 class CSVCollector : public PlacementCollector {
 public:
-  CSVCollector() {
-    InfoModel& model = IPFIX::InfoModel::instance();
+  CSVCollector(PlacementCollector::Protocol protocol) 
+    : PlacementCollector(protocol) {
+    InfoModel& model = LIBFC::InfoModel::instance();
 
     csv_template = new PlacementTemplate();
     n_ies = ie_names.size();
@@ -525,16 +571,20 @@ public:
     register_placement_template(csv_template);
   }
   
-  void start_placement(const PlacementTemplate* tmpl) {
+  std::shared_ptr<ErrorContext>
+      start_placement(const PlacementTemplate* tmpl) {
+    LIBFC_RETURN_OK();
   }
 
-  void end_placement(const PlacementTemplate* tmpl) {
+  std::shared_ptr<ErrorContext>
+      end_placement(const PlacementTemplate* tmpl) {
     for (unsigned int i = 0; i < n_ies; ++i) {
       if (i > 0)
         std::cout << ';';
       ie_values[i].renderer(std::cout, ie_values[i].type, ie_values[i].val);
     }
     std::cout << std::endl;
+    LIBFC_RETURN_OK();
   }
 
   ~CSVCollector() {
@@ -564,8 +614,23 @@ int main(int argc, char* const* argv) {
   config.configure();
 #endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-  InfoModel::instance().default5103();
+  LIBFC::PlacementCollector::Protocol protocol;
+  InputSource* is = 0;
+
   parse_options(argc, argv);
+
+  if (message_version == 10) {
+    InfoModel::instance().default5103();
+    protocol = LIBFC::PlacementCollector::ipfix;
+    is = new FileInputSource(0, "<stdin>"); // 0 == stdin
+  } else if (message_version == 9) {
+    InfoModel::instance().default5103();
+    protocol = LIBFC::PlacementCollector::netflowv9;
+    is = new WandioInputSource(filename);
+  } else {
+    std::cerr << "Unsupported message version " << message_version << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
   add_ies_from_spec_file();
 
@@ -576,17 +641,16 @@ int main(int argc, char* const* argv) {
 
   std::cout.fill('0');
 
-  CSVCollector cc;
+  CSVCollector cc{protocol};
 
   print_csv_header(std::cout);
 
-  FileInputSource is(0); // 0 == stdin
-  try {
-    cc.collect(is);
-  } catch (FormatError e) {
-    std::cerr << "Format error: " << e.what() << std::endl;
+  std::shared_ptr<ErrorContext> e = cc.collect(*is);
+  if (e != 0) {
+    std::cerr << e->to_string() << std::endl;
     return EXIT_FAILURE;
   }
 
+  delete is;
   return EXIT_SUCCESS;
 }

@@ -24,43 +24,49 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include <unistd.h>
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#include "TCPInputSource.h"
 
-BOOST_AUTO_TEST_SUITE(Basics)
+namespace LIBFC {
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  TCPInputSource::TCPInputSource(int fd)
+    : fd(fd),
+      message_offset(0),
+      current_offset(0) {
+  }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  TCPInputSource::~TCPInputSource() {
+    (void) close(fd); // FIXME: Error handling?
+  }
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+  ssize_t TCPInputSource::read(uint8_t* buf, uint16_t len) {
+    ssize_t ret = ::read(fd, buf, len);
+    if (ret > 0)
+      current_offset += message_offset;
+    return ret;
+  }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  bool TCPInputSource::resync() {
+    // TODO
+    return true;
+  }
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+  size_t TCPInputSource::get_message_offset() const {
+    return message_offset;
+  }
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
+  void TCPInputSource::advance_message_offset() {
+    message_offset += current_offset;
+    current_offset = 0;
+  }
 
-BOOST_AUTO_TEST_SUITE_END()
+  const char* TCPInputSource::get_name() const {
+    return "<TCP socket>";
+  }
+
+  bool TCPInputSource::can_peek() const {
+    return false;
+  }
+
+} // namespace LIBFC

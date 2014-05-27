@@ -23,44 +23,64 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cstring>
+#include <sstream>
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include <unistd.h>
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#include "FileInputSource.h"
 
-BOOST_AUTO_TEST_SUITE(Basics)
+namespace LIBFC {
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  FileInputSource::FileInputSource(int fd, std::string file_name)
+    : fd(fd),
+      message_offset(0),
+      current_offset(0),
+      file_name(file_name),
+      name(0) {
+  }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
+  FileInputSource::~FileInputSource() {
+    (void) close(fd); // FIXME: Error handling?
+  }
+
+  ssize_t FileInputSource::read(uint8_t* buf, uint16_t len) {
+    ssize_t ret = ::read(fd, buf, len);
+    if (ret > 0)
+      current_offset += ret;
+    return ret;
+  }
+
+  bool FileInputSource::resync() {
+    // TODO
+    return true;
+  }
+
+  size_t FileInputSource::get_message_offset() const {
+    return message_offset;
+  }
+
+  void FileInputSource::advance_message_offset() {
+    message_offset += current_offset;
+    current_offset = 0;
+  }
+
+  const char* FileInputSource::get_name() const {
+    if (name == 0) {
+      std::ostringstream sstr;
+
+      sstr << "File(name=\"" << file_name << "\")";
+      std::string s = sstr.str();
+
+      name = new char[s.length() + 1];
+      std::strcpy(const_cast<char*>(name), s.c_str());
+    }
     
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+    return name;
+  }
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+  bool FileInputSource::can_peek() const {
+    return false;
+  }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
-
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
-
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+} // namespace LIBFC

@@ -24,43 +24,67 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include <unistd.h>
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#include "WandioInputSource.h"
 
-BOOST_AUTO_TEST_SUITE(Basics)
+namespace LIBFC {
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  WandioInputSource::WandioInputSource(io_t* io, std::string name)
+    : io(io),
+      message_offset(0),
+      current_offset(0),
+      name(name),
+      io_belongs_to_me(false) {
+  }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  WandioInputSource::WandioInputSource(std::string name)
+    : io(0),
+      message_offset(0),
+      current_offset(0),
+      name(name),
+      io_belongs_to_me(true) {
+    io = wandio_create(name.c_str());
+  }
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+  WandioInputSource::~WandioInputSource() {
+    /* Do not destroy io if it doesn't belong to me! */
+    if (io_belongs_to_me)
+      wandio_destroy(io);
+  }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  ssize_t WandioInputSource::read(uint8_t* buf, uint16_t len) {
+    off_t ret = wandio_read(io, buf, len);
+    if (ret > 0)
+      current_offset += ret;
+    return static_cast<ssize_t>(ret);
+  }
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+  ssize_t WandioInputSource::peek(uint8_t* buf, uint16_t len) {
+    off_t ret = wandio_peek(io, buf, len);
+    return static_cast<ssize_t>(ret);
+  }
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
+  bool WandioInputSource::resync() {
+    // TODO
+    return true;
+  }
 
-BOOST_AUTO_TEST_SUITE_END()
+  size_t WandioInputSource::get_message_offset() const {
+    return message_offset;
+  }
+
+  void WandioInputSource::advance_message_offset() {
+    message_offset += current_offset;
+    current_offset = 0;
+  }
+
+  const char* WandioInputSource::get_name() const {
+    return name.c_str();
+  }
+
+  bool WandioInputSource::can_peek() const {
+    return true;
+  }
+
+} // namespace LIBFC

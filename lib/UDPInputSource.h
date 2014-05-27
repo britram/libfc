@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,43 +25,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#ifndef _LIBFC_UDPINPUTSOURCE_H_
+#  define _LIBFC_UDPINPUTSOURCE_H_
 
-BOOST_AUTO_TEST_SUITE(Basics)
+#  include "InputSource.h"
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+namespace LIBFC {
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  class UDPInputSource : public InputSource {
+  public:
+    /** Creates a UDP input source from a file descriptor.
+     *
+     * @param sa the socket address of the peer from whom we accept messages
+     * @param sa_len the length of the socket address, in bytes
+     * @param fd the file descriptor belonging to a UDP socket
+     */
+    UDPInputSource(const struct sockaddr* sa, size_t sa_len, int fd);
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+    ssize_t read(uint8_t* buf, uint16_t len);
+    bool resync();
+    size_t get_message_offset() const;
+    void advance_message_offset();
+    const char* get_name() const;
+    bool can_peek() const;
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  private:
+    struct sockaddr sa;
+    size_t sa_len;
+    int fd;
+  };
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+} // namespace LIBFC
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+#endif // _LIBFC_UDPINPUTSOURCE_H_

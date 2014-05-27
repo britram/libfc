@@ -23,44 +23,44 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <cassert>
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#include "Error.h"
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+namespace LIBFC {
 
-BOOST_AUTO_TEST_SUITE(Basics)
+  Error::Error(error_t e)
+    : e(e) {
+  }
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  const std::string Error::to_string() const {
+    switch (e) {
+    case no_error: return "no error";
+    case parse_while_parsing: return "call to parse() while parsing";
+    case input_source_cant_peek: return "input source can't peek";
+    case aborted_by_user: return "aborted by user";
+    case system_error: return "system error";
+    case short_header: return "short message header";
+    case short_body: return "short message body";
+    case long_set: return "set too long (exceeds message size)";
+    case long_fieldspec: return "field specification exceeds set";
+    case message_version_number: return "unexpected version number";
+    case short_message: return "short message";
+    case ipfix_basetime: return "got basetime in IPFIX message";
+    case format_error: return "format error";
+    case inconsistent_state: return "inconsistent internal state";
+    case again: return "try again";
+    }
+    // This fall-through cannot happen if the switch above contains
+    // all enum values and the object has been initialised properly.
+    // Still, gcc complains that "control reaches end of non-void
+    // function", so this is to shut the compiler up. --neuhaust
+    assert(false);
+    return "unknown error";
+ }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  Error::error_t Error::get_error() const {
+    return e;
+  }
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
-
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
-
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
-
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+} // namespace LIBFC

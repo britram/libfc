@@ -1,3 +1,4 @@
+/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -24,43 +25,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#ifndef _LIBFC_V9MESSAGESTREAMPARSER_H_
+#  define _LIBFC_V9MESSAGESTREAMPARSER_H_
 
-BOOST_AUTO_TEST_SUITE(Basics)
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#    include <log4cplus/logger.h>
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+#  include "MessageStreamParser.h"
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+namespace LIBFC {
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+  /** Parse a V9 message stream. */
+  class V9MessageStreamParser : public MessageStreamParser {
+  public:
+    V9MessageStreamParser();
+    std::shared_ptr<ErrorContext> parse(InputSource& is);
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  private:
+    /** The current message. */
+    uint8_t message[kMaxMessageLen];
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+    /** The current offset into the message stream. Used for error
+     * reporting, and for error reporting @em{only}. */
+    size_t offset;
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+    log4cplus::Logger logger;
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+  };
 
-BOOST_AUTO_TEST_SUITE_END()
+} // namespace LIBFC
+
+#endif // _LIBFC_V9MESSAGESTREAMPARSER_H_

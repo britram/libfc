@@ -23,44 +23,58 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <unistd.h>
+#include <errno.h>
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  include <log4cplus/loggingmacros.h>
+#else
+#  define LOG4CPLUS_TRACE(logger, expr)
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#include "Constants.h"
+#include "FileExportDestination.h"
 
-BOOST_AUTO_TEST_SUITE(Basics)
+namespace LIBFC {
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  FileExportDestination::FileExportDestination(int _fd)
+    : fd(_fd)
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+    , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("FileExportDestination")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+ {
+  }
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  ssize_t FileExportDestination::writev(const std::vector< ::iovec>& iovecs) {
+    LOG4CPLUS_TRACE(logger, "ENTER FileExportDestination::writev");
+    LOG4CPLUS_TRACE(logger, "writing " << iovecs.size() << " iovecs");
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+    const ::iovec* vecs = iovecs.data();
+    size_t total = 0;
+    for (unsigned int i = 0; i < iovecs.size(); i++) {
+      LOG4CPLUS_TRACE(logger, "  iovec[" << i << "]"
+                      << "@" << vecs[i].iov_base
+                      << "[" << vecs[i].iov_len << "]");
+      total += vecs[i].iov_len;
+    }
+    LOG4CPLUS_TRACE(logger, "total=" << total);
+#endif /*  defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+    return ::writev(fd, iovecs.data(), static_cast<int>(iovecs.size()));
+  }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  int FileExportDestination::flush() {
+    return 0;
+  }
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+  bool FileExportDestination::is_connectionless() const {
+    return false;
+  }
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
+  size_t FileExportDestination::preferred_maximum_message_size() const {
+    return kMaxMessageLen;
+  }
 
-BOOST_AUTO_TEST_SUITE_END()
+
+
+} // namespace LIBFC

@@ -24,43 +24,48 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/test_tools.hpp>
-#include <boost/test/unit_test.hpp>
+/**
+ * @file
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ */
 
-#include "InfoElement.h"
-#include "InfoModel.h"
+#include <cassert>
 
-BOOST_AUTO_TEST_SUITE(Basics)
+#include "BasicOctetArray.h"
 
-BOOST_AUTO_TEST_CASE(InfoModel) {
-    LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+namespace LIBFC {
 
-    // we're going to do default info model stuff
-    m.defaultIPFIX();
-    
-    // make sure we only have one instance
-    LIBFC::InfoModel& mcheck = LIBFC::InfoModel::instance();
-    BOOST_CHECK_EQUAL(&m, &mcheck);
+  BasicOctetArray::BasicOctetArray() 
+    : buf(0), length(0), capacity(0) {
+  }
 
-    // check a few IEs that should be there
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->number(), 1);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->pen(), 0U);
-    BOOST_CHECK_EQUAL(m.lookupIE("octetDeltaCount")->len(), 8);
-    
-    // check an IE that shouldn't
-    BOOST_CHECK_EQUAL(m.lookupIE("thisIsNotAnInformationElement"), (void *)0);
-}
+  BasicOctetArray::~BasicOctetArray() {
+    delete[] buf;
+  }
 
-BOOST_AUTO_TEST_CASE(InfoElement01) {
-  LIBFC::InfoModel& m = LIBFC::InfoModel::instance();
+  size_t BasicOctetArray::get_length() const {
+    return length;
+  }
 
-  m.defaultIPFIX();
-    
-  const LIBFC::InfoElement* e = m.lookupIE("octetDeltaCount");
-  BOOST_REQUIRE(e != 0);
+  const uint8_t* BasicOctetArray::get_buf() const {
+    return buf;
+  }
 
-  BOOST_CHECK_EQUAL(e->toIESpec(), "octetDeltaCount(1)<unsigned64>[8]");
-}
+  void BasicOctetArray::copy_content(const uint8_t* new_buf, size_t buf_length) {
+    if (buf_length > capacity) {
+      delete[] buf;
+      capacity = buf_length;
+      buf = new unsigned char[capacity];
+    }
 
-BOOST_AUTO_TEST_SUITE_END()
+    assert(buf_length <= capacity);
+    memcpy(buf, new_buf, buf_length);
+    length = buf_length;
+  }
+
+
+  const std::string BasicOctetArray::to_string() const {
+    return std::string(reinterpret_cast<const char*>(buf), length);
+  }
+
+} // namespace LIBFC
