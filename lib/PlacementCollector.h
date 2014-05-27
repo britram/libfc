@@ -137,6 +137,11 @@ namespace LIBFC {
      */
     void register_placement_template(const PlacementTemplate*);
 
+    /** Registers this object as the one to call on unhandled/unknown
+     * data sets.
+     */
+    void give_me_unhandled_data_sets();
+
   private:
     PlacementContentHandler d;
     MessageStreamParser* ir;

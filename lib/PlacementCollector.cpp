@@ -74,4 +74,8 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
 
+  void PlacementCollector::give_me_unhandled_data_sets() {
+    d.register_unhandled_data_set_handler(this);
+  }
+
 } // namespace LIBFC
