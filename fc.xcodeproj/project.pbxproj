@@ -228,7 +228,6 @@
 		D354E7AA192354D200C45B70 /* lib */ = {
 			isa = PBXGroup;
 			children = (
-				F55CCCA719336E47000DED44 /* ContentHandler.cpp */,
 				F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */,
 				F559604E192E04C4003754C8 /* PlacementContentHandler.h */,
 				F559604F192E04C4003754C8 /* PrintContentHandler.cpp */,
@@ -246,6 +245,7 @@
 				D354E7AE1923550800C45B70 /* BufferInputSource.h */,
 				D354E7AF1923550800C45B70 /* Constants.h */,
 				D354E7B01923550800C45B70 /* ContentHandler.h */,
+				F55CCCA719336E47000DED44 /* ContentHandler.cpp */,
 				D354E7B11923550800C45B70 /* decode_util.cpp */,
 				D354E7B21923550800C45B70 /* decode_util.h */,
 				D354E7B31923550800C45B70 /* DecodePlan.cpp */,
