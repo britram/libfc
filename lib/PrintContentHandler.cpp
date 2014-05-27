@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <cassert>
 #include <iostream>
 
 #include "Constants.h"

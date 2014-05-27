@@ -82,6 +82,7 @@
 		F5CDC4D41925115E00CBE87D /* libftrace.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CDC4D11925115E00CBE87D /* libftrace.h */; };
 		F5CDC4D61925122200CBE87D /* libfc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D37BC242192352A8009555FF /* libfc.dylib */; };
 		F5CDC4D71925122B00CBE87D /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
+		F5DD27E019349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DD27DF19349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -180,6 +181,8 @@
 		F5CDC4CB192510D800CBE87D /* libftrace.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libftrace.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5CDC4D01925115E00CBE87D /* libftrace.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = libftrace.c; path = ftrace/libftrace.c; sourceTree = "<group>"; };
 		F5CDC4D11925115E00CBE87D /* libftrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libftrace.h; path = ftrace/libftrace.h; sourceTree = "<group>"; };
+		F5DD27DF19349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "liblog4cplus-1.1.9.dylib"; path = "../../../../usr/local/Cellar/log4cplus/1.1.2/lib/liblog4cplus-1.1.9.dylib"; sourceTree = "<group>"; };
+		F5DD27E11934A4DB00FE1D28 /* log4cplus.properties */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = log4cplus.properties; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -187,6 +190,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5DD27E019349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib in Frameworks */,
 				F5CDC4C619250FC500CBE87D /* libwandio.1.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -304,8 +308,10 @@
 		D37BC239192352A8009555FF = {
 			isa = PBXGroup;
 			children = (
+				F5DD27DF19349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib */,
 				F55CCCCA193388DE000DED44 /* libtomcrypt.a */,
 				D354E82019235D2000C45B70 /* libwandio.1.dylib */,
+				F5DD27E11934A4DB00FE1D28 /* log4cplus.properties */,
 				D354E7AA192354D200C45B70 /* lib */,
 				F5CDC4D51925116400CBE87D /* ftrace */,
 				F55CCCA919337920000DED44 /* ipfix2csv */,
@@ -645,12 +651,15 @@
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(HOME)/opt/include",
+					/usr/local/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/brian/opt/lib,
 					/Users/briant/opt/lib,
+					/usr/local/Cellar/log4cplus/1.1.2/lib,
 				);
+				OTHER_CFLAGS = "-D_LIBFC_HAVE_LOG4CPLUS_=1";
 				PRODUCT_NAME = fc;
 			};
 			name = Debug;
@@ -663,12 +672,15 @@
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(HOME)/opt/include",
+					/usr/local/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/brian/opt/lib,
 					/Users/briant/opt/lib,
+					/usr/local/Cellar/log4cplus/1.1.2/lib,
 				);
+				OTHER_CFLAGS = "-D_LIBFC_HAVE_LOG4CPLUS_=1";
 				PRODUCT_NAME = fc;
 			};
 			name = Release;
@@ -708,6 +720,7 @@
 					"$(inherited)",
 					/usr/local/Cellar/libtomcrypt/1.17/lib,
 				);
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -725,6 +738,7 @@
 					"$(inherited)",
 					/usr/local/Cellar/libtomcrypt/1.17/lib,
 				);
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -746,6 +760,7 @@
 					"$(inherited)",
 					/Users/briant/opt/lib,
 				);
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -763,6 +778,7 @@
 					"$(inherited)",
 					/Users/briant/opt/lib,
 				);
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -795,6 +811,7 @@
 				F55CCCB71933794C000DED44 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F55CCCC5193379CD000DED44 /* Build configuration list for PBXNativeTarget "ftrace-demo" */ = {
 			isa = XCConfigurationList;
@@ -803,6 +820,7 @@
 				F55CCCC7193379CD000DED44 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F5CDC4CC192510D800CBE87D /* Build configuration list for PBXNativeTarget "ftrace" */ = {
 			isa = XCConfigurationList;

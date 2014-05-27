@@ -67,7 +67,7 @@ struct libftrace_st {
 };
 
 /** Open a libftrace source on an IPFIX/PDU file */
-libftrace_t *ftrace_create(const char *filename, int version)
+libftrace_t *ftrace_create(const char *filename, int version, const char *lpfilename)
 {
     libftrace_t *ft = NULL;
     int pterrno = 0;
@@ -96,6 +96,11 @@ libftrace_t *ftrace_create(const char *filename, int version)
     if ((pterrno = pthread_mutex_init(&ft->rmx, NULL)) != 0) {
         fprintf(stderr, "couldn't init pthread rmx: %s\n", strerror(pterrno));
         goto err;
+    }
+    
+    /* initialize logging if necessary */
+    if (lpfilename) {
+        libfc_initialize_logging(lpfilename);
     }
 
     /* open underlying source */
@@ -135,17 +140,22 @@ void ftrace_destroy(libftrace_t *ft)
 static int _ftrace_semcb_inner(libftrace_t *ft)
 {
     /* check terminate signal */
-    if (ft->terminate) return 0;
+    if (ft->terminate) {
+        fprintf(stderr,"_ftrace_semcb_inner() telling placement collector to stop.\n");
+        return 0;
+    }
 
     /* signal read ready, outer thread will now return a record */
     pthread_mutex_lock(&ft->rmx);
     pthread_cond_signal(&ft->rok);
     pthread_mutex_unlock(&ft->rmx);
-    
+    fprintf(stderr,"_ftrace_semcb_inner() signaled rok.\n");
+
     /* wait write ready, since next placement will happen after return */
     pthread_mutex_lock(&ft->wmx);
     pthread_cond_wait(&ft->wok, &ft->wmx);
     pthread_mutex_unlock(&ft->wmx);
+    fprintf(stderr,"_ftrace_semcb_inner() signaled wok.\n");
     
     /* tell placement collector to keep going */
     return 1;
@@ -192,6 +202,12 @@ void *_ftrace_rthread(void *vpft) {
     
     fprintf(stderr, "reader thread exiting, return value %d\n", rv);
 
+    /* signal read ready, outer thread will react to invalid record. */
+    pthread_mutex_lock(&ft->rmx);
+    pthread_cond_signal(&ft->rok);
+    pthread_mutex_unlock(&ft->rmx);
+    fprintf(stderr,"_ftrace_rthread() signaled rok on exit.\n");
+    
     /* we don't care about the return */
     return NULL;
 }
@@ -275,6 +291,7 @@ void ftrace_destroy_uniflow(libftrace_uniflow_t *uf) {
 
     if (pthread_join(uf->_ft->rt, NULL) != 0) {
         /* FIXME error */
+        fprintf(stderr,"error joining reader thread\n");
     }
 }
 
@@ -286,11 +303,13 @@ int ftrace_next_uniflow(libftrace_uniflow_t *uf) {
     pthread_mutex_lock(&uf->_ft->wmx);
     pthread_cond_signal(&uf->_ft->wok);
     pthread_mutex_unlock(&uf->_ft->wmx);
+    fprintf(stderr,"next_uniflow() signaled wok.\n");
 
     /* wait read ready */
     pthread_mutex_lock(&uf->_ft->rmx);
     pthread_cond_wait(&uf->_ft->rok, &uf->_ft->rmx);
     pthread_mutex_unlock(&uf->_ft->rmx);
+    fprintf(stderr,"next_uniflow() got rok.\n");
 
     /* check valid */
     return uf->_ft->valid;

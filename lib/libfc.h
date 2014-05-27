@@ -283,6 +283,8 @@ extern int libfc_collect_from_wandio(io_t *wio, const char *name,
    * @return non-zero on success and zero on error
    */
 extern int libfc_add_specfile(const char *specfilename);
+
+extern void libfc_initialize_logging(const char *lpfilename);
     
 #  if defined(__cplusplus)
 }

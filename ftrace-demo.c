@@ -27,8 +27,9 @@
 
 /**
  *
- * Demonstrate the usage of the libftrace library.
+ * Demonstrate the usage of the libftrace library. 
  *
+ * Documentation to follow.
  *
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  *
@@ -39,12 +40,6 @@
 #include "libftrace.h"
 
 #include <tomcrypt.h>
-
-static const char* spec_file_name = 0;
-static int verbose_flag = false;
-static int help_flag = false;
-static int message_version = 10;
-static const char* filename = 0;
 
 static uint64_t hash_addr4(int addr4) {
     
@@ -86,13 +81,13 @@ int main (int argc, char *argv[]) {
     
     int rv;
     
-    ft = ftrace_create(argv[1], 10);
-
-    if (spec_file_name) (void)ftrace_add_specfile(ft, spec_file_name);
+    ft = ftrace_create(argv[1], 10, "log4cplus.properties");
     
     uf = ftrace_start_uniflow(ft);
     
     while ((rv = ftrace_next_uniflow(uf)) >= 1) {
+        
+        fprintf(stderr, "got a uniflow");
         
         /* short-circuit: ensure it's a real port 443 TCP/IPv4 
            flow with at least three packets */

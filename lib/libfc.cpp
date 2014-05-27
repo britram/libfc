@@ -27,6 +27,7 @@
 #include <set>
 
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <fstream>
 
@@ -39,6 +40,16 @@
 #include "WandioInputSource.h"
 #include "exceptions/FormatError.h"
 #include "exceptions/IESpecError.h"
+
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  include <log4cplus/configurator.h>
+#  include <log4cplus/loggingmacros.h>
+#  include <log4cplus/logger.h>
+#else
+#  define LOG4CPLUS_TRACE(logger, expr)
+#  define LOG4CPLUS_WARN(logger, expr)
+#  define LOG4CPLUS_INFO(logger, expr)
+#endif
 
 using namespace LIBFC;
 
@@ -53,10 +64,18 @@ struct libfc_template_t {
 class CBinding : public PlacementCollector {
 private:
   std::set<PlacementTemplate*> templates;
-
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+  log4cplus::Logger logger;
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+    
 public:
     CBinding(PlacementCollector::Protocol protocol)
-    : PlacementCollector(protocol) {
+    : PlacementCollector(protocol)
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+    ,
+    logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("CBinding")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+{
   }
 
   virtual ~CBinding() {
@@ -86,6 +105,16 @@ public:
         LIBFC_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", 0, 0, 0, 0, 0);
       }
     LIBFC_RETURN_OK();
+  }
+    
+  std::shared_ptr<ErrorContext>
+      unhandled_data_set(uint32_t observation_domain, uint16_t id,
+                         uint16_t length, const uint8_t* buf)
+  {
+      LOG4CPLUS_INFO(logger, "  No placement registered for data set in domain "
+                     << observation_domain
+                     << ", ID " << id);
+      LIBFC_RETURN_OK();
   }
 };
 
@@ -174,6 +203,14 @@ extern int libfc_collect_from_wandio(io_t *wio, const char *name, struct libfc_t
   }
 
   return ret;
+}
+
+extern void libfc_initialize_logging(const char *lpfilename) {
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+    log4cplus::PropertyConfigurator config(lpfilename);
+    config.configure();
+#else
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 }
 
 extern int libfc_add_specfile(const char *specfilename) {
