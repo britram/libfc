@@ -595,11 +595,18 @@ namespace LIBFC {
 
   void PlacementContentHandler::register_placement_template(
       const PlacementTemplate* placement_template,
-      PlacementCollector* callback) {
+      PlacementCollector* callback)
+  {
     placement_templates.push_back(placement_template);
     callbacks[placement_template] = callback;
   }
 
+  void PlacementContentHandler::register_unhandled_data_set_handler(
+                                PlacementCollector* callback)
+  {
+    unhandled_data_set_handler = callback;
+  }
+    
   uint16_t PlacementContentHandler::wire_template_min_length(const IETemplate* t) {
     uint16_t min = 0;
 
