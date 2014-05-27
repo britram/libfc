@@ -37,9 +37,9 @@
 #  include <map>
 #  include <vector>
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "ContentHandler.h"
 #  include "InfoElement.h"
@@ -299,11 +299,14 @@ namespace LIBFC {
     mutable std::set<uint64_t> incomplete_template_ids;
 
     /** The template IDs about which we've warned already. */
+    mutable std::set<uint64_t> unknown_template_ids;
+
+    /** The template IDs about which we've warned already. */
     mutable std::set<uint64_t> unmatched_template_ids;
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  };
 
 } // namespace LIBFC

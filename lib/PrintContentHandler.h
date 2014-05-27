@@ -33,16 +33,16 @@
 #ifndef _LIBFC_PRINTCONTENTHANDLER_H_
 #  define _LIBFC_PRINTCONTENTHANDLER_H_
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "InfoModel.h"
 #  include "ContentHandler.h"
 
 namespace LIBFC {
 
-  /** This class decodes messages and prints them to the log.  It is
+  /** This class decodes messages and prints them to stderr.  It is
    * therefore mainly useful for debugging.
    */
   class PrintContentHandler : public ContentHandler {
@@ -108,9 +108,9 @@ namespace LIBFC {
     /** The number of messages seen so far. */
     unsigned int n_messages;
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  };
 
 } // namespace LIBFC

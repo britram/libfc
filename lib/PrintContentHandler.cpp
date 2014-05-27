@@ -24,13 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  */
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #  define LOG4CPLUS_ERROR(logger, expr)
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include <cstdio>
 #include <cstring>
@@ -59,10 +59,10 @@ namespace LIBFC {
       expected_version(expected_version),
       max_messages(0),
       n_messages(0)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
                                         , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   {
   }
 
@@ -72,10 +72,10 @@ namespace LIBFC {
       expected_version(expected_version),
       max_messages(max_messages),
       n_messages(0)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
                                         , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   {
   }
 
@@ -131,8 +131,8 @@ namespace LIBFC {
 	      << ", basetime=" << base_t
               << std::endl;
     
-    delete export_t;
-    delete base_t;
+    delete[] export_t;
+    delete[] base_t;
 
     if (version != expected_version)
       LIBFC_RETURN_ERROR(recoverable, message_version_number,

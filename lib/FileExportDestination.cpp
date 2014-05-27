@@ -26,11 +26,11 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "Constants.h"
 #include "FileExportDestination.h"
@@ -39,9 +39,9 @@ namespace LIBFC {
 
   FileExportDestination::FileExportDestination(int _fd)
     : fd(_fd)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("FileExportDestination")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  {
   }
 

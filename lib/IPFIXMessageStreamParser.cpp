@@ -32,12 +32,12 @@
 #include "ErrorContext.h"
 #include "IPFIXMessageStreamParser.h"
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "decode_util.h"
 
@@ -46,10 +46,10 @@ namespace LIBFC {
 
   IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
     : offset(0)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
                ,
     logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("IPFIXMessageStreamParser")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  {
   }
 

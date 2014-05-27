@@ -33,9 +33,9 @@
 #ifndef _LIBFC_FILEEXPORTDESTINATION_H_
 #  define _LIBFC_FILEEXPORTDESTINATION_H_
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "ExportDestination.h"
 
@@ -58,9 +58,9 @@ namespace LIBFC {
 
   private:
     int fd;
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   };
 
 } // namespace LIBFC

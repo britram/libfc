@@ -33,11 +33,11 @@
 
 #include <time.h>
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "decode_util.h"
 #include "pointer_checks.h"
@@ -70,10 +70,10 @@ namespace LIBFC {
       use_matched_template_cache(false),
       current_wire_template(0),
       parse_is_good(true)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
                          ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementContentHandler")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   {
   }
 
@@ -86,7 +86,7 @@ namespace LIBFC {
       delete i->second;
   }
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
   static const char* make_time(uint32_t export_time) {
     struct tm tms;
     time_t then = export_time;
@@ -98,7 +98,7 @@ namespace LIBFC {
 
     return gmtime_buf;
   }
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::start_session() {
     LOG4CPLUS_TRACE(logger, "Session starts");
@@ -522,6 +522,44 @@ namespace LIBFC {
 
     if (wire_template == 0) {
       if (unhandled_data_set_handler == 0) {
+	if (unknown_template_ids.count(make_template_key(id)) == 0) {
+	  LOG4CPLUS_WARN(logger, "  No template for data set with "
+			 "observation domain " << observation_domain
+			 << " and template id " << id << "; skipping"
+			 " (this warning will appear only once)");
+	  unknown_template_ids.insert(make_template_key(id));
+	}
+	LIBFC_RETURN_OK();
+      } else {
+	std::shared_ptr<ErrorContext> e 
+	  = unhandled_data_set_handler->unknown_data_set(
+	      observation_domain, id, length, buf);
+	if (e->get_error() == Error::again) {
+	  wire_template = find_wire_template(id);
+	  if (wire_template == 0) {
+	    if (unknown_template_ids.count(make_template_key(id)) == 0) {
+	      LOG4CPLUS_WARN(logger, "  No template for data set with "
+			     "observation domain " << observation_domain
+			     << " and template id " << id 
+			     << "; skipping after second chance"
+			     " (this warning will appear only once)");
+	      unknown_template_ids.insert(make_template_key(id));
+	    }
+	    LIBFC_RETURN_OK();
+	  }
+	}
+      }
+    }
+
+    assert(wire_template != 0);
+
+    const PlacementTemplate* placement_template
+      = match_placement_template(id, wire_template);
+
+    LOG4CPLUS_TRACE(logger, "  placement_template=" << placement_template);
+
+    if (placement_template == 0) {
+      if (unhandled_data_set_handler == 0) {
 	if (unmatched_template_ids.count(make_template_key(id)) == 0) {
 	  LOG4CPLUS_WARN(logger, "  No placement for data set with "
 			 "observation domain " << observation_domain
@@ -549,18 +587,6 @@ namespace LIBFC {
 	  }
 	}
       }
-    }
-
-    assert(wire_template != 0);
-
-    const PlacementTemplate* placement_template
-      = match_placement_template(id, wire_template);
-
-    LOG4CPLUS_TRACE(logger, "  placement_template=" << placement_template);
-
-    if (placement_template == 0) {
-      LOG4CPLUS_TRACE(logger, "  no one interested in this data set; skipping");
-      LIBFC_RETURN_OK();
     }
 
     DecodePlan plan(placement_template, wire_template);
@@ -596,6 +622,11 @@ namespace LIBFC {
       PlacementCollector* callback) {
     placement_templates.push_back(placement_template);
     callbacks[placement_template] = callback;
+  }
+
+  void PlacementContentHandler::register_unhandled_data_set_handler(
+      PlacementCollector* callback) {
+    unhandled_data_set_handler = callback;
   }
 
   uint16_t PlacementContentHandler::wire_template_min_length(const IETemplate* t) {

@@ -32,11 +32,11 @@
 
 #include <unistd.h>
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "ipfix_endian.h"
 
@@ -152,9 +152,9 @@ private:
 
   std::vector<Decision> plan;
 
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
   log4cplus::Logger logger;
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 };
 
 
@@ -181,9 +181,9 @@ static void report_error(const char* message, ...) {
 
 /* See DataSetDecoder::DecodePlan::DecodePlan. */
 EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
   : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("EncodePlan")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  {
 #if defined(IPFIX_BIG_ENDIAN)
   Decision::decision_type_t encode_fixlen_maybe_endianness
@@ -645,9 +645,9 @@ namespace LIBFC {
       n_message_octets(kIpfixMessageHeaderLen),
       template_set_size(0),
       plan(0)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementExporter")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  {
     /* Push two empty iovecs into the iovec vector, to be filled later
      * with the message header and template set by flush(). */
@@ -704,7 +704,7 @@ namespace LIBFC {
     }
   }
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
   static const char* make_time(uint32_t export_time) {
     struct tm tms;
     time_t then = export_time;
@@ -716,7 +716,7 @@ namespace LIBFC {
 
     return gmtime_buf;
   }
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
   bool PlacementExporter::flush() {
     LOG4CPLUS_TRACE(logger, "ENTER flush");

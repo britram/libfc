@@ -26,11 +26,11 @@
 #include <climits>
 #include <sstream>
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "BasicOctetArray.h"
 #include "DecodePlan.h"
@@ -79,10 +79,10 @@ namespace LIBFC {
   DecodePlan::DecodePlan(const LIBFC::PlacementTemplate* placement_template,
 			 const LIBFC::IETemplate* wire_template) 
     : plan(wire_template->size())
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("DecodePlan")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   {
 
     LOG4CPLUS_TRACE(logger, "ENTER DecodePlan::DecodePlan (wt with "
@@ -373,13 +373,13 @@ namespace LIBFC {
       }
     }
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
       LOG4CPLUS_TRACE(logger, "  plan is: ");
       for (auto d = plan.begin(); d != plan.end(); ++d)
 	LOG4CPLUS_TRACE(logger, "    " << d->to_string());
     }
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     LOG4CPLUS_TRACE(logger, "LEAVE DecodePlan::DecodePlan");
   }
