@@ -48,6 +48,7 @@ namespace LIBFC {
   class PrintContentHandler : public ContentHandler {
   public:
     PrintContentHandler(uint16_t expected_version);
+    PrintContentHandler(uint16_t expected_version, unsigned int max_messages);
 
     std::shared_ptr<ErrorContext> start_session();
     std::shared_ptr<ErrorContext> end_session();
@@ -98,6 +99,14 @@ namespace LIBFC {
     
     /** The version we expect to see in message headers. */
     uint16_t expected_version;
+
+    /** The maximum number of messages before exiting with a synthetic
+     * error in start_message().  If this is 0, this class will
+     * attempt to process all messages. */
+    unsigned int max_messages;
+
+    /** The number of messages seen so far. */
+    unsigned int n_messages;
 
 #  ifdef _LIBFC_HAVE_LOG4CPLUS_
     log4cplus::Logger logger;

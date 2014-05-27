@@ -42,8 +42,8 @@ namespace LIBFC {
   }
 
   BufferInputSource::~BufferInputSource() {
-    delete buf;
-    delete const_cast<char*>(name);
+    delete[] buf;
+    delete[] const_cast<char*>(name);
   }
 
   ssize_t BufferInputSource::read(uint8_t* result_buf, uint16_t result_len) {

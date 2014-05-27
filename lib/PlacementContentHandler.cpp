@@ -286,7 +286,7 @@ namespace LIBFC {
 		       << ", ID "
 		       << current_template_id);
 
-	warned_template_ids.erase(current_template_id);
+	incomplete_template_ids.erase(current_template_id);
 
 	delete wire_templates[make_template_key(current_template_id)];
 	wire_templates[make_template_key(current_template_id)]
@@ -485,7 +485,7 @@ namespace LIBFC {
 	    /* We're losing columns, so let's warn about them. */
 	    assert(unmatched->size() == wire_template->size() - n_matches);
 
-	    if (warned_template_ids.count(make_template_key(id)) == 0) {
+	    if (incomplete_template_ids.count(make_template_key(id)) == 0) {
 	      LOG4CPLUS_WARN(logger, "  Template match on wire template "
 			     "for domain " << observation_domain
 			     << " and template ID " << id 
@@ -494,7 +494,7 @@ namespace LIBFC {
 	      LOG4CPLUS_WARN(logger, "  List of unmatched IEs follows:");
 	      for (auto k = unmatched->begin(); k != unmatched->end(); ++k)
 		LOG4CPLUS_WARN(logger, "    " << (*k)->toIESpec());
-	      warned_template_ids.insert(make_template_key(id));
+	      incomplete_template_ids.insert(make_template_key(id));
 	    }
 	  }
 	  delete unmatched;
@@ -524,9 +524,13 @@ namespace LIBFC {
 
     if (wire_template == 0) {
       if (unhandled_data_set_handler == 0) {
-	LOG4CPLUS_WARN(logger, "  No placement for data set with "
-                       "observation domain " << observation_domain
-                       << " and template id " << id << "; skipping");
+	if (unmatched_template_ids.count(make_template_key(id)) == 0) {
+	  LOG4CPLUS_WARN(logger, "  No placement for data set with "
+			 "observation domain " << observation_domain
+			 << " and template id " << id << "; skipping"
+			 " (this warning will appear only once)");
+	  unmatched_template_ids.insert(make_template_key(id));
+	}
 	LIBFC_RETURN_OK();
       } else {
 	std::shared_ptr<ErrorContext> e 
@@ -535,10 +539,14 @@ namespace LIBFC {
 	if (e->get_error() == Error::again) {
 	  wire_template = find_wire_template(id);
 	  if (wire_template == 0) {
-	    LOG4CPLUS_WARN(logger, "  No placement for data set with "
-			   "observation domain " << observation_domain
-			   << " and template id " << id 
-			   << "; skipping after second chance");
+	    if (unmatched_template_ids.count(make_template_key(id)) == 0) {
+	      LOG4CPLUS_WARN(logger, "  No placement for data set with "
+			     "observation domain " << observation_domain
+			     << " and template id " << id 
+			     << "; skipping after second chance"
+			     " (this warning will appear only once)");
+	      unmatched_template_ids.insert(make_template_key(id));
+	    }
 	    LIBFC_RETURN_OK();
 	  }
 	}

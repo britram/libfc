@@ -35,7 +35,6 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <cassert>
 #include <iostream>
 
 #include "Constants.h"
@@ -57,7 +56,22 @@ namespace LIBFC {
 
   PrintContentHandler::PrintContentHandler(uint16_t expected_version)
     : info_model(InfoModel::instance()),
-      expected_version(expected_version)
+      expected_version(expected_version),
+      max_messages(0),
+      n_messages(0)
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
+                                        , 
+      logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+  {
+  }
+
+  PrintContentHandler::PrintContentHandler(uint16_t expected_version,
+					   unsigned int max_messages)
+    : info_model(InfoModel::instance()),
+      expected_version(expected_version),
+      max_messages(max_messages),
+      n_messages(0)
 #ifdef _LIBFC_HAVE_LOG4CPLUS_
                                         , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
@@ -75,7 +89,7 @@ namespace LIBFC {
     LIBFC_RETURN_OK();
   }
   
-  static char* make_local_time(uint64_t t_arg) {
+  static char* make_local_time(uint32_t t_arg) {
     /* From asctime(1): The asctime_r() function does the same [as
      * asctime], but stores the string in a user-supplied buffer which
      * should have room for at least 26 bytes. */
@@ -97,7 +111,15 @@ namespace LIBFC {
                      uint32_t export_time,
                      uint32_t sequence_number,
                      uint32_t observation_domain,
-		             uint64_t base_time) {
+		     uint64_t base_time) {
+    n_messages++;
+
+    if (max_messages > 0 && n_messages > max_messages)
+      LIBFC_RETURN_ERROR(recoverable, aborted_by_user,
+			 "Maximum number of messages (" << max_messages
+			 << ") reached; aborting further processing",
+			 0, 0, 0, 0, 0);
+
     char* export_t = make_local_time(export_time);
     char* base_t =  make_local_time(base_time/1000);
     
