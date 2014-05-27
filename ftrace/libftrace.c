@@ -178,6 +178,8 @@ void *_ftrace_rthread(void *vpft) {
     /* signal valid content */
     ft->valid = 1;
 
+    fprintf(stderr, "reader thread starting\n");
+    
     /* run the placement collector in the subordinate thread */
     rv = libfc_collect_from_wandio(ft->wio, ft->filename, ft->tg);
 
@@ -188,6 +190,8 @@ void *_ftrace_rthread(void *vpft) {
         ft->valid = -1; /* error */
     }
     
+    fprintf(stderr, "reader thread exiting, return value %d\n", rv);
+
     /* we don't care about the return */
     return NULL;
 }
