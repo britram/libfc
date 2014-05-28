@@ -24,23 +24,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include "MessageStreamParser.h"
 
-namespace LIBFC {
+namespace libfc {
 
   MessageStreamParser::MessageStreamParser() 
     : content_handler(0)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
                       ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   {
   }
 
@@ -52,4 +52,4 @@ namespace LIBFC {
   }
 
 
-} // namespace LIBFC
+} // namespace libfc

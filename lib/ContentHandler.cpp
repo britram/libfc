@@ -25,9 +25,9 @@
  */
 #include "ContentHandler.h"
 
-namespace LIBFC {
+namespace libfc {
 
   ContentHandler::~ContentHandler() {
   }
 
-} // namespace LIBFC
+} // namespace libfc

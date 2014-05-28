@@ -27,7 +27,7 @@
 
 #include "InputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   InputSource::~InputSource() {
   }
@@ -37,4 +37,4 @@ namespace LIBFC {
     return -1;
   }
 
-} // namespace LIBFC
+} // namespace libfc

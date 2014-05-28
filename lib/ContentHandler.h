@@ -30,15 +30,15 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_CONTENTHANDLER_H_
-#  define _LIBFC_CONTENTHANDLER_H_
+#ifndef _libfc_CONTENTHANDLER_H_
+#  define _libfc_CONTENTHANDLER_H_
 
 #  include <cstdint>
 #  include <memory>
 
 #  include <ErrorContext.h>
 
-namespace LIBFC {
+namespace libfc {
 
   /** Abstract base class for classes that handle IPFIX messages. 
    * 
@@ -95,7 +95,7 @@ namespace LIBFC {
                                uint32_t export_time,
                                uint32_t sequence_number,
                                uint32_t observation_domain,
-			       uint64_t base_time) = 0;
+                               uint64_t base_time) = 0;
 
     /** Receives notification of the end of a message. 
      *
@@ -120,8 +120,8 @@ namespace LIBFC {
      */
     virtual std::shared_ptr<ErrorContext> start_template_set(
         uint16_t set_id,
-	uint16_t set_length,
-	const uint8_t* buf) = 0;
+        uint16_t set_length,
+        const uint8_t* buf) = 0;
 
     /** Receives notification that a template set ends.
      *
@@ -141,8 +141,8 @@ namespace LIBFC {
      */
     virtual std::shared_ptr<ErrorContext> start_options_template_set(
         uint16_t set_id,
-	uint16_t set_length,
-	const uint8_t* buf) = 0;
+        uint16_t set_length,
+        const uint8_t* buf) = 0;
 
     /** Receives notification that an option template set ends. 
      *
@@ -164,8 +164,8 @@ namespace LIBFC {
      */
     virtual std::shared_ptr<ErrorContext> start_data_set(
         uint16_t id,
-	uint16_t length,
-	const uint8_t* buf) = 0;
+        uint16_t length,
+        const uint8_t* buf) = 0;
 
     /** Receives notification that a data set has ended. 
      *
@@ -175,6 +175,6 @@ namespace LIBFC {
     virtual std::shared_ptr<ErrorContext> end_data_set() = 0;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_CONTENTHANDLER_H_
+#endif // _libfc_CONTENTHANDLER_H_

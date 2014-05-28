@@ -28,7 +28,7 @@
 #include "PlacementCollector.h"
 #include "V9MessageStreamParser.h"
 
-namespace LIBFC {
+namespace libfc {
 
   PlacementCollector::PlacementCollector(Protocol protocol) {
     switch (protocol) {
@@ -64,18 +64,18 @@ namespace LIBFC {
   PlacementCollector::unhandled_data_set(
       uint32_t observation_domain, uint16_t id,
       uint16_t length, const uint8_t* buf) {
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext>
   PlacementCollector::unknown_data_set(
       uint32_t observation_domain, uint16_t id,
       uint16_t length, const uint8_t* buf) {
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   void PlacementCollector::give_me_unhandled_data_sets() {
     d.register_unhandled_data_set_handler(const_cast<PlacementCollector*>(this));
   }
 
-} // namespace LIBFC
+} // namespace libfc

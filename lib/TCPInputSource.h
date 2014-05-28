@@ -29,12 +29,12 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_TCPINPUTSOURCE_H_
-#  define _LIBFC_TCPINPUTSOURCE_H_
+#ifndef _libfc_TCPINPUTSOURCE_H_
+#  define _libfc_TCPINPUTSOURCE_H_
 
 #  include "InputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   class TCPInputSource : public InputSource {
   public:
@@ -58,6 +58,6 @@ namespace LIBFC {
     size_t current_offset;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_TCPINPUTSOURCE_H_
+#endif // _libfc_TCPINPUTSOURCE_H_

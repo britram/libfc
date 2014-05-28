@@ -30,21 +30,21 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_PLACEMENTTEMPLATE_H_
-#  define _LIBFC_PLACEMENTTEMPLATE_H_
+#ifndef _libfc_PLACEMENTTEMPLATE_H_
+#  define _libfc_PLACEMENTTEMPLATE_H_
 
 #  include <list>
 #  include <map>
 #  include <set>
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #  include "InfoElement.h"
 #  include "IETemplate.h"
 
-namespace LIBFC {
+namespace libfc {
 
   /** Association between IEs and memory locations.
    *
@@ -150,7 +150,7 @@ namespace LIBFC {
    * @code
    * uint32_t sip;
    * uint32_t dip;
-   * LIBFC::InfoModel& model = IPFIX::InfoModel::instance();
+   * libfc::InfoModel& model = IPFIX::InfoModel::instance();
    *
    * PlacementTemplate* my_flow_template = new PlacementTemplate();
    * 
@@ -320,7 +320,7 @@ namespace LIBFC {
      *   template, 0 otherwise
      */
     unsigned int is_match(const IETemplate* t,
-			  std::set<const InfoElement*>* unmatched) const;
+                          std::set<const InfoElement*>* unmatched) const;
 
     /** Creates a wire template suitable to represent this template
      * on the wire in a template record.
@@ -386,10 +386,10 @@ namespace LIBFC {
     /** The template ID for the wire representation of this template. */
     mutable uint16_t template_id;
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   };
 
-} // namespace LIBFC
-#endif // _LIBFC_PLACEMENTTEMPLATE_H_
+} // namespace libfc
+#endif // _libfc_PLACEMENTTEMPLATE_H_

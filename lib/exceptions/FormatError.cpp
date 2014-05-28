@@ -26,9 +26,9 @@
 
 #include "FormatError.h"
 
-namespace LIBFC {
+namespace libfc {
 
   FormatError::FormatError(const std::string& message)
     : Exception("FormatError: " + message) {}
 
-} // namespace LIBFC
+} // namespace libfc

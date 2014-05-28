@@ -48,7 +48,7 @@ int main() {
   if (fd < 0)
     exit(1);
   
-  struct libfc_template_set_t* s = libfc_template_set_new();
+  struct libfc_template_group_t* s = libfc_template_group_new(10);
 
   struct libfc_template_t* t = libfc_template_new(s);
   libfc_register_placement(t, "sourceIPv4Address", &sip, 4);
@@ -58,7 +58,7 @@ int main() {
   if (close(fd) < 0)
     exit(1);
    
-  libfc_template_set_delete(s);
+  libfc_template_group_delete(s);
 
   return 0;
 }

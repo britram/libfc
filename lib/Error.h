@@ -29,12 +29,12 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef _LIBFC_ERROR_H_
-#  define _LIBFC_ERROR_H_
+#ifndef _libfc_ERROR_H_
+#  define _libfc_ERROR_H_
 
 #  include <string>
 
-namespace LIBFC {
+namespace libfc {
 
   class Error {
   public:
@@ -101,6 +101,6 @@ namespace LIBFC {
     error_t e;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_ERROR_H_
+#endif // _libfc_ERROR_H_

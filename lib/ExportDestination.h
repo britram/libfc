@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_EXPORTDESTINATION_H_
-#  define _LIBFC_EXPORTDESTINATION_H_
+#ifndef _libfc_EXPORTDESTINATION_H_
+#  define _libfc_EXPORTDESTINATION_H_
 
 #  include <cstdint>
 #  include <vector>
@@ -42,7 +42,7 @@
 /* For ssize_t and size_t */
 #  include <unistd.h>
 
-namespace LIBFC {
+namespace libfc {
 
   /** Abstract base class for IPFIX outputs.
    *
@@ -116,6 +116,6 @@ namespace LIBFC {
     virtual size_t preferred_maximum_message_size() const = 0;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_EXPORTDESTINATION_H_
+#endif // _libfc_EXPORTDESTINATION_H_

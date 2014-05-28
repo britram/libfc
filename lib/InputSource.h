@@ -30,14 +30,14 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_INPUTSOURCE_H_
-#  define _LIBFC_INPUTSOURCE_H_
+#ifndef _libfc_INPUTSOURCE_H_
+#  define _libfc_INPUTSOURCE_H_
 
 #  include <cstdint>
 
 #  include <unistd.h>
 
-namespace LIBFC {
+namespace libfc {
 
 /** Augments the error context from a callback and returns it.
  *
@@ -45,16 +45,16 @@ namespace LIBFC {
  * result is an error, augments the error with the current message and
  * adjusts the offset.
  */
-#  define LIBFC_RETURN_CALLBACK_ERROR(call) \
+#  define libfc_RETURN_CALLBACK_ERROR(call) \
     do { \
-      /* Make sure call is evaluated only once */			\
-      std::shared_ptr<ErrorContext> err = content_handler->call;	\
-      if (err != 0) {							\
-	err->set_input_source(&is);					\
-        err->set_message(message, message_size);			\
-        err->set_offset(err->get_offset() + offset);			\
-        return err;							\
-      }									\
+      /* Make sure call is evaluated only once */                       \
+      std::shared_ptr<ErrorContext> err = content_handler->call;        \
+      if (err != 0) {                                                   \
+        err->set_input_source(&is);                                     \
+        err->set_message(message, message_size);                        \
+        err->set_offset(err->get_offset() + offset);                    \
+        return err;                                                     \
+      }                                                                 \
     } while (0)
 
 
@@ -144,6 +144,6 @@ namespace LIBFC {
     virtual bool can_peek() const = 0;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_INPUTSOURCE_H_
+#endif // _libfc_INPUTSOURCE_H_

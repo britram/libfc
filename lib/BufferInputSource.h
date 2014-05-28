@@ -30,12 +30,12 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_BUFFERINPUTSOURCE_H_
-#  define _LIBFC_BUFFERINPUTSOURCE_H_
+#ifndef _libfc_BUFFERINPUTSOURCE_H_
+#  define _libfc_BUFFERINPUTSOURCE_H_
 
 #  include "InputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   class BufferInputSource : public InputSource {
   public:
@@ -64,6 +64,6 @@ namespace LIBFC {
     mutable const char* name;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_BUFFERINPUTSOURCE_H_
+#endif // _libfc_BUFFERINPUTSOURCE_H_

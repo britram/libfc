@@ -30,14 +30,14 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_PLACEMENTCALLBACK_H_
-#  define _LIBFC_PLACEMENTCALLBACK_H_
+#ifndef _libfc_PLACEMENTCALLBACK_H_
+#  define _libfc_PLACEMENTCALLBACK_H_
 
 #  include "PlacementContentHandler.h"
 #  include "MessageStreamParser.h"
 #  include "PlacementTemplate.h"
 
-namespace LIBFC {
+namespace libfc {
 
   /** Interface for collector with the placement interface. */
   class PlacementCollector {
@@ -104,7 +104,7 @@ namespace LIBFC {
      */
     virtual std::shared_ptr<ErrorContext>
       unhandled_data_set(uint32_t observation_domain, uint16_t id,
-		         uint16_t length, const uint8_t* buf);
+                         uint16_t length, const uint8_t* buf);
 
     /** Will be called on unknown data sets.
      *
@@ -129,7 +129,7 @@ namespace LIBFC {
      */
     virtual std::shared_ptr<ErrorContext>
       unknown_data_set(uint32_t observation_domain, uint16_t id,
-		       uint16_t length, const uint8_t* buf);
+                       uint16_t length, const uint8_t* buf);
 
   protected:
     /** Registers a placement template.
@@ -148,6 +148,6 @@ namespace LIBFC {
     MessageStreamParser* ir;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_PLACEMENTCALLBACK_H_
+#endif // _libfc_PLACEMENTCALLBACK_H_

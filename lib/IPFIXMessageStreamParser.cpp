@@ -32,24 +32,24 @@
 #include "ErrorContext.h"
 #include "IPFIXMessageStreamParser.h"
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include "decode_util.h"
 
 
-namespace LIBFC {
+namespace libfc {
 
   IPFIXMessageStreamParser::IPFIXMessageStreamParser() 
     : offset(0)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
                ,
     logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("IPFIXMessageStreamParser")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
  {
   }
 
@@ -63,10 +63,10 @@ namespace LIBFC {
 
     /* I would normally declare the message_size further down, but
      * it's needed for the expansion of the
-     * LIBFC_RETURN_CALLBACK_ERROR macro. */
+     * libfc_RETURN_CALLBACK_ERROR macro. */
     uint16_t message_size = 0;
 
-    LIBFC_RETURN_CALLBACK_ERROR(start_session());
+    libfc_RETURN_CALLBACK_ERROR(start_session());
 
     memset(message, '\0', sizeof(message));
 
@@ -83,31 +83,31 @@ namespace LIBFC {
       uint8_t* cur = message;
 
       if (static_cast<size_t>(nbytes) < kIpfixMessageHeaderLen) {
-	LIBFC_RETURN_ERROR(recoverable, short_header, 
-			   "Wanted " 
-			   << kIpfixMessageHeaderLen
-			   << " bytes for IPFIX message header, got only "
-			   << nbytes,
-			   0, &is, message, nbytes, 0);
+        libfc_RETURN_ERROR(recoverable, short_header, 
+                           "Wanted " 
+                           << kIpfixMessageHeaderLen
+                           << " bytes for IPFIX message header, got only "
+                           << nbytes,
+                           0, &is, message, nbytes, 0);
       }
       assert(static_cast<size_t>(nbytes) == kIpfixMessageHeaderLen);
 
       uint16_t version = decode_uint16(cur +  0);
       if (version != kIpfixVersion)
-	LIBFC_RETURN_ERROR(recoverable, message_version_number, 
-			   "Expected message version " 
-			   << LIBFC_HEX(4) << kIpfixVersion
-			   << ", got " << LIBFC_HEX(4) << version,
-			   0, &is, message, nbytes, 0);
+        libfc_RETURN_ERROR(recoverable, message_version_number, 
+                           "Expected message version " 
+                           << libfc_HEX(4) << kIpfixVersion
+                           << ", got " << libfc_HEX(4) << version,
+                           0, &is, message, nbytes, 0);
 
       message_size = decode_uint16(cur +  2);
-      LIBFC_RETURN_CALLBACK_ERROR(
+      libfc_RETURN_CALLBACK_ERROR(
         start_message(version,
-		      message_size,
-		      decode_uint32(cur +  4),
-		      decode_uint32(cur +  8),
-		      decode_uint32(cur + 12),
-		      0));
+                      message_size,
+                      decode_uint32(cur +  4),
+                      decode_uint32(cur +  8),
+                      decode_uint32(cur + 12),
+                      0));
       
       const uint8_t* message_end = message + message_size;
 
@@ -119,17 +119,17 @@ namespace LIBFC {
       errno = 0;
       nbytes = is.read(cur, message_size - kIpfixMessageHeaderLen);
       if (nbytes < 0) {
-        LIBFC_RETURN_ERROR(fatal, system_error, 
-			   "Wanted to read " 
-			   << message_size - kIpfixMessageHeaderLen
-			   << " bytes, got a read error", errno, &is,
-			   message, message_size, offset);
+        libfc_RETURN_ERROR(fatal, system_error, 
+                           "Wanted to read " 
+                           << message_size - kIpfixMessageHeaderLen
+                           << " bytes, got a read error", errno, &is,
+                           message, message_size, offset);
       } else if (static_cast<size_t>(nbytes) 
                  != message_size - kIpfixMessageHeaderLen) {
-        LIBFC_RETURN_ERROR(recoverable, short_body, 
-			   "Wanted " << message_size - kIpfixMessageHeaderLen
-			   << " bytes for message body, got " << nbytes,
-			   0, &is, message, message_size, offset);
+        libfc_RETURN_ERROR(recoverable, short_body, 
+                           "Wanted " << message_size - kIpfixMessageHeaderLen
+                           << " bytes for message body, got " << nbytes,
+                           0, &is, message, message_size, offset);
       }
       
       /* Decode sets.
@@ -167,61 +167,62 @@ namespace LIBFC {
                << ",set_end=" << static_cast<const void*>(set_end) 
                << ",message_len=" << message_size
                << ",message_end=" << static_cast<const void*>(message_end);
-	  LIBFC_RETURN_ERROR(recoverable, long_set, 
-			     "Long set: set_len=" << set_length 
-			     << ",set_end=" << static_cast<const void*>(set_end) 
-			     << ",message_len=" << message_size
-			     << ",message_end=" << static_cast<const void*>(message_end),
-			     0, &is, message, message_size, offset);
+          libfc_RETURN_ERROR(recoverable, long_set, 
+                             "Long set: set_len=" << set_length 
+                             << ",set_end=" << static_cast<const void*>(set_end) 
+                             << ",message_len=" << message_size
+                             << ",message_end=" << static_cast<const void*>(message_end),
+                             0, &is, message, message_size, offset);
         }
 
         cur += kIpfixSetHeaderLen;
 
         if (set_id == kIpfixTemplateSetID) {
-	  LIBFC_RETURN_CALLBACK_ERROR(
-	    start_template_set(
+          libfc_RETURN_CALLBACK_ERROR(
+            start_template_set(
               set_id, set_length - kIpfixSetHeaderLen, cur));
-	  cur += set_length - kIpfixSetHeaderLen;
-	  LIBFC_RETURN_CALLBACK_ERROR(end_template_set());
+          cur += set_length - kIpfixSetHeaderLen;
+          libfc_RETURN_CALLBACK_ERROR(end_template_set());
         } else if (set_id == kIpfixOptionTemplateSetID) {
-	  LIBFC_RETURN_CALLBACK_ERROR(
+          libfc_RETURN_CALLBACK_ERROR(
             start_options_template_set(
               set_id, set_length - kIpfixSetHeaderLen, cur));
           cur += set_length - kIpfixSetHeaderLen;
-	  LIBFC_RETURN_CALLBACK_ERROR(
+          libfc_RETURN_CALLBACK_ERROR(
             end_options_template_set());
         } else  if (set_id >= kMinDataSetId) {
-          LIBFC_RETURN_CALLBACK_ERROR(
+          libfc_RETURN_CALLBACK_ERROR(
             start_data_set(
               set_id, set_length - kIpfixSetHeaderLen, cur));
           cur += set_length - kIpfixSetHeaderLen;
-	  LIBFC_RETURN_CALLBACK_ERROR(end_data_set());
+          libfc_RETURN_CALLBACK_ERROR(end_data_set());
         } else
-	  LIBFC_RETURN_ERROR(recoverable, format_error,
-			     "Set has ID " << set_id << ", which is not "
-			     "an IPFIX template, options template or data "
-			     "set ID",
-			     0, &is, message, message_size, offset);
+          libfc_RETURN_ERROR(recoverable, format_error,
+                             "Set has ID " << set_id << ", which is not "
+                             "an IPFIX template, options template or data "
+                             "set ID",
+                             0, &is, message, message_size, offset);
 
 
         assert(cur == set_end);
         assert(cur <= message_end);
       }
 
-      LIBFC_RETURN_CALLBACK_ERROR(end_message());
+      libfc_RETURN_CALLBACK_ERROR(end_message());
 
       offset += nbytes;
+      is.advance_message_offset();
       memset(message, '\0', sizeof(message));
       errno = 0;
       nbytes = is.read(message, kIpfixMessageHeaderLen);
     }
 
     if (nbytes < 0) {
-        LIBFC_RETURN_ERROR(fatal, system_error, 
-			   "Wanted to read " 
-			   << kIpfixMessageHeaderLen
-			   << " bytes, got a read error", errno, &is,
-			   0, 0, 0);
+        libfc_RETURN_ERROR(fatal, system_error, 
+                           "Wanted to read " 
+                           << kIpfixMessageHeaderLen
+                           << " bytes, got a read error", errno, &is,
+                           0, 0, 0);
     }
     assert(nbytes == 0);
 
@@ -231,9 +232,9 @@ namespace LIBFC {
     message_size = 0;
     memset(message, '\0', sizeof(message));
 
-    LIBFC_RETURN_CALLBACK_ERROR(end_session());
+    libfc_RETURN_CALLBACK_ERROR(end_session());
 
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
-} // namespace LIBFC
+} // namespace libfc

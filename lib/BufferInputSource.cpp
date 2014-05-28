@@ -29,7 +29,7 @@
 
 #include "BufferInputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   BufferInputSource::BufferInputSource(const uint8_t* buf, size_t len) 
     : buf(new uint8_t[len]), 
@@ -94,7 +94,7 @@ namespace LIBFC {
       std::ostringstream sstr;
 
       sstr << "Buffer(address=0x" << static_cast<const void*>(buf) 
-	   << ",length=" << len << ')';
+           << ",length=" << len << ')';
       std::string s = sstr.str();
 
       name = new char[s.length() + 1];
@@ -108,4 +108,4 @@ namespace LIBFC {
     return true;
   }
 
-} // namespace LIBFC
+} // namespace libfc

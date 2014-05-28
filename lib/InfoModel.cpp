@@ -36,7 +36,7 @@
 
 #include "exceptions/IESpecError.h"
 
-namespace LIBFC {
+namespace libfc {
 
   InfoModel& InfoModel::instance() {
     static InfoModel instance_;
@@ -66,8 +66,8 @@ namespace LIBFC {
   }
 
   static void parseIESpec_NumPen(std::istringstream& iestream, 
-				 unsigned int& number,
-				 unsigned int& pen) {
+                                 unsigned int& number,
+                                 unsigned int& pen) {
     // get the first number
     iestream >> number;
     if (iestream.fail())
@@ -80,7 +80,7 @@ namespace LIBFC {
       pen = number;
       iestream >> number;
       if (iestream.fail())
-	throw IESpecError("badly formatted IE number");
+        throw IESpecError("badly formatted IE number");
     } else {
       pen = 0;
       iestream.unget();
@@ -88,7 +88,7 @@ namespace LIBFC {
   }
 
   static void parseIESpec_Length(std::istringstream& iestream,
-				 unsigned int& len) {
+                                 unsigned int& len) {
     std::stringbuf lenbuf;
     
     iestream.get(lenbuf, ']');
@@ -98,17 +98,17 @@ namespace LIBFC {
     } else {  // parse size
       unsigned long ullen;
       try {
-	ullen = std::stoul(lenbuf.str());
+        ullen = std::stoul(lenbuf.str());
       } catch (std::invalid_argument) {
-	throw IESpecError("bad size " + lenbuf.str() + " (invalid format)");
+        throw IESpecError("bad size " + lenbuf.str() + " (invalid format)");
       } catch (std::out_of_range) {
-	throw IESpecError("bad size " + lenbuf.str() + " (out of range)");
+        throw IESpecError("bad size " + lenbuf.str() + " (out of range)");
       }
 
       if (ullen != kIpfixVarlen &&
-	  ullen > kIpfixVarlen - kIpfixMessageHeaderLen - kIpfixSetHeaderLen) {
-	  throw IESpecError("bad size " + std::to_string(ullen)
-			    + " (too large)");
+          ullen > kIpfixVarlen - kIpfixMessageHeaderLen - kIpfixSetHeaderLen) {
+          throw IESpecError("bad size " + std::to_string(ullen)
+                            + " (too large)");
       }
       
       len = static_cast<unsigned int>(ullen);
@@ -129,12 +129,12 @@ namespace LIBFC {
   }
     
   static void parseIESpec_Initial(std::istringstream& iestream, 
-				  std::stringbuf& namebuf, bool& name_set,
-				  std::stringbuf& typebuf, bool& type_set,
-				  std::stringbuf& ctxbuf,  bool& ctx_set,
-				  unsigned int& number,    bool& number_set,
-				  unsigned int& pen,       bool& pen_set,
-				  unsigned int& len,       bool& len_set) {
+                                  std::stringbuf& namebuf, bool& name_set,
+                                  std::stringbuf& typebuf, bool& type_set,
+                                  std::stringbuf& ctxbuf,  bool& ctx_set,
+                                  unsigned int& number,    bool& number_set,
+                                  unsigned int& pen,       bool& pen_set,
+                                  unsigned int& len,       bool& len_set) {
     char c = iestream.get();
     if (iestream.eof()) return;
     
@@ -142,7 +142,7 @@ namespace LIBFC {
     case '(':
       assert(!pen_set || number_set);
       if (number_set)
-	throw IESpecError("IESpec contains number / pen more than once");
+        throw IESpecError("IESpec contains number / pen more than once");
               
       parseIESpec_NumPen(iestream, number, pen);
       match(iestream, ')');
@@ -151,35 +151,35 @@ namespace LIBFC {
       break;
     case '[':
       if (len_set)
-	throw IESpecError("IESpec contains length more than once");
+        throw IESpecError("IESpec contains length more than once");
       parseIESpec_Length(iestream, len);
       match(iestream, ']');
       len_set = true;
       break;
     case '<':
       if (type_set)
-	throw IESpecError("IESpec contains type more than once");
+        throw IESpecError("IESpec contains type more than once");
       iestream.get(typebuf, '>');
       match(iestream, '>');
       type_set = true;
       break;
     case '{':
       if (ctx_set)
-	throw IESpecError("IESpec contains contextf more than once");
+        throw IESpecError("IESpec contains contextf more than once");
       iestream.get(ctxbuf, '}');
       match(iestream, '}');
       ctx_set = true;
       break;
     default:
       if (name_set)
-	throw IESpecError("IESpec contains name more than once");
+        throw IESpecError("IESpec contains name more than once");
       do {
-	namebuf.sputc(c);
-	c = iestream.get();
+        namebuf.sputc(c);
+        c = iestream.get();
       } while (!iestream.eof() 
-	       && c != '(' && c != '{' && c != '<' && c != '[');
+               && c != '(' && c != '{' && c != '<' && c != '[');
       if (!iestream.eof())
-	iestream.unget();
+        iestream.unget();
       name_set = true;
       break;
     }
@@ -195,8 +195,8 @@ namespace LIBFC {
         (iespec.find('<') == std::string::npos) &&
         (iespec.find('{') == std::string::npos))
       {
-	InfoElement ie(iespec, 0, 0, 0, 0);
-	return ie;
+        InfoElement ie(iespec, 0, 0, 0, 0);
+        return ie;
       }
     
     std::istringstream iestream(iespec);
@@ -241,12 +241,12 @@ namespace LIBFC {
 
     if (ie.pen()) {
       name_registry_[ie.name()] = 
-	pen_registry_[ie.pen()][ie.number()] = 
+        pen_registry_[ie.pen()][ie.number()] = 
         std::shared_ptr<InfoElement>(new InfoElement(ie));
       // std::cerr << "add  PEN IE " << ie.pen() << "/" << ie.number() << " " << ie.name() << std::endl;
     } else {
       name_registry_[ie.name()] = 
-	iana_registry_[ie.number()] = 
+        iana_registry_[ie.number()] = 
         std::shared_ptr<InfoElement>(new InfoElement(ie));
       // std::cerr << "add IANA IE " << ie.number() << " " << ie.name() << std::endl;
     }
@@ -281,18 +281,18 @@ namespace LIBFC {
       std::map<uint32_t, std::map<uint16_t, std::shared_ptr<InfoElement> > >::const_iterator peniter;
 
       if ((peniter = pen_registry_.find(pen)) == pen_registry_.end()) {
-	//std::cerr << "    no such pen" << std::endl;
-	return NULL;
+        //std::cerr << "    no such pen" << std::endl;
+        return NULL;
       } else {
-	if ((iter = peniter->second.find(number)) == peniter->second.end()) {
-	  //std::cerr << "    not in pen registry" << std::endl;
-	  return NULL;
-	}
+        if ((iter = peniter->second.find(number)) == peniter->second.end()) {
+          //std::cerr << "    not in pen registry" << std::endl;
+          return NULL;
+        }
       }
     } else {
       if ((iter = iana_registry_.find(number)) == iana_registry_.end()) {
-	//std::cerr << "    not in iana registry" << std::endl;
-	return NULL;
+        //std::cerr << "    not in iana registry" << std::endl;
+        return NULL;
       }
     }
     
@@ -311,10 +311,10 @@ namespace LIBFC {
       // std::cerr << "lookupIE " << specie.name() << std::endl;
       std::map<std::string, std::shared_ptr<InfoElement> >::const_iterator iter = name_registry_.find(specie.name());
       if (iter == name_registry_.end()) {
-	// std::cerr << "    not in name registry" << std::endl;
-	return NULL;
+        // std::cerr << "    not in name registry" << std::endl;
+        return NULL;
       } else {
-	return iter->second->forLen(specie.len());
+        return iter->second->forLen(specie.len());
       }
     }
   }
@@ -333,8 +333,8 @@ namespace LIBFC {
     std::map<uint16_t, std::shared_ptr<InfoElement> >::const_iterator   iana_keyiter;
 
     for (iana_keyiter = iana_registry_.begin();
-	 iana_keyiter != iana_registry_.end();
-	 iana_keyiter++) {
+         iana_keyiter != iana_registry_.end();
+         iana_keyiter++) {
       os << iana_keyiter->second->toIESpec() << std::endl;
     }
   }
@@ -1144,4 +1144,4 @@ namespace LIBFC {
     add("reverseL2OctetTotalSumOfSquares(29305/429)<unsigned64>");
 }
 
-} /* namespace LIBFC */
+} /* namespace libfc */

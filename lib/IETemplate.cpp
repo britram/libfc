@@ -25,24 +25,24 @@
  */
 #include <algorithm>
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #  define LOG4CPLUS_WARN(logger, expr)
 #  define LOG4CPLUS_INFO(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include "IETemplate.h"
 
-namespace LIBFC {
+namespace libfc {
 
   IETemplate::IETemplate()
     : minlen_(0)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
                 , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("IETemplate")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   {
   }
    
@@ -53,7 +53,7 @@ namespace LIBFC {
   bool IETemplate::containsAll(const IETemplate* rhs) const {
     for (auto iter = rhs->begin(); iter != rhs->end(); iter++) {
       if (!contains(*iter)) 
-	return false;
+        return false;
     }
     return true;
   }
@@ -72,14 +72,14 @@ namespace LIBFC {
 
   std::vector<const InfoElement *>::const_iterator 
   IETemplate::find(const InfoElement* ie) const {
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
     if (logger.getLogLevel() <= log4cplus::TRACE_LOG_LEVEL) {
       LOG4CPLUS_TRACE(logger, 
                       "  test if template contains " << ie->toIESpec());
       for (auto i = ies_.begin(); i != ies_.end(); ++i)
         LOG4CPLUS_TRACE(logger, " --> " << (*i)->toIESpec());
     }
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
     for (auto i = ies_.begin(); i != ies_.end(); ++i) {
       if ((*i)->matches(*ie))
@@ -112,7 +112,7 @@ namespace LIBFC {
 
     while (l != end() && r != rhs.end()) {
       if (*l != *r)
-	return false;
+        return false;
       ++l;
       ++r;
     }
@@ -124,4 +124,4 @@ namespace LIBFC {
     return !(*this == rhs);
   }
 
-} // namespace LIBFC
+} // namespace libfc

@@ -31,23 +31,23 @@
 #include "Constants.h"
 #include "V9MessageStreamParser.h"
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include "decode_util.h"
 
-namespace LIBFC {
+namespace libfc {
 
   V9MessageStreamParser::V9MessageStreamParser() 
     : offset(0)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
                ,
     logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
  {
   }
 
@@ -61,15 +61,15 @@ namespace LIBFC {
 
     /* Why do we need this? Read the long comment below and find out. */
     if (!is.can_peek())
-      LIBFC_RETURN_ERROR(fatal, input_source_cant_peek, 
-			 "V9 messages can only be parsed with "
-			 "peekable input streams", 0, &is, 0, 0, 0);
+      libfc_RETURN_ERROR(fatal, input_source_cant_peek, 
+                         "V9 messages can only be parsed with "
+                         "peekable input streams", 0, &is, 0, 0, 0);
 
     /* I would normally declare the message_size further down, but
-     * it's needed for the expansion of LIBFC_RETURN_CALLBACK_ERROR. */
+     * it's needed for the expansion of libfc_RETURN_CALLBACK_ERROR. */
     uint16_t message_size = 0;
 
-    LIBFC_RETURN_CALLBACK_ERROR(start_session());
+    libfc_RETURN_CALLBACK_ERROR(start_session());
 
     /* Take care when changing message from an array to a pointer. */
     memset(message, '\0', sizeof(message));
@@ -87,22 +87,22 @@ namespace LIBFC {
       uint8_t* cur = message;
 
       if (static_cast<size_t>(nbytes) < kV9MessageHeaderLen) {
-	LIBFC_RETURN_ERROR(recoverable, short_header, 
-			   "Wanted " 
-			   << kV9MessageHeaderLen
-			   << " bytes for V9 message header, got only "
-			   << nbytes,
-			   0, &is, message, nbytes, 0);
+        libfc_RETURN_ERROR(recoverable, short_header, 
+                           "Wanted " 
+                           << kV9MessageHeaderLen
+                           << " bytes for V9 message header, got only "
+                           << nbytes,
+                           0, &is, message, nbytes, 0);
       }
       assert(static_cast<size_t>(nbytes) == kV9MessageHeaderLen);
 
       uint16_t version = decode_uint16(cur +  0);
       if (version != kV9Version)
-	LIBFC_RETURN_ERROR(recoverable, message_version_number, 
-			   "Expected message version " 
-			   << LIBFC_HEX(4) << kV9Version 
-			   << ", got " << LIBFC_HEX(4) << version,
-			   0, &is, message, nbytes, 0);
+        libfc_RETURN_ERROR(recoverable, message_version_number, 
+                           "Expected message version " 
+                           << libfc_HEX(4) << kV9Version 
+                           << ", got " << libfc_HEX(4) << version,
+                           0, &is, message, nbytes, 0);
 
       /* Via Brian and demux_statdat.c: the v9 format does not have
        * the message size (in bytes) in the header, but rather the
@@ -133,57 +133,57 @@ namespace LIBFC {
       uint16_t current_set_id = 0;
 
       while (nbytes > 0 && static_cast<size_t>(nbytes) == kV9SetHeaderLen) {
-	current_set_id = decode_uint16(cur + 0);
-	if (current_set_id == kV9Version)
-	  break;
-	else if (current_set_id == kV5Version)
-          LIBFC_RETURN_ERROR(recoverable, message_version_number, 
+        current_set_id = decode_uint16(cur + 0);
+        if (current_set_id == kV9Version)
+          break;
+        else if (current_set_id == kV5Version)
+          libfc_RETURN_ERROR(recoverable, message_version_number, 
                              "Wanted " << kV9Version
                              << " as version number, but got " << kV5Version,
                              0, &is, message, nbytes, 0);
 
-	/* Please leave this assert in. It *ought* to be always true,
-	 * and in thie case, the compiler should be able to optimize
-	 * it away. */
-	assert(kV9SetLenOffset + sizeof(uint16_t) <= kV9SetHeaderLen);
-	uint16_t set_length = decode_uint16(cur + kV9SetLenOffset);
+        /* Please leave this assert in. It *ought* to be always true,
+         * and in thie case, the compiler should be able to optimize
+         * it away. */
+        assert(kV9SetLenOffset + sizeof(uint16_t) <= kV9SetHeaderLen);
+        uint16_t set_length = decode_uint16(cur + kV9SetLenOffset);
 
-	/* Take care when changing message from an array to a pointer. */
-	if (cur + set_length > message + sizeof(message))
-	  LIBFC_RETURN_ERROR(recoverable, long_set, 
-			     "While scanning V9 message, set size " 
-			     << set_length << " exceeds message space",
-			     0, &is, message, cur - message,
-			     message_size);
-	  
-	/* Take care when changing message from an array to a pointer. */
-	assert(cur + set_length <= message + sizeof(message));
-	errno = 0;
-	ssize_t read_bytes = is.read(cur, set_length);
-	
-	if (read_bytes != set_length)
-	  LIBFC_RETURN_ERROR(recoverable, short_body, 
-			     "While scanning V9 message, wanted " 
-			     << set_length << " bytes for set, got " 
-			     << read_bytes,
-			     errno, &is, message, cur - message,
-			     message_size);
+        /* Take care when changing message from an array to a pointer. */
+        if (cur + set_length > message + sizeof(message))
+          libfc_RETURN_ERROR(recoverable, long_set, 
+                             "While scanning V9 message, set size " 
+                             << set_length << " exceeds message space",
+                             0, &is, message, cur - message,
+                             message_size);
+          
+        /* Take care when changing message from an array to a pointer. */
+        assert(cur + set_length <= message + sizeof(message));
+        errno = 0;
+        ssize_t read_bytes = is.read(cur, set_length);
+        
+        if (read_bytes != set_length)
+          libfc_RETURN_ERROR(recoverable, short_body, 
+                             "While scanning V9 message, wanted " 
+                             << set_length << " bytes for set, got " 
+                             << read_bytes,
+                             errno, &is, message, cur - message,
+                             message_size);
 
-	assert(read_bytes == set_length);
-	message_size += set_length;
-	cur = message + message_size;
+        assert(read_bytes == set_length);
+        message_size += set_length;
+        cur = message + message_size;
 
-	/* Take care when changing message from an array to a pointer. */
-	assert(cur + kV9SetHeaderLen <= message + sizeof(message));
-	errno = 0;
-	nbytes = is.peek(cur, kV9SetHeaderLen);
+        /* Take care when changing message from an array to a pointer. */
+        assert(cur + kV9SetHeaderLen <= message + sizeof(message));
+        errno = 0;
+        nbytes = is.peek(cur, kV9SetHeaderLen);
 
-	set_no++;
+        set_no++;
       }
 
       if (nbytes < 0) 
-	LIBFC_RETURN_ERROR(fatal, system_error, "read error", errno,
-			   &is, message, 0, 0);
+        libfc_RETURN_ERROR(fatal, system_error, "read error", errno,
+                           &is, message, 0, 0);
 
       /* Basetime computation as per email from Brian:
        *
@@ -196,14 +196,14 @@ namespace LIBFC {
        *   uint64_t basetime_ms = (uint64_t)ntohl(hdr->export_s) * 1000 
        *     - ntohl(hdr->sysuptime_ms);
        */
-      LIBFC_RETURN_CALLBACK_ERROR(
+      libfc_RETURN_CALLBACK_ERROR(
         start_message(version,
-		      message_size,
-		      decode_uint32(message +  8),
-		      decode_uint32(message + 12),
-		      decode_uint32(message + 16),
-		      static_cast<uint64_t>(decode_uint32(message + 8))*1000 
-		        - static_cast<uint64_t>(decode_uint32(message + 4))));
+                      message_size,
+                      decode_uint32(message +  8),
+                      decode_uint32(message + 12),
+                      decode_uint32(message + 16),
+                      static_cast<uint64_t>(decode_uint32(message + 8))*1000 
+                        - static_cast<uint64_t>(decode_uint32(message + 4))));
 
       /* This assert should be true since message_size is a uint16_t
        * and message is a static buffer of size 65535. But beware if
@@ -229,55 +229,66 @@ namespace LIBFC {
         const uint8_t* set_end = cur + set_length;
         
         if (set_end > message_end)
-	  LIBFC_RETURN_ERROR(recoverable, long_set, 
-			     "Long set: set_len=" << set_length 
-			     << ",set_end=" << static_cast<const void*>(set_end) 
-			     << ",message_len=" << message_size
-			     << ",message_end=" << static_cast<const void*>(message_end),
-			     0, &is, message, message_size, offset);
+          libfc_RETURN_ERROR(recoverable, long_set, 
+                             "Long set: set_len=" << set_length 
+                             << ",set_end=" << static_cast<const void*>(set_end) 
+                             << ",message_len=" << message_size
+                             << ",message_end=" << static_cast<const void*>(message_end),
+                             0, &is, message, message_size, offset);
 
         cur += kV9SetHeaderLen;
 
         if (set_id == kV9TemplateSetID) {
-	  LIBFC_RETURN_CALLBACK_ERROR(
-	    start_template_set(
+          libfc_RETURN_CALLBACK_ERROR(
+            start_template_set(
               set_id, set_length - kV9SetHeaderLen, cur));
-	  cur += set_length - kV9SetHeaderLen;
-	  LIBFC_RETURN_CALLBACK_ERROR(end_template_set());
+          cur += set_length - kV9SetHeaderLen;
+          libfc_RETURN_CALLBACK_ERROR(end_template_set());
         } else if (set_id == kV9OptionTemplateSetID) {
-	  LIBFC_RETURN_CALLBACK_ERROR(
+          libfc_RETURN_CALLBACK_ERROR(
             start_options_template_set(
               set_id, set_length - kV9SetHeaderLen, cur));
           cur += set_length - kV9SetHeaderLen;
-	  LIBFC_RETURN_CALLBACK_ERROR(
+          libfc_RETURN_CALLBACK_ERROR(
             end_options_template_set());
         } else if (set_id >= kV9MinDataSetId) {
-          LIBFC_RETURN_CALLBACK_ERROR(
+          libfc_RETURN_CALLBACK_ERROR(
             start_data_set(
               set_id, set_length - kV9SetHeaderLen, cur));
           cur += set_length - kV9SetHeaderLen;
-	  LIBFC_RETURN_CALLBACK_ERROR(end_data_set());
+          libfc_RETURN_CALLBACK_ERROR(end_data_set());
         } else
-	  LIBFC_RETURN_ERROR(recoverable, format_error,
-			     "Set has ID " << set_id << ", which is not "
-			     "a V9 template, options template or data set ID",
-			     0, &is, message, message_size, offset);
+          libfc_RETURN_ERROR(recoverable, format_error,
+                             "Set has ID " << set_id << ", which is not "
+                             "a V9 template, options template or data set ID",
+                             0, &is, message, message_size, offset);
 
         assert(cur == set_end);
         assert(cur <= message_end);
 
-	set_no++;
+        set_no++;
       }
 
       LOG4CPLUS_TRACE(logger, "Got " << (set_no - 1) << " sets");
 
-      LIBFC_RETURN_CALLBACK_ERROR(end_message());
+      libfc_RETURN_CALLBACK_ERROR(end_message());
 
       offset += nbytes;
+      is.advance_message_offset();
       memset(message, '\0', sizeof(message));
+      errno = 0;
       nbytes = is.read(message, kV9MessageHeaderLen);
     }
 
+    if (nbytes < 0) {
+        libfc_RETURN_ERROR(fatal, system_error, 
+                           "Wanted to read " 
+                           << kV9MessageHeaderLen
+                           << " bytes, got a read error", errno, &is,
+                           0, 0, 0);
+    }
+
+    assert(nbytes == 0);
 
     /* This is important, don't remove it!  Otherwise, if
      * end_session() gives an error, message_size bytes may be copied
@@ -285,9 +296,9 @@ namespace LIBFC {
     message_size = 0;
     memset(message, '\0', sizeof(message));
 
-    LIBFC_RETURN_CALLBACK_ERROR(end_session());
+    libfc_RETURN_CALLBACK_ERROR(end_session());
 
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
-} // namespace LIBFC
+} // namespace libfc

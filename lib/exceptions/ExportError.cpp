@@ -26,9 +26,9 @@
 
 #include "ExportError.h"
 
-namespace LIBFC {
+namespace libfc {
 
   ExportError::ExportError(const std::string& message)
     : Exception("ExportError: " + message) {}
 
-} // namespace LIBFC
+} // namespace libfc

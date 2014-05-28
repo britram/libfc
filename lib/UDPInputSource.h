@@ -30,12 +30,12 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_UDPINPUTSOURCE_H_
-#  define _LIBFC_UDPINPUTSOURCE_H_
+#ifndef _libfc_UDPINPUTSOURCE_H_
+#  define _libfc_UDPINPUTSOURCE_H_
 
 #  include "InputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   class UDPInputSource : public InputSource {
   public:
@@ -60,6 +60,6 @@ namespace LIBFC {
     int fd;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_UDPINPUTSOURCE_H_
+#endif // _libfc_UDPINPUTSOURCE_H_

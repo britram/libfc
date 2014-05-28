@@ -30,21 +30,21 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_MESSAGESTREAMPARSER_H_
-#  define _LIBFC_MESSAGESTREAMPARSER_H_
+#ifndef _libfc_MESSAGESTREAMPARSER_H_
+#  define _libfc_MESSAGESTREAMPARSER_H_
 
 #  include <memory>
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #  include "ContentHandler.h"
 #  include "Constants.h"
 #  include "ErrorContext.h"
 #  include "InputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   /** Parse a message stream.
    *
@@ -82,11 +82,11 @@ namespace LIBFC {
 
   private:
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif /* _LIBFC_MESSAGESTREAMPARSER_H_ */
+#endif /* _libfc_MESSAGESTREAMPARSER_H_ */

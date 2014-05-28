@@ -32,11 +32,11 @@
 
 #include <unistd.h>
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include "ipfix_endian.h"
 
@@ -67,7 +67,7 @@ public:
    * @param placement_template a placement template from which we
    *   encode a data record.
    */
-  EncodePlan(const LIBFC::PlacementTemplate* placementTemplate);
+  EncodePlan(const libfc::PlacementTemplate* placementTemplate);
 
   /** Executes this plan.
    *
@@ -152,9 +152,9 @@ private:
 
   std::vector<Decision> plan;
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
   log4cplus::Logger logger;
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 };
 
 
@@ -176,14 +176,14 @@ static void report_error(const char* message, ...) {
     buf[buf_size - 1] = '\0';   // Shouldn't be necessary
   }
 
-  throw LIBFC::ExportError(buf);
+  throw libfc::ExportError(buf);
 }
 
 /* See DataSetDecoder::DecodePlan::DecodePlan. */
-EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+EncodePlan::EncodePlan(const libfc::PlacementTemplate* placement_template)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
   : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("EncodePlan")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
  {
 #if defined(IPFIX_BIG_ENDIAN)
   Decision::decision_type_t encode_fixlen_maybe_endianness
@@ -237,8 +237,8 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
     d.address = location;
 
     switch ((*ie)->ietype()->number()) {
-    case LIBFC::IEType::kOctetArray: 
-      if (size == LIBFC::kIpfixVarlen) {
+    case libfc::IEType::kOctetArray: 
+      if (size == libfc::kIpfixVarlen) {
         d.type = Decision::encode_varlen;
       } else {
         d.type = Decision::encode_fixlen_octets;
@@ -246,7 +246,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       }
       break;
 
-    case LIBFC::IEType::kUnsigned8:
+    case libfc::IEType::kUnsigned8:
       assert(size <= sizeof(uint8_t));
 
       d.type = Decision::encode_fixlen;
@@ -254,7 +254,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kUnsigned16:
+    case libfc::IEType::kUnsigned16:
       assert(size <= sizeof(uint16_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -262,7 +262,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kUnsigned32:
+    case libfc::IEType::kUnsigned32:
       assert(size <= sizeof(uint32_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -270,7 +270,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kUnsigned64:
+    case libfc::IEType::kUnsigned64:
       assert(size <= sizeof(uint64_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -278,7 +278,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kSigned8:
+    case libfc::IEType::kSigned8:
       assert(size <= sizeof(int8_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -286,7 +286,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kSigned16:
+    case libfc::IEType::kSigned16:
       assert(size <= sizeof(int16_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -294,7 +294,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kSigned32:
+    case libfc::IEType::kSigned32:
       assert(size <= sizeof(int32_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -302,7 +302,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kSigned64:
+    case libfc::IEType::kSigned64:
       assert(size <= sizeof(int64_t));
 
       d.type = encode_fixlen_maybe_endianness;
@@ -310,7 +310,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kFloat32:
+    case libfc::IEType::kFloat32:
       /* Can't use reduced-length encoding on float; see RFC 5101,
        * Chapter 6, Verse 2. */
       assert(size == sizeof(uint32_t));
@@ -320,7 +320,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = sizeof(uint32_t);
       break;
 
-    case LIBFC::IEType::kFloat64:
+    case libfc::IEType::kFloat64:
       assert(size == sizeof(uint32_t)
              || size == sizeof(uint64_t));
 
@@ -332,7 +332,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
         d.type = encode_fixlen_maybe_endianness;
       break;
 
-    case LIBFC::IEType::kBoolean:
+    case libfc::IEType::kBoolean:
       assert(size == sizeof(uint8_t));
 
       d.type = Decision::encode_boolean;
@@ -340,7 +340,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
 
-    case LIBFC::IEType::kMacAddress:
+    case libfc::IEType::kMacAddress:
       /* RFC 5101 says to treat MAC addresses as 6-byte integers,
        * but Brian Trammell says that this is wrong and that the
        * RFC will be changed.  If for some reason this does not
@@ -353,8 +353,8 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case LIBFC::IEType::kString:
-      if (size == LIBFC::kIpfixVarlen) {
+    case libfc::IEType::kString:
+      if (size == libfc::kIpfixVarlen) {
         d.type = Decision::encode_varlen;
       } else {
         d.type = Decision::encode_fixlen_octets;
@@ -362,7 +362,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       }
       break;
 
-    case LIBFC::IEType::kDateTimeSeconds:
+    case libfc::IEType::kDateTimeSeconds:
       /* Must be encoded as a "32-bit integer"; see RFC 5101, Chapter
        * 6, Verse 1.7.
        *
@@ -379,7 +379,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case LIBFC::IEType::kDateTimeMilliseconds:
+    case libfc::IEType::kDateTimeMilliseconds:
       /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
        * 6, Verse 1.8.
        *
@@ -393,7 +393,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case LIBFC::IEType::kDateTimeMicroseconds:
+    case libfc::IEType::kDateTimeMicroseconds:
       /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
        * 6, Verse 1.9. See dateTimeMilliseconds above. */
       assert(size == sizeof(uint64_t));
@@ -403,7 +403,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case LIBFC::IEType::kDateTimeNanoseconds:
+    case libfc::IEType::kDateTimeNanoseconds:
       /* Must be encoded as a "64-bit integer"; see RFC 5101, Chapter
        * 6, Verse 1.10.  See dateTimeMicroseconds above. */
       assert(size == sizeof(uint64_t));
@@ -413,7 +413,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
                 
-    case LIBFC::IEType::kIpv4Address:
+    case libfc::IEType::kIpv4Address:
       /* RFC 5101 says to treat all addresses as integers. This
        * would mean endianness conversion for all of these address
        * types, including MAC addresses and IPv6 addresses. But the
@@ -434,7 +434,7 @@ EncodePlan::EncodePlan(const LIBFC::PlacementTemplate* placement_template)
       d.encoded_length = size;
       break;
         
-    case LIBFC::IEType::kIpv6Address:
+    case libfc::IEType::kIpv6Address:
       /* See comment on kIpv4Address. */
       assert(size == 16*sizeof(uint8_t));
 
@@ -552,8 +552,8 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
 
     case Decision::encode_fixlen_octets:
       {
-        const LIBFC::BasicOctetArray* src
-          = static_cast<const LIBFC::BasicOctetArray*>(i->address);
+        const libfc::BasicOctetArray* src
+          = static_cast<const libfc::BasicOctetArray*>(i->address);
         const size_t bytes_to_copy
           = std::min(src->get_length(), i->encoded_length);
 
@@ -577,8 +577,8 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
        * below; this is a const member function which allows the
        * compiler to optimise away all but one call to it. ---neuhaus */
       {
-        const LIBFC::BasicOctetArray* src
-          = static_cast<const LIBFC::BasicOctetArray*>(i->address);
+        const libfc::BasicOctetArray* src
+          = static_cast<const libfc::BasicOctetArray*>(i->address);
         LOG4CPLUS_TRACE(logger,
                         "  encoding varlen length " << src->get_length());
         uint16_t memcpy_offset = src->get_length() < 255 ? 1 : 3;
@@ -630,7 +630,7 @@ uint16_t EncodePlan::execute(uint8_t* buf, uint16_t offset,
 }
 
 
-namespace LIBFC {
+namespace libfc {
 
   static const unsigned int message_header_index = 0;
   static const unsigned int template_set_index = 1;
@@ -645,9 +645,9 @@ namespace LIBFC {
       n_message_octets(kIpfixMessageHeaderLen),
       template_set_size(0),
       plan(0)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementExporter")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
  {
     /* Push two empty iovecs into the iovec vector, to be filled later
      * with the message header and template set by flush(). */
@@ -704,7 +704,7 @@ namespace LIBFC {
     }
   }
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
   static const char* make_time(uint32_t export_time) {
     struct tm tms;
     time_t then = export_time;
@@ -716,7 +716,7 @@ namespace LIBFC {
 
     return gmtime_buf;
   }
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
   bool PlacementExporter::flush() {
     LOG4CPLUS_TRACE(logger, "ENTER flush");
@@ -791,9 +791,9 @@ namespace LIBFC {
       ret = os.writev(iovecs);
       LOG4CPLUS_TRACE(logger, "wrote " << ret << " bytes");
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
       int n = 0;
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
       for (auto i = iovecs.begin(); i != iovecs.end(); ++i) {
         LOG4CPLUS_TRACE(logger, "  iovec " << ++n
                         << " size " << i->iov_len);
@@ -907,7 +907,7 @@ namespace LIBFC {
       new_bytes += kIpfixSetHeaderLen;
     }
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
     if (n_message_octets + new_bytes > kMaxMessageLen)
       LOG4CPLUS_TRACE(logger,
                       "n_message_octets=" << n_message_octets
@@ -936,4 +936,4 @@ namespace LIBFC {
     assert(n_message_octets <= kMaxMessageLen);
   }
 
-} // namespace LIBFC
+} // namespace libfc

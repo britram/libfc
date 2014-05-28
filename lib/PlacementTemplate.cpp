@@ -27,16 +27,16 @@
 
 #include <arpa/inet.h>
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include "BasicOctetArray.h"
 #include "PlacementTemplate.h"
 
-namespace LIBFC {
+namespace libfc {
 
   class PlacementTemplate::PlacementInfo {
   public:
@@ -67,9 +67,9 @@ namespace LIBFC {
       size(0),
       fixlen_data_record_size(0),
       template_id(0)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementTemplate")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   {
   }
 
@@ -97,10 +97,10 @@ namespace LIBFC {
     LOG4CPLUS_TRACE(logger, "ENTER lookup_placement");
     for (auto i = placements.begin(); i != placements.end(); ++i) {
       if (i->first->matches(*ie)) {
-	*p = i->second->address;
-	if (size != 0)
-	  *size = i->second->size_on_wire;
-	return true;
+        *p = i->second->address;
+        if (size != 0)
+          *size = i->second->size_on_wire;
+        return true;
       }
     }
 
@@ -120,7 +120,7 @@ namespace LIBFC {
       if (!t->contains(i->first)) {
         LOG4CPLUS_TRACE(logger, "    not found -> false");
         found = false;
-	break;
+        break;
       }
     }
 
@@ -129,9 +129,9 @@ namespace LIBFC {
       assert(placements.size() <= UINT_MAX);
 
       if (unmatched != 0) {
-	unmatched->clear();
+        unmatched->clear();
 
-	for (auto i = t->begin(); i != t->end(); ++i) {
+        for (auto i = t->begin(); i != t->end(); ++i) {
           bool found = false;
           for (auto k = placements.begin(); k != placements.end(); ++k) {
             if (k->first->matches(*(*i))) {
@@ -141,7 +141,7 @@ namespace LIBFC {
           }
           if (!found)
             unmatched->insert(*i);
-	}
+        }
       }
 
       return static_cast<unsigned int>(placements.size());
@@ -244,4 +244,4 @@ namespace LIBFC {
     return ies.end();
   }
 
-} // namespace LIBFC
+} // namespace libfc

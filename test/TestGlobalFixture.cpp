@@ -36,7 +36,7 @@
 #  include <log4cplus/configurator.h>
 #endif /* _IPFIX_HAVE_LOG4CPLUS_ */
 
-using namespace LIBFC;
+using namespace libfc;
 
 struct GlobalFixture {
   GlobalFixture();

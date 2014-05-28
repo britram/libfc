@@ -28,7 +28,7 @@
 
 #include "TCPInputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   TCPInputSource::TCPInputSource(int fd)
     : fd(fd),
@@ -69,4 +69,4 @@ namespace LIBFC {
     return false;
   }
 
-} // namespace LIBFC
+} // namespace libfc

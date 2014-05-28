@@ -30,16 +30,16 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_PLACEMENTCONTENTHANDLER_H_
-#  define _LIBFC_PLACEMENTCONTENTHANDLER_H_
+#ifndef _libfc_PLACEMENTCONTENTHANDLER_H_
+#  define _libfc_PLACEMENTCONTENTHANDLER_H_
 
 #  include <list>
 #  include <map>
 #  include <vector>
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #  include "ContentHandler.h"
 #  include "InfoElement.h"
@@ -48,7 +48,7 @@
 #  include "IETemplate.h"
 #  include "PlacementTemplate.h"
 
-namespace LIBFC {
+namespace libfc {
 
   class PlacementCollector;
 
@@ -78,15 +78,15 @@ namespace LIBFC {
                        uint32_t export_time,
                        uint32_t sequence_number,
                        uint32_t observation_domain,
-		       uint64_t base_time);
+                       uint64_t base_time);
     std::shared_ptr<ErrorContext> end_message();
     std::shared_ptr<ErrorContext> start_template_set(uint16_t set_id,
-			    uint16_t set_length,
-			    const uint8_t* buf);
+                            uint16_t set_length,
+                            const uint8_t* buf);
     std::shared_ptr<ErrorContext> end_template_set();
     std::shared_ptr<ErrorContext> start_options_template_set(uint16_t set_id,
-				   uint16_t set_length,
-				   const uint8_t* buf);
+                                   uint16_t set_length,
+                                   const uint8_t* buf);
     std::shared_ptr<ErrorContext> end_options_template_set();
     std::shared_ptr<ErrorContext> start_data_set(uint16_t id,
                                                  uint16_t length,
@@ -171,7 +171,7 @@ namespace LIBFC {
      */
     const PlacementTemplate*
     match_placement_template(uint16_t id,
-			     const IETemplate* wire_template) const;
+                             const IETemplate* wire_template) const;
 
     /** Makes unique template key from template ID and observation domain. 
      *
@@ -203,28 +203,28 @@ namespace LIBFC {
       const uint8_t* buf, bool is_options_set);
 
     std::shared_ptr<ErrorContext> start_template_record(uint16_t template_id,
-							uint16_t field_count);
+                                                        uint16_t field_count);
     std::shared_ptr<ErrorContext>  end_template_record();
     std::shared_ptr<ErrorContext> start_options_template_record(
         uint16_t template_id,
-	uint16_t field_count,
-	uint16_t scope_field_count);
+        uint16_t field_count,
+        uint16_t scope_field_count);
     std::shared_ptr<ErrorContext> end_options_template_record();
     std::shared_ptr<ErrorContext> field_specifier(
         bool enterprise,
-	uint16_t ie_id,
-	uint16_t ie_length,
-	uint32_t enterprise_number);
+        uint16_t ie_id,
+        uint16_t ie_length,
+        uint32_t enterprise_number);
     std::shared_ptr<ErrorContext> scope_field_specifier(
-	bool enterprise,
-	uint16_t ie_id,
-	uint16_t ie_length,
-	uint32_t enterprise_number);
+        bool enterprise,
+        uint16_t ie_id,
+        uint16_t ie_length,
+        uint32_t enterprise_number);
     std::shared_ptr<ErrorContext> options_field_specifier(
         bool enterprise,
-	uint16_t ie_id,
-	uint16_t ie_length,
-	uint32_t enterprise_number);
+        uint16_t ie_id,
+        uint16_t ie_length,
+        uint32_t enterprise_number);
 
     /** Wire templates as they're read from template sets.
      *
@@ -304,11 +304,11 @@ namespace LIBFC {
     /** The template IDs about which we've warned already. */
     mutable std::set<uint64_t> unmatched_template_ids;
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
  };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_PLACEMENTCONTENTHANDLER_H_
+#endif // _libfc_PLACEMENTCONTENTHANDLER_H_

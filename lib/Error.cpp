@@ -27,7 +27,7 @@
 
 #include "Error.h"
 
-namespace LIBFC {
+namespace libfc {
 
   Error::Error(error_t e)
     : e(e) {
@@ -63,4 +63,4 @@ namespace LIBFC {
     return e;
   }
 
-} // namespace LIBFC
+} // namespace libfc
