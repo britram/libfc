@@ -59,6 +59,8 @@ namespace fcold {
 #if defined (__linux__)
     int listener_fd;
     int watching_fd;
+
+    bool wait_for_input();
 #endif /* defined (__linux__) */
   };
 

@@ -35,7 +35,8 @@ namespace fcold {
   Listener::Listener() 
     : good(false),
       system_errno(0),
-      listening(true) {
+      listening(true),
+      listener(&Listener::listen, this) {
   }
 
   Listener::~Listener() {
@@ -43,5 +44,6 @@ namespace fcold {
 
   void Listener::stop() {
     listening = false;
+    listener.join();
   }
 } // namespace fcold

@@ -32,6 +32,8 @@
 #ifndef _FCOLD_LISTENER_H_
 #  define _FCOLD_LISTENER_H_
 
+#  include <thread>
+
 namespace fcold {
 
   class Listener {
@@ -70,8 +72,8 @@ namespace fcold {
 
     /** Tells the listener to stop listening.
      *
-     * It will still be necessary to interrupt the thread that is
-     * currently running listen().
+     * This will interrupt the thread that is currently running
+     * listen().
      */
     void stop();
 
@@ -79,6 +81,7 @@ namespace fcold {
     bool good;
     int system_errno;
     bool listening;
+    std::thread listener;
   };
 
 } // namespace fcold

@@ -39,6 +39,7 @@
 #if defined (__linux__)
 #  include <linux/limits.h>
 #  include <sys/inotify.h>
+#  include <sys/select.h>
 #endif /* defined (__linux__) */
 
 #include "DirectoryListener.h"
@@ -83,21 +84,64 @@ namespace fcold {
 #endif /* defined (__linux__) */
   }
 
+#if defined (__linux__)
+  bool DirectoryListener::wait_for_input() {
+    fd_set readers;
+    struct timeval timeout;
+
+    while (good && listening) {
+      FD_ZERO(&readers);
+      FD_SET(watching_fd, &readers);
+      timeout.tv_sec = 0;        /* Zero seconds */
+      timeout.tv_usec = 1e6 / 2; /* Half a second */
+      
+      errno = 0;
+      if (select(watching_fd + 1, &readers, 0, 0, &timeout) < 0
+          && errno != EINTR) {
+        good = false;
+        system_errno = errno;
+        break;
+      }
+
+      if (FD_ISSET(watching_fd, &readers))
+        return true;
+    }
+    return false;
+  }
+#endif /* defined (__linux__) */
+
   void DirectoryListener::listen() {
     if (is_good()) {
 #if defined (__linux__)
-      /* I don't like this, but this is how it's done; see `man inotify(7)'. */
+      /* I don't like this, but this is how it's done; see `man inotify(7)'
+       * and `man 7 pthread'. 
+       *
+       * Essentially, there seems to be no clean way to break a thread
+       * out of a blocking system call.  Apparently, something can and
+       * will always go wrong. Memory leaks are just one among the
+       * many horrors of interrupting threads.  So the idea is either
+       * to use non-blocking I/O (which is counterproductive) or
+       * select(2) with a non-zero timeout, which is what we're using
+       * here.
+       *
+       * What this means is that we've converted perfectly acceptable
+       * single-thread performance into a polling mulithread
+       * operation.  I still fail to see why it is problematic to do
+       * with threads what works well with processes, but there you
+       * are. 
+       */
       uint8_t buf[sizeof(struct inotify_event) + PATH_MAX];
       struct inotify_event *current_event 
         = reinterpret_cast<struct inotify_event*>(&buf[0]);
 
-      while (listening) {
+      while (wait_for_input() && good && listening) {
         errno = 0;
+        /* Guaranteed not to block */
         ssize_t nbytes = read(watching_fd, buf, sizeof buf);
         if (nbytes < 0) {
           if (errno == EAGAIN || errno == EINTR)
             continue;
-
+          
           good = false;
           system_errno = errno; // EINVAL == buffer too short
           break;
@@ -107,7 +151,7 @@ namespace fcold {
         assert(nbytes > 0 // To make static_cast safe
                && static_cast<size_t>(nbytes) >= sizeof(struct inotify_event));
 
-        /* We watch only fir file (not directory) creation. */
+        /* We watch only for file (not directory) creation. */
         assert((current_event->mask & IN_CREATE)
                && !(current_event->mask & IN_ISDIR));
 
