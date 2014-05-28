@@ -40,7 +40,10 @@ namespace fcold {
     
     class Configuration {
     private:
-        Json::Value     cfgtree;
+
+        std::vector<std::shared_ptr<Frontend> > frontends;
+        std::vector<std::shared_ptr<Listener> > listeners;
+
     public:
     };
 }

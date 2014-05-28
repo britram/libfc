@@ -29,7 +29,7 @@
 
 #include "MessageBuffer.h"
 
-namespace FColD {
+namespace fcold {
 
     MessageBuffer::MessageBuffer()
         : buf(new uint8_t[kMBufSz]),
@@ -70,15 +70,33 @@ namespace FColD {
         }
     }
 
-  MessageBuffer::~MessageBuffer() {
-      if (buf_owned) {
-          delete[] buf;
-      }
-      if (name) {
-          delete[] const_cast<char*>(name);
-      }
-  }
+    MessageBuffer::~MessageBuffer() {
+        if (buf_owned) {
+            delete[] buf;
+        }
+        if (name) {
+            free(const_cast<char*>(name));
+        }
+    }
+    
+    void MessageBuffer::setbuflen(size_t len) {
+        assert (len <= buf_sz);
+        buf_len = len;
+    }
 
+    // Metadata access
+    
+    void set_metadata(size_t   n_stream_pos,
+                      uint64_t n_recv_ms,
+                      uint64_t n_msgclk_ms,
+                      const char *n_name)
+    {
+        stream_pos = n_stream_pos;
+        recv_ms = n_recv_ms;
+        msgclk_ms = n_msgclk_ms;
+        name = strndup(n_name, kSrcNameLen);
+    }
+    
   ssize_t MessageBuffer::read(uint8_t* result_buf, uint16_t result_len) {
     ssize_t ret = peek(result_buf, result_len);
 

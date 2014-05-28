@@ -39,9 +39,10 @@
 
 #include <sys/socket.h>
 
-namespace FColD {
+namespace fcold {
     
     const size_t kMBufSz = 65536;
+    const size_t kSrcNameLen = 80;
     
     class MessageBuffer : public LIBFC::InputSource {
 
@@ -93,9 +94,9 @@ namespace FColD {
 
         // Direct buffer access
         
-        uint8_t *bufptr();
-        size_t bufsz();
-        size_t buflen();
+        uint8_t *bufptr() { return buf; }
+        size_t bufsz() const { return buf_sz; }
+        size_t buflen() const { return buf_len; }
         void setbuflen(size_t len);
 
         // Metadata access
@@ -103,12 +104,12 @@ namespace FColD {
         void set_metadata(size_t   stream_pos,
                           uint64_t recv_ms,
                           uint64_t msgclk_ms,
-                          const char *src_name);
+                          const char *name);
 
-        size_t get_stream_pos();
-        uint64_t get_recv_ms();
-        uint64_t get_msgclk_ms();
-        const char* get_name() const;
+        size_t get_stream_pos() { return stream_pos;}
+        uint64_t get_recv_ms() { return recv_ms; }
+        uint64_t get_msgclk_ms() { return msgclk_ms; }
+        const char* get_name() const { return name; }
 
         // Implementation of InputSource
         
