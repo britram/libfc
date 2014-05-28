@@ -39,12 +39,14 @@
 
 #include <sys/socket.h>
 
+#include "InputSource.h"
+
 namespace fcold {
     
     const size_t kMBufSz = 65536;
     const size_t kSrcNameLen = 80;
     
-    class MessageBuffer : public LIBFC::InputSource {
+    class MessageBuffer : public libfc::InputSource {
 
     private:
         uint8_t*            buf;
@@ -56,8 +58,8 @@ namespace fcold {
         uint64_t            recv_ms;
         uint64_t            msgclk_ms;
         
-        size_t              off;
         mutable const char* source_name;
+        size_t              off;
         
     public:
         /**
@@ -109,7 +111,7 @@ namespace fcold {
         size_t get_stream_pos() { return stream_pos;}
         uint64_t get_recv_ms() { return recv_ms; }
         uint64_t get_msgclk_ms() { return msgclk_ms; }
-        const char* get_name() const { return name; }
+        const char* get_name() const;
 
         // Implementation of InputSource
         

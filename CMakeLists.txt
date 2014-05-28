@@ -42,7 +42,7 @@ endif($ENV{CLANG})
 include_directories(.)
 
 
-# core objects; library classes begin with a upper-case letter,
+# Core objects; library classes begin with a upper-case letter,
 # program files (containing main()) with a lower-case letter.
 # Unfortunately, either cmake or a library that's linked with cmake
 # has managed to get the 30-year-old technique of globbing wrong (on
@@ -105,3 +105,18 @@ if (CMAKE_BUILD_TYPE STREQUAL "Profile")
                                 ${Wandio_LIBRARIES} 
                                ${Log4CPlus_LIBRARIES})
 endif()  
+
+# Fcold.  We handle this in the same way we handle libfc and
+# associated executables: we build a library of fcold objects and then
+# link the fcold main function against that.  If yuo want to do this
+# in another way, be my guest.
+#
+file (GLOB FCOLD_OBJ "fcold/*.cpp")
+
+add_library (fcoldl ${FCOLD_OBJ})
+
+add_executable (fcold fcold.cpp)
+target_link_libraries(fcold fcoldl fc
+                            ${Boost_LIBRARIES}
+                            ${Wandio_LIBRARIES} 
+                            ${Log4CPlus_LIBRARIES})

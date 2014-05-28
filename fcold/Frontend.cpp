@@ -1,4 +1,3 @@
-/* Hi Emacs, please use -*- mode: C++; -*- */
 /* Copyright (c) 2011-2014 ETH Zürich. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,28 +26,13 @@
 
 /**
  * @file
- * @author Brian Trammell <trammell@tik.ee.ethz.ch>
+ * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-
-#ifndef _FCOLD_CONFIGURATION_H_
-#  define _FCOLD_CONFIGURATION_H_
-
-#  include <memory>
-#  include <vector>
-
-#  include "Frontend.h"
-#  include "Listener.h"
+#include "Frontend.h"
 
 namespace fcold {
-    
-    class Configuration {
-    private:
 
-        std::vector<std::shared_ptr<Frontend> > frontends;
-        std::vector<std::shared_ptr<Listener> > listeners;
+  Frontend::~Frontend() {
+  }
 
-    public:
-    };
-}
-
-#endif /* defined(_FCOLD_CONFIGURATION_H_) */
+} // namespace fcold

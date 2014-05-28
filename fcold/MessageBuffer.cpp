@@ -39,7 +39,7 @@ namespace fcold {
           stream_pos(0),
           recv_ms(0),
           msgclk_ms(0),
-          name(nullptr),
+          source_name(nullptr),
           off(0) {}
     
     MessageBuffer::MessageBuffer(size_t sz)
@@ -50,10 +50,10 @@ namespace fcold {
           stream_pos(0),
           recv_ms(0),
           msgclk_ms(0),
-          name(nullptr),
+          source_name(nullptr),
           off(0) {}
     
-    MessageBuffer(uint8_t *ibuf, size_t sz, bool own, bool copy)
+    MessageBuffer::MessageBuffer(uint8_t* ibuf, size_t sz, bool own, bool copy)
           : buf(ibuf),
             buf_sz(sz),
             buf_len(sz),
@@ -61,12 +61,12 @@ namespace fcold {
             stream_pos(0),
             recv_ms(0),
             msgclk_ms(0),
-            name(nullptr),
+            source_name(nullptr),
             off(0)
     {
         if (copy) {
-            buf = new uint8_t[sz]
-            memcpy(buf, ibuf, sz)
+            buf = new uint8_t[sz];
+            memcpy(buf, ibuf, sz);
         }
     }
 
@@ -74,8 +74,9 @@ namespace fcold {
         if (buf_owned) {
             delete[] buf;
         }
-        if (name) {
-            free(const_cast<char*>(name));
+        // FYI: Check unnecessary; free() will free null pointers --neuhaust
+        if (source_name) {
+            free(const_cast<char*>(source_name));
         }
     }
     
@@ -86,7 +87,7 @@ namespace fcold {
 
     // Metadata access
     
-    void set_metadata(size_t   n_stream_pos,
+    void MessageBuffer::set_metadata(size_t   n_stream_pos,
                       uint64_t n_recv_ms,
                       uint64_t n_msgclk_ms,
                       const char *n_name)
@@ -94,7 +95,7 @@ namespace fcold {
         stream_pos = n_stream_pos;
         recv_ms = n_recv_ms;
         msgclk_ms = n_msgclk_ms;
-        name = strndup(n_name, kSrcNameLen);
+        source_name = strndup(n_name, kSrcNameLen);
     }
     
   ssize_t MessageBuffer::read(uint8_t* result_buf, uint16_t result_len) {
@@ -108,9 +109,11 @@ namespace fcold {
   }
 
   ssize_t MessageBuffer::peek(uint8_t* result_buf, uint16_t result_len) {
-    assert(off <= len);
+    assert(off <= buf_sz);
 
-    size_t bytes_to_copy = off + result_len > len ? len - off : result_len;
+    size_t bytes_to_copy = off + result_len > buf_sz 
+      ? buf_sz - off 
+      : result_len;
     
     /* This assert is to make sure that bytes_to_copy can fit into a
      * 16-bit unsigned integer. The reasoning is as follows.  If off +
@@ -137,18 +140,26 @@ namespace fcold {
   void MessageBuffer::advance_message_offset() {}
 
   const char* MessageBuffer::get_name() const {
-    if (name == 0) {
+    if (source_name == 0) {
       std::ostringstream sstr;
 
       sstr << "Buffer(address=0x" << static_cast<const void*>(buf) 
-	   << ",length=" << len << ')';
+	   << ",length=" << buf_sz << ')';
       std::string s = sstr.str();
 
-      name = new char[s.length() + 1];
-      std::strcpy(const_cast<char*>(name), s.c_str());
+      source_name = strndup(s.c_str(), kSrcNameLen);
+      
+      /* Old code:
+       *
+       *   source_name = new char[s.length() + 1];
+       *   std::strcpy(const_cast<char*>(source_name), s.c_str());
+       *
+       * Deleted because source_name is already strndup()'d above and
+       * also free()'d in the destructor.
+       */
     }
     
-    return name;
+    return source_name;
   }
 
   bool MessageBuffer::can_peek() const {
