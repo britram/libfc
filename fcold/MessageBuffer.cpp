@@ -143,7 +143,7 @@ namespace fcold {
     if (source_name == 0) {
       std::ostringstream sstr;
 
-      sstr << "Buffer(address=0x" << static_cast<const void*>(buf) 
+      sstr << "MessageBuffer(address=0x" << static_cast<const void*>(buf) 
 	   << ",length=" << buf_sz << ')';
       std::string s = sstr.str();
 

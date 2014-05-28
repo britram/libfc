@@ -34,10 +34,14 @@ namespace fcold {
 
   Listener::Listener() 
     : good(false),
-      system_errno(0) {
+      system_errno(0),
+      listening(true) {
   }
 
   Listener::~Listener() {
   }
 
+  void Listener::stop() {
+    listening = false;
+  }
 } // namespace fcold

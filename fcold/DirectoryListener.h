@@ -52,6 +52,9 @@ namespace fcold {
     DirectoryListener(const std::string& directory_name);
     ~DirectoryListener();
 
+    /* From Listener */
+    void listen();
+
   private:
 #if defined (__linux__)
     int listener_fd;

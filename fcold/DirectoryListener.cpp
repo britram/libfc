@@ -29,12 +29,15 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
+#include <cassert>
 #include <cerrno>
 #include <cstdlib>
+#include <iostream>
 
 #include <sys/types.h>
 
 #if defined (__linux__)
+#  include <linux/limits.h>
 #  include <sys/inotify.h>
 #endif /* defined (__linux__) */
 
@@ -42,7 +45,13 @@
 
 namespace fcold {
 
-  DirectoryListener::DirectoryListener(const std::string& directory_name) {
+  DirectoryListener::DirectoryListener(const std::string& directory_name) 
+#if defined (__linux__)
+    : listener_fd(-1),
+      watching_fd(-1)
+#endif /* defined (__linux__) */
+    {
+
     errno = 0;
 
 #if defined (__linux__)
@@ -72,6 +81,44 @@ namespace fcold {
         ; // Ignore for now
     }
 #endif /* defined (__linux__) */
+  }
+
+  void DirectoryListener::listen() {
+    if (is_good()) {
+#if defined (__linux__)
+      /* I don't like this, but this is how it's done; see `man inotify(7)'. */
+      uint8_t buf[sizeof(struct inotify_event) + PATH_MAX];
+      struct inotify_event *current_event 
+        = reinterpret_cast<struct inotify_event*>(&buf[0]);
+
+      while (listening) {
+        errno = 0;
+        ssize_t nbytes = read(watching_fd, buf, sizeof buf);
+        if (nbytes < 0) {
+          if (errno == EAGAIN || errno == EINTR)
+            continue;
+
+          good = false;
+          system_errno = errno; // EINVAL == buffer too short
+          break;
+        }
+
+        /* Assume no short reads */
+        assert(nbytes > 0 // To make static_cast safe
+               && static_cast<size_t>(nbytes) >= sizeof(struct inotify_event));
+
+        /* We watch only fir file (not directory) creation. */
+        assert((current_event->mask & IN_CREATE)
+               && !(current_event->mask & IN_ISDIR));
+
+        /* This is a null-terminated string. */
+        std::string filename{current_event->name};
+
+        /* Now do something with filename */
+        std::cout << "Created " << filename << std::endl;
+      }
+#endif /* defined (__linux__) */
+    }
   }
 
 } // namespace fcold

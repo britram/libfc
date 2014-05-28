@@ -42,6 +42,13 @@ namespace fcold {
     /** Destroys a Listener. */
     virtual ~Listener() = 0;
 
+    /** Listens for an event.
+     *
+     * This member function blocks until an event that this object
+     * listens for occurs, and then acts appropriately.
+     */
+    virtual void listen() = 0;
+
     /** Returns the state of this listener.
      *
      * Listeners are created through their constructors, but things
@@ -61,9 +68,17 @@ namespace fcold {
      */
     int get_errno() const;
 
+    /** Tells the listener to stop listening.
+     *
+     * It will still be necessary to interrupt the thread that is
+     * currently running listen().
+     */
+    void stop();
+
   protected:
     bool good;
     int system_errno;
+    bool listening;
   };
 
 } // namespace fcold
