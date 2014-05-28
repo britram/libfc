@@ -116,8 +116,13 @@ namespace fcold {
       /* I don't like this, but this is how it's done; see `man inotify(7)'
        * and `man 7 pthread'. 
        *
-       * Essentially, there seems to be no clean way to break a thread
-       * out of a blocking system call.  Apparently, something can and
+       * First, the inotify API needs to transport variable-length
+       * information, and they solve it by having that as the last
+       * element of the struct with zero length.  Nice. (Hence the
+       * weird-looking size for BUF below.
+       *
+       * And then there seems to be no clean way to break a thread out
+       * of a blocking system call.  Apparently, something can and
        * will always go wrong. Memory leaks are just one among the
        * many horrors of interrupting threads.  So the idea is either
        * to use non-blocking I/O (which is counterproductive) or
