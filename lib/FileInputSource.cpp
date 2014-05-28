@@ -30,7 +30,7 @@
 
 #include "FileInputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   FileInputSource::FileInputSource(int fd, std::string file_name)
     : fd(fd),
@@ -83,4 +83,4 @@ namespace LIBFC {
     return false;
   }
 
-} // namespace LIBFC
+} // namespace libfc

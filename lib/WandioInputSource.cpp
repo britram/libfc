@@ -28,7 +28,7 @@
 
 #include "WandioInputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   WandioInputSource::WandioInputSource(io_t* io, std::string name)
     : io(io),
@@ -87,4 +87,4 @@ namespace LIBFC {
     return true;
   }
 
-} // namespace LIBFC
+} // namespace libfc

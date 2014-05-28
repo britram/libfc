@@ -30,14 +30,14 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef _LIBFC_BASICOCTETARRAY_H_
-#  define _LIBFC_BASICOCTETARRAY_H_
+#ifndef _libfc_BASICOCTETARRAY_H_
+#  define _libfc_BASICOCTETARRAY_H_
 
 #  include <cstdint>
 #  include <cstring>
 #  include <string>
 
-namespace LIBFC {
+namespace libfc {
 
   /** An array of octets, as it may appear in an IPFIX message.
    *
@@ -100,6 +100,6 @@ namespace LIBFC {
     size_t capacity;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_BASICOCTETARRAY_H_
+#endif // _libfc_BASICOCTETARRAY_H_

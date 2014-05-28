@@ -27,22 +27,22 @@
 #include <cstring>
 #include <sstream>
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include "ErrorContext.h"
 
-namespace LIBFC {
+namespace libfc {
 
   ErrorContext::ErrorContext(error_severity_t severity,
-			     Error e,
-			     int system_errno,
-			     const char* explanation,
-			     InputSource* is,
+                             Error e,
+                             int system_errno,
+                             const char* explanation,
+                             InputSource* is,
                              const uint8_t* message,
                              uint16_t size,
                              uint16_t off) 
@@ -54,10 +54,10 @@ namespace LIBFC {
       message(0),
       size(message != 0 ? size : 0),
       off(off)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
                       ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   {
     if (message != 0) {
       this->message = new uint8_t[size];
@@ -128,8 +128,8 @@ namespace LIBFC {
     }
 
     sstr << (is == 0 ? "<null>" : is->get_name()) << "@" 
-	 << (is == 0 ? 0 : is->get_message_offset()) + off
-	 << ":" << severity_s << ":" << e.to_string() << ":" << explanation;
+         << (is == 0 ? 0 : is->get_message_offset()) + off
+         << ":" << severity_s << ":" << e.to_string() << ":" << explanation;
 
     if (system_errno != 0)
       sstr << ':' << strerror(system_errno);
@@ -137,4 +137,4 @@ namespace LIBFC {
     return sstr.str();
   }
 
-} // namespace LIBFC
+} // namespace libfc

@@ -43,7 +43,7 @@
 #include "IPFIXMessageStreamParser.h"
 #include "PrintContentHandler.h"
 
-using namespace LIBFC;
+using namespace libfc;
 
 BOOST_AUTO_TEST_SUITE(CallbackInterface)
 

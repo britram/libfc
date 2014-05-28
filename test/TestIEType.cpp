@@ -38,83 +38,83 @@ BOOST_AUTO_TEST_SUITE(IEType)
  * of the implementation. */ 
 
 BOOST_AUTO_TEST_CASE(OctetArray) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::octetArray()->number(), 0);
+  BOOST_CHECK_EQUAL(libfc::IEType::octetArray()->number(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(Unsigned8) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::unsigned8()->number(), 1);
+  BOOST_CHECK_EQUAL(libfc::IEType::unsigned8()->number(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(Unsigned16) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::unsigned16()->number(), 2);
+  BOOST_CHECK_EQUAL(libfc::IEType::unsigned16()->number(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(Unsigned32) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::unsigned32()->number(), 3);
+  BOOST_CHECK_EQUAL(libfc::IEType::unsigned32()->number(), 3);
 }
 
 BOOST_AUTO_TEST_CASE(Unsigned64) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::unsigned64()->number(), 4);
+  BOOST_CHECK_EQUAL(libfc::IEType::unsigned64()->number(), 4);
 }
 
 BOOST_AUTO_TEST_CASE(Signed8) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::signed8()->number(), 5);
+  BOOST_CHECK_EQUAL(libfc::IEType::signed8()->number(), 5);
 }
 
 BOOST_AUTO_TEST_CASE(Signed16) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::signed16()->number(), 6);
+  BOOST_CHECK_EQUAL(libfc::IEType::signed16()->number(), 6);
 }
 
 BOOST_AUTO_TEST_CASE(Signed32) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::signed32()->number(), 7);
+  BOOST_CHECK_EQUAL(libfc::IEType::signed32()->number(), 7);
 }
 
 BOOST_AUTO_TEST_CASE(Signed64) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::signed64()->number(), 8);
+  BOOST_CHECK_EQUAL(libfc::IEType::signed64()->number(), 8);
 }
 
 BOOST_AUTO_TEST_CASE(Float32) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::float32()->number(), 9);
+  BOOST_CHECK_EQUAL(libfc::IEType::float32()->number(), 9);
 }
 
 BOOST_AUTO_TEST_CASE(Float64) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::float64()->number(), 10);
+  BOOST_CHECK_EQUAL(libfc::IEType::float64()->number(), 10);
 }
 
 BOOST_AUTO_TEST_CASE(Boolean) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::boolean()->number(), 11);
+  BOOST_CHECK_EQUAL(libfc::IEType::boolean()->number(), 11);
 }
 
 BOOST_AUTO_TEST_CASE(Macaddress) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::macAddress()->number(), 12);
+  BOOST_CHECK_EQUAL(libfc::IEType::macAddress()->number(), 12);
 }
 
 BOOST_AUTO_TEST_CASE(String) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::string()->number(), 13);
+  BOOST_CHECK_EQUAL(libfc::IEType::string()->number(), 13);
 }
  
 BOOST_AUTO_TEST_CASE(Datetimeseconds) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::dateTimeSeconds()->number(), 14);
+  BOOST_CHECK_EQUAL(libfc::IEType::dateTimeSeconds()->number(), 14);
 }
 
 BOOST_AUTO_TEST_CASE(Datetimemilliseconds) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::dateTimeMilliseconds()->number(), 15);
+  BOOST_CHECK_EQUAL(libfc::IEType::dateTimeMilliseconds()->number(), 15);
 }
 
 BOOST_AUTO_TEST_CASE(Datetimemicroseconds) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::dateTimeMicroseconds()->number(), 16);
+  BOOST_CHECK_EQUAL(libfc::IEType::dateTimeMicroseconds()->number(), 16);
 }
 
 BOOST_AUTO_TEST_CASE(Datetimenanoseconds) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::dateTimeNanoseconds()->number(), 17);
+  BOOST_CHECK_EQUAL(libfc::IEType::dateTimeNanoseconds()->number(), 17);
 }
 
 BOOST_AUTO_TEST_CASE(Ipv4address) {
-  BOOST_CHECK_EQUAL(LIBFC::IEType::ipv4Address()->number(), 18);
+  BOOST_CHECK_EQUAL(libfc::IEType::ipv4Address()->number(), 18);
 }
 
 BOOST_AUTO_TEST_CASE(Ipv6address) {
-    BOOST_CHECK_EQUAL(LIBFC::IEType::ipv6Address()->number(), 19);
+    BOOST_CHECK_EQUAL(libfc::IEType::ipv6Address()->number(), 19);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

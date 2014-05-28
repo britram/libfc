@@ -28,7 +28,7 @@
 #include <sstream>
 #include "InfoElement.h"
 
-namespace LIBFC {
+namespace libfc {
   
   InfoElement::InfoElement(const InfoElement& rhs)
     : name_(rhs.name()),
@@ -39,10 +39,10 @@ namespace LIBFC {
   }   
 
   InfoElement::InfoElement(const std::string &name, 
-			   uint32_t pen, 
-			   uint16_t number, 
-			   const IEType* ietype, 
-			   uint16_t len)
+                           uint32_t pen, 
+                           uint16_t number, 
+                           const IEType* ietype, 
+                           uint16_t len)
     : name_(name),
       pen_(pen),
       number_(number),
@@ -84,7 +84,7 @@ namespace LIBFC {
 
       os << name_ << "(";
       if (pen_) 
-	os << pen_ << "/";
+        os << pen_ << "/";
       os << number_ << ")" << "<" << ietype_->name() << ">" << "[" << len_ << "]";
       spec = os.str();
     }

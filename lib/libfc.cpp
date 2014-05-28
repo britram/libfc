@@ -41,7 +41,7 @@
 #include "exceptions/FormatError.h"
 #include "exceptions/IESpecError.h"
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/configurator.h>
 #  include <log4cplus/loggingmacros.h>
 #  include <log4cplus/logger.h>
@@ -51,7 +51,7 @@
 #  define LOG4CPLUS_INFO(logger, expr)
 #endif
 
-using namespace LIBFC;
+using namespace libfc;
 
 static bool infomodel_initialized = false;
 
@@ -64,17 +64,17 @@ struct libfc_template_t {
 class CBinding : public PlacementCollector {
 private:
   std::set<PlacementTemplate*> templates;
-#  ifdef _LIBFC_HAVE_LOG4CPLUS_
+#  ifdef _libfc_HAVE_LOG4CPLUS_
   log4cplus::Logger logger;
-#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#  endif /* _libfc_HAVE_LOG4CPLUS_ */
     
 public:
     CBinding(PlacementCollector::Protocol protocol)
     : PlacementCollector(protocol)
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#ifdef _libfc_HAVE_LOG4CPLUS_
     ,
     logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("CBinding")))
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* _libfc_HAVE_LOG4CPLUS_ */
 {
     give_me_unhandled_data_sets();
 }
@@ -92,7 +92,7 @@ public:
 
   std::shared_ptr<ErrorContext>
       start_placement(const PlacementTemplate* tmpl) {
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext>
@@ -111,13 +111,13 @@ public:
     const libfc_template_t* this_template =
       reinterpret_cast<const libfc_template_t*>(
         reinterpret_cast<const unsigned char*>(t)
-	- offsetof(struct libfc_template_t, tmpl));
+        - offsetof(struct libfc_template_t, tmpl));
 
     if (this_template != 0)
       if (this_template->callback(this_template, this_template->vparg) <= 0) {
-        LIBFC_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", 0, 0, 0, 0, 0);
+        libfc_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", 0, 0, 0, 0, 0);
       }
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
     
   std::shared_ptr<ErrorContext>
@@ -127,7 +127,7 @@ public:
       LOG4CPLUS_INFO(logger, "  No placement registered for data set in domain "
                      << observation_domain
                      << ", ID " << id);
-      LIBFC_RETURN_OK();
+      libfc_RETURN_OK();
   }
 };
 
@@ -189,7 +189,7 @@ extern void libfc_register_callback(struct libfc_template_t* t,
 }
 
 extern int libfc_collect_from_file(int fd, const char* name,
-				   struct libfc_template_group_t* t) {
+                                   struct libfc_template_group_t* t) {
   int ret = 1;
 
   FileInputSource is(fd, name);
@@ -218,11 +218,11 @@ extern int libfc_collect_from_wandio(io_t *wio, const char *name, struct libfc_t
 }
 
 extern void libfc_initialize_logging(const char *lpfilename) {
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
     log4cplus::PropertyConfigurator config(lpfilename);
     config.configure();
 #else
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 }
 
 extern int libfc_add_specfile(const char *specfilename) {

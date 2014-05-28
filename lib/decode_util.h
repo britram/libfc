@@ -30,14 +30,14 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_DECODE_UTIL_H_
-#  define _LIBFC_DECODE_UTIL_H_
+#ifndef _libfc_DECODE_UTIL_H_
+#  define _libfc_DECODE_UTIL_H_
 
 #  include <cstdint>
 #  include <iomanip>
 #  include <string>
 
-namespace LIBFC {
+namespace libfc {
 
   /** Makes outout come out in hex, with leading zeroes.
    *
@@ -46,12 +46,12 @@ namespace LIBFC {
    * @code
    * std::stringstream s;
    *
-   * s << LIBFC_HEX(4) << 13;
+   * s << libfc_HEX(4) << 13;
    * @endcode
    *
    * This would result in the stream s containing "0x000d".
    */
-#  define LIBFC_HEX(width) \
+#  define libfc_HEX(width) \
   "0x" << std::hex << std::setw(width) << std::setfill('0')
 
   /** Decodes a 16-bit value from a buffer.
@@ -94,6 +94,6 @@ namespace LIBFC {
    */
   extern void report_error(const std::string message, ...);
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif /* _LIBFC_DECODE_UTIL_H_ */
+#endif /* _libfc_DECODE_UTIL_H_ */

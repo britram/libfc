@@ -30,16 +30,16 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_FILEEXPORTDESTINATION_H_
-#  define _LIBFC_FILEEXPORTDESTINATION_H_
+#ifndef _libfc_FILEEXPORTDESTINATION_H_
+#  define _libfc_FILEEXPORTDESTINATION_H_
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #  include "ExportDestination.h"
 
-namespace LIBFC {
+namespace libfc {
 
   /** IPFIX file outputs. */
   class FileExportDestination : public ExportDestination {
@@ -58,11 +58,11 @@ namespace LIBFC {
 
   private:
     int fd;
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_FILEEXPORTDESTINATION_H_
+#endif // _libfc_FILEEXPORTDESTINATION_H_

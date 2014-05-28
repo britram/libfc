@@ -32,20 +32,20 @@
  */
  
 
-#ifndef _LIBFC_ERRORCONTEXT_H_
-#  define _LIBFC_ERRORCONTEXT_H_
+#ifndef _libfc_ERRORCONTEXT_H_
+#  define _libfc_ERRORCONTEXT_H_
 
 #  include <sstream>
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #  include "Error.h"
 #  include "InputSource.h"
 #  include <sstream>
 
-namespace LIBFC {
+namespace libfc {
 
   /** Returns a shared pointer to an ErrorContext object.
    *
@@ -58,34 +58,34 @@ namespace LIBFC {
    * @param system_errno the value of errno, or 0
    * @param is the input stream in which the error was detected
    */
-#  define LIBFC_RETURN_ERROR(severity, error, message_stream,         \
-			     system_errno, is, message, size, off)    \
+#  define libfc_RETURN_ERROR(severity, error, message_stream,         \
+                             system_errno, is, message, size, off)    \
     do {                                                              \
       std::stringstream ss;                                           \
                                                                       \
       ss << message_stream;                                           \
-      /* If you edit this macro, please preserve the space	      \
-       * between '<' and ':'.  Some people thought it would	      \
-       * be funny to invent an abomination called a trigraph.	      \
-       * Using trigraphs, '<:' is actually synonymous with	      \
-       * '['.  Yeah, I know.					      \
-       */							      \
-      return std::shared_ptr< ::LIBFC::ErrorContext>(                 \
+      /* If you edit this macro, please preserve the space            \
+       * between '<' and ':'.  Some people thought it would           \
+       * be funny to invent an abomination called a trigraph.         \
+       * Using trigraphs, '<:' is actually synonymous with            \
+       * '['.  Yeah, I know.                                          \
+       */                                                             \
+      return std::shared_ptr< ::libfc::ErrorContext>(                 \
         new ErrorContext(ErrorContext::severity, Error(Error::error), \
                          system_errno, ss.str().c_str(), is, message, \
-			 size, off));				      \
+                         size, off));                                 \
     } while (0)
 
   /** Returns an ErrorContext signaling success. */
-#  define LIBFC_RETURN_OK()			 		\
-  do {								\
+#  define libfc_RETURN_OK()                                     \
+  do {                                                          \
       /* If you edit this macro, please preserve the space      \
-       * between '<' and ':'.  Some people thought it would	\
-       * be funny to invent an abomination called a trigraph.	\
-       * Using trigraphs, '<:' is actually synonymous with	\
-       * '['.  Yeah, I know.					\
-       */							\
-      return std::shared_ptr< ::LIBFC::ErrorContext>(0);	\
+       * between '<' and ':'.  Some people thought it would     \
+       * be funny to invent an abomination called a trigraph.   \
+       * Using trigraphs, '<:' is actually synonymous with      \
+       * '['.  Yeah, I know.                                    \
+       */                                                       \
+      return std::shared_ptr< ::libfc::ErrorContext>(0);        \
     } while (0)
 
   /** An error context.
@@ -116,7 +116,7 @@ namespace LIBFC {
    *
    * If a method detects an error itself (as opposed to calling a
    * method that returns a non-0 ErrorContext pointer), you should use
-   * the LIBFC_RETURN_ERROR macro somewhat like this (see the
+   * the libfc_RETURN_ERROR macro somewhat like this (see the
    * documentation for error_severity_t below and Error::error_t in
    * the Error class):
    *
@@ -126,7 +126,7 @@ namespace LIBFC {
    * uint16_t off = ...;
    *
    * if (some_error_condition) {
-   *   LIBFC_RETURN_ERROR(recoverable, short_header, 
+   *   libfc_RETURN_ERROR(recoverable, short_header, 
    *                     "Expected " << kMessageHeaderSize 
    *                                 << " bytes in header, got "
    *                                 << nbytes, 
@@ -206,8 +206,8 @@ namespace LIBFC {
      *   point where the message is wholly visible.
      */
     ErrorContext(error_severity_t severity, Error e,
-		 int system_errno, const char* explanation,
-		 InputSource* is, const uint8_t* message,
+                 int system_errno, const char* explanation,
+                 InputSource* is, const uint8_t* message,
                  uint16_t size, uint16_t off);
 
     /** Don't copy ErrorContext-s. */
@@ -309,11 +309,11 @@ namespace LIBFC {
     uint16_t size;
     uint16_t off;
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif /* _LIBFC_ERRORCONTEXT_H_ */
+#endif /* _libfc_ERRORCONTEXT_H_ */

@@ -26,7 +26,7 @@
 
 #include "Exception.h"
 
-namespace LIBFC {
+namespace libfc {
 
   Exception::Exception(const std::string& _message) : message(_message) {}
 
@@ -36,4 +36,4 @@ namespace LIBFC {
     return message.c_str();
   }
 
-} // namespace LIBFC
+} // namespace libfc

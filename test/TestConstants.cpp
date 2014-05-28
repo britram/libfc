@@ -36,18 +36,18 @@
 BOOST_AUTO_TEST_SUITE(Basics)
 
 BOOST_AUTO_TEST_CASE(Constants) {
-  BOOST_CHECK_EQUAL(LIBFC::kIpfixVersion, 10U);
-  BOOST_CHECK_EQUAL(LIBFC::kIpfixMessageHeaderLen, 16U);
-  BOOST_CHECK_EQUAL(LIBFC::kIpfixSetHeaderLen, 4U);
-  BOOST_CHECK_EQUAL(LIBFC::kIpfixSetLenOffset, 2U);
-  BOOST_CHECK_EQUAL(LIBFC::kTemplateHeaderLen, 4U);
-  BOOST_CHECK_EQUAL(LIBFC::kMaxMessageLen, 65535U);
-  BOOST_CHECK_EQUAL(LIBFC::kIpfixMaxSetLen, 65519U);
-  BOOST_CHECK_EQUAL(LIBFC::kIpfixTemplateSetID, 2);
-  BOOST_CHECK_EQUAL(LIBFC::kIpfixOptionTemplateSetID, 3);
-  BOOST_CHECK_EQUAL(LIBFC::kMinDataSetId, 0x0100);
-  BOOST_CHECK_EQUAL(LIBFC::kIpfixVarlen, 65535);
-  BOOST_CHECK_EQUAL(LIBFC::kEnterpriseBit, 0x8000);
+  BOOST_CHECK_EQUAL(libfc::kIpfixVersion, 10U);
+  BOOST_CHECK_EQUAL(libfc::kIpfixMessageHeaderLen, 16U);
+  BOOST_CHECK_EQUAL(libfc::kIpfixSetHeaderLen, 4U);
+  BOOST_CHECK_EQUAL(libfc::kIpfixSetLenOffset, 2U);
+  BOOST_CHECK_EQUAL(libfc::kTemplateHeaderLen, 4U);
+  BOOST_CHECK_EQUAL(libfc::kMaxMessageLen, 65535U);
+  BOOST_CHECK_EQUAL(libfc::kIpfixMaxSetLen, 65519U);
+  BOOST_CHECK_EQUAL(libfc::kIpfixTemplateSetID, 2);
+  BOOST_CHECK_EQUAL(libfc::kIpfixOptionTemplateSetID, 3);
+  BOOST_CHECK_EQUAL(libfc::kMinDataSetId, 0x0100);
+  BOOST_CHECK_EQUAL(libfc::kIpfixVarlen, 65535);
+  BOOST_CHECK_EQUAL(libfc::kEnterpriseBit, 0x8000);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

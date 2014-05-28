@@ -33,8 +33,8 @@
  *
  * Defines the InfoModel class
  */
-#ifndef _LIBFC_INFOMODEL_H_ // idem
-#define _LIBFC_INFOMODEL_H_ // hack
+#ifndef _libfc_INFOMODEL_H_ // idem
+#define _libfc_INFOMODEL_H_ // hack
 
 #include <cstdint>
 #include <iostream>
@@ -48,7 +48,7 @@
 
 // FIXME enforce thread safety on changes to the infomodel
 
-namespace LIBFC {
+namespace libfc {
 
   class InfoElement;
 
@@ -130,7 +130,7 @@ namespace LIBFC {
      * @return the information element that was added
      */
     const InfoElement* add_unknown(uint32_t pen, uint16_t number,
-				   uint16_t size);
+                                   uint16_t size);
 
     /** Looks up and returns a pointer to the canonical Information
      * Element.
@@ -146,7 +146,7 @@ namespace LIBFC {
      * @return a pointer to a canonical IE or NULL if no canonical IE exists
      */
     const InfoElement* lookupIE(uint32_t pen, uint16_t number,
-				uint16_t size) const;
+                                uint16_t size) const;
   
     /** Looks up and return a pointer to the canonical Information
      * Element.
@@ -213,7 +213,7 @@ namespace LIBFC {
     // Information element registry. Keep canonical IEs by autopointer.
     std::map<uint16_t, std::shared_ptr<InfoElement> > iana_registry_;
     std::map<uint32_t, std::map<uint16_t,
-				std::shared_ptr<InfoElement> > >  pen_registry_;
+                                std::shared_ptr<InfoElement> > >  pen_registry_;
     std::vector<std::shared_ptr<InfoElement> > rle_registry_;
     
     // Information element name lookup. 
@@ -232,6 +232,6 @@ namespace LIBFC {
     mutable std::recursive_mutex lock;
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
 #endif // idem hack

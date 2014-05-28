@@ -47,7 +47,7 @@
 
 #include "exceptions/FormatError.h"
 
-using namespace LIBFC;
+using namespace libfc;
 
 BOOST_AUTO_TEST_SUITE(ErrorContext)
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(WrongMagic) {
 
   /* Use good_msg for sizeof, not msg! */
   BufferInputSource is(msg, sizeof good_msg);
-  std::shared_ptr<LIBFC::ErrorContext> err = ir.parse(is);
+  std::shared_ptr<libfc::ErrorContext> err = ir.parse(is);
 
   BOOST_CHECK(err != 0);
 
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(ShortMsg) {
 
   /* Use good_msg for sizeof, not msg! */
   BufferInputSource is(msg, sizeof good_msg);
-  std::shared_ptr<LIBFC::ErrorContext> err = ir.parse(is);
+  std::shared_ptr<libfc::ErrorContext> err = ir.parse(is);
 
   BOOST_CHECK(err != 0);
 

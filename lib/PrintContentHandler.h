@@ -30,17 +30,17 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _LIBFC_PRINTCONTENTHANDLER_H_
-#  define _LIBFC_PRINTCONTENTHANDLER_H_
+#ifndef _libfc_PRINTCONTENTHANDLER_H_
+#  define _libfc_PRINTCONTENTHANDLER_H_
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #  include "InfoModel.h"
 #  include "ContentHandler.h"
 
-namespace LIBFC {
+namespace libfc {
 
   /** This class decodes messages and prints them to stderr.  It is
    * therefore mainly useful for debugging.
@@ -58,15 +58,15 @@ namespace LIBFC {
                        uint32_t export_time,
                        uint32_t sequence_number,
                        uint32_t observation_domain,
-		       uint64_t base_time);
+                       uint64_t base_time);
     std::shared_ptr<ErrorContext> end_message();
     std::shared_ptr<ErrorContext> start_template_set(uint16_t set_id,
-			    uint16_t set_length,
-			    const uint8_t* buf);
+                            uint16_t set_length,
+                            const uint8_t* buf);
     std::shared_ptr<ErrorContext> end_template_set();
     std::shared_ptr<ErrorContext> start_options_template_set(uint16_t set_id,
-				   uint16_t set_length,
-				   const uint8_t* buf);
+                                   uint16_t set_length,
+                                   const uint8_t* buf);
     std::shared_ptr<ErrorContext> end_options_template_set();
     std::shared_ptr<ErrorContext> start_data_set(uint16_t id,
                                                  uint16_t length,
@@ -75,7 +75,7 @@ namespace LIBFC {
 
     /* Addiional functions */
     std::shared_ptr<ErrorContext> start_template_record(uint16_t template_id,
-							uint16_t field_count);
+                                                        uint16_t field_count);
     std::shared_ptr<ErrorContext> end_template_record();
     std::shared_ptr<ErrorContext> start_options_template_record(
       uint16_t template_id,
@@ -83,9 +83,9 @@ namespace LIBFC {
       uint16_t scope_field_count);
     std::shared_ptr<ErrorContext> end_options_template_record();
     std::shared_ptr<ErrorContext> field_specifier(bool enterprise,
-						  uint16_t ie_id,
-						  uint16_t ie_length,
-						  uint32_t enterprise_number);
+                                                  uint16_t ie_id,
+                                                  uint16_t ie_length,
+                                                  uint32_t enterprise_number);
 
   private:
     std::shared_ptr<ErrorContext> process_template_set(
@@ -108,11 +108,11 @@ namespace LIBFC {
     /** The number of messages seen so far. */
     unsigned int n_messages;
 
-#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#  if defined(_libfc_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
  };
 
-} // namespace LIBFC
+} // namespace libfc
 
-#endif // _LIBFC_PRINTCONTENTHANDLER_H_
+#endif // _libfc_PRINTCONTENTHANDLER_H_

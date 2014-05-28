@@ -29,7 +29,7 @@
 
 #include "UDPInputSource.h"
 
-namespace LIBFC {
+namespace libfc {
 
   UDPInputSource::UDPInputSource(const struct sockaddr* _sa, size_t _sa_len,
                                  int _fd) 
@@ -62,4 +62,4 @@ namespace LIBFC {
   }
 
 
-} // namespace LIBFC
+} // namespace libfc

@@ -34,7 +34,7 @@
  * that are necessary to use libfc from C.
  *
  * This library supports reading (collection) and writing (export) of
- * LIBFC messages (IPFIX, NetFlow v9, and NetFlow v5).  These are data
+ * libfc messages (IPFIX, NetFlow v9, and NetFlow v5).  These are data
  * formats (some say it is a protocol) for exchanging computer network
  * measurement data; IPFIX is defined in RFC 5101 and others.
  *
@@ -44,7 +44,7 @@
  * in order to understand the following text.
  *
  * IPFIX is sometimes called a <em>self-describing format</em>.  In
- * order to self-describe, an LIBFC message contains <em>template
+ * order to self-describe, an libfc message contains <em>template
  * records</em> that describe the format of the <em>data
  * records</em>, which contain the content.  A template record
  * basically says, "Hi, I'm a template record with the identifying
@@ -170,8 +170,8 @@
  * @endcode
  */
 
-#ifndef _LIBFC_LIBFC_H_
-#  define _LIBFC_LIBFC_H_
+#ifndef _libfc_LIBFC_H_
+#  define _libfc_LIBFC_H_
 
 #  if defined(__cplusplus)
 extern "C" {
@@ -292,4 +292,4 @@ extern void libfc_initialize_logging(const char *lpfilename);
 }
 #  endif /* defined(__cplusplus) */
 
-#endif /* _LIBFC_LIBFC_H_ */
+#endif /* _libfc_LIBFC_H_ */

@@ -7,7 +7,7 @@ set (CMAKE_MODULE_PATH
 find_package(Log4CPlus)
 if (LOG4CPLUS_FOUND)
   include_directories(${Log4CPlus_INCLUDE_DIRS}) 
-  add_definitions(-D_LIBFC_HAVE_LOG4CPLUS_)
+  add_definitions(-D_libfc_HAVE_LOG4CPLUS_)
 else(LOG4CPLUS_FOUND)
   set(Log4CPlus_LIBRARIES "")
 endif(LOG4CPLUS_FOUND)

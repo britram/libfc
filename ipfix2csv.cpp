@@ -41,7 +41,7 @@
  *
  * ./ipfix2csv --message-version=9 \
  *     --input=/zp0/statdat/test/19991_00098798_1398816000.dat.bz2 \
- *     sourceIPv4Address destinationIPv4Address		    \
+ *     sourceIPv4Address destinationIPv4Address             \
  *     meanTcpRttMilliseconds reverseMeanTcpRttMilliseconds
  *
  * Or:
@@ -90,12 +90,12 @@
 
 #include "exceptions/FormatError.h"
 
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#ifdef _libfc_HAVE_LOG4CPLUS_
 #  include <log4cplus/configurator.h>
 #  include <log4cplus/loggingmacros.h>
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* _libfc_HAVE_LOG4CPLUS_ */
 
-using namespace LIBFC;
+using namespace libfc;
 
 static const char* spec_file_name = 0;
 static int verbose_flag = false;
@@ -143,10 +143,10 @@ static void parse_options(int argc, char* const* argv) {
     case 'm':
       message_version = atoi(optarg);
       if (message_version != 9 && message_version != 10) {
-	std::cerr << "Message version " << optarg 
-		  << " is either unsupported or has a syntax error"
-		  << " (only 9 and 10 are allowed)" << std::endl;
-	exit(EXIT_FAILURE);
+        std::cerr << "Message version " << optarg 
+                  << " is either unsupported or has a syntax error"
+                  << " (only 9 and 10 are allowed)" << std::endl;
+        exit(EXIT_FAILURE);
       }
       break;
     case 's':
@@ -171,7 +171,7 @@ static void help() {
             << "  -s file|--specfile=file" << std::endl
             << "\tuse FILE as IE spec filename" << std::endl
             << "  -h|--help\tprint this help text" << std::endl
-	    << "  -t|--full-types print full type info in columns" << std::endl
+            << "  -t|--full-types print full type info in columns" << std::endl
             << "  -v|--verbose\tprint verbose output" << std::endl;
 }
 
@@ -439,7 +439,7 @@ class CSVCollector : public PlacementCollector {
 public:
   CSVCollector(PlacementCollector::Protocol protocol) 
     : PlacementCollector(protocol) {
-    InfoModel& model = LIBFC::InfoModel::instance();
+    InfoModel& model = libfc::InfoModel::instance();
 
     csv_template = new PlacementTemplate();
     n_ies = ie_names.size();
@@ -573,7 +573,7 @@ public:
   
   std::shared_ptr<ErrorContext>
       start_placement(const PlacementTemplate* tmpl) {
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext>
@@ -584,7 +584,7 @@ public:
       ie_values[i].renderer(std::cout, ie_values[i].type, ie_values[i].val);
     }
     std::cout << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   ~CSVCollector() {
@@ -609,23 +609,23 @@ private:
 };
 
 int main(int argc, char* const* argv) {
-#ifdef _LIBFC_HAVE_LOG4CPLUS_
+#ifdef _libfc_HAVE_LOG4CPLUS_
   log4cplus::PropertyConfigurator config("log4cplus.properties");
   config.configure();
-#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
+#endif /* _libfc_HAVE_LOG4CPLUS_ */
 
-  LIBFC::PlacementCollector::Protocol protocol;
+  libfc::PlacementCollector::Protocol protocol;
   InputSource* is = 0;
 
   parse_options(argc, argv);
 
   if (message_version == 10) {
     InfoModel::instance().default5103();
-    protocol = LIBFC::PlacementCollector::ipfix;
+    protocol = libfc::PlacementCollector::ipfix;
     is = new FileInputSource(0, "<stdin>"); // 0 == stdin
   } else if (message_version == 9) {
     InfoModel::instance().default5103();
-    protocol = LIBFC::PlacementCollector::netflowv9;
+    protocol = libfc::PlacementCollector::netflowv9;
     is = new WandioInputSource(filename);
   } else {
     std::cerr << "Unsupported message version " << message_version << std::endl;

@@ -30,7 +30,7 @@
 
 #  include "Exception.h"
 
-namespace LIBFC {
+namespace libfc {
 
   /** A runtime error signifying a problem with parsing or handling an IESpec.
    */
@@ -39,6 +39,6 @@ namespace LIBFC {
     explicit IESpecError(const std::string& additional_info = "");
   };
 
-} // namespace LIBFC
+} // namespace libfc
 
 #endif /* IPFIX_IESPECERROR_H */

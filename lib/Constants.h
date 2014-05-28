@@ -36,13 +36,13 @@
  */
  
 
-#ifndef _LIBFC_CONSTANTS_H_
-#  define _LIBFC_CONSTANTS_H_
+#ifndef _libfc_CONSTANTS_H_
+#  define _libfc_CONSTANTS_H_
 
 #  include <cstring>
 #  include <cstdint>
 
-namespace LIBFC {
+namespace libfc {
 
   /** IPFIX framing constant: message header version */
   static const size_t kIpfixVersion = 10;
@@ -152,4 +152,4 @@ namespace LIBFC {
   static const size_t kMaxMessageLen = 65535;
 }
 
-#endif // _LIBFC_CONSTANTS_H_
+#endif // _libfc_CONSTANTS_H_

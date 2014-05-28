@@ -33,7 +33,7 @@
 
 #include "BasicOctetArray.h"
 
-namespace LIBFC {
+namespace libfc {
 
   BasicOctetArray::BasicOctetArray() 
     : buf(0), length(0), capacity(0) {
@@ -68,4 +68,4 @@ namespace LIBFC {
     return std::string(reinterpret_cast<const char*>(buf), length);
   }
 
-} // namespace LIBFC
+} // namespace libfc

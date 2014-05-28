@@ -24,13 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  */
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #  define LOG4CPLUS_ERROR(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include <cstdio>
 #include <cstring>
@@ -45,49 +45,49 @@
 #include "decode_util.h"
 #include "pointer_checks.h"
 
-#define PH_RETURN_CALLBACK_ERROR(call)					\
-  do {									\
-    /* Make sure call is evaluated only once */				\
-    std::shared_ptr<ErrorContext> err = call;				\
-    if (err != 0) 							\
-      return err;							\
+#define PH_RETURN_CALLBACK_ERROR(call)                                  \
+  do {                                                                  \
+    /* Make sure call is evaluated only once */                         \
+    std::shared_ptr<ErrorContext> err = call;                           \
+    if (err != 0)                                                       \
+      return err;                                                       \
   } while (0)
 
-namespace LIBFC {
+namespace libfc {
 
   PrintContentHandler::PrintContentHandler(uint16_t expected_version)
     : info_model(InfoModel::instance()),
       expected_version(expected_version),
       max_messages(0),
       n_messages(0)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
                                         , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   {
   }
 
   PrintContentHandler::PrintContentHandler(uint16_t expected_version,
-					   unsigned int max_messages)
+                                           unsigned int max_messages)
     : info_model(InfoModel::instance()),
       expected_version(expected_version),
       max_messages(max_messages),
       n_messages(0)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
                                         , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
   {
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_session() {
     std::cerr << "Session starts" << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_session() {
     std::cerr << "Session ends" << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
   
   static char* make_local_time(uint32_t t_arg) {
@@ -112,14 +112,14 @@ namespace LIBFC {
                      uint32_t export_time,
                      uint32_t sequence_number,
                      uint32_t observation_domain,
-		     uint64_t base_time) {
+                     uint64_t base_time) {
     n_messages++;
 
     if (max_messages > 0 && n_messages > max_messages)
-      LIBFC_RETURN_ERROR(recoverable, aborted_by_user,
-			 "Maximum number of messages (" << max_messages
-			 << ") reached; aborting further processing",
-			 0, 0, 0, 0, 0);
+      libfc_RETURN_ERROR(recoverable, aborted_by_user,
+                         "Maximum number of messages (" << max_messages
+                         << ") reached; aborting further processing",
+                         0, 0, 0, 0, 0);
 
     char* export_t = make_local_time(export_time);
     char* base_t =  make_local_time(base_time/1000);
@@ -129,33 +129,33 @@ namespace LIBFC {
               << ", extime=" << export_t
               << ", seq=" << sequence_number
               << ", domain=" << observation_domain
-	      << ", basetime=" << base_t
+              << ", basetime=" << base_t
               << std::endl;
     
     delete[] export_t;
     delete[] base_t;
 
     if (version != expected_version)
-      LIBFC_RETURN_ERROR(recoverable, message_version_number,
+      libfc_RETURN_ERROR(recoverable, message_version_number,
                          "Expected version number " << expected_version
-			 << ", got " << version,
-			 0, 0, 0, 0, 0);
-    LIBFC_RETURN_OK();
+                         << ", got " << version,
+                         0, 0, 0, 0, 0);
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_message() {
     std::cerr << "  Message ends" << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_template_set(uint16_t set_id,
-			  uint16_t set_length,
-			  const uint8_t* buf) {
+                          uint16_t set_length,
+                          const uint8_t* buf) {
     std::cerr << "    Template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
     process_template_set(set_id, set_length, buf, false);
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::process_template_set(
@@ -180,66 +180,66 @@ namespace LIBFC {
       cur += header_length;
       
       for (unsigned int field = 0; field < field_count; field++) {
-	if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen,
-				    cur, set_end)) {
-	  LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
-			     "Field specifier partly outside template record", 
-			     0, 0, 0, 0, cur - buf);
-	}
-	
-	uint16_t ie_id = decode_uint16(cur + 0);
-	uint16_t ie_length = decode_uint16(cur + 2);
-	bool enterprise = ie_id & 0x8000;
-	ie_id &= 0x7fff;
-	
-	uint32_t enterprise_number = 0;
-	if (enterprise) {
-	  if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen
-				      + kEnterpriseLen, cur,
-				      set_end)) {
-	    LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
-			       "Field specifier partly outside template "
-			       "record (enterprise)", 
-			       0, 0, 0, 0, cur - buf);
-	  }
-	  enterprise_number = decode_uint32(cur + 4);
-	}
-	
-	std::cerr << "        ";
-	if (is_options_set && field < scope_field_count)
-	  std::cerr << "Scope field";
-	else if (is_options_set)
-	  std::cerr << "Options field";
-	else /* !is_options_set */
-	  std::cerr << "Field specifier";
-	
-	const InfoElement* ie 
-	  = info_model.lookupIE(enterprise_number, ie_id, ie_length);
+        if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen,
+                                    cur, set_end)) {
+          libfc_RETURN_ERROR(recoverable, long_fieldspec,
+                             "Field specifier partly outside template record", 
+                             0, 0, 0, 0, cur - buf);
+        }
+        
+        uint16_t ie_id = decode_uint16(cur + 0);
+        uint16_t ie_length = decode_uint16(cur + 2);
+        bool enterprise = ie_id & 0x8000;
+        ie_id &= 0x7fff;
+        
+        uint32_t enterprise_number = 0;
+        if (enterprise) {
+          if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen
+                                      + kEnterpriseLen, cur,
+                                      set_end)) {
+            libfc_RETURN_ERROR(recoverable, long_fieldspec,
+                               "Field specifier partly outside template "
+                               "record (enterprise)", 
+                               0, 0, 0, 0, cur - buf);
+          }
+          enterprise_number = decode_uint32(cur + 4);
+        }
+        
+        std::cerr << "        ";
+        if (is_options_set && field < scope_field_count)
+          std::cerr << "Scope field";
+        else if (is_options_set)
+          std::cerr << "Options field";
+        else /* !is_options_set */
+          std::cerr << "Field specifier";
+        
+        const InfoElement* ie 
+          = info_model.lookupIE(enterprise_number, ie_id, ie_length);
 
-	if (ie != 0) 
-	  std::cerr << ", name=" << ie->name();
-	else {
-	  std::cerr << ( enterprise ? ", enterprise" : "" )
-		    << ", ie_id=" << ie_id
-		    << ", ie_length=" << ie_length;
-	  if (enterprise)
-	    std::cerr << ", enterprise_number=" << enterprise_number;
-	}
-	std::cerr << std::endl;
+        if (ie != 0) 
+          std::cerr << ", name=" << ie->name();
+        else {
+          std::cerr << ( enterprise ? ", enterprise" : "" )
+                    << ", ie_id=" << ie_id
+                    << ", ie_length=" << ie_length;
+          if (enterprise)
+            std::cerr << ", enterprise_number=" << enterprise_number;
+        }
+        std::cerr << std::endl;
 
-	cur += kFieldSpecifierLen + (enterprise ? kEnterpriseLen : 0);
-	assert (cur <= set_end);
+        cur += kFieldSpecifierLen + (enterprise ? kEnterpriseLen : 0);
+        assert (cur <= set_end);
       }
       
       PH_RETURN_CALLBACK_ERROR(end_template_record());
     }
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_template_set() {
     std::cerr << "    Template set ends" << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_template_record(uint16_t template_id,
@@ -247,26 +247,26 @@ namespace LIBFC {
     std::cerr << "      Template record: id=" << template_id
               << ", fields=" << field_count
               << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_template_record() {
     std::cerr << "      Template record ends" << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_options_template_set(uint16_t set_id,
                                  uint16_t set_length,
-				 const uint8_t* buf) {
+                                 const uint8_t* buf) {
     std::cerr << "    Option template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_options_template_set() {
     std::cerr << "    Option template set ends" << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_options_template_record(uint16_t template_id,
@@ -276,12 +276,12 @@ namespace LIBFC {
               << ", fields=" << field_count
               << ", scope-fields=" << scope_field_count
               << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_options_template_record() {
     std::cerr << "      Option template record ends" << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::field_specifier(bool enterprise,
@@ -300,20 +300,20 @@ namespace LIBFC {
     else 
       std::cerr << ", IETF IE";
     std::cerr << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_data_set(uint16_t id, uint16_t length, const uint8_t* buf) {
     std::cerr << "    Data set: template-id=" << id
               << ", length=" << length
               << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
   
   std::shared_ptr<ErrorContext> PrintContentHandler::end_data_set() {
     std::cerr << "    Data set ends"
               << std::endl;
-    LIBFC_RETURN_OK();
+    libfc_RETURN_OK();
   }
 
 };

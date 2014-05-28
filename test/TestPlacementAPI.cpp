@@ -31,12 +31,12 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_DEBUG(logger, expr)
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
 
 #include "BufferInputSource.h"
 #include "PlacementContentHandler.h"
@@ -47,7 +47,7 @@
 
 #include "exceptions/FormatError.h"
 
-using namespace LIBFC;
+using namespace libfc;
 
 BOOST_AUTO_TEST_SUITE(PlacementInterface)
 
@@ -72,10 +72,10 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
   public:
     MyCollector()
       : PlacementCollector(PlacementCollector::ipfix)
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
       ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("logger")))
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
     {
       PlacementTemplate* my_template = new PlacementTemplate();
 
@@ -90,20 +90,20 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
     std::shared_ptr<ErrorContext>
         start_placement(const PlacementTemplate* tmpl) {
       LOG4CPLUS_DEBUG(logger, "MyCollector: START placement");
-      LIBFC_RETURN_OK();
+      libfc_RETURN_OK();
     }
 
     std::shared_ptr<ErrorContext>
         end_placement(const PlacementTemplate* tmpl) {
       LOG4CPLUS_DEBUG(logger, "MyCollector: END placement, address="
                       << std::hex << source_ipv4_address);
-      LIBFC_RETURN_OK();
+      libfc_RETURN_OK();
     }
 
   private:
-#if defined(_LIBFC_HAVE_LOG4CPLUS_)
+#if defined(_libfc_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
+#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
     uint32_t source_ipv4_address;
   };
 

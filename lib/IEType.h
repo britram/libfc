@@ -36,8 +36,8 @@
  * by the IPFIX encoder and decoder internals.
  */
 
-#ifndef _LIBFC_IETYPE_H_ // idem
-#define _LIBFC_IETYPE_H_ // hack
+#ifndef _libfc_IETYPE_H_ // idem
+#define _libfc_IETYPE_H_ // hack
 
 #include <cstring>
 #include <map>
@@ -47,7 +47,7 @@
 
 #include "Constants.h"
 
-namespace LIBFC {
+namespace libfc {
 
 
 class IEType {
