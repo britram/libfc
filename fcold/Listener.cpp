@@ -46,4 +46,9 @@ namespace fcold {
     listening = false;
     listener.join();
   }
+
+  bool Listener::is_good() const {
+    return good;
+  }
+
 } // namespace fcold

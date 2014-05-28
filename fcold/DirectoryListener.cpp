@@ -32,9 +32,7 @@
 #include <cassert>
 #include <cerrno>
 #include <cstdlib>
-#include <iostream>
 
-#include <sys/types.h>
 
 #if defined (__linux__)
 #  include <linux/limits.h>
@@ -63,7 +61,7 @@ namespace fcold {
     }
 
     watching_fd = inotify_add_watch(listener_fd, directory_name.c_str(),
-                                    IN_CREATE);
+                                    IN_CLOSE_WRITE);
     if (watching_fd < 0) {
       system_errno = errno;
       return;
@@ -75,100 +73,90 @@ namespace fcold {
 
   DirectoryListener::~DirectoryListener() {
 #if defined (__linux__)
-    if (is_good()) {
-      if (inotify_rm_watch(listener_fd, watching_fd) < 0)
+    if (good) {
+      if (watching_fd >= 0 && inotify_rm_watch(listener_fd, watching_fd) < 0)
         ; // Ignore for now;
-      if (close(listener_fd) < 0)
+      if (listener_fd >= 0 && close(listener_fd) < 0)
         ; // Ignore for now
     }
 #endif /* defined (__linux__) */
   }
 
-#if defined (__linux__)
-  bool DirectoryListener::wait_for_input() {
-    fd_set readers;
-    struct timeval timeout;
-
-    while (good && listening) {
-      FD_ZERO(&readers);
-      FD_SET(watching_fd, &readers);
-      timeout.tv_sec = 0;        /* Zero seconds */
-      timeout.tv_usec = 1e6 / 2; /* Half a second */
-      
-      errno = 0;
-      if (select(watching_fd + 1, &readers, 0, 0, &timeout) < 0
-          && errno != EINTR) {
-        good = false;
-        system_errno = errno;
-        break;
-      }
-
-      if (FD_ISSET(watching_fd, &readers))
-        return true;
-    }
-    return false;
-  }
-#endif /* defined (__linux__) */
-
   void DirectoryListener::listen() {
-    if (is_good()) {
 #if defined (__linux__)
-      /* I don't like this, but this is how it's done; see `man inotify(7)'
-       * and `man 7 pthread'. 
-       *
-       * First, the inotify API needs to transport variable-length
-       * information, and they solve it by having that as the last
-       * element of the struct with zero length.  Nice. (Hence the
-       * weird-looking size for BUF below.
-       *
-       * And then there seems to be no clean way to break a thread out
-       * of a blocking system call.  Apparently, something can and
-       * will always go wrong. Memory leaks are just one among the
-       * many horrors of interrupting threads.  So the idea is either
-       * to use non-blocking I/O (which is counterproductive) or
-       * select(2) with a non-zero timeout, which is what we're using
-       * here.
-       *
-       * What this means is that we've converted perfectly acceptable
-       * single-thread performance into a polling mulithread
-       * operation.  I still fail to see why it is problematic to do
-       * with threads what works well with processes, but there you
-       * are. 
-       */
-      uint8_t buf[sizeof(struct inotify_event) + PATH_MAX];
-      struct inotify_event *current_event 
-        = reinterpret_cast<struct inotify_event*>(&buf[0]);
-
-      while (wait_for_input() && good && listening) {
-        errno = 0;
-        /* Guaranteed not to block */
-        ssize_t nbytes = read(watching_fd, buf, sizeof buf);
-        if (nbytes < 0) {
-          if (errno == EAGAIN || errno == EINTR)
-            continue;
-          
+    /* I don't like this, but this is how it's done; see `man inotify(7)'
+     * and `man 7 pthread'. 
+     *
+     * First, the inotify API needs to transport variable-length
+     * information, and they solve it by having that as the last
+     * element of the struct with zero length.  Nice. (Hence the
+     * weird-looking size for BUF below.
+     *
+     * And then there seems to be no clean way to break a thread out
+     * of a blocking system call.  Apparently, something can and
+     * will always go wrong. Memory leaks are just one among the
+     * many horrors of interrupting threads.  So i'm closing the file
+     * descriptor on which this thread will be blocking. Ugh!
+     */
+    uint8_t buf[sizeof(struct inotify_event) + PATH_MAX];
+    struct inotify_event *current_event 
+      = reinterpret_cast<struct inotify_event*>(&buf[0]);
+    
+    while (good && listening) {
+      errno = 0;
+      ssize_t nbytes = read(listener_fd, buf, sizeof buf);
+      if (nbytes < 0) {
+        if (errno == EAGAIN)
+          continue;
+        else if (errno == EINTR)
+          break;
+        else {
           good = false;
           system_errno = errno; // EINVAL == buffer too short
           break;
         }
-
-        /* Assume no short reads */
-        assert(nbytes > 0 // To make static_cast safe
-               && static_cast<size_t>(nbytes) >= sizeof(struct inotify_event));
-
-        /* We watch only for file (not directory) creation. */
-        assert((current_event->mask & IN_CREATE)
-               && !(current_event->mask & IN_ISDIR));
-
-        /* This is a null-terminated string. */
-        std::string filename{current_event->name};
-
-        /* Now do something with filename */
-        std::cout << "Created " << filename << std::endl;
       }
-#endif /* defined (__linux__) */
+      
+      /* Assume no short reads */
+      assert(nbytes > 0 // To make static_cast safe
+             && static_cast<size_t>(nbytes) >= sizeof(struct inotify_event));
+      
+       /* No idea what IN_IGNORED means, but it's what happens when
+        * you close the watching_fd under this thread's nose. */
+      if (current_event->mask & IN_IGNORED)
+        break;
+
+      /* IN_UNMOUNT happens when the filesystem in question is
+       * unmounted, and IN_Q_OVERFLOW means there were too many
+       * unfetched events, and in both cases there's nothing more to
+       * do here. */
+      if (current_event->mask & IN_Q_OVERFLOW
+          || current_event->mask & IN_UNMOUNT)
+        /* TODO: warn here */
+        break;
+
+      assert(current_event->mask & IN_CLOSE_WRITE);
+
+      /* This is a null-terminated string. */
+      std::string filename{current_event->name};
+      
+      /* TODO: now do something with filename */
     }
+#endif /* defined (__linux__) */
   }
+
+  void DirectoryListener::stop() {
+    listening = false;
+#if defined (__linux__)
+    errno = 0;
+    if (watching_fd >= 0 && inotify_rm_watch(listener_fd, watching_fd) < 0) {
+      good = false;
+      system_errno = errno;
+    }
+#endif /* defined (__linux__) */
+    listener.join();
+  }
+
 
 } // namespace fcold
 

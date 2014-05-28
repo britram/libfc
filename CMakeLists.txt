@@ -22,6 +22,7 @@ if (WANDIO_FOUND)
   include_directories(${Wandio_INCLUDE_DIRS}) 
 endif(WANDIO_FOUND)
 
+find_package(Threads REQUIRED)
 
 # debuggery
 if ($ENV{CLANG}) 
@@ -39,6 +40,7 @@ else ($ENV{CLANG})
   endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
   include_directories(lib)
 endif($ENV{CLANG})
+
 include_directories(.)
 
 
@@ -115,8 +117,10 @@ file (GLOB FCOLD_OBJ "fcold/*.cpp")
 
 add_library (fcoldl ${FCOLD_OBJ})
 
+include_directories(fcold)
 add_executable (fcold fcold.cpp)
 target_link_libraries(fcold fcoldl fc
                             ${Boost_LIBRARIES}
                             ${Wandio_LIBRARIES} 
-                            ${Log4CPlus_LIBRARIES})
+                            ${Log4CPlus_LIBRARIES}
+                            ${CMAKE_THREAD_LIBS_INIT})

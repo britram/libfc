@@ -75,7 +75,7 @@ namespace fcold {
      * This will interrupt the thread that is currently running
      * listen().
      */
-    void stop();
+    virtual void stop() = 0;
 
   protected:
     bool good;

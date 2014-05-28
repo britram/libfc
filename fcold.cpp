@@ -28,6 +28,16 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
+#include <iostream>
+
+#include <unistd.h>
+
+#include "DirectoryListener.h"
+
 int main(int argc, const char* argv[]) {
+  fcold::DirectoryListener l(".");
+
+  sleep(10);
+  l.stop();
   return 0;
 }
