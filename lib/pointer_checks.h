@@ -29,8 +29,8 @@
  * @file Pointer validity checks.
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef _libfc_POINTER_CHECKS_H_
-#  define _libfc_POINTER_CHECKS_H_
+#ifndef _LIBFC_POINTER_CHECKS_H_
+#  define _LIBFC_POINTER_CHECKS_H_
 
 /** Checks if a pointer is within a given range.
  *
@@ -98,4 +98,4 @@
     assert(CHECK_POINTER_WITHIN_I((p), (start), (end)); \
   while (0)
 
-#endif // _libfc_POINTER_CHECKS_H_
+#endif // _LIBFC_POINTER_CHECKS_H_

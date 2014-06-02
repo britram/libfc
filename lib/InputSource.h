@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_INPUTSOURCE_H_
-#  define _libfc_INPUTSOURCE_H_
+#ifndef _LIBFC_INPUTSOURCE_H_
+#  define _LIBFC_INPUTSOURCE_H_
 
 #  include <cstdint>
 
@@ -146,4 +146,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_INPUTSOURCE_H_
+#endif // _LIBFC_INPUTSOURCE_H_

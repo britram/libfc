@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_WANDIOINPUTSOURCE_H_
-#  define _libfc_WANDIOINPUTSOURCE_H_
+#ifndef _LIBFC_WANDIOINPUTSOURCE_H_
+#  define _LIBFC_WANDIOINPUTSOURCE_H_
 
 #  include <string>
 
@@ -78,4 +78,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_WANDIOINPUTSOURCE_H_
+#endif // _LIBFC_WANDIOINPUTSOURCE_H_

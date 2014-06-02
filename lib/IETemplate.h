@@ -40,16 +40,16 @@
  * the wire.
  */
 
-#ifndef _libfc_IETEMPLATE_H_ // idem
-#  define _libfc_IETEMPLATE_H_ // hack
+#ifndef _LIBFC_IETEMPLATE_H_ // idem
+#  define _LIBFC_IETEMPLATE_H_ // hack
 
 #  include <cassert>
 #  include <map>
 #  include <vector>
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "InfoElement.h"
 
@@ -153,9 +153,9 @@ namespace libfc {
     // minimum length of record represented by template
     size_t minlen_;
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
   };
 

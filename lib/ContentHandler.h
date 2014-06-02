@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_CONTENTHANDLER_H_
-#  define _libfc_CONTENTHANDLER_H_
+#ifndef _LIBFC_CONTENTHANDLER_H_
+#  define _LIBFC_CONTENTHANDLER_H_
 
 #  include <cstdint>
 #  include <memory>
@@ -177,4 +177,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_CONTENTHANDLER_H_
+#endif // _LIBFC_CONTENTHANDLER_H_

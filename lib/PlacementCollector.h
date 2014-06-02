@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_PLACEMENTCALLBACK_H_
-#  define _libfc_PLACEMENTCALLBACK_H_
+#ifndef _LIBFC_PLACEMENTCALLBACK_H_
+#  define _LIBFC_PLACEMENTCALLBACK_H_
 
 #  include "PlacementContentHandler.h"
 #  include "MessageStreamParser.h"
@@ -150,4 +150,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_PLACEMENTCALLBACK_H_
+#endif // _LIBFC_PLACEMENTCALLBACK_H_

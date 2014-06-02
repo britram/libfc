@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_UDPINPUTSOURCE_H_
-#  define _libfc_UDPINPUTSOURCE_H_
+#ifndef _LIBFC_UDPINPUTSOURCE_H_
+#  define _LIBFC_UDPINPUTSOURCE_H_
 
 #  include "InputSource.h"
 
@@ -62,4 +62,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_UDPINPUTSOURCE_H_
+#endif // _LIBFC_UDPINPUTSOURCE_H_

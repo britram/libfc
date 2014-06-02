@@ -35,8 +35,8 @@
  * This file defines InfoElement, which represents an IPFIX Information Element.
  */
 
-#ifndef _libfc_INFOELEMENT_H_ // idem
-#define _libfc_INFOELEMENT_H_ // hack
+#ifndef _LIBFC_INFOELEMENT_H_ // idem
+#define _LIBFC_INFOELEMENT_H_ // hack
 
 #include <string>
 #include <memory>

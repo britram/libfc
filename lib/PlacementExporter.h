@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_PLACEMENTEXPORTER_H_
-#  define _libfc_PLACEMENTEXPORTER_H_
+#ifndef _LIBFC_PLACEMENTEXPORTER_H_
+#  define _LIBFC_PLACEMENTEXPORTER_H_
 
 #  include <cstdint>
 #  include <list>
@@ -40,9 +40,9 @@
 
 #  include <sys/uio.h>
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "Constants.h"
 #  include "ExportDestination.h"
@@ -178,9 +178,9 @@ namespace libfc {
 
     EncodePlan* plan;
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     /** Finishes the current data set by putting the template ID and
      * set length into the set header. 
@@ -192,4 +192,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_PLACEMENTEXPORTER_H_
+#endif // _LIBFC_PLACEMENTEXPORTER_H_

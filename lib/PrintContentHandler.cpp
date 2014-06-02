@@ -24,13 +24,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  */
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #  define LOG4CPLUS_ERROR(logger, expr)
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include <cstdio>
 #include <cstring>
@@ -60,10 +60,10 @@ namespace libfc {
       expected_version(expected_version),
       max_messages(0),
       n_messages(0)
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
                                         , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   {
   }
 
@@ -73,10 +73,10 @@ namespace libfc {
       expected_version(expected_version),
       max_messages(max_messages),
       n_messages(0)
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
                                         , 
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PrintContentHandler")))
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   {
   }
 

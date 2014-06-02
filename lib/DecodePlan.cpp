@@ -26,11 +26,11 @@
 #include <climits>
 #include <sstream>
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "BasicOctetArray.h"
 #include "DecodePlan.h"
@@ -79,10 +79,10 @@ namespace libfc {
   DecodePlan::DecodePlan(const libfc::PlacementTemplate* placement_template,
                          const libfc::IETemplate* wire_template) 
     : plan(wire_template->size())
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("DecodePlan")))
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   {
 
     LOG4CPLUS_TRACE(logger, "ENTER DecodePlan::DecodePlan (wt with "
@@ -373,13 +373,13 @@ namespace libfc {
       }
     }
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     if (logger.getLogLevel() <= log4cplus::DEBUG_LOG_LEVEL) {
       LOG4CPLUS_TRACE(logger, "  plan is: ");
       for (auto d = plan.begin(); d != plan.end(); ++d)
         LOG4CPLUS_TRACE(logger, "    " << d->to_string());
     }
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     LOG4CPLUS_TRACE(logger, "LEAVE DecodePlan::DecodePlan");
   }
@@ -421,7 +421,7 @@ namespace libfc {
     return ret;
   }
 
-#if defined(_libfc_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
   static void hexdump(log4cplus::Logger& logger, const uint8_t* buf,
                       const uint8_t* buf_end) {
     char out_buf[81];
@@ -437,7 +437,7 @@ namespace libfc {
       LOG4CPLUS_TRACE(logger, out_buf);
     }
   }
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
   uint16_t DecodePlan::execute(const uint8_t* buf, uint16_t length) {
     LOG4CPLUS_TRACE(logger, "ENTER DecodePlan::execute");
@@ -448,7 +448,7 @@ namespace libfc {
     for (auto i = plan.begin(); i != plan.end(); ++i) {
       assert(cur < buf_end);
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       switch (i->type) {
       case Decision::skip_fixlen:
         LOG4CPLUS_TRACE(logger, "  decision: skip_fixlen");
@@ -478,7 +478,7 @@ namespace libfc {
         LOG4CPLUS_TRACE(logger, "  decision: transfer_float_into_double_endianness");
         break;
       }
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
       switch (i->type) {
       case Decision::skip_fixlen:
@@ -543,14 +543,14 @@ namespace libfc {
 
         assert(i->length <= i->destination_size);
 
-#if defined(_libfc_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
         {
           LOG4CPLUS_TRACE(logger, "transfer w/endianness Before");
           hexdump(logger, buf, cur);
           LOG4CPLUS_TRACE(logger, "At and after");
           hexdump(logger, cur, cur + 8);
         }
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
         /* Assume all-zero bit pattern is zero, null, 0.0 etc. */
         // FIXME: Check if transferring native data types is faster
@@ -607,14 +607,14 @@ namespace libfc {
 
       case Decision::transfer_varlen:
         {
-#if defined(_libfc_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_) && defined(_LIBFC_DO_HEXDUMP_)
           {
             LOG4CPLUS_TRACE(logger, "Before");
             hexdump(logger, buf, cur);
             LOG4CPLUS_TRACE(logger, "At and after");
             hexdump(logger, cur, std::min(cur + 12, buf_end));
           }
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
           uint16_t varlen_length = decode_varlen_length(&cur, buf_end);
           LOG4CPLUS_TRACE(logger, "  varlen length " << varlen_length);
           assert(cur + varlen_length <= buf_end);

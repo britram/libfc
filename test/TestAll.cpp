@@ -26,11 +26,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  */
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/configurator.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE FC Test
@@ -45,11 +45,11 @@
 int 
 main( int argc, char* argv[] )
 {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
   log4cplus::PropertyConfigurator config("log4cplus.properties");
   config.configure();
 #else
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
   return ::boost::unit_test::unit_test_main( &init_unit_test, argc, argv );
 }

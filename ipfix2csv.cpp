@@ -90,10 +90,10 @@
 
 #include "exceptions/FormatError.h"
 
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/configurator.h>
 #  include <log4cplus/loggingmacros.h>
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 using namespace libfc;
 
@@ -609,10 +609,10 @@ private:
 };
 
 int main(int argc, char* const* argv) {
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
   log4cplus::PropertyConfigurator config("log4cplus.properties");
   config.configure();
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
   libfc::PlacementCollector::Protocol protocol;
   InputSource* is = 0;

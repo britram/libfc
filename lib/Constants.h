@@ -36,8 +36,8 @@
  */
  
 
-#ifndef _libfc_CONSTANTS_H_
-#  define _libfc_CONSTANTS_H_
+#ifndef _LIBFC_CONSTANTS_H_
+#  define _LIBFC_CONSTANTS_H_
 
 #  include <cstring>
 #  include <cstdint>
@@ -152,4 +152,4 @@ namespace libfc {
   static const size_t kMaxMessageLen = 65535;
 }
 
-#endif // _libfc_CONSTANTS_H_
+#endif // _LIBFC_CONSTANTS_H_

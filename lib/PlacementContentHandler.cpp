@@ -33,13 +33,13 @@
 
 #include <time.h>
 
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #  define LOG4CPLUS_WARN(logger, expr)
 #  define LOG4CPLUS_INFO(logger, expr)
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "decode_util.h"
 #include "pointer_checks.h"
@@ -72,10 +72,10 @@ namespace libfc {
       use_matched_template_cache(false),
       current_wire_template(0),
       parse_is_good(true)
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
                          ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementContentHandler")))
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
   }
 
@@ -88,7 +88,7 @@ namespace libfc {
       delete i->second;
   }
 
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
   static const char* make_time(uint32_t export_time) {
     struct tm tms;
     time_t then = export_time;
@@ -100,7 +100,7 @@ namespace libfc {
 
     return gmtime_buf;
   }
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::start_session() {
     LOG4CPLUS_TRACE(logger, "Session starts");
@@ -309,7 +309,7 @@ namespace libfc {
       }
 
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       if (logger.getLogLevel() <= log4cplus::TRACE_LOG_LEVEL) {
         LOG4CPLUS_TRACE(logger,
                         "  current wire template has "
@@ -321,7 +321,7 @@ namespace libfc {
         for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
           LOG4CPLUS_TRACE(logger, "  " << n++ << " " << (*i)->toIESpec());
       }
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }
 
     if (current_field_count != current_field_no)

@@ -41,7 +41,7 @@
 #include "exceptions/FormatError.h"
 #include "exceptions/IESpecError.h"
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/configurator.h>
 #  include <log4cplus/loggingmacros.h>
 #  include <log4cplus/logger.h>
@@ -64,17 +64,17 @@ struct libfc_template_t {
 class CBinding : public PlacementCollector {
 private:
   std::set<PlacementTemplate*> templates;
-#  ifdef _libfc_HAVE_LOG4CPLUS_
+#  ifdef _LIBFC_HAVE_LOG4CPLUS_
   log4cplus::Logger logger;
-#  endif /* _libfc_HAVE_LOG4CPLUS_ */
+#  endif /* _LIBFC_HAVE_LOG4CPLUS_ */
     
 public:
     CBinding(PlacementCollector::Protocol protocol)
     : PlacementCollector(protocol)
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
     ,
     logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("CBinding")))
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 {
     give_me_unhandled_data_sets();
 }
@@ -218,11 +218,11 @@ extern int libfc_collect_from_wandio(io_t *wio, const char *name, struct libfc_t
 }
 
 extern void libfc_initialize_logging(const char *lpfilename) {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::PropertyConfigurator config(lpfilename);
     config.configure();
 #else
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 }
 
 extern int libfc_add_specfile(const char *specfilename) {

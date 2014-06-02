@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_DECODE_UTIL_H_
-#  define _libfc_DECODE_UTIL_H_
+#ifndef _LIBFC_DECODE_UTIL_H_
+#  define _LIBFC_DECODE_UTIL_H_
 
 #  include <cstdint>
 #  include <iomanip>
@@ -96,4 +96,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif /* _libfc_DECODE_UTIL_H_ */
+#endif /* _LIBFC_DECODE_UTIL_H_ */
