@@ -185,6 +185,16 @@
 		F5CDC4CB192510D800CBE87D /* libftrace.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libftrace.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5CDC4D01925115E00CBE87D /* libftrace.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = libftrace.c; path = ftrace/libftrace.c; sourceTree = "<group>"; };
 		F5CDC4D11925115E00CBE87D /* libftrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libftrace.h; path = ftrace/libftrace.h; sourceTree = "<group>"; };
+		F5CEA565193DCA120088ABA7 /* Imp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Imp.cpp; path = fcold/Imp.cpp; sourceTree = "<group>"; };
+		F5CEA566193DCA120088ABA7 /* Imp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Imp.h; path = fcold/Imp.h; sourceTree = "<group>"; };
+		F5CEA568193DDD940088ABA7 /* atomicops.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = atomicops.h; path = moodycamel/atomicops.h; sourceTree = "<group>"; };
+		F5CEA569193DDD940088ABA7 /* readerwriterqueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = readerwriterqueue.h; path = moodycamel/readerwriterqueue.h; sourceTree = "<group>"; };
+		F5CEA56A193DDE6A0088ABA7 /* DirectoryListener.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DirectoryListener.cpp; path = fcold/DirectoryListener.cpp; sourceTree = "<group>"; };
+		F5CEA56B193DDE6A0088ABA7 /* DirectoryListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DirectoryListener.h; path = fcold/DirectoryListener.h; sourceTree = "<group>"; };
+		F5CEA56C193DDE6A0088ABA7 /* Frontend.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Frontend.cpp; path = fcold/Frontend.cpp; sourceTree = "<group>"; };
+		F5CEA56D193DDE6A0088ABA7 /* Frontend.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Frontend.h; path = fcold/Frontend.h; sourceTree = "<group>"; };
+		F5CEA56E193DDE6A0088ABA7 /* Listener.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Listener.cpp; path = fcold/Listener.cpp; sourceTree = "<group>"; };
+		F5CEA56F193DDE6A0088ABA7 /* Listener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Listener.h; path = fcold/Listener.h; sourceTree = "<group>"; };
 		F5DD27DF19349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "liblog4cplus-1.1.9.dylib"; path = "../../../../usr/local/Cellar/log4cplus/1.1.2/lib/liblog4cplus-1.1.9.dylib"; sourceTree = "<group>"; };
 		F5DD27E11934A4DB00FE1D28 /* log4cplus.properties */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = log4cplus.properties; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -312,6 +322,7 @@
 		D37BC239192352A8009555FF = {
 			isa = PBXGroup;
 			children = (
+				F5CEA567193DDD810088ABA7 /* moodycamel */,
 				F5DD27DF19349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib */,
 				F55CCCCA193388DE000DED44 /* libtomcrypt.a */,
 				D354E82019235D2000C45B70 /* libwandio.1.dylib */,
@@ -361,13 +372,30 @@
 			name = ftrace;
 			sourceTree = "<group>";
 		};
+		F5CEA567193DDD810088ABA7 /* moodycamel */ = {
+			isa = PBXGroup;
+			children = (
+				F5CEA568193DDD940088ABA7 /* atomicops.h */,
+				F5CEA569193DDD940088ABA7 /* readerwriterqueue.h */,
+			);
+			name = moodycamel;
+			sourceTree = "<group>";
+		};
 		F5DD27E21934CB4400FE1D28 /* fcold */ = {
 			isa = PBXGroup;
 			children = (
+				F5CEA56A193DDE6A0088ABA7 /* DirectoryListener.cpp */,
+				F5CEA56B193DDE6A0088ABA7 /* DirectoryListener.h */,
+				F5CEA56C193DDE6A0088ABA7 /* Frontend.cpp */,
+				F5CEA56D193DDE6A0088ABA7 /* Frontend.h */,
+				F5CEA56E193DDE6A0088ABA7 /* Listener.cpp */,
+				F5CEA56F193DDE6A0088ABA7 /* Listener.h */,
 				F58116F51934DD7600BD2966 /* MessageBuffer.cpp */,
 				F58116F31934D06E00BD2966 /* MessageBuffer.h */,
 				F58116EF1934D04300BD2966 /* Configuration.cpp */,
 				F58116F01934D04300BD2966 /* Configuration.h */,
+				F5CEA565193DCA120088ABA7 /* Imp.cpp */,
+				F5CEA566193DCA120088ABA7 /* Imp.h */,
 			);
 			name = fcold;
 			sourceTree = "<group>";

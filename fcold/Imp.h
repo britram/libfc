@@ -30,25 +30,39 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
-#ifndef _FCOLD_CONFIGURATION_H_
-#  define _FCOLD_CONFIGURATION_H_
+#ifndef _FCOLD_IMP_H_
+#  define _FCOLD_IMP_H_
 
-#  include <memory>
-#  include <vector>
+#include <thread>    
 
-#  include "Frontend.h"
-#  include "Listener.h"
+#include "PlacementCollector.h"
+#include "ErrorContext.h"
+#include "ReaderWriterQueue.h"
 
 namespace fcold {
+
     
-    class Configuration {
+    class Imp : public libfc::PlacementCollector {
+
     private:
+        std::thread                     worker;
+        Backend*                        backend;
+        std::queue<std::shared_ptr<MessageBuffer> >
+                                        mbq;
+        std::mutex                      mbqmtx;
+        std::shared_ptr<ErrorContext>   worker_ectx;
+        bool                            run;
 
-        std::vector<Frontend*> frontends;
-        std::vector<Listener*> listeners;
-
+        std::shared_ptr<MessageBuffer>  next_mbuf();
+        void                            work();
+        
     public:
-    };
+        Imp(Backend* bep);
+        ~Imp();
+        
+        void enqueue_mbuf(std::shared_ptr<MessageBuffer> mbuf);
+        
+    }
 }
 
-#endif /* defined(_FCOLD_CONFIGURATION_H_) */
+#endif /* defined(_FCOLD_IMP_H_) */

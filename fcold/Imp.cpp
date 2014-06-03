@@ -25,30 +25,35 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @file
- * @author Brian Trammell <trammell@tik.ee.ethz.ch>
- */
-
-#ifndef _FCOLD_CONFIGURATION_H_
-#  define _FCOLD_CONFIGURATION_H_
-
-#  include <memory>
-#  include <vector>
-
-#  include "Frontend.h"
-#  include "Listener.h"
+#include "Imp.h"
 
 namespace fcold {
     
-    class Configuration {
-    private:
+    void Imp::work() {
+        while (run) {            
+            std::shared_ptr<MessageBuffer> mb = next_mbuf();
+            if (mb == nullptr) break;
+            
+            worker_ectx = collect(*mb);
+            // FIXME do something on error
+        }
+    }
+    
+    std::shared_ptr<MessageBuffer> Imp::next_mbuf() {
+        std::unique_lock<std::mutex> lock(mbqmtx);
+        
+        while (mbq.size() == 0 && run) {
+            mbqcv.wait(mbqmtx);
+        }
+        
+        if (!run) return std::shared_ptr<MessageBuffer>(nullptr);
+        return mbq.pop();
+    }
+    
+    void Imp::enqueue_mbuf(std::shared_ptr<MessageBuffer> mb) {
+        std::unique_lock<std::mutex> lock(mbqmtx);
+        mbq.push(mb);
+        mbqcv.notify_all();
+    }
 
-        std::vector<Frontend*> frontends;
-        std::vector<Listener*> listeners;
-
-    public:
-    };
 }
-
-#endif /* defined(_FCOLD_CONFIGURATION_H_) */

@@ -29,6 +29,7 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
+
 #ifndef _FCOLD_FRONTEND_H_
 #  define _FCOLD_FRONTEND_H_
 
