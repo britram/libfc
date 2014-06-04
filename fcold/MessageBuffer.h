@@ -65,14 +65,14 @@ namespace fcold {
         /**
          * Create a new, empty MessageBuffer able to store up to
          * 64k (kMBufSz) bytes. The buffer will be filled by direct access
-         * to
+         * to the buffer via bufptr().
          */
         MessageBuffer();
 
         /**
          * Create a new, empty MessageBuffer able to store up to sz bytes.
          *
-         * @param sz maximum size of the message to be stored in the cre
+         * @param sz maximum size of the message to be stored in the created buffer.
          */
         MessageBuffer(size_t sz);
 

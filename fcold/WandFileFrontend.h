@@ -30,38 +30,18 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
-#ifndef _FCOLD_IMP_H_
-#  define _FCOLD_IMP_H_
-
-#include <thread>    
-
-#include "PlacementCollector.h"
-#include "ErrorContext.h"
-#include "ReaderWriterQueue.h"
+#ifndef _FCOLD_WANDFILEFRONTEND_H_
+#  define _FCOLD_WANDFILEFRONTEND_H_
 
 namespace fcold {
+    class WandFileFrontend: public Frontend {
 
-    class Imp : public libfc::PlacementCollector {
-
-    private:
-        std::thread                     worker;
-        Backend*                        backend;
-        std::queue<std::shared_ptr<MessageBuffer> >
-                                        mbq;
-        std::mutex                      mbqmtx;
-        std::shared_ptr<ErrorContext>   worker_ectx;
-        bool                            run;
-
-        std::shared_ptr<MessageBuffer>  next_mbuf();
-        void                            work();
-        
     public:
-        Imp(Backend* bep);
-        ~Imp();
-        
-        void enqueue_mbuf(std::shared_ptr<MessageBuffer> mbuf);
-        void stop();
-    }
+        WandFileFrontend(const char* filename)::
+            Frontend(new libfc::WandioInputSource(filename))
+        {}
+    };
 }
 
-#endif /* defined(_FCOLD_IMP_H_) */
+#endif /* idem hack */
+

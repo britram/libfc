@@ -27,20 +27,31 @@
 
 /**
  * @file
- * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
 #ifndef _FCOLD_FRONTEND_H_
 #  define _FCOLD_FRONTEND_H_
 
+#include "InputSource.h"
+#include "ErrorContext.h"
+
 namespace fcold {
 
-  class Frontend {
-  public:
-    /** Destroys a Frontend. */
-    virtual ~Frontend() = 0;
+    class Frontend {
+    public:
+        Frontend(InputSource* nis, int version);
 
-  private:
+        /** Destroys a Frontend. */
+        virtual ~Frontend();
+
+        std::shared_ptr<libfc::ErrorContext>
+                deframe_next(std::shared_ptr<MessageBuffer>& mb);
+
+    private:
+        InputSource* is;
+        int pdu_version;
+    
   };
 
 } // namespace fcold

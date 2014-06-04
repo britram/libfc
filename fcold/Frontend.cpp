@@ -26,13 +26,285 @@
 
 /**
  * @file
- * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
+ * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 #include "Frontend.h"
 
 namespace fcold {
 
-  Frontend::~Frontend() {
-  }
+    static const size_t kNetflow5Mtu = 1500;
+    static const size_t kNetflow9Mtu = 1500;
+    static const size_t kIpfixMtu = 65536;
+    
+    /** Structure for decoding IPFIX message headers */
+    struct __attribute__((packed)) v10pduhdr_st {
+        uint16_t    version;
+        uint16_t    length;
+        uint32_t    export_s;
+        uint32_t    sequence;
+        uint32_t    odid;
+    };
+    
+    typedef struct v10pduhdr_st v10pduhdr_t;
+    
+    /** Structure for decoding NetFlow V9 PDU headers */
+    struct __attribute__((packed)) v9pduhdr_st {
+        uint16_t    version;
+        uint16_t    count;
+        uint32_t    sysuptime_ms;
+        uint32_t    export_s;
+        uint32_t    sequence;
+        uint32_t    generator;
+    };
+    
+    typedef struct v9pduhdr_st v9pduhdr_t;
+    
+    /** Structure for decoding NetFlow V9/IFPFIX set headers */
+    struct __attribute__((packed)) sethdr_st {
+        uint16_t    id;
+        uint16_t    len;
+    } sethdr_t;
+    
+    typedef struct v9sethdr_st v9sethdr_t;
+    
+    /** Structure for decoding NetFlow V5 PDU headers */
+    struct __attribute__((packed)) v5pduhdr_st {
+        uint16_t    version;
+        uint16_t    count;
+        uint32_t    sysuptime_ms;
+        uint32_t    export_s;
+        uint32_t    export_ns;
+        uint32_t    sequence;
+        uint8_t     gentype;
+        uint8_t     genid;
+    };
+    
+    typedef struct v5sethdr_st v5sethdr_t;
+    
+    static int peek_next_pdu_version(InputSource *is) {
+        int         rv;
+        uint16_t    version;
+        
+        rv = is->peek(&version, sizeof(version));
+        if (rv > 0) {
+            return ntohs(version);
+        } else {
+            return rv;
+        }
+    }
+    
+    static int peek_next_set_header(InputSource *is, uint16_t& id, uint16_t& len) {
+        int             rv;
+        sethdr_t        sethdr;
+        
+        rv = is->peek(&sethdr, sizeof(sethdr));
+        if (rv > 0) {
+            len = ntohs(sethdr.len);
+            id = ntohs(sethdr.id);
+        }
+        return rv;
+    }
+    
+    
+    static shared_ptr<libfc::ErrorContext>
+            next_pdu_v5(InputSource                     *is,
+                        std::shared_ptr<MessageBuffer>& mb)
+    {
+        libfc_RETURN_ERROR(fatal, inconsistent_state,
+                           "fcold V5 deframe not yet implemented ",
+                           0, &is, 0, 0, 0);
+    }
+
+    static shared_ptr<libfc::ErrorContext>
+            next_pdu_v9(InputSource                     *is,
+                        std::shared_ptr<MessageBuffer>& mb)
+    {
+        int rv;
+        uint16_t setid, setlen;
+
+        /* die if we can't peek */
+        if (!is->can_peek()) {
+            libfc_RETURN_ERROR(fatal, input_source_cant_peek,
+                               "fcold needs peekable input source for V9", 0, is, 0, 0, 0);
+        }
+        
+        /* make a new shared message buffer */
+        mb = std::make_shared<MessageBuffer>(kNetflow9Mtu);
+        
+        uint8_t *base_pdubuf = mb->bufptr();
+        uint8_t *pdubuf = base_pdubuf;
+        size_t  pdumaxsz = mb->bufsz();
+        
+        /* Read header */
+        rv = is->read(pdubuf, sizeof(v9pduhdr_t));
+        
+        if (rv < 0) {
+            libfc_RETURN_ERROR(fatal, system_error,
+                               "Error reading V9 PDU header",
+                               errno, &is, 0, 0, 0);
+        } else if ((size_t)rv < sizeof(v9pduhdr_t)) {
+            libfc_RETURN_ERROR(recoverable, short_header,
+                               "Short read in V9 PDU header: expected "
+                               << sizeof(v9pduhdr_t) << " , got " << rv,
+                               0, &is, 0, 0, 0);
+        }
+        
+        v9pduhdr_t *v9pduhdr = (v9pduhdr_t*)pdubuf;
+        pdubuf += sizeof(v9pduhdr_t);
+        
+        /* Check version field */
+        if (ntohs(v9pduhdr->version) != 9) {
+            libfc_RETURN_ERROR(recoverable, message_version_number,
+                               "Expected PDU version "
+                               << libfc_HEX(4) << 9
+                               << ", got " << libfc_HEX(4)
+                               << ntohs(v9pduhdr->version),
+                               0, &is, 0, 0, 0);
+        }
+        
+        /* Count is useless. Read sets in a loop. */
+        while (true) {
+            if ((rv = peek_next_set_header(is, setid, setlen)) > 0) {
+                if (setid < 256) {
+                    /* Probably a next PDU header. Exit */
+                    libfc_RETURN_OK();
+                }
+            } else {
+                libfc_RETURN_ERROR(fatal, system_error,
+                                   "Error peeking at V9 set header",
+                                   errno, &is, 0, 0, 0);
+            }
+            
+            if (((pdubuf + setlen) - base_pdubuf) > pdumaxsz) {
+                libfc_RETURN_ERROR(fatal, inconsistent_state,
+                                   "fcold V9 deframe overran internal buffer limit of " << pdumaxsz <<
+                                   "; need " << msglen - pdumaxsz << "extra",
+                                   0, &is, 0, 0, 0);
+            }
+            
+            rv = is->read(pdubuf, setlen);
+            if (rv < 0) {
+                libfc_RETURN_ERROR(fatal, system_error,
+                                   "Error reading V9 set",
+                                   errno, &is, 0, 0, 0);
+            } else if (rv < setlen) {
+                libfc_RETURN_ERROR(recoverable, short_body,
+                                   "Short read in V9 set: expected "
+                                   << setlen << " , got " << rv,
+                                   0, &is, 0, 0, 0);
+            }
+            pdubuf += setlen;
+        }
+    }
+    
+    static shared_ptr<libfc::ErrorContext>
+            next_pdu_v10(InputSource                     *is,
+                         std::shared_ptr<MessageBuffer>& mb)
+    {
+        int rv;
+
+        /* make a new shared message buffer FIXME allow sizing */
+        mb = std::make_shared<MessageBuffer>(kIpfixMtu);
+        
+        uint8_t *base_pdubuf = mb->bufptr();
+        uint8_t *pdubuf = base_pdubuf;
+        size_t  pdumaxsz = mb->bufsz();
+        
+        /* Read header */
+        rv = is->read(pdubuf, sizeof(v10pduhdr_t));
+        
+        if (rv < 0) {
+            libfc_RETURN_ERROR(fatal, system_error,
+                               "Error reading IPFIX message header",
+                               errno, &is, 0, 0, 0);
+        } else if ((size_t)rv < sizeof(v10pduhdr_t)) {
+            libfc_RETURN_ERROR(recoverable, short_header,
+                               "Short read in IPFIX message header: expected "
+                               << sizeof(v10pduhdr_t) << " , got " << rv,
+                               0, &is, 0, 0, 0);
+        }
+
+        v10pduhdr_t *v10pduhdr = (v10pduhdr_t*)pdubuf;
+        pdubuf += sizeof(v10pduhdr_t);
+        
+        /* Check header fields */
+        if (ntohs(v10pduhdr->version) != 10) {
+            libfc_RETURN_ERROR(recoverable, message_version_number,
+                               "Expected IPFIX message version "
+                               << libfc_HEX(4) << 10
+                               << ", got " << libfc_HEX(4)
+                               << ntohs(v10pduhdr->version),
+                               0, &is, 0, 0, 0);
+        }
+
+        size_t msglen = ntohs(v10pduhdr->length);
+                               
+        if (msglen < sizeof(v10pduhdr_t)) {
+           libfc_RETURN_ERROR(recoverable, short_message,
+                              "IPFIX message length " << msglen << " too short",
+                              0, &is, 0, 0, 0);
+        }
+                               
+        if (msglen > pdumaxsz) {
+            libfc_RETURN_ERROR(fatal, inconsistent_state,
+                               "fcold IPFIX deframe overran internal buffer limit of " << pdumaxsz <<
+                               "; need " << msglen - pdumaxsz << "extra",
+                               0, &is, 0, 0, 0);
+        }
+
+        /* Read and return the rest of the message */
+        rv = is->read(pdubuf, msglen - sizeof(v10pduhdr_t));
+        
+        if (rv < 0) {
+            libfc_RETURN_ERROR(fatal, system_error,
+                               "Error reading IPFIX message body",
+                               errno, &is, 0, 0, 0);
+        } else if (rv < msglen - sizeof(v10pduhdr_t)) {
+            libfc_RETURN_ERROR(recoverable, short_body,
+                               "Short read in IPFIX message body: expected "
+                               << msglen - sizeof(v10pduhdr_t) << " , got " << rv,
+                               0, &is, 0, 0, 0);
+        }
+
+        mb->setmsglen(msglen);
+                               
+        libfc_RETURN_OK();
+    }
+    
+    Frontend::Frontend(InputSource* nis, int version):
+      is(nis),
+      pdu_version(version)
+    {
+    }
+    
+    Frontend::~Frontend() {
+        if (is) delete is;
+    }
+    
+    static shared_ptr<libfc::ErrorContext>
+            Frontend::deframe_next(std::shared_ptr<MessageBuffer>& mb)
+    {
+        if (!pdu_version) {
+            if (!is->can_peek()) {
+                libfc_RETURN_ERROR(fatal, input_source_cant_peek,
+                                   "fcold can't peek at next PDU version", 0, is, 0, 0, 0);
+            }
+            
+            pdu_version = peek_next_pdu_version(is);
+        }
+        
+        switch (pdu_version) {
+            case 5:
+                return next_pdu_v5(is, mb);
+            case 9:
+                return next_pdu_v9(is, mb);
+            case 10:
+                return next_pdu_v10(is, mb);
+            default:
+                libfc_RETURN_ERROR(recoverable, message_version_number,
+                                   "Expected V5, V9, or IPFIX message header, got"
+                                    << libfc_HEX(4) << version, 0, is, 0, 0, 0);
+        }
+    }
 
 } // namespace fcold

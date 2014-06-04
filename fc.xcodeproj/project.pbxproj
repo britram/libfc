@@ -61,6 +61,7 @@
 		D354E81B1923550800C45B70 /* UDPInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7E31923550800C45B70 /* UDPInputSource.h */; };
 		D354E81E19235BD300C45B70 /* libfc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E81C19235BD300C45B70 /* libfc.cpp */; };
 		D354E81F19235BD300C45B70 /* libfc.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E81D19235BD300C45B70 /* libfc.h */; };
+		F505163A193F101800993D38 /* ImpFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = F5051638193F101800993D38 /* ImpFactory.h */; };
 		F559604C192E0496003754C8 /* InputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559604B192E0496003754C8 /* InputSource.cpp */; };
 		F5596053192E04C4003754C8 /* PlacementContentHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */; };
 		F5596054192E04C4003754C8 /* PlacementContentHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F559604E192E04C4003754C8 /* PlacementContentHandler.h */; };
@@ -163,6 +164,8 @@
 		D354E81D19235BD300C45B70 /* libfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libfc.h; path = lib/libfc.h; sourceTree = "<group>"; };
 		D354E82019235D2000C45B70 /* libwandio.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwandio.1.dylib; path = ../../opt/lib/libwandio.1.dylib; sourceTree = "<group>"; };
 		D37BC242192352A8009555FF /* libfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5051638193F101800993D38 /* ImpFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImpFactory.h; path = fcold/ImpFactory.h; sourceTree = "<group>"; };
+		F505163C193F428000993D38 /* WandFileFrontend.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WandFileFrontend.h; path = fcold/WandFileFrontend.h; sourceTree = "<group>"; };
 		F559604B192E0496003754C8 /* InputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputSource.cpp; path = lib/InputSource.cpp; sourceTree = "<group>"; };
 		F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlacementContentHandler.cpp; path = lib/PlacementContentHandler.cpp; sourceTree = "<group>"; };
 		F559604E192E04C4003754C8 /* PlacementContentHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlacementContentHandler.h; path = lib/PlacementContentHandler.h; sourceTree = "<group>"; };
@@ -396,6 +399,8 @@
 				F58116F01934D04300BD2966 /* Configuration.h */,
 				F5CEA565193DCA120088ABA7 /* Imp.cpp */,
 				F5CEA566193DCA120088ABA7 /* Imp.h */,
+				F5051638193F101800993D38 /* ImpFactory.h */,
+				F505163C193F428000993D38 /* WandFileFrontend.h */,
 			);
 			name = fcold;
 			sourceTree = "<group>";
@@ -407,6 +412,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F505163A193F101800993D38 /* ImpFactory.h in Headers */,
 				D354E7FA1923550800C45B70 /* ExportDestination.h in Headers */,
 				D354E7FC1923550800C45B70 /* FileExportDestination.h in Headers */,
 				F5596054192E04C4003754C8 /* PlacementContentHandler.h in Headers */,

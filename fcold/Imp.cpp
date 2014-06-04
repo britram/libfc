@@ -29,13 +29,19 @@
 
 namespace fcold {
     
+    Imp::Imp(Backend *bep):
+        worker(&Imp::work, this),
+        backend(bep),
+        worker_ectx(nullptr),
+        run(true) {}
+    
     void Imp::work() {
         while (run) {            
             std::shared_ptr<MessageBuffer> mb = next_mbuf();
             if (mb == nullptr) break;
             
             worker_ectx = collect(*mb);
-            // FIXME do something on error
+            // FIXME do the right thing on error
         }
     }
     
@@ -54,6 +60,12 @@ namespace fcold {
         std::unique_lock<std::mutex> lock(mbqmtx);
         mbq.push(mb);
         mbqcv.notify_all();
+    }
+    
+    void Imp::stop() {
+        run = false;
+        mbqcv.notify_all();
+        worker.join();
     }
 
 }
