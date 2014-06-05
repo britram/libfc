@@ -26,3 +26,24 @@
  */
 
 #include "Configuration.h"
+
+#include <getopt.h>
+
+namespace fcold {
+    
+    Configuration::Configuration(int argc, char *argv[]) {
+        
+    }
+
+    Configuration::~Configuration() {
+        
+    }
+
+    void Configuration::start() {
+
+    }
+
+    void Configuration::join() {
+
+    }
+}

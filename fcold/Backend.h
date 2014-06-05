@@ -30,20 +30,16 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
-#ifndef _FCOLD_WANDFILEFRONTEND_H_
-#  define _FCOLD_WANDFILEFRONTEND_H_
+#ifndef _FCOLD_BACKEND_H_
+#  define _FCOLD_BACKEND_H_
+
+#include "Backend.h"
 
 namespace fcold {
-    class WandFileFrontend: public Frontend {
-
-    public:
-        WandFileFrontend(ImpFactory&        impfact,
-                         BackendFactory&    befact,
-                         const char* filename)::
-        Frontend(impfact, befact, new libfc::WandioInputSource(filename))
-        {}
+    class Backend {
+        /* What is the interface between the frontend and the backend?
+           How are records represented in the mid-end? */
     };
 }
 
-#endif /* idem hack */
-
+#endif

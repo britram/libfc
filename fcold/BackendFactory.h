@@ -30,20 +30,15 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
-#ifndef _FCOLD_WANDFILEFRONTEND_H_
-#  define _FCOLD_WANDFILEFRONTEND_H_
+#ifndef _FCOLD_BACKENDFACTORY_H_
+#  define _FCOLD_BACKENDFACTORY_H_
+
+#include "Backend.h"
 
 namespace fcold {
-    class WandFileFrontend: public Frontend {
-
-    public:
-        WandFileFrontend(ImpFactory&        impfact,
-                         BackendFactory&    befact,
-                         const char* filename)::
-        Frontend(impfact, befact, new libfc::WandioInputSource(filename))
-        {}
+    class BackendFactory {
+        virtual Backend* create_backend() = 0;
     };
 }
 
-#endif /* idem hack */
-
+#endif

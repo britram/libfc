@@ -32,8 +32,10 @@
 
 namespace fcold {
 
-  Listener::Listener() 
-    : good(false),
+  Listener::Listener(ImpFactory& nimpfact, BackendFactory &nbefact)
+    : impfact(nimpfact),
+      befact(nbefact),
+      good(false),
       system_errno(0),
       listening(true),
       listener(&Listener::listen, this) {

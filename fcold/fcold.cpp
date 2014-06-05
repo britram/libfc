@@ -28,16 +28,21 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#include <iostream>
 
-#include <unistd.h>
 
-#include "DirectoryListener.h"
+#include "Configuration.h"
 
 int main(int argc, const char* argv[]) {
-  fcold::DirectoryListener l(".");
+    
+    /* initialize libfc information model */
+    libfc::InfoModel::instance().default5103();
 
-  sleep(10);
-  l.stop();
-  return 0;
+    /* create a configuration given a command line */
+    fcold::Configuration conf(argc, argv);
+    
+    /* parse configuration and start listeners */
+    conf.start();
+    
+    /* and wait for them to finish */
+    conf.join();
 }

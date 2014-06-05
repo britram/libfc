@@ -40,7 +40,10 @@ namespace fcold {
 
     class Frontend {
     public:
-        Frontend(InputSource* nis, int version);
+        Frontend(ImpFactory&        impfact,
+                 BackendFactory&    befact,
+                 InputSource*       is,
+                 int                pdu_version);
 
         /** Destroys a Frontend. */
         virtual ~Frontend();
@@ -49,9 +52,10 @@ namespace fcold {
                 deframe_next(std::shared_ptr<MessageBuffer>& mb);
 
     private:
+        ImpFactory& impfact;
+        BackendFactory& befact;
         InputSource* is;
         int pdu_version;
-    
   };
 
 } // namespace fcold

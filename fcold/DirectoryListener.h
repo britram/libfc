@@ -49,7 +49,9 @@ namespace fcold {
      *
      * @param directory name name of directory to listen to
      */
-    DirectoryListener(const std::string& directory_name);
+    DirectoryListener(ImpFactory& impfact,
+                      BackendFactory &befact,
+                      const std::string& directory_name);
     ~DirectoryListener();
 
     /* From Listener */

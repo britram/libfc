@@ -271,7 +271,12 @@ namespace fcold {
         libfc_RETURN_OK();
     }
     
-    Frontend::Frontend(InputSource* nis, int version):
+    Frontend(ImpFactory&        nimpfact,
+             BackendFactory&    nbefact,
+             InputSource*       nis,
+             int                npdu_version):
+      impfact(nimpfact),
+      befact(nbefact),
       is(nis),
       pdu_version(version)
     {

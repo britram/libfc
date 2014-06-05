@@ -30,20 +30,19 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
-#ifndef _FCOLD_WANDFILEFRONTEND_H_
-#  define _FCOLD_WANDFILEFRONTEND_H_
+#ifndef _FCOLD_STATDATFRONTEND_H_
+#  define _FCOLD_STATDATFRONTEND_H_
 
 namespace fcold {
-    class WandFileFrontend: public Frontend {
-
+    class StatdatFrontend: public WandFileFrontend {
+        
     public:
-        WandFileFrontend(ImpFactory&        impfact,
-                         BackendFactory&    befact,
-                         const char* filename)::
-        Frontend(impfact, befact, new libfc::WandioInputSource(filename))
+        StatdatFrontend(ImpFactory&        impfact,
+                        BackendFactory&    befact,
+                        const char*        filename):
+        WandFileFrontend(impfact, befact, filename)
         {}
     };
 }
 
 #endif /* idem hack */
-
