@@ -22,6 +22,10 @@ if (WANDIO_FOUND)
   include_directories(${Wandio_INCLUDE_DIRS}) 
 endif(WANDIO_FOUND)
 
+find_package(Tomcrypt)
+if (TOMCRYPT_FOUND)
+  include_directories(${Tomcrypt_INCLUDE_DIRS})
+endif (TOMCRYPT_FOUND)
 
 # debuggery
 if ($ENV{CLANG}) 
@@ -41,6 +45,8 @@ else ($ENV{CLANG})
 endif($ENV{CLANG})
 include_directories(.)
 
+# libftrace includes
+include_directories(./ftrace)
 
 # core objects; library classes begin with a upper-case letter,
 # program files (containing main()) with a lower-case letter.
@@ -64,6 +70,9 @@ file (GLOB EXCEPTIONS_OBJ "lib/exceptions/*.cpp")
 
 add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 
+add_library (ftrace "ftrace/libftrace.c")
+target_link_libraries(ftrace fc pthread ${Wandio_LIBRARIES})
+
 add_executable(ipfix2csv ipfix2csv.cpp)
 target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES}
                                 ${Wandio_LIBRARIES}
@@ -71,6 +80,15 @@ target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES}
 
 add_executable(cbinding cbinding.c)
 target_link_libraries(cbinding fc ${Wandio_LIBRARIES})
+
+if (TOMCRYPT_FOUND)
+    add_executable(ftrace-demo ftrace-demo.c)
+    target_link_libraries(ftrace-demo fc ftrace 
+                          ${Tomcrypt_LIBRARIES} 
+                          ${Wandio_LIBRARIES})
+else (TOMCRYPT_FOUND)
+  message(STATUS "skipping ftrace-demo, because there's no tomcrypt.")
+endif(TOMCRYPT_FOUND)
 
 if ($ENV{CLANG}) 
   target_link_libraries (fc c++)
