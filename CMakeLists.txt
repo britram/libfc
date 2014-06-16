@@ -93,7 +93,7 @@ endif()
 # link the fcold main function against that.  If yuo want to do this
 # in another way, be my guest.
 #
-file (GLOB FCOLD_OBJ "fcold/[A-Z]*.cpp")
+file (GLOB FCOLD_OBJ "fcold/*.cpp")
 message(STATUS "FCOLD_OBJ=${FCOLD_OBJ}")
 
 add_library (libfcold ${FCOLD_OBJ})

@@ -47,8 +47,9 @@ namespace fcold {
   DirectoryListener::DirectoryListener(ImpFactory& impfact,
                       BackendFactory &befact,
                       const std::string& directory_name):
-    Listener(impfact, befact),
+    Listener(impfact, befact)
 #if defined (__linux__)
+                             ,
       listener_fd(-1),
       watching_fd(-1)
 #endif /* defined (__linux__) */
