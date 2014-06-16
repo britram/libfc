@@ -31,7 +31,9 @@
 
 namespace fcold {
     
-    Configuration::Configuration(int argc, char *argv[]) {
+    Configuration::Configuration(int nargc, const char *nargv[]) :
+        argc(nargc),
+        argv(nargv) {
         
     }
 

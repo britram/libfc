@@ -33,7 +33,10 @@
 #ifndef _FCOLD_FRONTEND_H_
 #  define _FCOLD_FRONTEND_H_
 
+#include "BackendFactory.h"
 #include "InputSource.h"
+#include "ImpFactory.h"
+#include "MessageBuffer.h"
 #include "ErrorContext.h"
 
 namespace fcold {
@@ -42,7 +45,7 @@ namespace fcold {
     public:
         Frontend(ImpFactory&        impfact,
                  BackendFactory&    befact,
-                 InputSource*       is,
+                 libfc::InputSource*       is,
                  int                pdu_version);
 
         /** Destroys a Frontend. */
@@ -54,7 +57,7 @@ namespace fcold {
     private:
         ImpFactory& impfact;
         BackendFactory& befact;
-        InputSource* is;
+        libfc::InputSource* is;
         int pdu_version;
   };
 

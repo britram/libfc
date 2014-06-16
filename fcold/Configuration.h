@@ -50,12 +50,10 @@ namespace fcold {
         BackendFactory*         befact;
         
         int                     argc;
-        const char              *argv[];
+        const char              **argv;
 
     public:
-        Configuration(int nargc, const char *nargv[]):
-            argc(nargc),
-            argv(nargv) {}
+        Configuration(int nargc, const char *nargv[]);
         
         ~Configuration();
         

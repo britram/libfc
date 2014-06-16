@@ -13,16 +13,11 @@ else(LOG4CPLUS_FOUND)
 endif(LOG4CPLUS_FOUND)
 
 find_package(Boost 1.42 COMPONENTS unit_test_framework REQUIRED)
-if (Boost_FOUND)
-  include_directories (${Boost_INCLUDE_DIRS})
-endif(Boost_FOUND)
- 
 find_package(Wandio REQUIRED)
-if (WANDIO_FOUND)
-  include_directories(${Wandio_INCLUDE_DIRS}) 
-endif(WANDIO_FOUND)
-
 find_package(Threads REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIRS} 
+                    ${Wandio_INCLUDE_DIRS})
 
 # debuggery
 if ($ENV{CLANG}) 
@@ -44,41 +39,25 @@ endif($ENV{CLANG})
 include_directories(.)
 
 
-# Core objects; library classes begin with a upper-case letter,
-# program files (containing main()) with a lower-case letter.
-# Unfortunately, either cmake or a library that's linked with cmake
-# has managed to get the 30-year-old technique of globbing wrong (on
-# the Mac). For example,
-#
-#   file (GLOB FC_OBJ "S*.cpp")
-#
-# yields Session.cpp and StructTemplate.cpp, as expected, whereas
-#
-#   file (GLOB FC_OBJ "[S]*.cpp")
-#
-# yields an empty list.  Therefore, the correct glob pattern
-# [A-Z]*.cpp gives the wrong result and we will settle for *.cpp,
-# which includes too much.  It must be said that this works perfectly
-# fine on Linux.
-#
 file (GLOB FC_OBJ "lib/*.cpp")
 file (GLOB EXCEPTIONS_OBJ "lib/exceptions/*.cpp") 
 
 add_library (fc ${FC_OBJ} ${EXCEPTIONS_OBJ})
 
+# Ipfix2csv -- extract IEs from IPFIX files and output them in CSV form.
 add_executable(ipfix2csv ipfix2csv.cpp)
-target_link_libraries(ipfix2csv fc ${Boost_LIBRARIES}
-                                ${Wandio_LIBRARIES}
+target_link_libraries(ipfix2csv fc ${Wandio_LIBRARIES}
                                 ${Log4CPlus_LIBRARIES})
 
+# Cbinding -- simple executable to demonstrate C binding for libfc.
 add_executable(cbinding cbinding.c)
-target_link_libraries(cbinding fc ${Wandio_LIBRARIES})
+target_link_libraries(cbinding fc ${Wandio_LIBRARIES} ${Log4CPlus_LIBRARIES})
 
-if ($ENV{CLANG}) 
-  target_link_libraries (fc c++)
-else ($ENV{CLANG})
-  target_link_libraries (fc ${Log4CPlus_LIBRARIES})
-endif($ENV{CLANG})
+#if ($ENV{CLANG}) 
+#  target_link_libraries (fc c++ ${Log4CPlus_LIBRARIES})
+#else ($ENV{CLANG})
+#  target_link_libraries (fc ${Log4CPlus_LIBRARIES})
+#endif($ENV{CLANG})
 
 if ($ENV{CLANG})
   message(STATUS "skipping unit tests, because you're using clang.")
@@ -108,19 +87,20 @@ if (CMAKE_BUILD_TYPE STREQUAL "Profile")
                                ${Log4CPlus_LIBRARIES})
 endif()  
 
+
 # Fcold.  We handle this in the same way we handle libfc and
 # associated executables: we build a library of fcold objects and then
 # link the fcold main function against that.  If yuo want to do this
 # in another way, be my guest.
 #
-file (GLOB FCOLD_OBJ "fcold/*.cpp")
+file (GLOB FCOLD_OBJ "fcold/[A-Z]*.cpp")
+message(STATUS "FCOLD_OBJ=${FCOLD_OBJ}")
 
-add_library (fcoldl ${FCOLD_OBJ})
+add_library (libfcold ${FCOLD_OBJ})
 
-include_directories(fcold)
-add_executable (fcold fcold.cpp)
-target_link_libraries(fcold fcoldl fc
-                            ${Boost_LIBRARIES}
+include_directories(fcold moodycamel)
+add_executable (fcold fcold/fcold.cpp)
+target_link_libraries(fcold libfcold fc
                             ${Wandio_LIBRARIES} 
                             ${Log4CPlus_LIBRARIES}
                             ${CMAKE_THREAD_LIBS_INIT})

@@ -33,10 +33,13 @@
 #ifndef _FCOLD_IMP_H_
 #  define _FCOLD_IMP_H_
 
+#include <queue>
 #include <thread>    
 
-#include "PlacementCollector.h"
+#include "Backend.h"
 #include "ErrorContext.h"
+#include "MessageBuffer.h"
+#include "PlacementCollector.h"
 #include "ReaderWriterQueue.h"
 
 namespace fcold {
@@ -49,7 +52,7 @@ namespace fcold {
         std::queue<std::shared_ptr<MessageBuffer> >
                                         mbq;
         std::mutex                      mbqmtx;
-        std::shared_ptr<ErrorContext>   worker_ectx;
+        std::shared_ptr<libfc::ErrorContext>   worker_ectx;
         bool                            run;
 
         std::shared_ptr<MessageBuffer>  next_mbuf();
@@ -61,7 +64,7 @@ namespace fcold {
         
         void enqueue_mbuf(std::shared_ptr<MessageBuffer> mbuf);
         void stop();
-    }
-}
+    };
+} /* namespace fcold */
 
 #endif /* defined(_FCOLD_IMP_H_) */
