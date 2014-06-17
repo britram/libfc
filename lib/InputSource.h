@@ -45,7 +45,7 @@ namespace libfc {
  * result is an error, augments the error with the current message and
  * adjusts the offset.
  */
-#  define libfc_RETURN_CALLBACK_ERROR(call) \
+#  define LIBFC_RETURN_CALLBACK_ERROR(call) \
     do { \
       /* Make sure call is evaluated only once */                       \
       std::shared_ptr<ErrorContext> err = content_handler->call;        \

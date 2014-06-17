@@ -90,14 +90,14 @@ BOOST_AUTO_TEST_CASE(FileDataSet) {
     std::shared_ptr<ErrorContext>
         start_placement(const PlacementTemplate* tmpl) {
       LOG4CPLUS_DEBUG(logger, "MyCollector: START placement");
-      libfc_RETURN_OK();
+      LIBFC_RETURN_OK();
     }
 
     std::shared_ptr<ErrorContext>
         end_placement(const PlacementTemplate* tmpl) {
       LOG4CPLUS_DEBUG(logger, "MyCollector: END placement, address="
                       << std::hex << source_ipv4_address);
-      libfc_RETURN_OK();
+      LIBFC_RETURN_OK();
     }
 
   private:

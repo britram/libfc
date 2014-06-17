@@ -29,7 +29,8 @@
 
 namespace fcold {
     
-    Imp::Imp(Backend *bep):
+    Imp::Imp(Backend *bep, libfc::PlacementCollector::Protocol protocol):
+        PlacementCollector(protocol),
         worker(&Imp::work, this),
         backend(bep),
         worker_ectx(nullptr),
@@ -49,11 +50,16 @@ namespace fcold {
         std::unique_lock<std::mutex> lock(mbqmtx);
         
         while (mbq.size() == 0 && run) {
-            mbqcv.wait(mbqmtx);
+            mbqcv.wait(lock);
         }
         
         if (!run) return std::shared_ptr<MessageBuffer>(nullptr);
-        return mbq.pop();
+        /* std::queue::pop() only removes the first element, but does not
+         * return it. Hence we must go through these contortions.
+         * Srsly, C++?  --neuhaust */
+        std::shared_ptr<MessageBuffer> ret = mbq.front();
+        mbq.pop();
+        return ret;
     }
     
     void Imp::enqueue_mbuf(std::shared_ptr<MessageBuffer> mb) {

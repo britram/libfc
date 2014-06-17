@@ -58,26 +58,28 @@ namespace libfc {
    * @param system_errno the value of errno, or 0
    * @param is the input stream in which the error was detected
    */
-#  define libfc_RETURN_ERROR(severity, error, message_stream,         \
-                             system_errno, is, message, size, off)    \
-    do {                                                              \
-      std::stringstream ss;                                           \
-                                                                      \
-      ss << message_stream;                                           \
-      /* If you edit this macro, please preserve the space            \
-       * between '<' and ':'.  Some people thought it would           \
-       * be funny to invent an abomination called a trigraph.         \
-       * Using trigraphs, '<:' is actually synonymous with            \
-       * '['.  Yeah, I know.                                          \
-       */                                                             \
-      return std::shared_ptr< ::libfc::ErrorContext>(                 \
-        new ErrorContext(ErrorContext::severity, Error(Error::error), \
-                         system_errno, ss.str().c_str(), is, message, \
-                         size, off));                                 \
+#  define LIBFC_RETURN_ERROR(severity, error, message_stream,            \
+                             system_errno, is, message, size, off)       \
+    do {                                                                 \
+      std::stringstream ss;                                              \
+                                                                         \
+      ss << message_stream;                                              \
+      /* If you edit this macro, please preserve the space               \
+       * between '<' and ':'.  Some people thought it would              \
+       * be funny to invent an abomination called a trigraph.            \
+       * Using trigraphs, '<:' is actually synonymous with               \
+       * '['.  Yeah, I know.                                             \
+       */                                                                \
+      return std::shared_ptr< ::libfc::ErrorContext>(                    \
+        new ::libfc::ErrorContext(::libfc::ErrorContext::severity,       \
+                                  ::libfc::Error(::libfc::Error::error), \
+                                  system_errno, ss.str().c_str(), is,    \
+                                  message,                               \
+                                  size, off));                           \
     } while (0)
 
   /** Returns an ErrorContext signaling success. */
-#  define libfc_RETURN_OK()                                     \
+#  define LIBFC_RETURN_OK()                                     \
   do {                                                          \
       /* If you edit this macro, please preserve the space      \
        * between '<' and ':'.  Some people thought it would     \
@@ -116,7 +118,7 @@ namespace libfc {
    *
    * If a method detects an error itself (as opposed to calling a
    * method that returns a non-0 ErrorContext pointer), you should use
-   * the libfc_RETURN_ERROR macro somewhat like this (see the
+   * the LIBFC_RETURN_ERROR macro somewhat like this (see the
    * documentation for error_severity_t below and Error::error_t in
    * the Error class):
    *
@@ -126,7 +128,7 @@ namespace libfc {
    * uint16_t off = ...;
    *
    * if (some_error_condition) {
-   *   libfc_RETURN_ERROR(recoverable, short_header, 
+   *   LIBFC_RETURN_ERROR(recoverable, short_header, 
    *                     "Expected " << kMessageHeaderSize 
    *                                 << " bytes in header, got "
    *                                 << nbytes, 

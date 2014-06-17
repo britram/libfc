@@ -573,7 +573,7 @@ public:
   
   std::shared_ptr<ErrorContext>
       start_placement(const PlacementTemplate* tmpl) {
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext>
@@ -584,7 +584,7 @@ public:
       ie_values[i].renderer(std::cout, ie_values[i].type, ie_values[i].val);
     }
     std::cout << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   ~CSVCollector() {

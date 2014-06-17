@@ -82,12 +82,12 @@ namespace libfc {
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_session() {
     std::cerr << "Session starts" << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_session() {
     std::cerr << "Session ends" << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
   
   static char* make_local_time(uint32_t t_arg) {
@@ -116,7 +116,7 @@ namespace libfc {
     n_messages++;
 
     if (max_messages > 0 && n_messages > max_messages)
-      libfc_RETURN_ERROR(recoverable, aborted_by_user,
+      LIBFC_RETURN_ERROR(recoverable, aborted_by_user,
                          "Maximum number of messages (" << max_messages
                          << ") reached; aborting further processing",
                          0, 0, 0, 0, 0);
@@ -136,16 +136,16 @@ namespace libfc {
     delete[] base_t;
 
     if (version != expected_version)
-      libfc_RETURN_ERROR(recoverable, message_version_number,
+      LIBFC_RETURN_ERROR(recoverable, message_version_number,
                          "Expected version number " << expected_version
                          << ", got " << version,
                          0, 0, 0, 0, 0);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_message() {
     std::cerr << "  Message ends" << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_template_set(uint16_t set_id,
@@ -155,7 +155,7 @@ namespace libfc {
               << ", length=" << set_length
               << std::endl;
     process_template_set(set_id, set_length, buf, false);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::process_template_set(
@@ -182,7 +182,7 @@ namespace libfc {
       for (unsigned int field = 0; field < field_count; field++) {
         if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen,
                                     cur, set_end)) {
-          libfc_RETURN_ERROR(recoverable, long_fieldspec,
+          LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
                              "Field specifier partly outside template record", 
                              0, 0, 0, 0, cur - buf);
         }
@@ -197,7 +197,7 @@ namespace libfc {
           if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen
                                       + kEnterpriseLen, cur,
                                       set_end)) {
-            libfc_RETURN_ERROR(recoverable, long_fieldspec,
+            LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
                                "Field specifier partly outside template "
                                "record (enterprise)", 
                                0, 0, 0, 0, cur - buf);
@@ -233,13 +233,13 @@ namespace libfc {
       
       PH_RETURN_CALLBACK_ERROR(end_template_record());
     }
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_template_set() {
     std::cerr << "    Template set ends" << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_template_record(uint16_t template_id,
@@ -247,12 +247,12 @@ namespace libfc {
     std::cerr << "      Template record: id=" << template_id
               << ", fields=" << field_count
               << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_template_record() {
     std::cerr << "      Template record ends" << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_options_template_set(uint16_t set_id,
@@ -261,12 +261,12 @@ namespace libfc {
     std::cerr << "    Option template set: id=" << set_id
               << ", length=" << set_length
               << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_options_template_set() {
     std::cerr << "    Option template set ends" << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_options_template_record(uint16_t template_id,
@@ -276,12 +276,12 @@ namespace libfc {
               << ", fields=" << field_count
               << ", scope-fields=" << scope_field_count
               << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::end_options_template_record() {
     std::cerr << "      Option template record ends" << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::field_specifier(bool enterprise,
@@ -300,20 +300,20 @@ namespace libfc {
     else 
       std::cerr << ", IETF IE";
     std::cerr << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PrintContentHandler::start_data_set(uint16_t id, uint16_t length, const uint8_t* buf) {
     std::cerr << "    Data set: template-id=" << id
               << ", length=" << length
               << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
   
   std::shared_ptr<ErrorContext> PrintContentHandler::end_data_set() {
     std::cerr << "    Data set ends"
               << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
 };

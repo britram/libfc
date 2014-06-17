@@ -33,6 +33,7 @@
 #ifndef _FCOLD_IMP_H_
 #  define _FCOLD_IMP_H_
 
+#include <condition_variable>
 #include <queue>
 #include <thread>    
 
@@ -53,13 +54,14 @@ namespace fcold {
                                         mbq;
         std::mutex                      mbqmtx;
         std::shared_ptr<libfc::ErrorContext>   worker_ectx;
+        std::condition_variable         mbqcv;
         bool                            run;
 
         std::shared_ptr<MessageBuffer>  next_mbuf();
         void                            work();
         
     public:
-        Imp(Backend* bep);
+      Imp(Backend* bep, libfc::PlacementCollector::Protocol protocol);
         ~Imp();
         
         void enqueue_mbuf(std::shared_ptr<MessageBuffer> mbuf);

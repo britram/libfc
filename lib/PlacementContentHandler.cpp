@@ -54,7 +54,7 @@ namespace libfc {
 #define CH_REPORT_ERROR(error, message_stream)                             \
   do {                                                                     \
     parse_is_good = false;                                                 \
-    libfc_RETURN_ERROR(recoverable, error, message_stream, 0, 0, 0, 0, 0); \
+    LIBFC_RETURN_ERROR(recoverable, error, message_stream, 0, 0, 0, 0, 0); \
   } while (0)
 
 #define CH_REPORT_CALLBACK_ERROR(call) \
@@ -184,7 +184,7 @@ namespace libfc {
       for (unsigned int field = 0; field < field_count; field++) {
         if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen,
                                     cur, set_end)) {
-          libfc_RETURN_ERROR(recoverable, long_fieldspec,
+          LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
                              "Field specifier partly outside template record", 
                              0, 0, 0, 0, cur - buf);
         }
@@ -199,7 +199,7 @@ namespace libfc {
           if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen
                                       + kEnterpriseLen, cur,
                                       set_end)) {
-            libfc_RETURN_ERROR(recoverable, long_fieldspec,
+            LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
                                "Field specifier partly outside template "
                                "record (enterprise)", 
                                0, 0, 0, 0, cur - buf);
@@ -226,7 +226,7 @@ namespace libfc {
       
       CH_REPORT_CALLBACK_ERROR(end_template_record());
     }
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::start_template_set(uint16_t set_id,
@@ -238,12 +238,12 @@ namespace libfc {
     assert(current_wire_template == 0);
 
     process_template_set(set_id, set_length, buf, false);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_set");
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   uint64_t PlacementContentHandler::make_template_key(uint16_t tid) const {
@@ -268,7 +268,7 @@ namespace libfc {
     current_field_no = 0;
     current_wire_template = new IETemplate();
 
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_template_record() {
@@ -331,7 +331,7 @@ namespace libfc {
                       << current_field_no);
 
     current_wire_template = 0;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::start_options_template_set(
@@ -344,12 +344,12 @@ namespace libfc {
     assert(current_wire_template == 0);
 
     process_template_set(set_id, set_length, buf, true);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_options_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_set");
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::field_specifier(
@@ -409,7 +409,7 @@ namespace libfc {
 
     current_wire_template->add(ie);
     current_field_no++;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::scope_field_specifier(
@@ -424,7 +424,7 @@ namespace libfc {
                     << ", ie=" << ie_id
                     << ", length=" << ie_length);
     field_specifier(enterprise, ie_id, ie_length, enterprise_number);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::options_field_specifier(
@@ -439,7 +439,7 @@ namespace libfc {
                     << ", ie=" << ie_id
                     << ", length=" << ie_length);
     field_specifier(enterprise, ie_id, ie_length, enterprise_number);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
 
@@ -531,7 +531,7 @@ namespace libfc {
                          " (this warning will appear only once)");
           unmatched_template_ids.insert(make_template_key(id));
         }
-        libfc_RETURN_OK();
+        LIBFC_RETURN_OK();
       } else {
         std::shared_ptr<ErrorContext> e 
           = unhandled_data_set_handler->unhandled_data_set(
@@ -547,7 +547,7 @@ namespace libfc {
                              " (this warning will appear only once)");
               unmatched_template_ids.insert(make_template_key(id));
             }
-            libfc_RETURN_OK();
+            LIBFC_RETURN_OK();
           }
         }
       }
@@ -562,7 +562,7 @@ namespace libfc {
 
     if (placement_template == 0) {
       LOG4CPLUS_TRACE(logger, "  no one interested in this data set; skipping");
-      libfc_RETURN_OK();
+      LIBFC_RETURN_OK();
     }
 
     DecodePlan plan(placement_template, wire_template);
@@ -584,13 +584,13 @@ namespace libfc {
       length -= consumed;
     }
 
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_data_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_data_set");
     LOG4CPLUS_TRACE(logger, "LEAVE end_data_set");
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   void PlacementContentHandler::register_placement_template(

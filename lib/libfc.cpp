@@ -92,7 +92,7 @@ public:
 
   std::shared_ptr<ErrorContext>
       start_placement(const PlacementTemplate* tmpl) {
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext>
@@ -115,9 +115,9 @@ public:
 
     if (this_template != 0)
       if (this_template->callback(this_template, this_template->vparg) <= 0) {
-        libfc_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", 0, 0, 0, 0, 0);
+        LIBFC_RETURN_ERROR(fatal, aborted_by_user, "C callback abort", 0, 0, 0, 0, 0);
       }
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
     
   std::shared_ptr<ErrorContext>
@@ -127,7 +127,7 @@ public:
       LOG4CPLUS_INFO(logger, "  No placement registered for data set in domain "
                      << observation_domain
                      << ", ID " << id);
-      libfc_RETURN_OK();
+      LIBFC_RETURN_OK();
   }
 };
 

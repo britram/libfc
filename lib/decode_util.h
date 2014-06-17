@@ -46,12 +46,12 @@ namespace libfc {
    * @code
    * std::stringstream s;
    *
-   * s << libfc_HEX(4) << 13;
+   * s << LIBFC_HEX(4) << 13;
    * @endcode
    *
    * This would result in the stream s containing "0x000d".
    */
-#  define libfc_HEX(width) \
+#  define LIBFC_HEX(width) \
   "0x" << std::hex << std::setw(width) << std::setfill('0')
 
   /** Decodes a 16-bit value from a buffer.
