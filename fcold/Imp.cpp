@@ -36,6 +36,10 @@ namespace fcold {
         worker_ectx(nullptr),
         run(true) {}
     
+    Imp::~Imp() {
+        // FIXME
+    }
+    
     void Imp::work() {
         while (run) {            
             std::shared_ptr<MessageBuffer> mb = next_mbuf();

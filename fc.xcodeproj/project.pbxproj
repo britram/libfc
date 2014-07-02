@@ -76,6 +76,8 @@
 		F55CCCCB193388DE000DED44 /* libtomcrypt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F55CCCCA193388DE000DED44 /* libtomcrypt.a */; };
 		F55CCCCC19338B9B000DED44 /* libfc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D37BC242192352A8009555FF /* libfc.dylib */; };
 		F55CCCCD19338B9F000DED44 /* libftrace.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5CDC4CB192510D800CBE87D /* libftrace.dylib */; };
+		F59F7DA3196437F30093431A /* SwitchImp.h in Headers */ = {isa = PBXBuildFile; fileRef = F59F7DA2196437F30093431A /* SwitchImp.h */; };
+		F59F7DA5196438DD0093431A /* SwitchImp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59F7DA4196438DD0093431A /* SwitchImp.cpp */; };
 		F5CDC4C419250EE800CBE87D /* WandioInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */; };
 		F5CDC4C519250EE800CBE87D /* WandioInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CDC4C319250EE800CBE87D /* WandioInputSource.h */; };
 		F5CDC4C619250FC500CBE87D /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
@@ -187,6 +189,8 @@
 		F58116F01934D04300BD2966 /* Configuration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Configuration.h; path = fcold/Configuration.h; sourceTree = "<group>"; };
 		F58116F31934D06E00BD2966 /* MessageBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MessageBuffer.h; path = fcold/MessageBuffer.h; sourceTree = "<group>"; };
 		F58116F51934DD7600BD2966 /* MessageBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MessageBuffer.cpp; path = fcold/MessageBuffer.cpp; sourceTree = "<group>"; };
+		F59F7DA2196437F30093431A /* SwitchImp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwitchImp.h; path = fcold/SwitchImp.h; sourceTree = "<group>"; };
+		F59F7DA4196438DD0093431A /* SwitchImp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SwitchImp.cpp; path = fcold/SwitchImp.cpp; sourceTree = "<group>"; };
 		F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WandioInputSource.cpp; path = lib/WandioInputSource.cpp; sourceTree = "<group>"; };
 		F5CDC4C319250EE800CBE87D /* WandioInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WandioInputSource.h; path = lib/WandioInputSource.h; sourceTree = "<group>"; };
 		F5CDC4CB192510D800CBE87D /* libftrace.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libftrace.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -409,6 +413,8 @@
 				F537B02219409149001F9416 /* BackendFactory.h */,
 				F537B02319409B79001F9416 /* Backend.h */,
 				F537B02419409CEA001F9416 /* StatdatFrontend.h */,
+				F59F7DA2196437F30093431A /* SwitchImp.h */,
+				F59F7DA4196438DD0093431A /* SwitchImp.cpp */,
 			);
 			name = fcold;
 			sourceTree = "<group>";
@@ -453,6 +459,7 @@
 				D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */,
 				D354E81F19235BD300C45B70 /* libfc.h in Headers */,
 				D354E8061923550800C45B70 /* InfoModel.h in Headers */,
+				F59F7DA3196437F30093431A /* SwitchImp.h in Headers */,
 				F5596058192E04C4003754C8 /* V9MessageStreamParser.h in Headers */,
 				D354E8171923550800C45B70 /* pointer_checks.h in Headers */,
 			);
@@ -582,6 +589,7 @@
 				D354E7EA1923550800C45B70 /* decode_util.cpp in Sources */,
 				D354E7EC1923550800C45B70 /* DecodePlan.cpp in Sources */,
 				D354E7F41923550800C45B70 /* ExportError.cpp in Sources */,
+				F59F7DA5196438DD0093431A /* SwitchImp.cpp in Sources */,
 				D354E8011923550800C45B70 /* IEType.cpp in Sources */,
 				F55CCCA819336E47000DED44 /* ContentHandler.cpp in Sources */,
 				D354E7FB1923550800C45B70 /* FileExportDestination.cpp in Sources */,

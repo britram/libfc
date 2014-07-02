@@ -30,17 +30,21 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
-#ifndef _FCOLD_BACKEND_H_
-#  define _FCOLD_BACKEND_H_
+#ifndef _FCOLD_SWITCHIMP_H_
+#  define _FCOLD_SWITCHIMP_H_
 
-#include "Backend.h"
+#include "Imp.h"
+
 
 namespace fcold {
-    class Backend {
-        /* FIXME: it is presently not at all clear what \
-           common services a backend provides. So maybe this goes away,
-           and backend configurability is something done inside an imp. */
+    
+    class SwitchImp : public Imp {
+        
+    public:
+        SwitchImp(Backend* bep, libfc::PlacementCollector::Protocol protocol): Imp(bep, protocol) {}
+        ~SwitchImp();
+        
     };
-}
+} /* namespace fcold */
 
-#endif
+#endif /* defined(_FCOLD_SWITCHIMP_H_) */

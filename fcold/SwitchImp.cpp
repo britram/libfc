@@ -30,17 +30,17 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
-#ifndef _FCOLD_BACKEND_H_
-#  define _FCOLD_BACKEND_H_
-
-#include "Backend.h"
+#include "SwitchImp.h"
 
 namespace fcold {
-    class Backend {
-        /* FIXME: it is presently not at all clear what \
-           common services a backend provides. So maybe this goes away,
-           and backend configurability is something done inside an imp. */
-    };
-}
 
-#endif
+    std::shared_ptr<ErrorContext> SwitchImp::start_placement(const libfc::PlacementTemplate* tmpl) {
+        
+    }
+    
+    std::shared_ptr<ErrorContext> SwitchImp::end_placement(const libfc::PlacementTemplate* tmpl) {
+        
+    }
+    
+    
+}

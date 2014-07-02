@@ -61,8 +61,8 @@ namespace fcold {
         void                            work();
         
     public:
-      Imp(Backend* bep, libfc::PlacementCollector::Protocol protocol);
-        ~Imp();
+        Imp(Backend* bep, libfc::PlacementCollector::Protocol protocol);
+        virtual ~Imp();
         
         void enqueue_mbuf(std::shared_ptr<MessageBuffer> mbuf);
         void stop();
