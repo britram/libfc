@@ -37,7 +37,6 @@
 #include <queue>
 #include <thread>    
 
-#include "Backend.h"
 #include "ErrorContext.h"
 #include "MessageBuffer.h"
 #include "PlacementCollector.h"
@@ -49,7 +48,6 @@ namespace fcold {
 
     private:
         std::thread                     worker;
-        Backend*                        backend;
         std::queue<std::shared_ptr<MessageBuffer> >
                                         mbq;
         std::mutex                      mbqmtx;
@@ -59,12 +57,17 @@ namespace fcold {
 
         std::shared_ptr<MessageBuffer>  next_mbuf();
         void                            work();
+    
+    protected:
+        virtual std::shared_ptr<libfc::ErrorContext>
+                start_message(std::shared_ptr<MessageBuffer> msg);
         
     public:
-        Imp(Backend* bep, libfc::PlacementCollector::Protocol protocol);
+        Imp(libfc::PlacementCollector::Protocol protocol);
         virtual ~Imp();
         
         void enqueue_mbuf(std::shared_ptr<MessageBuffer> mbuf);
+        void start();
         void stop();
     };
 } /* namespace fcold */

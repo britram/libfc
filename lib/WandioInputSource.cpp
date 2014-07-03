@@ -35,6 +35,7 @@ namespace libfc {
       message_offset(0),
       current_offset(0),
       name(name),
+      open_err(nullptr),
       io_belongs_to_me(false) {
   }
 
@@ -43,13 +44,22 @@ namespace libfc {
       message_offset(0),
       current_offset(0),
       name(name),
+      open_err(nullptr),
       io_belongs_to_me(true) {
     io = wandio_create(name.c_str());
+    if (!io) {
+        int syserrno = errno;
+        open_err = std::make_shared<ErrorContext>(ErrorContext::fatal,
+                                                  Error(Error::system_error),
+                                                  syserrno, ("wandio cannot open " + name).c_str(),
+                                                  this, 0, 0, 0);
+    
+    }
   }
 
   WandioInputSource::~WandioInputSource() {
     /* Do not destroy io if it doesn't belong to me! */
-    if (io_belongs_to_me)
+    if (io_belongs_to_me && io)
       wandio_destroy(io);
   }
 

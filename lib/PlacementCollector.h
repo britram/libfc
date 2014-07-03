@@ -65,6 +65,9 @@ namespace libfc {
      */
     std::shared_ptr<ErrorContext> collect(InputSource& is);
 
+    //FIXME figure out how to get signals from the placement content handler
+    //      into the subclass here.
+      
     /** Signals that placement of values will now begin. 
      *
      * @param template placement template for current placements

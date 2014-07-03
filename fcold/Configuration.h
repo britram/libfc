@@ -47,7 +47,6 @@ namespace fcold {
         std::vector<Listener*>  listeners;
         
         ImpFactory*             impfact;
-        BackendFactory*         befact;
         
         int                     argc;
         const char              **argv;

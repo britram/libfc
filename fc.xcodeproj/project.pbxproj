@@ -76,8 +76,6 @@
 		F55CCCCB193388DE000DED44 /* libtomcrypt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F55CCCCA193388DE000DED44 /* libtomcrypt.a */; };
 		F55CCCCC19338B9B000DED44 /* libfc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D37BC242192352A8009555FF /* libfc.dylib */; };
 		F55CCCCD19338B9F000DED44 /* libftrace.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5CDC4CB192510D800CBE87D /* libftrace.dylib */; };
-		F59F7DA3196437F30093431A /* SwitchImp.h in Headers */ = {isa = PBXBuildFile; fileRef = F59F7DA2196437F30093431A /* SwitchImp.h */; };
-		F59F7DA5196438DD0093431A /* SwitchImp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59F7DA4196438DD0093431A /* SwitchImp.cpp */; };
 		F5CDC4C419250EE800CBE87D /* WandioInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */; };
 		F5CDC4C519250EE800CBE87D /* WandioInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CDC4C319250EE800CBE87D /* WandioInputSource.h */; };
 		F5CDC4C619250FC500CBE87D /* libwandio.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D354E82019235D2000C45B70 /* libwandio.1.dylib */; };
@@ -166,6 +164,7 @@
 		D354E81D19235BD300C45B70 /* libfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libfc.h; path = lib/libfc.h; sourceTree = "<group>"; };
 		D354E82019235D2000C45B70 /* libwandio.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwandio.1.dylib; path = ../../opt/lib/libwandio.1.dylib; sourceTree = "<group>"; };
 		D37BC242192352A8009555FF /* libfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D398237A1965A5D800255B8C /* StatdatFrontend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StatdatFrontend.cpp; path = fcold/StatdatFrontend.cpp; sourceTree = "<group>"; };
 		F5051638193F101800993D38 /* ImpFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImpFactory.h; path = fcold/ImpFactory.h; sourceTree = "<group>"; };
 		F505163C193F428000993D38 /* WandFileFrontend.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WandFileFrontend.h; path = fcold/WandFileFrontend.h; sourceTree = "<group>"; };
 		F537B021194070A7001F9416 /* fcold.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = fcold.cpp; path = fcold/fcold.cpp; sourceTree = "<group>"; };
@@ -259,15 +258,18 @@
 				F5596050192E04C4003754C8 /* PrintContentHandler.h */,
 				F5596051192E04C4003754C8 /* V9MessageStreamParser.cpp */,
 				F5596052192E04C4003754C8 /* V9MessageStreamParser.h */,
-				F559604B192E0496003754C8 /* InputSource.cpp */,
-				F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */,
-				F5CDC4C319250EE800CBE87D /* WandioInputSource.h */,
 				D354E81C19235BD300C45B70 /* libfc.cpp */,
 				D354E81D19235BD300C45B70 /* libfc.h */,
 				D354E7AB1923550800C45B70 /* BasicOctetArray.cpp */,
 				D354E7AC1923550800C45B70 /* BasicOctetArray.h */,
+				D354E7CF1923550800C45B70 /* InputSource.h */,
+				F559604B192E0496003754C8 /* InputSource.cpp */,
 				D354E7AD1923550800C45B70 /* BufferInputSource.cpp */,
 				D354E7AE1923550800C45B70 /* BufferInputSource.h */,
+				D354E7C51923550800C45B70 /* FileInputSource.cpp */,
+				D354E7C61923550800C45B70 /* FileInputSource.h */,
+				F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */,
+				F5CDC4C319250EE800CBE87D /* WandioInputSource.h */,
 				D354E7AF1923550800C45B70 /* Constants.h */,
 				D354E7B01923550800C45B70 /* ContentHandler.h */,
 				F55CCCA719336E47000DED44 /* ContentHandler.cpp */,
@@ -283,8 +285,6 @@
 				D354E7C21923550800C45B70 /* ExportDestination.h */,
 				D354E7C31923550800C45B70 /* FileExportDestination.cpp */,
 				D354E7C41923550800C45B70 /* FileExportDestination.h */,
-				D354E7C51923550800C45B70 /* FileInputSource.cpp */,
-				D354E7C61923550800C45B70 /* FileInputSource.h */,
 				D354E7C71923550800C45B70 /* IETemplate.cpp */,
 				D354E7C81923550800C45B70 /* IETemplate.h */,
 				D354E7C91923550800C45B70 /* IEType.cpp */,
@@ -293,7 +293,6 @@
 				D354E7CC1923550800C45B70 /* InfoElement.h */,
 				D354E7CD1923550800C45B70 /* InfoModel.cpp */,
 				D354E7CE1923550800C45B70 /* InfoModel.h */,
-				D354E7CF1923550800C45B70 /* InputSource.h */,
 				D354E7D01923550800C45B70 /* ipfix_endian.h */,
 				D354E7D31923550800C45B70 /* IPFIXMessageStreamParser.cpp */,
 				D354E7D41923550800C45B70 /* IPFIXMessageStreamParser.h */,
@@ -413,6 +412,7 @@
 				F537B02219409149001F9416 /* BackendFactory.h */,
 				F537B02319409B79001F9416 /* Backend.h */,
 				F537B02419409CEA001F9416 /* StatdatFrontend.h */,
+				D398237A1965A5D800255B8C /* StatdatFrontend.cpp */,
 				F59F7DA2196437F30093431A /* SwitchImp.h */,
 				F59F7DA4196438DD0093431A /* SwitchImp.cpp */,
 			);
@@ -459,7 +459,6 @@
 				D354E80C1923550800C45B70 /* IPFIXMessageStreamParser.h in Headers */,
 				D354E81F19235BD300C45B70 /* libfc.h in Headers */,
 				D354E8061923550800C45B70 /* InfoModel.h in Headers */,
-				F59F7DA3196437F30093431A /* SwitchImp.h in Headers */,
 				F5596058192E04C4003754C8 /* V9MessageStreamParser.h in Headers */,
 				D354E8171923550800C45B70 /* pointer_checks.h in Headers */,
 			);
@@ -589,7 +588,6 @@
 				D354E7EA1923550800C45B70 /* decode_util.cpp in Sources */,
 				D354E7EC1923550800C45B70 /* DecodePlan.cpp in Sources */,
 				D354E7F41923550800C45B70 /* ExportError.cpp in Sources */,
-				F59F7DA5196438DD0093431A /* SwitchImp.cpp in Sources */,
 				D354E8011923550800C45B70 /* IEType.cpp in Sources */,
 				F55CCCA819336E47000DED44 /* ContentHandler.cpp in Sources */,
 				D354E7FB1923550800C45B70 /* FileExportDestination.cpp in Sources */,

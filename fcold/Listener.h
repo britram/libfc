@@ -35,14 +35,13 @@
 #  include <thread>
 
 #include "ImpFactory.h"
-#include "BackendFactory.h"
 
 namespace fcold {
 
   class Listener {
   public:
     /** Creates a Listener. */
-    Listener(ImpFactory& nimpfact, BackendFactory &nbefact);
+    Listener(ImpFactory& nimpfact);
 
     /** Destroys a Listener. */
     virtual ~Listener() = 0;
@@ -84,9 +83,7 @@ namespace fcold {
     /** ImpFactory owned by Configuration, 
         passed to Frontends to create Imps per session */
     ImpFactory&     impfact;
-    /** BackendFactory owned by Configuration,
-       passed to Frontends to create Backends per Imp */
-    BackendFactory& befact;
+
 
     bool            good;
     int             system_errno;

@@ -37,10 +37,9 @@ namespace fcold {
     class WandFileFrontend: public Frontend {
 
     public:
-        WandFileFrontend(ImpFactory&        impfact,
-                         BackendFactory&    befact,
-                         const char* filename)::
-        Frontend(impfact, befact, new libfc::WandioInputSource(filename))
+        WandFileFrontend(ImpFactory&            impfact,
+                         const std::string&     filename):
+        Frontend(impfact, new libfc::WandioInputSource(filename))
         {}
     };
 }
