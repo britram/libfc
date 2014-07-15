@@ -30,26 +30,46 @@
  * @author Brian Trammell <trammell@tik.ee.ethz.ch>
  */
 
-#ifndef _FCOLD_STATDATFRONTEND_H_
-#  define _FCOLD_STATDATFRONTEND_H_
-
 namespace fcold {
-    class StatdatFrontend: public WandFileFrontend {
-        
-    public:
-        StatdatFrontend(ImpFactory&        impfact,
-                        const std::string& filename);
-    public:
-        virtual std::shared_ptr<libfc::ErrorContext>
-                deframe_next(std::shared_ptr<MessageBuffer>& mb);
-        
-    private:
-        void next_statline();
-        
-        std::string         stat_filename;
-        libfc::InputSource* stat_is;
 
-    };
+
+    static std::string filename_to_stat(const std::String& filename) {
+        auto datidx = filename.rfind(".dat", filename.size() - 1);
+        if (datidx == std::string::npos)
+            // This will probably never work, but hey at least we tried.
+            return filename + ".stat";
+        else
+            return filename.substr(0, datidx) + ".stat" +
+                   filename.substr(datidx + 4, filename.size() - (datidx + 4));
+    }
+    
+    StatdatFrontend::next_statline()
+    {
+        // fixme do stuff
+    }
+    
+    StatdatFrontend::StatdatFrontend(ImpFactory&        impfact,
+                                     const std::string& filename):
+        WandioFrontend(impfact, filename)
+    {
+        // Attempt to open the associated statfile
+        stat_filename = filename_to_stat(filename);
+        stat_is = new WandioInputSource(stat_filename);
+        if (stat_is->get_error()) {
+            // FIXME report error: can't open statfile
+            delete stat_is;
+            stat_is = nullptr;
+        }
+        
+    }
+    
+    std::shared_ptr<libfc::ErrorContext>
+        StatdatFrontend::deframe_next(std::shared_ptr<MessageBuffer>& mb)
+    {
+        // get the message first
+        WandioFrontend::deframe_next(mb);
+        
+        // now get the next stat line if we can
+        if (stat_is) next_statline();
+    }
 }
-
-#endif /* idem hack */

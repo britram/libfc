@@ -285,21 +285,16 @@ namespace fcold {
                                0, is, 0, 0, 0);
         }
 
-        // FIXME: potentially questionable fix. Original:
-        //mb->setmsglen(msglen);
-        // New:
         mb->setbuflen(msglen);
 
                                
         LIBFC_RETURN_OK();
     }
     
-  Frontend::Frontend(ImpFactory&        nimpfact,
-                     BackendFactory&    nbefact,
+  Frontend::Frontend(ImpFactory&         nimpfact,
                      libfc::InputSource* nis,
-                     int                npdu_version):
+                     int                 npdu_version):
       impfact(nimpfact),
-      befact(nbefact),
       is(nis),
       pdu_version(npdu_version)
     {
@@ -308,10 +303,7 @@ namespace fcold {
     Frontend::~Frontend() {
         if (is) delete is;
     }
-    
-    // FIXME: check fix: I removed "static" qualifier from this member
-    // function. This seems correct to me since it accesses non-static
-    // members (pdu_version) --neuhaust
+
     std::shared_ptr<libfc::ErrorContext>
             Frontend::deframe_next(std::shared_ptr<MessageBuffer>& mb)
     {

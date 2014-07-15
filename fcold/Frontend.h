@@ -33,7 +33,6 @@
 #ifndef _FCOLD_FRONTEND_H_
 #  define _FCOLD_FRONTEND_H_
 
-#include "BackendFactory.h"
 #include "InputSource.h"
 #include "ImpFactory.h"
 #include "MessageBuffer.h"
@@ -43,20 +42,18 @@ namespace fcold {
 
     class Frontend {
     public:
-        Frontend(ImpFactory&        impfact,
-                 BackendFactory&    befact,
-                 libfc::InputSource*       is,
-                 int                pdu_version);
+        Frontend(ImpFactory&         impfact,
+                 libfc::InputSource* is,
+                 int                 pdu_version);
 
         /** Destroys a Frontend. */
         virtual ~Frontend();
 
-        std::shared_ptr<libfc::ErrorContext>
-                deframe_next(std::shared_ptr<MessageBuffer>& mb);
+        virtual std::shared_ptr<libfc::ErrorContext>
+                     deframe_next(std::shared_ptr<MessageBuffer>& mb);
 
     private:
         ImpFactory& impfact;
-        BackendFactory& befact;
         libfc::InputSource* is;
         int pdu_version;
   };

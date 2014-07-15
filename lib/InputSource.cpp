@@ -29,7 +29,13 @@
 
 namespace libfc {
 
-  InputSource::~InputSource() {
+    InputSource::InputSource()
+    {
+    }
+
+    
+  InputSource::~InputSource()
+  {
   }
 
   ssize_t InputSource::peek(uint8_t* buf, uint16_t len) {

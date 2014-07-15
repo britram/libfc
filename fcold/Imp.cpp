@@ -31,18 +31,22 @@ namespace fcold {
     
     Imp::Imp(Backend *bep, libfc::PlacementCollector::Protocol protocol):
         PlacementCollector(protocol),
-        worker(&Imp::work, this),
         backend(bep),
         worker_ectx(nullptr),
         run(true) {}
+    
+    Imp::~Imp() {
+        // FIXME make sure everything that needs deleting gets deleted
+    }
     
     void Imp::work() {
         while (run) {            
             std::shared_ptr<MessageBuffer> mb = next_mbuf();
             if (mb == nullptr) break;
             
-            worker_ectx = collect(*mb);
-            // FIXME do the right thing on error
+            if ((worker_ectx = collect(*mb))) {
+                // FIXME error on message collection, skip to next
+            }
         }
     }
     
@@ -66,6 +70,11 @@ namespace fcold {
         std::unique_lock<std::mutex> lock(mbqmtx);
         mbq.push(mb);
         mbqcv.notify_all();
+    }
+    
+    void Imp::start() {
+        run = true;
+        worker = std::thread(&Imp::work, this);
     }
     
     void Imp::stop() {

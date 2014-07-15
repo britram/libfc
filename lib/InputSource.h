@@ -33,9 +33,8 @@
 #ifndef _LIBFC_INPUTSOURCE_H_
 #  define _LIBFC_INPUTSOURCE_H_
 
-#  include <cstdint>
-
-#  include <unistd.h>
+#include <cstdint>
+#include <unistd.h>
 
 namespace libfc {
 
@@ -64,7 +63,10 @@ namespace libfc {
    * must implement.
    */
   class InputSource {
+      
   public:
+    InputSource();
+      
     /** Destroys an InputSource. */
     virtual ~InputSource() = 0;
 
@@ -142,6 +144,7 @@ namespace libfc {
      * @return true if this input source supports peek(), false if not.
      */
     virtual bool can_peek() const = 0;
+      
   };
 
 } // namespace libfc

@@ -65,7 +65,7 @@ namespace libfc {
      */
     std::shared_ptr<ErrorContext> collect(InputSource& is);
 
-    /** Signals that a new messagehas just started. 
+    /** Signals that a new message has just started. 
      *     
      * @param version the version number in the header
      * @param length overall length of message in bytes

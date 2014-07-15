@@ -37,7 +37,7 @@
 
 namespace fcold {
     class ImpFactory {
-        virtual Imp* create_imp(Backend *bep) = 0;
+        virtual Imp* create_imp() = 0;
     };
 }
 

@@ -298,8 +298,7 @@ namespace libfc {
      * @return  a string representation of this error
      */
     const std::string to_string() const;
-
-
+      
   private:
     error_severity_t severity;
     Error e;

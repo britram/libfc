@@ -37,8 +37,9 @@
 
 namespace fcold {
     class Backend {
-        /* What is the interface between the frontend and the backend?
-           How are records represented in the mid-end? */
+        /* FIXME: it is presently not at all clear what \
+           common services a backend provides. So maybe this goes away,
+           and backend configurability is something done inside an imp. */
     };
 }
 
