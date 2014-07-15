@@ -819,6 +819,7 @@ namespace libfc {
     LOG4CPLUS_TRACE(logger, "ENTER place_values");
 
     assert(n_message_octets <= kMaxMessageLen);
+    assert(tmpl != 0);
 
     /** The number of bytes added to the current message as a result
      * of issuing this new data record.  It might be as small as the
@@ -935,5 +936,14 @@ namespace libfc {
 
     assert(n_message_octets <= kMaxMessageLen);
   }
+
+  void PlacementExporter::change_observation_domain(
+      uint32_t new_observation_domain) {
+    if (observation_domain != new_observation_domain) {
+      flush();
+      observation_domain = new_observation_domain;
+    }
+  }
+
 
 } // namespace libfc
