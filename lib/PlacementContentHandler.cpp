@@ -68,6 +68,7 @@ namespace libfc {
 
   PlacementContentHandler::PlacementContentHandler()
     : info_model(InfoModel::instance()),
+      start_message_handler(0),
       unhandled_data_set_handler(0),
       use_matched_template_cache(false),
       current_wire_template(0),
@@ -150,14 +151,20 @@ namespace libfc {
     this->observation_domain = observation_domain;
 
     LOG4CPLUS_TRACE(logger, "LEAVE start_message");
-    return std::shared_ptr<ErrorContext>(0);
+
+    if (start_message_handler != 0)
+      return start_message_handler->start_message(
+               version, length, export_time, sequence_number,
+               observation_domain, base_time);
+    else
+      LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_message() {
     LOG4CPLUS_TRACE(logger, "ENTER end_message");
     assert(current_wire_template == 0);
     LOG4CPLUS_TRACE(logger, "LEAVE end_message");
-    return std::shared_ptr<ErrorContext>(0);
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::process_template_set(
@@ -591,6 +598,12 @@ namespace libfc {
     LOG4CPLUS_TRACE(logger, "ENTER end_data_set");
     LOG4CPLUS_TRACE(logger, "LEAVE end_data_set");
     LIBFC_RETURN_OK();
+  }
+
+  void PlacementContentHandler::register_start_message_handler(
+      PlacementCollector* callback)
+  {
+    start_message_handler = callback;
   }
 
   void PlacementContentHandler::register_placement_template(

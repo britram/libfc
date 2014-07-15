@@ -93,6 +93,13 @@ namespace libfc {
                                                  const uint8_t* buf);
     std::shared_ptr<ErrorContext> end_data_set();
 
+    /** Registers a start message handler.
+     *
+     * This will cause a PlacementCollector's start_message() method
+     * to be called when a new message starts.
+     */
+    void register_start_message_handler(PlacementCollector* callback);
+
     /** Registers a placement template.
      *
      * Calling this function with a given placement template and a
@@ -241,6 +248,13 @@ namespace libfc {
 
     /** Association between placement template and callback. */
     std::map<const PlacementTemplate*, PlacementCollector*> callbacks;
+
+    /** Start Message handler.
+     *
+     * This points to a PlacementCollector whose start_message()
+     * method is to be called when a new message starts.
+     */
+    PlacementCollector* start_message_handler;
 
     /** Unhandled data set handler, if any. */
     PlacementCollector* unhandled_data_set_handler;

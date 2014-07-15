@@ -587,6 +587,16 @@ public:
     LIBFC_RETURN_OK();
   }
 
+  std::shared_ptr<ErrorContext> start_message(
+        uint16_t version,
+        uint16_t length,
+        uint32_t export_time,
+        uint32_t sequence_number,
+        uint32_t observation_domain,
+        uint64_t base_time) {
+    LIBFC_RETURN_OK();
+  }
+
   ~CSVCollector() {
     delete csv_template;
 
