@@ -45,6 +45,7 @@ namespace libfc {
 
     if (ir != 0)
       ir->set_content_handler(&d);
+    d.register_start_message_handler(this);
   }
 
   PlacementCollector::~PlacementCollector() {
