@@ -64,7 +64,8 @@ if ($ENV{CLANG})
 else ($ENV{CLANG})
   file (GLOB UT_OBJ test/Test*.cpp)
   add_executable(fctest ${UT_OBJ})
-  target_link_libraries(fctest fc ${Boost_LIBRARIES}
+  target_link_libraries(fctest fc libfcold
+                                  ${Boost_LIBRARIES}
                                   ${Wandio_LIBRARIES}
                                   ${Log4CPlus_LIBRARIES})
 endif()
