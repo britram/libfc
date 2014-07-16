@@ -30,14 +30,14 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_MESSAGESTREAMPARSER_H_
-#  define _libfc_MESSAGESTREAMPARSER_H_
+#ifndef _LIBFC_MESSAGESTREAMPARSER_H_
+#  define _LIBFC_MESSAGESTREAMPARSER_H_
 
 #  include <memory>
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "ContentHandler.h"
 #  include "Constants.h"
@@ -82,11 +82,11 @@ namespace libfc {
 
   private:
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   };
 
 } // namespace libfc
 
-#endif /* _libfc_MESSAGESTREAMPARSER_H_ */
+#endif /* _LIBFC_MESSAGESTREAMPARSER_H_ */

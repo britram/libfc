@@ -30,13 +30,13 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #  define LOG4CPLUS_ERROR(logger, expr)
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include <cstdio>
 #include <ctime>
@@ -61,21 +61,21 @@ BOOST_AUTO_TEST_CASE(Basic) {
   PrintContentHandler ph{kV9Version};
   V9MessageStreamParser ir;
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger 
       = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser"));
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
   ir.set_content_handler(&ph);
 
   BufferInputSource is(msg01, sizeof(msg01));
   std::shared_ptr<ErrorContext> e = ir.parse(is);
   if (e != 0) {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     LOG4CPLUS_ERROR(logger, e->to_string());
-#else /* !_libfc_HAVE_LOG4CPLUS_ */
+#else /* !_LIBFC_HAVE_LOG4CPLUS_ */
     std::cerr << "Error: " << e->to_string() << std::endl;
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
   }
 }
 
@@ -84,10 +84,10 @@ BOOST_AUTO_TEST_CASE(File01) {
   io_t* io = wandio_create(name);
 
   if (io != 0) {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger 
       = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser"));
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     WandioInputSource is{io, name};
     PrintContentHandler ph{kV9Version};
@@ -96,11 +96,11 @@ BOOST_AUTO_TEST_CASE(File01) {
     ir.set_content_handler(&ph);
     std::shared_ptr<ErrorContext> e = ir.parse(is);
     if (e != 0) {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       LOG4CPLUS_ERROR(logger, e->to_string());
-#else /* !_libfc_HAVE_LOG4CPLUS_ */
+#else /* !_LIBFC_HAVE_LOG4CPLUS_ */
       std::cerr << "Error: " << e->to_string() << std::endl;
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }
   }
 
@@ -112,10 +112,10 @@ BOOST_AUTO_TEST_CASE(File02) {
   io_t* io = wandio_create(name);
 
   if (io != 0) {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger 
       = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser"));
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     WandioInputSource is{io, name};
     PrintContentHandler ph{kV9Version};
@@ -124,11 +124,11 @@ BOOST_AUTO_TEST_CASE(File02) {
     ir.set_content_handler(&ph);
     std::shared_ptr<ErrorContext> e = ir.parse(is);
     if (e != 0) {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       LOG4CPLUS_ERROR(logger, e->to_string());
-#else /* !_libfc_HAVE_LOG4CPLUS_ */
+#else /* !_LIBFC_HAVE_LOG4CPLUS_ */
       std::cerr << "Error: " << e->to_string() << std::endl;
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }
   }
 
@@ -140,10 +140,10 @@ BOOST_AUTO_TEST_CASE(File03) {
   io_t* io = wandio_create(name);
 
   if (io != 0) {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger 
       = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser"));
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     WandioInputSource is{io, name};
     PrintContentHandler ph{kV9Version, 10};
@@ -152,11 +152,11 @@ BOOST_AUTO_TEST_CASE(File03) {
     ir.set_content_handler(&ph);
     std::shared_ptr<ErrorContext> e = ir.parse(is);
     if (e != 0) {
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       LOG4CPLUS_ERROR(logger, e->to_string());
-#else /* !_libfc_HAVE_LOG4CPLUS_ */
+#else /* !_LIBFC_HAVE_LOG4CPLUS_ */
       std::cerr << "Error: " << e->to_string() << std::endl;
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }
   }
 

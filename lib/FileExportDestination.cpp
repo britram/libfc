@@ -26,11 +26,11 @@
 #include <unistd.h>
 #include <errno.h>
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "Constants.h"
 #include "FileExportDestination.h"
@@ -39,16 +39,16 @@ namespace libfc {
 
   FileExportDestination::FileExportDestination(int _fd)
     : fd(_fd)
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("FileExportDestination")))
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  {
   }
 
   ssize_t FileExportDestination::writev(const std::vector< ::iovec>& iovecs) {
     LOG4CPLUS_TRACE(logger, "ENTER FileExportDestination::writev");
     LOG4CPLUS_TRACE(logger, "writing " << iovecs.size() << " iovecs");
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     const ::iovec* vecs = iovecs.data();
     size_t total = 0;
     for (unsigned int i = 0; i < iovecs.size(); i++) {
@@ -58,7 +58,7 @@ namespace libfc {
       total += vecs[i].iov_len;
     }
     LOG4CPLUS_TRACE(logger, "total=" << total);
-#endif /*  defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /*  defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     return ::writev(fd, iovecs.data(), static_cast<int>(iovecs.size()));
   }

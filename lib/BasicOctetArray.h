@@ -30,8 +30,8 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef _libfc_BASICOCTETARRAY_H_
-#  define _libfc_BASICOCTETARRAY_H_
+#ifndef _LIBFC_BASICOCTETARRAY_H_
+#  define _LIBFC_BASICOCTETARRAY_H_
 
 #  include <cstdint>
 #  include <cstring>
@@ -102,4 +102,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_BASICOCTETARRAY_H_
+#endif // _LIBFC_BASICOCTETARRAY_H_

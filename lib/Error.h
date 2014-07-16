@@ -29,8 +29,8 @@
  * @file
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
-#ifndef _libfc_ERROR_H_
-#  define _libfc_ERROR_H_
+#ifndef _LIBFC_ERROR_H_
+#  define _LIBFC_ERROR_H_
 
 #  include <string>
 
@@ -103,4 +103,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_ERROR_H_
+#endif // _LIBFC_ERROR_H_

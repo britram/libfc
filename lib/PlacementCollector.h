@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_PLACEMENTCALLBACK_H_
-#  define _libfc_PLACEMENTCALLBACK_H_
+#ifndef _LIBFC_PLACEMENTCALLBACK_H_
+#  define _LIBFC_PLACEMENTCALLBACK_H_
 
 #  include "PlacementContentHandler.h"
 #  include "MessageStreamParser.h"
@@ -64,6 +64,29 @@ namespace libfc {
      * @return an error context, giving information about potential errors.
      */
     std::shared_ptr<ErrorContext> collect(InputSource& is);
+
+    /** Signals that a new message has just started. 
+     *     
+     * @param version the version number in the header
+     * @param length overall length of message in bytes
+     * @param export_time seconds since Jan 1, 1970 when this header
+     *   left the exporter. 
+     * @param sequence_number sequence number as per RFC 5101
+     * @param observation_domain observation domain as per RFC 5101
+     * @param base_time number of milliseconds since Jan 1, 1970 until
+     *   the exporter was last (re)started.  This makes sense only for
+     *   NetFlow v5 and NetFlow v9; for IPFIX, this must be zero.
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
+     */
+    virtual std::shared_ptr<ErrorContext> start_message(
+        uint16_t version,
+        uint16_t length,
+        uint32_t export_time,
+        uint32_t sequence_number,
+        uint32_t observation_domain,
+        uint64_t base_time) = 0;
 
     /** Signals that placement of values will now begin. 
      *
@@ -150,4 +173,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_PLACEMENTCALLBACK_H_
+#endif // _LIBFC_PLACEMENTCALLBACK_H_

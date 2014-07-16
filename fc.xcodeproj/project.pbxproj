@@ -61,6 +61,7 @@
 		D354E81B1923550800C45B70 /* UDPInputSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E7E31923550800C45B70 /* UDPInputSource.h */; };
 		D354E81E19235BD300C45B70 /* libfc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D354E81C19235BD300C45B70 /* libfc.cpp */; };
 		D354E81F19235BD300C45B70 /* libfc.h in Headers */ = {isa = PBXBuildFile; fileRef = D354E81D19235BD300C45B70 /* libfc.h */; };
+		F505163A193F101800993D38 /* ImpFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = F5051638193F101800993D38 /* ImpFactory.h */; };
 		F559604C192E0496003754C8 /* InputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559604B192E0496003754C8 /* InputSource.cpp */; };
 		F5596053192E04C4003754C8 /* PlacementContentHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */; };
 		F5596054192E04C4003754C8 /* PlacementContentHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F559604E192E04C4003754C8 /* PlacementContentHandler.h */; };
@@ -163,6 +164,13 @@
 		D354E81D19235BD300C45B70 /* libfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libfc.h; path = lib/libfc.h; sourceTree = "<group>"; };
 		D354E82019235D2000C45B70 /* libwandio.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwandio.1.dylib; path = ../../opt/lib/libwandio.1.dylib; sourceTree = "<group>"; };
 		D37BC242192352A8009555FF /* libfc.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libfc.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D398237A1965A5D800255B8C /* StatdatFrontend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StatdatFrontend.cpp; path = fcold/StatdatFrontend.cpp; sourceTree = "<group>"; };
+		F5051638193F101800993D38 /* ImpFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImpFactory.h; path = fcold/ImpFactory.h; sourceTree = "<group>"; };
+		F505163C193F428000993D38 /* WandFileFrontend.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WandFileFrontend.h; path = fcold/WandFileFrontend.h; sourceTree = "<group>"; };
+		F537B021194070A7001F9416 /* fcold.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = fcold.cpp; path = fcold/fcold.cpp; sourceTree = "<group>"; };
+		F537B02219409149001F9416 /* BackendFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BackendFactory.h; path = fcold/BackendFactory.h; sourceTree = "<group>"; };
+		F537B02319409B79001F9416 /* Backend.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Backend.h; path = fcold/Backend.h; sourceTree = "<group>"; };
+		F537B02419409CEA001F9416 /* StatdatFrontend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StatdatFrontend.h; path = fcold/StatdatFrontend.h; sourceTree = "<group>"; };
 		F559604B192E0496003754C8 /* InputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputSource.cpp; path = lib/InputSource.cpp; sourceTree = "<group>"; };
 		F559604D192E04C4003754C8 /* PlacementContentHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlacementContentHandler.cpp; path = lib/PlacementContentHandler.cpp; sourceTree = "<group>"; };
 		F559604E192E04C4003754C8 /* PlacementContentHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlacementContentHandler.h; path = lib/PlacementContentHandler.h; sourceTree = "<group>"; };
@@ -176,11 +184,27 @@
 		F55CCCBF193379CD000DED44 /* ftrace-demo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "ftrace-demo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F55CCCC8193379F0000DED44 /* ftrace-demo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "ftrace-demo.c"; sourceTree = "<group>"; };
 		F55CCCCA193388DE000DED44 /* libtomcrypt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtomcrypt.a; path = ../../../../usr/local/Cellar/libtomcrypt/1.17/lib/libtomcrypt.a; sourceTree = "<group>"; };
+		F58116EF1934D04300BD2966 /* Configuration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Configuration.cpp; path = fcold/Configuration.cpp; sourceTree = "<group>"; };
+		F58116F01934D04300BD2966 /* Configuration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Configuration.h; path = fcold/Configuration.h; sourceTree = "<group>"; };
+		F58116F31934D06E00BD2966 /* MessageBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MessageBuffer.h; path = fcold/MessageBuffer.h; sourceTree = "<group>"; };
+		F58116F51934DD7600BD2966 /* MessageBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MessageBuffer.cpp; path = fcold/MessageBuffer.cpp; sourceTree = "<group>"; };
+		F59F7DA2196437F30093431A /* SwitchImp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwitchImp.h; path = fcold/SwitchImp.h; sourceTree = "<group>"; };
+		F59F7DA4196438DD0093431A /* SwitchImp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SwitchImp.cpp; path = fcold/SwitchImp.cpp; sourceTree = "<group>"; };
 		F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WandioInputSource.cpp; path = lib/WandioInputSource.cpp; sourceTree = "<group>"; };
 		F5CDC4C319250EE800CBE87D /* WandioInputSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WandioInputSource.h; path = lib/WandioInputSource.h; sourceTree = "<group>"; };
 		F5CDC4CB192510D800CBE87D /* libftrace.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libftrace.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5CDC4D01925115E00CBE87D /* libftrace.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = libftrace.c; path = ftrace/libftrace.c; sourceTree = "<group>"; };
 		F5CDC4D11925115E00CBE87D /* libftrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libftrace.h; path = ftrace/libftrace.h; sourceTree = "<group>"; };
+		F5CEA565193DCA120088ABA7 /* Imp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Imp.cpp; path = fcold/Imp.cpp; sourceTree = "<group>"; };
+		F5CEA566193DCA120088ABA7 /* Imp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Imp.h; path = fcold/Imp.h; sourceTree = "<group>"; };
+		F5CEA568193DDD940088ABA7 /* atomicops.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = atomicops.h; path = moodycamel/atomicops.h; sourceTree = "<group>"; };
+		F5CEA569193DDD940088ABA7 /* readerwriterqueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = readerwriterqueue.h; path = moodycamel/readerwriterqueue.h; sourceTree = "<group>"; };
+		F5CEA56A193DDE6A0088ABA7 /* DirectoryListener.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DirectoryListener.cpp; path = fcold/DirectoryListener.cpp; sourceTree = "<group>"; };
+		F5CEA56B193DDE6A0088ABA7 /* DirectoryListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DirectoryListener.h; path = fcold/DirectoryListener.h; sourceTree = "<group>"; };
+		F5CEA56C193DDE6A0088ABA7 /* Frontend.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Frontend.cpp; path = fcold/Frontend.cpp; sourceTree = "<group>"; };
+		F5CEA56D193DDE6A0088ABA7 /* Frontend.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Frontend.h; path = fcold/Frontend.h; sourceTree = "<group>"; };
+		F5CEA56E193DDE6A0088ABA7 /* Listener.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Listener.cpp; path = fcold/Listener.cpp; sourceTree = "<group>"; };
+		F5CEA56F193DDE6A0088ABA7 /* Listener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Listener.h; path = fcold/Listener.h; sourceTree = "<group>"; };
 		F5DD27DF19349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "liblog4cplus-1.1.9.dylib"; path = "../../../../usr/local/Cellar/log4cplus/1.1.2/lib/liblog4cplus-1.1.9.dylib"; sourceTree = "<group>"; };
 		F5DD27E11934A4DB00FE1D28 /* log4cplus.properties */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = log4cplus.properties; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -234,15 +258,18 @@
 				F5596050192E04C4003754C8 /* PrintContentHandler.h */,
 				F5596051192E04C4003754C8 /* V9MessageStreamParser.cpp */,
 				F5596052192E04C4003754C8 /* V9MessageStreamParser.h */,
-				F559604B192E0496003754C8 /* InputSource.cpp */,
-				F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */,
-				F5CDC4C319250EE800CBE87D /* WandioInputSource.h */,
 				D354E81C19235BD300C45B70 /* libfc.cpp */,
 				D354E81D19235BD300C45B70 /* libfc.h */,
 				D354E7AB1923550800C45B70 /* BasicOctetArray.cpp */,
 				D354E7AC1923550800C45B70 /* BasicOctetArray.h */,
+				D354E7CF1923550800C45B70 /* InputSource.h */,
+				F559604B192E0496003754C8 /* InputSource.cpp */,
 				D354E7AD1923550800C45B70 /* BufferInputSource.cpp */,
 				D354E7AE1923550800C45B70 /* BufferInputSource.h */,
+				D354E7C51923550800C45B70 /* FileInputSource.cpp */,
+				D354E7C61923550800C45B70 /* FileInputSource.h */,
+				F5CDC4C219250EE800CBE87D /* WandioInputSource.cpp */,
+				F5CDC4C319250EE800CBE87D /* WandioInputSource.h */,
 				D354E7AF1923550800C45B70 /* Constants.h */,
 				D354E7B01923550800C45B70 /* ContentHandler.h */,
 				F55CCCA719336E47000DED44 /* ContentHandler.cpp */,
@@ -258,8 +285,6 @@
 				D354E7C21923550800C45B70 /* ExportDestination.h */,
 				D354E7C31923550800C45B70 /* FileExportDestination.cpp */,
 				D354E7C41923550800C45B70 /* FileExportDestination.h */,
-				D354E7C51923550800C45B70 /* FileInputSource.cpp */,
-				D354E7C61923550800C45B70 /* FileInputSource.h */,
 				D354E7C71923550800C45B70 /* IETemplate.cpp */,
 				D354E7C81923550800C45B70 /* IETemplate.h */,
 				D354E7C91923550800C45B70 /* IEType.cpp */,
@@ -268,7 +293,6 @@
 				D354E7CC1923550800C45B70 /* InfoElement.h */,
 				D354E7CD1923550800C45B70 /* InfoModel.cpp */,
 				D354E7CE1923550800C45B70 /* InfoModel.h */,
-				D354E7CF1923550800C45B70 /* InputSource.h */,
 				D354E7D01923550800C45B70 /* ipfix_endian.h */,
 				D354E7D31923550800C45B70 /* IPFIXMessageStreamParser.cpp */,
 				D354E7D41923550800C45B70 /* IPFIXMessageStreamParser.h */,
@@ -308,6 +332,7 @@
 		D37BC239192352A8009555FF = {
 			isa = PBXGroup;
 			children = (
+				F5CEA567193DDD810088ABA7 /* moodycamel */,
 				F5DD27DF19349E9B00FE1D28 /* liblog4cplus-1.1.9.dylib */,
 				F55CCCCA193388DE000DED44 /* libtomcrypt.a */,
 				D354E82019235D2000C45B70 /* libwandio.1.dylib */,
@@ -316,6 +341,7 @@
 				F5CDC4D51925116400CBE87D /* ftrace */,
 				F55CCCA919337920000DED44 /* ipfix2csv */,
 				F55CCCBA193379A2000DED44 /* ftrace-demo */,
+				F5DD27E21934CB4400FE1D28 /* fcold */,
 				D37BC243192352A8009555FF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -356,6 +382,43 @@
 			name = ftrace;
 			sourceTree = "<group>";
 		};
+		F5CEA567193DDD810088ABA7 /* moodycamel */ = {
+			isa = PBXGroup;
+			children = (
+				F5CEA568193DDD940088ABA7 /* atomicops.h */,
+				F5CEA569193DDD940088ABA7 /* readerwriterqueue.h */,
+			);
+			name = moodycamel;
+			sourceTree = "<group>";
+		};
+		F5DD27E21934CB4400FE1D28 /* fcold */ = {
+			isa = PBXGroup;
+			children = (
+				F537B021194070A7001F9416 /* fcold.cpp */,
+				F5CEA56A193DDE6A0088ABA7 /* DirectoryListener.cpp */,
+				F5CEA56B193DDE6A0088ABA7 /* DirectoryListener.h */,
+				F5CEA56C193DDE6A0088ABA7 /* Frontend.cpp */,
+				F5CEA56D193DDE6A0088ABA7 /* Frontend.h */,
+				F5CEA56E193DDE6A0088ABA7 /* Listener.cpp */,
+				F5CEA56F193DDE6A0088ABA7 /* Listener.h */,
+				F58116F51934DD7600BD2966 /* MessageBuffer.cpp */,
+				F58116F31934D06E00BD2966 /* MessageBuffer.h */,
+				F58116EF1934D04300BD2966 /* Configuration.cpp */,
+				F58116F01934D04300BD2966 /* Configuration.h */,
+				F5CEA565193DCA120088ABA7 /* Imp.cpp */,
+				F5CEA566193DCA120088ABA7 /* Imp.h */,
+				F5051638193F101800993D38 /* ImpFactory.h */,
+				F505163C193F428000993D38 /* WandFileFrontend.h */,
+				F537B02219409149001F9416 /* BackendFactory.h */,
+				F537B02319409B79001F9416 /* Backend.h */,
+				F537B02419409CEA001F9416 /* StatdatFrontend.h */,
+				D398237A1965A5D800255B8C /* StatdatFrontend.cpp */,
+				F59F7DA2196437F30093431A /* SwitchImp.h */,
+				F59F7DA4196438DD0093431A /* SwitchImp.cpp */,
+			);
+			name = fcold;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -363,6 +426,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F505163A193F101800993D38 /* ImpFactory.h in Headers */,
 				D354E7FA1923550800C45B70 /* ExportDestination.h in Headers */,
 				D354E7FC1923550800C45B70 /* FileExportDestination.h in Headers */,
 				F5596054192E04C4003754C8 /* PlacementContentHandler.h in Headers */,

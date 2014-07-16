@@ -30,16 +30,18 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_WANDIOINPUTSOURCE_H_
-#  define _libfc_WANDIOINPUTSOURCE_H_
+#ifndef _LIBFC_WANDIOINPUTSOURCE_H_
+#  define _LIBFC_WANDIOINPUTSOURCE_H_
 
+#  include <memory>
 #  include <string>
 
 extern "C" {
 #  include <wandio.h>
 }
 
-#  include "InputSource.h"
+#include "InputSource.h"
+#include "ErrorContext.h"
 
 namespace libfc {
 
@@ -68,14 +70,31 @@ namespace libfc {
     const char* get_name() const;
     bool can_peek() const;
 
+      /** Returns the error generated when attempting to open the input source.
+       *  After creating an InputSource that might fail to open, check this
+       *  to determine whether the open succeeded, and to retrieve the error if not.
+       *
+       * @return a shared pointer to an error context, NULL on success
+       */
+      std::shared_ptr<ErrorContext> get_error() {
+          return open_err;
+      }
+
   private:
     io_t* io;
     size_t message_offset;
     size_t current_offset;
     std::string name;
     bool io_belongs_to_me;
+
+  protected:
+      // stupid to put this here, but InputSource and ErrorContext are circular.
+      /** Stores an error context related
+       to attempting to open the input source
+       */
+      std::shared_ptr<ErrorContext> open_err;
   };
 
 } // namespace libfc
 
-#endif // _libfc_WANDIOINPUTSOURCE_H_
+#endif // _LIBFC_WANDIOINPUTSOURCE_H_

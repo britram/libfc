@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_PLACEMENTEXPORTER_H_
-#  define _libfc_PLACEMENTEXPORTER_H_
+#ifndef _LIBFC_PLACEMENTEXPORTER_H_
+#  define _LIBFC_PLACEMENTEXPORTER_H_
 
 #  include <cstdint>
 #  include <list>
@@ -40,9 +40,9 @@
 
 #  include <sys/uio.h>
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "Constants.h"
 #  include "ExportDestination.h"
@@ -92,7 +92,7 @@ namespace libfc {
     /** Creates an exporter.
      *
      * @param os the output stream to use
-     * @param observation_domain the observation domain; see RFC5101
+     * @param observation_domain the initial observation domain; see RFC5101
      */
     PlacementExporter(ExportDestination& os, uint32_t observation_domain);
 
@@ -109,16 +109,24 @@ namespace libfc {
      */
     bool flush();
 
-    /** Place values in a PlacementTemplate into the message. 
+    /** Places values in a PlacementTemplate into the message. 
      *
      * @param template placement template for current placement
      */
     void place_values(const PlacementTemplate* tmpl);
 
+    /** Changes the observation domain.
+     *
+     * If the current message is not empty, it is flushed and a new
+     * message with the new observation domain is staarted.  If the
+     * current observation domain is the same as the new observation
+     * domain, nothing happens. */
+    void change_observation_domain(uint32_t new_observation_domain);
+
   private:
 
     ExportDestination& os;
-    /* The expression of cont-ness for the PlacementTemplates pointed
+    /* The expression of const-ness for the PlacementTemplates pointed
      * to by the pointers below is very tricky.  From the point of
      * view of this object, they are const: we promise never to change
      * any data member or to call any mutator in the PlacementTemplate
@@ -156,10 +164,7 @@ namespace libfc {
     /** Sequence number for messages; see RFC 5101. */
     uint32_t sequence_number;
 
-    /** Observation domain for messages; see RFC 5101.
-     *
-     * For the moment, we support only one observation domain. This
-     * may change in the future. */
+    /** Observation domain for messages; see RFC 5101. */
     uint32_t observation_domain;
 
     /** Number of octets in this message so far. This includes message
@@ -178,9 +183,9 @@ namespace libfc {
 
     EncodePlan* plan;
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
     /** Finishes the current data set by putting the template ID and
      * set length into the set header. 
@@ -192,4 +197,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_PLACEMENTEXPORTER_H_
+#endif // _LIBFC_PLACEMENTEXPORTER_H_

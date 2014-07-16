@@ -30,8 +30,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_EXPORTDESTINATION_H_
-#  define _libfc_EXPORTDESTINATION_H_
+#ifndef _LIBFC_EXPORTDESTINATION_H_
+#  define _LIBFC_EXPORTDESTINATION_H_
 
 #  include <cstdint>
 #  include <vector>
@@ -118,4 +118,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_EXPORTDESTINATION_H_
+#endif // _LIBFC_EXPORTDESTINATION_H_

@@ -31,12 +31,12 @@
 #include "Constants.h"
 #include "V9MessageStreamParser.h"
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/logger.h>
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "decode_util.h"
 
@@ -44,10 +44,10 @@ namespace libfc {
 
   V9MessageStreamParser::V9MessageStreamParser() 
     : offset(0)
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
                ,
     logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("V9MessageStreamParser")))
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  {
   }
 
@@ -61,15 +61,15 @@ namespace libfc {
 
     /* Why do we need this? Read the long comment below and find out. */
     if (!is.can_peek())
-      libfc_RETURN_ERROR(fatal, input_source_cant_peek, 
+      LIBFC_RETURN_ERROR(fatal, input_source_cant_peek, 
                          "V9 messages can only be parsed with "
                          "peekable input streams", 0, &is, 0, 0, 0);
 
     /* I would normally declare the message_size further down, but
-     * it's needed for the expansion of libfc_RETURN_CALLBACK_ERROR. */
+     * it's needed for the expansion of LIBFC_RETURN_CALLBACK_ERROR. */
     uint16_t message_size = 0;
 
-    libfc_RETURN_CALLBACK_ERROR(start_session());
+    LIBFC_RETURN_CALLBACK_ERROR(start_session());
 
     /* Take care when changing message from an array to a pointer. */
     memset(message, '\0', sizeof(message));
@@ -87,7 +87,7 @@ namespace libfc {
       uint8_t* cur = message;
 
       if (static_cast<size_t>(nbytes) < kV9MessageHeaderLen) {
-        libfc_RETURN_ERROR(recoverable, short_header, 
+        LIBFC_RETURN_ERROR(recoverable, short_header, 
                            "Wanted " 
                            << kV9MessageHeaderLen
                            << " bytes for V9 message header, got only "
@@ -98,10 +98,10 @@ namespace libfc {
 
       uint16_t version = decode_uint16(cur +  0);
       if (version != kV9Version)
-        libfc_RETURN_ERROR(recoverable, message_version_number, 
+        LIBFC_RETURN_ERROR(recoverable, message_version_number, 
                            "Expected message version " 
-                           << libfc_HEX(4) << kV9Version 
-                           << ", got " << libfc_HEX(4) << version,
+                           << LIBFC_HEX(4) << kV9Version 
+                           << ", got " << LIBFC_HEX(4) << version,
                            0, &is, message, nbytes, 0);
 
       /* Via Brian and demux_statdat.c: the v9 format does not have
@@ -137,7 +137,7 @@ namespace libfc {
         if (current_set_id == kV9Version)
           break;
         else if (current_set_id == kV5Version)
-          libfc_RETURN_ERROR(recoverable, message_version_number, 
+          LIBFC_RETURN_ERROR(recoverable, message_version_number, 
                              "Wanted " << kV9Version
                              << " as version number, but got " << kV5Version,
                              0, &is, message, nbytes, 0);
@@ -150,7 +150,7 @@ namespace libfc {
 
         /* Take care when changing message from an array to a pointer. */
         if (cur + set_length > message + sizeof(message))
-          libfc_RETURN_ERROR(recoverable, long_set, 
+          LIBFC_RETURN_ERROR(recoverable, long_set, 
                              "While scanning V9 message, set size " 
                              << set_length << " exceeds message space",
                              0, &is, message, cur - message,
@@ -162,7 +162,7 @@ namespace libfc {
         ssize_t read_bytes = is.read(cur, set_length);
         
         if (read_bytes != set_length)
-          libfc_RETURN_ERROR(recoverable, short_body, 
+          LIBFC_RETURN_ERROR(recoverable, short_body, 
                              "While scanning V9 message, wanted " 
                              << set_length << " bytes for set, got " 
                              << read_bytes,
@@ -182,7 +182,7 @@ namespace libfc {
       }
 
       if (nbytes < 0) 
-        libfc_RETURN_ERROR(fatal, system_error, "read error", errno,
+        LIBFC_RETURN_ERROR(fatal, system_error, "read error", errno,
                            &is, message, 0, 0);
 
       /* Basetime computation as per email from Brian:
@@ -196,7 +196,7 @@ namespace libfc {
        *   uint64_t basetime_ms = (uint64_t)ntohl(hdr->export_s) * 1000 
        *     - ntohl(hdr->sysuptime_ms);
        */
-      libfc_RETURN_CALLBACK_ERROR(
+      LIBFC_RETURN_CALLBACK_ERROR(
         start_message(version,
                       message_size,
                       decode_uint32(message +  8),
@@ -229,7 +229,7 @@ namespace libfc {
         const uint8_t* set_end = cur + set_length;
         
         if (set_end > message_end)
-          libfc_RETURN_ERROR(recoverable, long_set, 
+          LIBFC_RETURN_ERROR(recoverable, long_set, 
                              "Long set: set_len=" << set_length 
                              << ",set_end=" << static_cast<const void*>(set_end) 
                              << ",message_len=" << message_size
@@ -239,26 +239,26 @@ namespace libfc {
         cur += kV9SetHeaderLen;
 
         if (set_id == kV9TemplateSetID) {
-          libfc_RETURN_CALLBACK_ERROR(
+          LIBFC_RETURN_CALLBACK_ERROR(
             start_template_set(
               set_id, set_length - kV9SetHeaderLen, cur));
           cur += set_length - kV9SetHeaderLen;
-          libfc_RETURN_CALLBACK_ERROR(end_template_set());
+          LIBFC_RETURN_CALLBACK_ERROR(end_template_set());
         } else if (set_id == kV9OptionTemplateSetID) {
-          libfc_RETURN_CALLBACK_ERROR(
+          LIBFC_RETURN_CALLBACK_ERROR(
             start_options_template_set(
               set_id, set_length - kV9SetHeaderLen, cur));
           cur += set_length - kV9SetHeaderLen;
-          libfc_RETURN_CALLBACK_ERROR(
+          LIBFC_RETURN_CALLBACK_ERROR(
             end_options_template_set());
         } else if (set_id >= kV9MinDataSetId) {
-          libfc_RETURN_CALLBACK_ERROR(
+          LIBFC_RETURN_CALLBACK_ERROR(
             start_data_set(
               set_id, set_length - kV9SetHeaderLen, cur));
           cur += set_length - kV9SetHeaderLen;
-          libfc_RETURN_CALLBACK_ERROR(end_data_set());
+          LIBFC_RETURN_CALLBACK_ERROR(end_data_set());
         } else
-          libfc_RETURN_ERROR(recoverable, format_error,
+          LIBFC_RETURN_ERROR(recoverable, format_error,
                              "Set has ID " << set_id << ", which is not "
                              "a V9 template, options template or data set ID",
                              0, &is, message, message_size, offset);
@@ -271,7 +271,7 @@ namespace libfc {
 
       LOG4CPLUS_TRACE(logger, "Got " << (set_no - 1) << " sets");
 
-      libfc_RETURN_CALLBACK_ERROR(end_message());
+      LIBFC_RETURN_CALLBACK_ERROR(end_message());
 
       offset += nbytes;
       is.advance_message_offset();
@@ -281,7 +281,7 @@ namespace libfc {
     }
 
     if (nbytes < 0) {
-        libfc_RETURN_ERROR(fatal, system_error, 
+        LIBFC_RETURN_ERROR(fatal, system_error, 
                            "Wanted to read " 
                            << kV9MessageHeaderLen
                            << " bytes, got a read error", errno, &is,
@@ -296,9 +296,9 @@ namespace libfc {
     message_size = 0;
     memset(message, '\0', sizeof(message));
 
-    libfc_RETURN_CALLBACK_ERROR(end_session());
+    LIBFC_RETURN_CALLBACK_ERROR(end_session());
 
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
 } // namespace libfc

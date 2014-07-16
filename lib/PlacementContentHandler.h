@@ -30,16 +30,16 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_PLACEMENTCONTENTHANDLER_H_
-#  define _libfc_PLACEMENTCONTENTHANDLER_H_
+#ifndef _LIBFC_PLACEMENTCONTENTHANDLER_H_
+#  define _LIBFC_PLACEMENTCONTENTHANDLER_H_
 
 #  include <list>
 #  include <map>
 #  include <vector>
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #    include <log4cplus/logger.h>
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #  include "ContentHandler.h"
 #  include "InfoElement.h"
@@ -92,6 +92,13 @@ namespace libfc {
                                                  uint16_t length,
                                                  const uint8_t* buf);
     std::shared_ptr<ErrorContext> end_data_set();
+
+    /** Registers a start message handler.
+     *
+     * This will cause a PlacementCollector's start_message() method
+     * to be called when a new message starts.
+     */
+    void register_start_message_handler(PlacementCollector* callback);
 
     /** Registers a placement template.
      *
@@ -242,6 +249,13 @@ namespace libfc {
     /** Association between placement template and callback. */
     std::map<const PlacementTemplate*, PlacementCollector*> callbacks;
 
+    /** Start Message handler.
+     *
+     * This points to a PlacementCollector whose start_message()
+     * method is to be called when a new message starts.
+     */
+    PlacementCollector* start_message_handler;
+
     /** Unhandled data set handler, if any. */
     PlacementCollector* unhandled_data_set_handler;
 
@@ -304,11 +318,11 @@ namespace libfc {
     /** The template IDs about which we've warned already. */
     mutable std::set<uint64_t> unmatched_template_ids;
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
     log4cplus::Logger logger;
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  };
 
 } // namespace libfc
 
-#endif // _libfc_PLACEMENTCONTENTHANDLER_H_
+#endif // _LIBFC_PLACEMENTCONTENTHANDLER_H_

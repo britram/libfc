@@ -33,13 +33,13 @@
 
 #include <time.h>
 
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
 #  define LOG4CPLUS_WARN(logger, expr)
 #  define LOG4CPLUS_INFO(logger, expr)
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 #include "decode_util.h"
 #include "pointer_checks.h"
@@ -54,7 +54,7 @@ namespace libfc {
 #define CH_REPORT_ERROR(error, message_stream)                             \
   do {                                                                     \
     parse_is_good = false;                                                 \
-    libfc_RETURN_ERROR(recoverable, error, message_stream, 0, 0, 0, 0, 0); \
+    LIBFC_RETURN_ERROR(recoverable, error, message_stream, 0, 0, 0, 0, 0); \
   } while (0)
 
 #define CH_REPORT_CALLBACK_ERROR(call) \
@@ -68,14 +68,15 @@ namespace libfc {
 
   PlacementContentHandler::PlacementContentHandler()
     : info_model(InfoModel::instance()),
+      start_message_handler(0),
       unhandled_data_set_handler(0),
       use_matched_template_cache(false),
       current_wire_template(0),
       parse_is_good(true)
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
                          ,
       logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementContentHandler")))
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
   {
   }
 
@@ -88,7 +89,7 @@ namespace libfc {
       delete i->second;
   }
 
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
   static const char* make_time(uint32_t export_time) {
     struct tm tms;
     time_t then = export_time;
@@ -100,7 +101,7 @@ namespace libfc {
 
     return gmtime_buf;
   }
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::start_session() {
     LOG4CPLUS_TRACE(logger, "Session starts");
@@ -150,14 +151,20 @@ namespace libfc {
     this->observation_domain = observation_domain;
 
     LOG4CPLUS_TRACE(logger, "LEAVE start_message");
-    return std::shared_ptr<ErrorContext>(0);
+
+    if (start_message_handler != 0)
+      return start_message_handler->start_message(
+               version, length, export_time, sequence_number,
+               observation_domain, base_time);
+    else
+      LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_message() {
     LOG4CPLUS_TRACE(logger, "ENTER end_message");
     assert(current_wire_template == 0);
     LOG4CPLUS_TRACE(logger, "LEAVE end_message");
-    return std::shared_ptr<ErrorContext>(0);
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::process_template_set(
@@ -184,7 +191,7 @@ namespace libfc {
       for (unsigned int field = 0; field < field_count; field++) {
         if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen,
                                     cur, set_end)) {
-          libfc_RETURN_ERROR(recoverable, long_fieldspec,
+          LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
                              "Field specifier partly outside template record", 
                              0, 0, 0, 0, cur - buf);
         }
@@ -199,7 +206,7 @@ namespace libfc {
           if (!CHECK_POINTER_WITHIN_I(cur + kFieldSpecifierLen
                                       + kEnterpriseLen, cur,
                                       set_end)) {
-            libfc_RETURN_ERROR(recoverable, long_fieldspec,
+            LIBFC_RETURN_ERROR(recoverable, long_fieldspec,
                                "Field specifier partly outside template "
                                "record (enterprise)", 
                                0, 0, 0, 0, cur - buf);
@@ -226,7 +233,7 @@ namespace libfc {
       
       CH_REPORT_CALLBACK_ERROR(end_template_record());
     }
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::start_template_set(uint16_t set_id,
@@ -238,12 +245,12 @@ namespace libfc {
     assert(current_wire_template == 0);
 
     process_template_set(set_id, set_length, buf, false);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_template_set");
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   uint64_t PlacementContentHandler::make_template_key(uint16_t tid) const {
@@ -268,7 +275,7 @@ namespace libfc {
     current_field_no = 0;
     current_wire_template = new IETemplate();
 
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_template_record() {
@@ -309,7 +316,7 @@ namespace libfc {
       }
 
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       if (logger.getLogLevel() <= log4cplus::TRACE_LOG_LEVEL) {
         LOG4CPLUS_TRACE(logger,
                         "  current wire template has "
@@ -321,7 +328,7 @@ namespace libfc {
         for (auto i = current_wire_template->begin(); i != current_wire_template->end(); i++)
           LOG4CPLUS_TRACE(logger, "  " << n++ << " " << (*i)->toIESpec());
       }
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
     }
 
     if (current_field_count != current_field_no)
@@ -331,7 +338,7 @@ namespace libfc {
                       << current_field_no);
 
     current_wire_template = 0;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::start_options_template_set(
@@ -344,12 +351,12 @@ namespace libfc {
     assert(current_wire_template == 0);
 
     process_template_set(set_id, set_length, buf, true);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_options_template_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_option_template_set");
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::field_specifier(
@@ -409,7 +416,7 @@ namespace libfc {
 
     current_wire_template->add(ie);
     current_field_no++;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::scope_field_specifier(
@@ -424,7 +431,7 @@ namespace libfc {
                     << ", ie=" << ie_id
                     << ", length=" << ie_length);
     field_specifier(enterprise, ie_id, ie_length, enterprise_number);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::options_field_specifier(
@@ -439,7 +446,7 @@ namespace libfc {
                     << ", ie=" << ie_id
                     << ", length=" << ie_length);
     field_specifier(enterprise, ie_id, ie_length, enterprise_number);
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
 
@@ -531,7 +538,7 @@ namespace libfc {
                          " (this warning will appear only once)");
           unmatched_template_ids.insert(make_template_key(id));
         }
-        libfc_RETURN_OK();
+        LIBFC_RETURN_OK();
       } else {
         std::shared_ptr<ErrorContext> e 
           = unhandled_data_set_handler->unhandled_data_set(
@@ -547,7 +554,7 @@ namespace libfc {
                              " (this warning will appear only once)");
               unmatched_template_ids.insert(make_template_key(id));
             }
-            libfc_RETURN_OK();
+            LIBFC_RETURN_OK();
           }
         }
       }
@@ -562,7 +569,7 @@ namespace libfc {
 
     if (placement_template == 0) {
       LOG4CPLUS_TRACE(logger, "  no one interested in this data set; skipping");
-      libfc_RETURN_OK();
+      LIBFC_RETURN_OK();
     }
 
     DecodePlan plan(placement_template, wire_template);
@@ -584,13 +591,19 @@ namespace libfc {
       length -= consumed;
     }
 
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext> PlacementContentHandler::end_data_set() {
     LOG4CPLUS_TRACE(logger, "ENTER end_data_set");
     LOG4CPLUS_TRACE(logger, "LEAVE end_data_set");
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
+  }
+
+  void PlacementContentHandler::register_start_message_handler(
+      PlacementCollector* callback)
+  {
+    start_message_handler = callback;
   }
 
   void PlacementContentHandler::register_placement_template(

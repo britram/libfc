@@ -170,8 +170,8 @@
  * @endcode
  */
 
-#ifndef _libfc_LIBFC_H_
-#  define _libfc_LIBFC_H_
+#ifndef _LIBFC_LIBFC_H_
+#  define _LIBFC_LIBFC_H_
 
 #  if defined(__cplusplus)
 extern "C" {
@@ -292,4 +292,4 @@ extern void libfc_initialize_logging(const char *lpfilename);
 }
 #  endif /* defined(__cplusplus) */
 
-#endif /* _libfc_LIBFC_H_ */
+#endif /* _LIBFC_LIBFC_H_ */

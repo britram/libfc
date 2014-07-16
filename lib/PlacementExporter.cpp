@@ -32,11 +32,11 @@
 
 #include <unistd.h>
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
 #  include <log4cplus/loggingmacros.h>
 #else
 #  define LOG4CPLUS_TRACE(logger, expr)
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
 #include "ipfix_endian.h"
 
@@ -152,9 +152,9 @@ private:
 
   std::vector<Decision> plan;
 
-#  if defined(_libfc_HAVE_LOG4CPLUS_)
+#  if defined(_LIBFC_HAVE_LOG4CPLUS_)
   log4cplus::Logger logger;
-#  endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 };
 
 
@@ -181,9 +181,9 @@ static void report_error(const char* message, ...) {
 
 /* See DataSetDecoder::DecodePlan::DecodePlan. */
 EncodePlan::EncodePlan(const libfc::PlacementTemplate* placement_template)
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
   : logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("EncodePlan")))
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  {
 #if defined(IPFIX_BIG_ENDIAN)
   Decision::decision_type_t encode_fixlen_maybe_endianness
@@ -645,9 +645,9 @@ namespace libfc {
       n_message_octets(kIpfixMessageHeaderLen),
       template_set_size(0),
       plan(0)
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     , logger(log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("PlacementExporter")))
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
  {
     /* Push two empty iovecs into the iovec vector, to be filled later
      * with the message header and template set by flush(). */
@@ -704,7 +704,7 @@ namespace libfc {
     }
   }
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
   static const char* make_time(uint32_t export_time) {
     struct tm tms;
     time_t then = export_time;
@@ -716,7 +716,7 @@ namespace libfc {
 
     return gmtime_buf;
   }
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
   bool PlacementExporter::flush() {
     LOG4CPLUS_TRACE(logger, "ENTER flush");
@@ -791,9 +791,9 @@ namespace libfc {
       ret = os.writev(iovecs);
       LOG4CPLUS_TRACE(logger, "wrote " << ret << " bytes");
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
       int n = 0;
-#endif /* defined(_libfc_HAVE_LOG4CPLUS_) */
+#endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
       for (auto i = iovecs.begin(); i != iovecs.end(); ++i) {
         LOG4CPLUS_TRACE(logger, "  iovec " << ++n
                         << " size " << i->iov_len);
@@ -819,6 +819,7 @@ namespace libfc {
     LOG4CPLUS_TRACE(logger, "ENTER place_values");
 
     assert(n_message_octets <= kMaxMessageLen);
+    assert(tmpl != 0);
 
     /** The number of bytes added to the current message as a result
      * of issuing this new data record.  It might be as small as the
@@ -907,7 +908,7 @@ namespace libfc {
       new_bytes += kIpfixSetHeaderLen;
     }
 
-#if defined(_libfc_HAVE_LOG4CPLUS_)
+#if defined(_LIBFC_HAVE_LOG4CPLUS_)
     if (n_message_octets + new_bytes > kMaxMessageLen)
       LOG4CPLUS_TRACE(logger,
                       "n_message_octets=" << n_message_octets
@@ -935,5 +936,14 @@ namespace libfc {
 
     assert(n_message_octets <= kMaxMessageLen);
   }
+
+  void PlacementExporter::change_observation_domain(
+      uint32_t new_observation_domain) {
+    if (observation_domain != new_observation_domain) {
+      flush();
+      observation_domain = new_observation_domain;
+    }
+  }
+
 
 } // namespace libfc

@@ -90,10 +90,10 @@
 
 #include "exceptions/FormatError.h"
 
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
 #  include <log4cplus/configurator.h>
 #  include <log4cplus/loggingmacros.h>
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
 using namespace libfc;
 
@@ -573,7 +573,7 @@ public:
   
   std::shared_ptr<ErrorContext>
       start_placement(const PlacementTemplate* tmpl) {
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
   }
 
   std::shared_ptr<ErrorContext>
@@ -584,7 +584,17 @@ public:
       ie_values[i].renderer(std::cout, ie_values[i].type, ie_values[i].val);
     }
     std::cout << std::endl;
-    libfc_RETURN_OK();
+    LIBFC_RETURN_OK();
+  }
+
+  std::shared_ptr<ErrorContext> start_message(
+        uint16_t version,
+        uint16_t length,
+        uint32_t export_time,
+        uint32_t sequence_number,
+        uint32_t observation_domain,
+        uint64_t base_time) {
+    LIBFC_RETURN_OK();
   }
 
   ~CSVCollector() {
@@ -609,10 +619,10 @@ private:
 };
 
 int main(int argc, char* const* argv) {
-#ifdef _libfc_HAVE_LOG4CPLUS_
+#ifdef _LIBFC_HAVE_LOG4CPLUS_
   log4cplus::PropertyConfigurator config("log4cplus.properties");
   config.configure();
-#endif /* _libfc_HAVE_LOG4CPLUS_ */
+#endif /* _LIBFC_HAVE_LOG4CPLUS_ */
 
   libfc::PlacementCollector::Protocol protocol;
   InputSource* is = 0;

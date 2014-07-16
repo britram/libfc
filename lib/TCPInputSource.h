@@ -29,8 +29,8 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_TCPINPUTSOURCE_H_
-#  define _libfc_TCPINPUTSOURCE_H_
+#ifndef _LIBFC_TCPINPUTSOURCE_H_
+#  define _LIBFC_TCPINPUTSOURCE_H_
 
 #  include "InputSource.h"
 
@@ -60,4 +60,4 @@ namespace libfc {
 
 } // namespace libfc
 
-#endif // _libfc_TCPINPUTSOURCE_H_
+#endif // _LIBFC_TCPINPUTSOURCE_H_

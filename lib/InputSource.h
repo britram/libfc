@@ -30,12 +30,11 @@
  * @author Stephan Neuhaus <neuhaust@tik.ee.ethz.ch>
  */
 
-#ifndef _libfc_INPUTSOURCE_H_
-#  define _libfc_INPUTSOURCE_H_
+#ifndef _LIBFC_INPUTSOURCE_H_
+#  define _LIBFC_INPUTSOURCE_H_
 
-#  include <cstdint>
-
-#  include <unistd.h>
+#include <cstdint>
+#include <unistd.h>
 
 namespace libfc {
 
@@ -45,7 +44,7 @@ namespace libfc {
  * result is an error, augments the error with the current message and
  * adjusts the offset.
  */
-#  define libfc_RETURN_CALLBACK_ERROR(call) \
+#  define LIBFC_RETURN_CALLBACK_ERROR(call) \
     do { \
       /* Make sure call is evaluated only once */                       \
       std::shared_ptr<ErrorContext> err = content_handler->call;        \
@@ -64,7 +63,10 @@ namespace libfc {
    * must implement.
    */
   class InputSource {
+      
   public:
+    InputSource();
+      
     /** Destroys an InputSource. */
     virtual ~InputSource() = 0;
 
@@ -142,8 +144,9 @@ namespace libfc {
      * @return true if this input source supports peek(), false if not.
      */
     virtual bool can_peek() const = 0;
+      
   };
 
 } // namespace libfc
 
-#endif // _libfc_INPUTSOURCE_H_
+#endif // _LIBFC_INPUTSOURCE_H_
