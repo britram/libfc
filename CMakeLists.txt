@@ -83,8 +83,7 @@ if ($ENV{CLANG})
 else ($ENV{CLANG})
   file (GLOB UT_OBJ test/Test*.cpp)
   add_executable(fctest ${UT_OBJ})
-  target_link_libraries(fctest fc libfcold
-                                  ${Boost_LIBRARIES}
+  target_link_libraries(fctest fc ${Boost_LIBRARIES}
                                   ${Wandio_LIBRARIES}
                                   ${Log4CPlus_LIBRARIES})
 endif()
@@ -113,14 +112,16 @@ endif()
 # link the fcold main function against that.  If yuo want to do this
 # in another way, be my guest.
 #
-file (GLOB FCOLD_OBJ "fcold/*.cpp")
-message(STATUS "FCOLD_OBJ=${FCOLD_OBJ}")
+# Update 2014-07-16: fcold is dead.
+#
+#file (GLOB FCOLD_OBJ "fcold/*.cpp")
+#message(STATUS "FCOLD_OBJ=${FCOLD_OBJ}")
 
-add_library (libfcold ${FCOLD_OBJ})
+#add_library (libfcold ${FCOLD_OBJ})
 
-include_directories(fcold moodycamel)
-add_executable (fcold fcold/fcold.cpp)
-target_link_libraries(fcold libfcold fc
-                            ${Wandio_LIBRARIES} 
-                            ${Log4CPlus_LIBRARIES}
-                            ${CMAKE_THREAD_LIBS_INIT})
+#include_directories(fcold moodycamel)
+#add_executable (fcold fcold/fcold.cpp)
+#target_link_libraries(fcold libfcold fc
+#                            ${Wandio_LIBRARIES} 
+#                            ${Log4CPlus_LIBRARIES}
+#                            ${CMAKE_THREAD_LIBS_INIT})

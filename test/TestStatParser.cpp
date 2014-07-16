@@ -33,7 +33,7 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include "../fcold/StatParser.h"
+#include "StatParser.h"
 
 BOOST_AUTO_TEST_SUITE(Fcold)
 
