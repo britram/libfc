@@ -25,8 +25,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _FCOLD_STATPARSER_H_
-#  define _FCOLD_STATPARSER_H_
+#ifndef _LIBFC_STATPARSER_H_
+#  define _LIBFC_STATPARSER_H_
 
 #  include <cstdint>
 #  include <fstream>
@@ -36,7 +36,7 @@
 #    include <log4cplus/logger.h>
 #  endif /* defined(_LIBFC_HAVE_LOG4CPLUS_) */
 
-namespace fcold {
+namespace libfc {
 
   /** Parses a stat file.
    *
@@ -150,6 +150,6 @@ namespace fcold {
                       const std::string what);
   };
 
-} // namespace fcold
+} // namespace libfc
 
-#endif /* _FCOLD_STATPARSER_H_ */
+#endif /* _LIBFC_STATPARSER_H_ */

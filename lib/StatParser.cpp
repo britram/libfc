@@ -36,7 +36,7 @@
 
 #include "StatParser.h"
 
-namespace fcold {
+namespace libfc {
 
 StatParser::StatParser(const std::string filename)
     : filename(filename), is(filename), line_no(0), state(init)
@@ -407,4 +407,4 @@ StatParser::state_t StatParser::get_state() const { return state; }
 
 const std::string StatParser::get_message() const { return message; }
 
-} // namespace fcold
+} // namespace libfc

@@ -38,13 +38,15 @@
 BOOST_AUTO_TEST_SUITE(Fcold)
 
 BOOST_AUTO_TEST_CASE(StatParser) {
-  fcold::StatParser sp("../example.stat");
+  libfc::StatParser sp("../example.stat");
   BOOST_CHECK(sp.good());
 
   uint8_t ip[4];
   uint16_t length;
   uint16_t port;
   int i = 0;
+
+  BOOST_CHECK(sp.good());
 
   while (sp.next_p(&length, &ip[0], &port)) {
     i++;
@@ -56,6 +58,12 @@ BOOST_AUTO_TEST_CASE(StatParser) {
               << ",port=" << port << std::endl;
   }
 
+  std::cout << "Total number of P records: " << i << std::endl;
+
+  if (sp.get_state() == libfc::StatParser::parse_error)
+    std::cout << "Parse error: " << sp.get_message() << std::endl;
+
+  BOOST_CHECK_EQUAL(i, 91);
   BOOST_CHECK(sp.eof());
 }
 
