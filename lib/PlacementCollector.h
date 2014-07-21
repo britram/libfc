@@ -98,7 +98,9 @@ namespace libfc {
     /** Signals that placement of values has ended. 
      *
      * @param template placement template for current placements
-     * @return If <= 0, stop processing.
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
      */
     virtual std::shared_ptr<ErrorContext>
       end_placement(const PlacementTemplate* tmpl) = 0;
@@ -110,11 +112,7 @@ namespace libfc {
      * placement exists.
      *
      * The default implementation simply returns with no error
-     * indication.  Caution: when overriding this method, you might be
-     * tempted to return an error just because there is no matching
-     * placement template for this data set.  But be aware that @em{this
-     * will cause parsing to stop}.  If you want the caller to try
-     * again, return Error::again.
+     * indication, causing the unhandled data set to be ignored.
      *
      * @param id set id (= template ID) as per RFC 5101, > 255
      * @param length length in bytes of the data records in this set
@@ -124,35 +122,16 @@ namespace libfc {
      *
      * @return a (shared) pointer to an error context, or null if no
      * error occurred
+     *
+     * @warning when overriding this method, you might be
+     * tempted to return an error just because there is no matching
+     * placement template for this data set.  But be aware that @em{this
+     * will cause parsing to stop}.  If you want the caller to try
+     * again, return Error::again.
      */
     virtual std::shared_ptr<ErrorContext>
       unhandled_data_set(uint32_t observation_domain, uint16_t id,
                          uint16_t length, const uint8_t* buf);
-
-    /** Will be called on unknown data sets.
-     *
-     * For the purposes of this discussion, an unknown data set is a
-     * data set for which no template exists.
-     *
-     * The default implementation simply returns with no error
-     * indication.  Caution: when overriding this method, you might be
-     * tempted to return an error just because there is no matching
-     * placement template for this data set.  But be aware that @em{this
-     * will cause parsing to stop}.  If you want the caller to try
-     * again, return Error::again.
-     *
-     * @param id set id (= template ID) as per RFC 5101, > 255
-     * @param length length in bytes of the data records in this set
-     *     (excluding the header)
-     * @param buf pointer to the beginning of the data records
-     *     (excluding the header)
-     *
-     * @return a (shared) pointer to an error context, or null if no
-     * error occurred
-     */
-    virtual std::shared_ptr<ErrorContext>
-      unknown_data_set(uint32_t observation_domain, uint16_t id,
-                       uint16_t length, const uint8_t* buf);
 
   protected:
     /** Registers a placement template.

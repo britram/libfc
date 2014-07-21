@@ -257,6 +257,62 @@ destination addresses from it using C. Here is how you could do that
       return 0;
     }
 
+. Handling Data Sets With No Template
+
+It may happen that you get data sets for which you have no template.
+It should not happen, but it can happen, especially when IPFIX
+messages arrive over UDP.
+
+If you want to ignore such data sets, you don't have to do anything;
+it's the default behaviour.  But let's say that you hope to come
+across a matching template eventually and that you want therefore to
+stick the data set somewhere if it comes along.  This is not
+difficult.
+
+Remember that you need to derive your collector class from
+`PlacementCollector`. This class is already equipped to tell you about
+unknown data sets.  First, in the constructor, call
+`give_me_unhandled_data_sets()`.  This lets the underlying machinery
+know that it is precisely _this_ `PlacementCollector` that's
+interested in unknown data sets. (For obvious reasons, and for reasons
+of sanity, we allow at most one `PlacementCollector` to collect
+unknown data sets.)
+
+The next step is to get informed about unknown data sets and to do
+something with them. For this purpose, `PlacementCollector` has a
+virtual function called `unknown_data_set()`, with the following
+signature:
+
+    virtual std::shared_ptr<ErrorContext>
+        unknown_data_set(uint32_t observation_domain, uint16_t id,
+                         uint16_t length, const uint8_t* buf);
+
+This looks promising already.  If you want to handle unknown data
+sets, you override this function.  The `observation_domain` is
+extracted form the message header, the `id` is the set ID for which no
+template could be found, the `length` is the length of the data set in
+bytes, and `buf` is a pointer to the bytes making up this data set.
+
+There remains the question of what value to return.  If you have
+successfully dealt with the unknown data set, and if you want
+parsing of the current stream to continue, simply return an "OK"
+return code:
+
+    LIBFC_RETURN_OK();
+
+However, one of the clever things you can do is to install a new
+template just for this data set ID, perhaps after you've analysed the
+data set or have other knowledge that allows you to determine a
+suitable template.  In that case, you would want the underlying
+machinery to try again to find a template and attempt placments.  In
+this case, you return `Error::again`:
+
+    LIBFC_RETURN_ERROR(recoverable, again, "Trying again after "
+                       "unknown data set", 0, 0, 0, 0, 0);
+
+
+And that, folks, is how you handle data sets with no known template.
+
 
 Developed by
 ------------
