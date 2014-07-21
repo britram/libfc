@@ -138,7 +138,7 @@ namespace libfc {
      *
      * For the purposes of this discussion, an unknown data set is a
      * data set for which there exists no template. Contrast this with
-     * an unknown data set, which is a data set for which a template
+     * an unhandled data set, which is a data set for which a template
      * exists, but no placements.
      *
      * The default implementation simply returns with no error
