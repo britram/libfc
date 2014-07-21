@@ -134,6 +134,35 @@ namespace libfc {
                          uint16_t length, const uint8_t* buf);
 
   protected:
+    /** Will be called on unknown data sets.
+     *
+     * For the purposes of this discussion, an unknown data set is a
+     * data set for which there exists no template. Contrast this with
+     * an unknown data set, which is a data set for which a template
+     * exists, but no placements.
+     *
+     * The default implementation simply returns with no error
+     * indication, causing the unhandled data set to be ignored.
+     *
+     * @param id set id (= template ID) as per RFC 5101, > 255
+     * @param length length in bytes of the data records in this set
+     *     (excluding the header)
+     * @param buf pointer to the beginning of the data records
+     *     (excluding the header)
+     *
+     * @return a (shared) pointer to an error context, or null if no
+     * error occurred
+     *
+     * @warning when overriding this method, you might be
+     * tempted to return an error just because there is no matching
+     * placement template for this data set.  But be aware that @em{this
+     * will cause parsing to stop}.  If you want the caller to try
+     * again, return Error::again.
+     */
+    virtual std::shared_ptr<ErrorContext>
+      unknown_data_set(uint32_t observation_domain, uint16_t id,
+                         uint16_t length, const uint8_t* buf);
+
     /** Registers a placement template.
      *
      * @param placement_template the placement template to register
